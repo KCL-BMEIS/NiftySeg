@@ -1,0 +1,5 @@
+#ifndef SEG_COPY_HEADER_H
+#define SEG_COPY_HEADER_H
+
+
+#endif // SEG_COPY_HEADER_H
