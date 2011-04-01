@@ -8,8 +8,8 @@
 #include "_seg_Topo.h"
 
 
-template <class T>
-        class seg_EM
+
+class seg_EM
 {
 protected:
 

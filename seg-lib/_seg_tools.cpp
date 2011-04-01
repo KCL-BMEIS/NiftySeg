@@ -1,25 +1,6 @@
 #include "_seg_tools.h"
 
-static union
-{
-    double d;
-    struct
-    {
-#ifdef LITTLE_ENDIAN
-        int j, i;
-#else
-        int i, j;
-#endif
-    } n;
-} _eco;
-#define EXP_A (1048576 /M_LN2)
-#define EXP_C 60801
-/* use 1512775 for integer version */
-/* see text for choice of c values */
-#define EXP(y) (_eco.n.i = EXP_A*(y) + (1072693248 - EXP_C), _eco.d)
-
-
-void Create_diagonal_GH_Nclass(PrecisionTYPE * G,
+int Create_diagonal_GH_Nclass(PrecisionTYPE * G,
                                PrecisionTYPE * H,
                                PrecisionTYPE ratio,
                                SEG_PARAM * segment_param)
@@ -59,11 +40,11 @@ void Create_diagonal_GH_Nclass(PrecisionTYPE * G,
         cout<< endl;
     }
 
-    return;
+    return 1;
 }
 
 
-void Create_GH_5class(PrecisionTYPE * G,
+int Create_GH_5class(PrecisionTYPE * G,
                       PrecisionTYPE * H,
                       PrecisionTYPE ba,
                       PrecisionTYPE be,
@@ -116,11 +97,11 @@ void Create_GH_5class(PrecisionTYPE * G,
         cout<< endl;
     }
 
-    return;
+    return 1;
 }
 
 
-void Create_GH_7class(PrecisionTYPE * G,
+int Create_GH_7class(PrecisionTYPE * G,
                       PrecisionTYPE * H,
                       PrecisionTYPE ba,
                       PrecisionTYPE be,
@@ -189,10 +170,10 @@ void Create_GH_7class(PrecisionTYPE * G,
     }
 
 
-    return;
+    return 1;
 }
 
-void seg_convert2binary(nifti_image *image,
+int seg_convert2binary(nifti_image *image,
                         float thresh)
 {
     switch(image->datatype){
@@ -222,13 +203,14 @@ void seg_convert2binary(nifti_image *image,
         break;
     default:
         printf("err\tseg_changeDatatype\tThe initial image data type is not supported\n");
-        return;
+        return 1;
     }
+return 1;
 }
 
 
 template <class DTYPE>
-        void seg_convert2binary_data(nifti_image *image,
+        int seg_convert2binary_data(nifti_image *image,
                                      float thresh)
 {
     // the initial array is saved and freeed
@@ -246,11 +228,11 @@ template <class DTYPE>
         dataPtr[i] = (bool)((initialValue[i])>thresh);
     }
     free(initialValue);
-    return;
+    return 1;
 }
 
 
-void Normalize_NaN_Priors(nifti_image * Priors,
+int Normalize_NaN_Priors(nifti_image * Priors,
                           bool verbose)
 {
     register int numel = Priors->nx*Priors->ny*Priors->nz;
@@ -297,10 +279,10 @@ void Normalize_NaN_Priors(nifti_image * Priors,
         flush(cout);
     }
 
-    return;
+    return 1;
 }
 
-void PriorWeight_mask(float * ShortPrior,nifti_image * Priors, float * Expec,float GaussKernelSize,float RelaxFactor, int * S2L, int * L2S,ImageSize * CurrSizes,int verbose_level){
+int PriorWeight_mask(float * ShortPrior,nifti_image * Priors, float * Expec,float GaussKernelSize,float RelaxFactor, int * S2L, int * L2S,ImageSize * CurrSizes,int verbose_level){
 
     for(int i=0; i<(CurrSizes->numclass*CurrSizes->numelmasked);i++)ShortPrior[i]=Expec[i];
     Gaussian_Filter_Short_4D(ShortPrior,S2L,L2S,GaussKernelSize,CurrSizes,CSFclass);
@@ -315,12 +297,13 @@ void PriorWeight_mask(float * ShortPrior,nifti_image * Priors, float * Expec,flo
         }
     }
 
+return 1;
 }
 
 
 
 
-void Normalize_NaN_Priors_mask(nifti_image * Priors,
+int Normalize_NaN_Priors_mask(nifti_image * Priors,
                                nifti_image * Mask,
                                bool verbose)
 {
@@ -387,11 +370,11 @@ void Normalize_NaN_Priors_mask(nifti_image * Priors,
         flush(cout);
     }
 
-    return;
+    return 1;
 }
 
 
-void Normalize_Image_mask(nifti_image * input,
+int Normalize_Image_mask(nifti_image * input,
                           nifti_image * Mask,
                           ImageSize * CurrSizes,
                           bool verbose)
@@ -446,10 +429,10 @@ void Normalize_Image_mask(nifti_image * input,
             }
         }
     }
-    return;
+    return 1;
 }
 
-void Normalize_Image(nifti_image * input,
+int Normalize_Image(nifti_image * input,
                      ImageSize * CurrSizes,
                      bool verbose)
 {
@@ -489,10 +472,10 @@ void Normalize_Image(nifti_image * input,
             }
         }
     }
-    return;
+    return 1;
 }
 
-void Normalize_T1_and_MV(nifti_image * T1,
+int Normalize_T1_and_MV(nifti_image * T1,
                          nifti_image * Mask,
                          PrecisionTYPE * M,
                          PrecisionTYPE * V,
@@ -535,7 +518,7 @@ void Normalize_T1_and_MV(nifti_image * T1,
         V[cl]=log(1+(V[cl])/(tempmax-tempmin));
     }
 
-    return;
+    return 1;
 }
 
 int * Create_Short_2_Long_Matrix_from_NII(nifti_image * Mask,
@@ -573,12 +556,12 @@ int * Create_Short_2_Long_Matrix_from_NII(nifti_image * Mask,
 
 int *  Create_Long_2_Short_Matrix_from_NII(nifti_image * Mask){
     int numel = Mask->nvox;
+    int * Long_2_Short_Indices= new int [rowsize(Mask)*colsize(Mask)*depth(Mask)]();
     if(Mask->datatype==DT_BINARY){
 
 
         bool * Maskptr = static_cast<bool *> (Mask->data);
         bool * Maskptrtmp = Maskptr;
-        int * Long_2_Short_Indices= new int [rowsize(Mask)*colsize(Mask)*depth(Mask)]();
         int * Long_2_Short_Indices_PTR = (int *) Long_2_Short_Indices;
 
         Maskptrtmp = Maskptr;
@@ -597,6 +580,7 @@ int *  Create_Long_2_Short_Matrix_from_NII(nifti_image * Mask){
     else {
         cout<< "err\tCreate_Correspondace_Matrices\tWrong Mask datatype\n" << endl;
     }
+return Long_2_Short_Indices;
 }
 
 
@@ -605,7 +589,6 @@ int * Create_Short_2_Long_Matrix_from_Carray(bool * Mask,
                                              int nvox){
     int numel_masked=0;
     int numel = nvox;
-    bool * Maskptrtmp =(bool *) Mask;
     for (int i=0; i<numel; i++) {
         Mask[i]?numel_masked++:0;
     }
@@ -719,7 +702,7 @@ PrecisionTYPE * Create_cArray_from_3D_image(nifti_image * Mask,
 }
 
 
-void calcE_mask(nifti_image * T1,
+int calcE_mask(nifti_image * T1,
                 PrecisionTYPE * IterPrior,
                 PrecisionTYPE * Expec,
                 PrecisionTYPE * loglik,
@@ -766,7 +749,7 @@ void calcE_mask(nifti_image * T1,
                 flush(cout);
             }
             Vmat.invert();
-            double cvalue;
+            double cvalue=0.0f;
             bool success;
             if(verbose>1){
                 cout<<"inv_V["<< cl <<"]= ";
@@ -802,7 +785,6 @@ void calcE_mask(nifti_image * T1,
     loglik[0]=0;
     SumExpec=0.0f;
     //int * Expec_offset_PTR= (int *) Expec_offset;
-    register PrecisionTYPE tempvar=0.0f;
     float mahal=0.0f;
     float logliktmp=0.0f;
     for (int i=0; i<numel_masked;i++, Expec_PTR++, IterPrior_PTR++) {
@@ -843,11 +825,11 @@ void calcE_mask(nifti_image * T1,
         }
     }
     loglik[0]=logliktmp;
-    return;
+    return 1;
 }
 
 
-void calcE(nifti_image * T1,
+int calcE(nifti_image * T1,
            PrecisionTYPE * IterPrior,
            PrecisionTYPE * Expec,
            PrecisionTYPE * loglik,
@@ -893,7 +875,7 @@ void calcE(nifti_image * T1,
                 flush(cout);
             }
             Vmat.invert();
-            double cvalue;
+            double cvalue=0.0f;
             bool success;
             if(verbose>1){
                 cout<<"inv_V["<< cl <<"]= ";
@@ -929,7 +911,7 @@ void calcE(nifti_image * T1,
     loglik[0]=0;
     SumExpec=0.0f;
     //int * Expec_offset_PTR= (int *) Expec_offset;
-    register PrecisionTYPE tempvar=0.0f;
+
     float mahal=0.0f;
     float logliktmp=0.0f;
     for (int i=0; i<numel;i++, Expec_PTR++, IterPrior_PTR++) {
@@ -969,14 +951,14 @@ void calcE(nifti_image * T1,
         }
     }
     loglik[0]=logliktmp;
-    return;
+    return 1;
 }
 
 
 
 
 /*
-void calcE_mask_aprox(nifti_image * T1,
+int calcE_mask_aprox(nifti_image * T1,
                       PrecisionTYPE * IterPrior,
                       PrecisionTYPE * Expec,
                       PrecisionTYPE * loglik,
@@ -1104,13 +1086,13 @@ void calcE_mask_aprox(nifti_image * T1,
         }
     }
     loglik[0]=logliktmp;
-    return;
+    return 1;
 }
 
 
 */
 /*
-void calcE_aprox(nifti_image * T1,
+int calcE_aprox(nifti_image * T1,
                  PrecisionTYPE * IterPrior,
                  PrecisionTYPE * Expec,
                  PrecisionTYPE * loglik,
@@ -1235,13 +1217,13 @@ void calcE_aprox(nifti_image * T1,
         }
     }
     loglik[0]=logliktmp;
-    return;
+    return 1;
 }
 
 
 
 */
-void calcM(nifti_image * T1,
+int calcM(nifti_image * T1,
            PrecisionTYPE * Expec,
            PrecisionTYPE * BiasField,
            PrecisionTYPE * M,
@@ -1363,13 +1345,13 @@ void calcM(nifti_image * T1,
         }
     }
 
-    return;
+    return 1;
 }
 
 
 
 
-void calcM_mask(nifti_image * T1,
+int calcM_mask(nifti_image * T1,
                 PrecisionTYPE * Expec,
                 PrecisionTYPE * BiasField,
                 int * S2L,
@@ -1499,14 +1481,14 @@ void calcM_mask(nifti_image * T1,
         }
     }
 
-    return;
+    return 1;
 }
 
 
 
 
 
-void calcM_mask_LoAd(nifti_image * T1,
+int calcM_mask_LoAd(nifti_image * T1,
                      PrecisionTYPE * Expec,
                      PrecisionTYPE * BiasField,
                      int * S2L,
@@ -1597,10 +1579,10 @@ void calcM_mask_LoAd(nifti_image * T1,
         flush(cout);
     }
 
-    return;
+    return 1;
 }
 
-void printloglik(int iter,
+int printloglik(int iter,
                  PrecisionTYPE loglik,
                  PrecisionTYPE oldloglik){
     if(iter>1){
@@ -1614,10 +1596,10 @@ void printloglik(int iter,
     else {
         cout<< "Loglik = " << loglik << endl;
     }
-    return;
+    return 1;
 }
 
-void Relax_Priors(PrecisionTYPE * Priors,
+int Relax_Priors(PrecisionTYPE * Priors,
                   PrecisionTYPE * Expec,
                   PrecisionTYPE * MRF,
                   int * S2L,
@@ -1655,11 +1637,11 @@ void Relax_Priors(PrecisionTYPE * Priors,
         memcpy(Priors,Expec,CurrSizes->numelmasked*CurrSizes->numclass*sizeof(PrecisionTYPE));
     }
 
-    return;
+    return 1;
 
 }
 
-void Relax_Priors_Share(PrecisionTYPE * Priors,
+int Relax_Priors_Share(PrecisionTYPE * Priors,
                         PrecisionTYPE * Expec,
                         float RelaxFactor,
                         PrecisionTYPE * G,
@@ -1707,9 +1689,10 @@ void Relax_Priors_Share(PrecisionTYPE * Priors,
         }
 
     }
+return 1;
 }
 
-void Gaussian_Filter_Short_4D(PrecisionTYPE * ShortData,
+int Gaussian_Filter_Short_4D(PrecisionTYPE * ShortData,
                               int * S2L,
                               int * L2S,
                               PrecisionTYPE gauss_std,
@@ -1762,7 +1745,7 @@ void Gaussian_Filter_Short_4D(PrecisionTYPE * ShortData,
             Buffer[S2L[index]]=ShortData[index+current_4dShift_short];
         }
 
-        PrecisionTYPE tempsum=0;
+
         int xyzpos[3];
         for(int currentdirection=0;currentdirection<3;currentdirection++){ //Blur Buffer along each direction
             int index=0;
@@ -1798,7 +1781,7 @@ void Gaussian_Filter_Short_4D(PrecisionTYPE * ShortData,
     }
     delete [] LongData;
     delete [] Buffer;
-    return;
+    return 1;
 }
 
 PrecisionTYPE * Gaussian_Filter_4D(PrecisionTYPE * LongData,
@@ -1851,7 +1834,7 @@ PrecisionTYPE * Gaussian_Filter_4D(PrecisionTYPE * LongData,
             Buffer[index]=longdataptr[index];
         }
 
-        PrecisionTYPE tempsum=0;
+
         int xyzpos[3];
         for(int currentdirection=0;currentdirection<3;currentdirection++){ //Blur Buffer along each direction
             int index=0;
@@ -1929,7 +1912,7 @@ PrecisionTYPE * Gaussian_Filter_4D_inside_mask(PrecisionTYPE * LongData,
             Buffer[index]=LongData[index+current_4dShift_short];
         }
 
-        PrecisionTYPE tempsum=0;
+
         int xyzpos[3];
         for(int currentdirection=0;currentdirection<3;currentdirection++){ //Blur Buffer along each direction
             int index=0;
@@ -1968,7 +1951,7 @@ PrecisionTYPE * Gaussian_Filter_4D_inside_mask(PrecisionTYPE * LongData,
     return Buffer;
 }
 
-void Convert_to_PV(nifti_image * T1,
+int Convert_to_PV(nifti_image * T1,
                    PrecisionTYPE * BiasField,
                    PrecisionTYPE * ShortPrior,
                    PrecisionTYPE * Expec,
@@ -1986,18 +1969,19 @@ void Convert_to_PV(nifti_image * T1,
     Gaussian_Filter_Short_4D(MRF,S2L,L2S,1.0,CurrSizes,CSFclass);
     Convert_WM_and_GM_to_PV(T1,BiasField,ShortPrior,Expec,S2L,M,V,CurrSizes);
     CurrSizes->numclass=7;
-    for(int i=0; i<(CurrSizes->numclass*CurrSizes->numelmasked);i++)MRF[i]==1.0f;
-
+    for(int i=0; i<(CurrSizes->numclass*CurrSizes->numelmasked);i++){
+        MRF[i]=1.0f;
+    }
+    return 1;
 }
 
-void Sulci_and_gyri_correction(PrecisionTYPE * MRF_Beta,
+int Sulci_and_gyri_correction(PrecisionTYPE * MRF_Beta,
                                PrecisionTYPE * ShortPrior,
                                PrecisionTYPE * Expec,
                                PrecisionTYPE *MRF,
                                int * S2L,
                                int * L2S,
-                               ImageSize *CurrSizes,
-                               SEG_PARAM *segment_param){
+                               ImageSize *CurrSizes){
 
     // Deep Sulci ->  Seed=WM+WMGMpv+dGM+iCSF
     cout<< "Sucli and Gyri correction" << endl;
@@ -2081,10 +2065,11 @@ void Sulci_and_gyri_correction(PrecisionTYPE * MRF_Beta,
     delete [] SpeedFunc;
     delete [] wSulci;
     delete [] wGyri;
-    return;
+    return 1;
+
 }
 
-void Convert_WM_and_GM_to_PV(nifti_image * T1,
+int Convert_WM_and_GM_to_PV(nifti_image * T1,
                              PrecisionTYPE * BiasField,
                              PrecisionTYPE * ShortPrior,
                              PrecisionTYPE * Expec,
@@ -2162,6 +2147,7 @@ void Convert_WM_and_GM_to_PV(nifti_image * T1,
     V[WMGMpvclass]=sqrtf(averageFC_WMGM*averageFC_WMGM*pow(V[WMclass],2)+(1-averageFC_WMGM)*(1-averageFC_WMGM)*V[GMclass]);
     V[GMCSFpvclass]=sqrtf(averageFC_GMCSF*averageFC_GMCSF*pow(V[GMclass],2)+(1-averageFC_GMCSF)*(1-averageFC_GMCSF)*V[CSFclass]);
 
+return 1;
 }
 
 
@@ -2190,7 +2176,7 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
         nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
         Result->data = (void *) calloc(Result->nvox, sizeof(PrecisionTYPE));
         PrecisionTYPE * Result_PTR = static_cast<PrecisionTYPE *>(Result->data);
-        for(int i=0; i<Result->nvox; i++){Result_PTR[i]=0;}
+        for(unsigned int i=0; i<Result->nvox; i++){Result_PTR[i]=0;}
 
         int Short_2_Long_Indices_tmp = 0;
         int class_nvox=Result->nx*Result->ny*Result->nz;
@@ -2364,7 +2350,7 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
         nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
         Result->data = (void *) calloc(Result->nvox, sizeof(PrecisionTYPE));
         PrecisionTYPE * Result_PTR = static_cast<PrecisionTYPE *>(Result->data);
-        for(int i=0; i<Result->nvox; i++){Result_PTR[i]=0;}
+        for(unsigned int i=0; i<Result->nvox; i++){Result_PTR[i]=0;}
 
         int * S2L_PRT = (int *) S2L;
         PrecisionTYPE * Resultdata= static_cast<PrecisionTYPE *>(Result->data);
@@ -2407,7 +2393,7 @@ nifti_image * Copy_Single_ShortImage_to_Result(PrecisionTYPE * SingleImage,
     nifti_set_filenames(Result,filename,0,0);
     Result->data = (void *) calloc(Result->nvox, sizeof(PrecisionTYPE));
     PrecisionTYPE * Result_PTR = static_cast<PrecisionTYPE *>(Result->data);
-    for(int i=0; i<Result->nvox; i++){Result_PTR[i]=0;}
+    for(unsigned int i=0; i<Result->nvox; i++){Result_PTR[i]=0;}
 
     int * Short_2_Long_Indices_PRT = (int *) Short_2_Long_Indices;
     PrecisionTYPE * Resultdata= static_cast<PrecisionTYPE *>(Result->data);
@@ -2440,11 +2426,9 @@ nifti_image * Copy_BiasCorrected_to_Result_mask(PrecisionTYPE * BiasField,
     Result->data = (void *) calloc(Result->nvox, sizeof(PrecisionTYPE));
     PrecisionTYPE * Resultdata = static_cast<PrecisionTYPE *>(Result->data);
     PrecisionTYPE * T1data = static_cast<PrecisionTYPE *>(T1->data);
-    for(int i=0; i<Result->nvox; i++){Resultdata[i]=0;}
+    for(unsigned int i=0; i<Result->nvox; i++){Resultdata[i]=0;}
 
     int * Short_2_Long_Indices_PRT = (int *) Short_2_Long_Indices;
-
-    int class_nvox=Result->nx*Result->ny*Result->nz;
 
     Short_2_Long_Indices_PRT= (int *) Short_2_Long_Indices;
     PrecisionTYPE to_resize=0;
@@ -2478,8 +2462,7 @@ nifti_image * Copy_BiasCorrected_to_Result(PrecisionTYPE * BiasField,
     Result->data = (void *) calloc(Result->nvox, sizeof(PrecisionTYPE));
     PrecisionTYPE * Resultdata = static_cast<PrecisionTYPE *>(Result->data);
     PrecisionTYPE * T1data = static_cast<PrecisionTYPE *>(T1->data);
-    for(int i=0; i<Result->nvox; i++){Resultdata[i]=0;}
-    int class_nvox=Result->nx*Result->ny*Result->nz;
+    for(unsigned int i=0; i<Result->nvox; i++){Resultdata[i]=0;}
     PrecisionTYPE to_resize=0;
     if(BiasField!=NULL){
         for(int i=0; i<CurrSizes->numel; i++){
@@ -2518,7 +2501,7 @@ nifti_image * Copy_Expec_to_Result_Neonate_mask(PrecisionTYPE * Expec,
     Result->data = (void *) calloc(Result->nvox, sizeof(PrecisionTYPE));
     PrecisionTYPE * Resultdata = static_cast<PrecisionTYPE *>(Result->data);
     PrecisionTYPE * T1ptrtmp = static_cast<PrecisionTYPE *>(T1->data);
-    for(int i=0; i<Result->nvox; i++){Resultdata[i]=0;}
+    for(unsigned int i=0; i<Result->nvox; i++){Resultdata[i]=0;}
 
     int * Short_2_Long_Indices_PRT = (int *) Short_2_Long_Indices;
 
@@ -2537,8 +2520,6 @@ nifti_image * Copy_Expec_to_Result_Neonate_mask(PrecisionTYPE * Expec,
 
     int xyzpos[3]={0};
     int distance=4;
-    PrecisionTYPE * Resultdata_class = &Resultdata[(6)*class_nvox];
-    PrecisionTYPE * Expec_PTR = &Expec[(6)*CurrSizes->numelmasked];
     Short_2_Long_Indices_PRT= (int *) Short_2_Long_Indices;
     float Fractional_content=0;
     int biggestclass=-1;
@@ -2645,7 +2626,7 @@ nifti_image * Copy_Expec_to_Result_mask(PrecisionTYPE * Expec,
     nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
     Result->data = (void *) calloc(Result->nvox, sizeof(PrecisionTYPE));
     PrecisionTYPE * Resultdata = static_cast<PrecisionTYPE *>(Result->data);
-    for(int i=0; i<Result->nvox; i++){Resultdata[i]=0;}
+    for(unsigned int i=0; i<Result->nvox; i++){Resultdata[i]=0;}
 
     int * Short_2_Long_Indices_PRT = (int *) Short_2_Long_Indices;
 
@@ -2681,10 +2662,8 @@ nifti_image * Copy_Expec_to_Result(PrecisionTYPE * Expec,
     nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
     Result->data = (void *) calloc(Result->nvox, sizeof(PrecisionTYPE));
     PrecisionTYPE * Resultdata = static_cast<PrecisionTYPE *>(Result->data);
-    PrecisionTYPE * T1data = static_cast<PrecisionTYPE *>(T1->data);
-    for(int i=0; i<Result->nvox; i++){Resultdata[i]=0;}
+    for(unsigned int i=0; i<Result->nvox; i++){Resultdata[i]=0;}
     int class_nvox=Result->nx*Result->ny*Result->nz;
-    PrecisionTYPE to_resize=0;
 
     for(int currclass=0; currclass<CurrSizes->numclass;currclass++){
 
@@ -2720,7 +2699,7 @@ nifti_image * Copy_single_image_to_Result(bool * Mask,
 
     bool * Expec_PTR = static_cast<bool *>(Mask);
 
-    for(int i=0; i<Result->nvox; i++,Expec_PTR++,Resultdata++){
+    for(unsigned int i=0; i<Result->nvox; i++,Expec_PTR++,Resultdata++){
         *Resultdata=(int)(*Expec_PTR);
     }
 
@@ -2749,7 +2728,7 @@ nifti_image * Copy_single_image_to_Result(float * W,
 
     float * Expec_PTR = static_cast<float *>(W);
 
-    for(int i=0; i<Result->nvox; i++,Expec_PTR++,Resultdata++){
+    for(unsigned int i=0; i<Result->nvox; i++,Expec_PTR++,Resultdata++){
         *Resultdata=(float)(*Expec_PTR);
     }
 
@@ -2777,7 +2756,7 @@ nifti_image * Copy_single_image_to_Result(int * Image,
     int * Resultdata = static_cast<int *>(Result->data);
     int * Image_PTR = Image;
 
-    for(int i=0; i<Result->nvox; i++,Image_PTR++,Resultdata++){
+    for(unsigned int i=0; i<Result->nvox; i++,Image_PTR++,Resultdata++){
         *Resultdata=(int)(*Image_PTR);
     }
 
@@ -2785,7 +2764,7 @@ nifti_image * Copy_single_image_to_Result(int * Image,
 }
 
 
-void quickSort(int *arr, int elements) {
+int quickSort(int *arr, int elements) {
 
     int  piv, beg[300], end[300], i=0, L, R, swap ;
 
@@ -2812,7 +2791,7 @@ void quickSort(int *arr, int elements) {
             i--;
         }
     }
-}
+return 1;}
 
 
 
@@ -2841,7 +2820,7 @@ nifti_image * Get_Bias_Corrected(float * BiasField,
         T1data = static_cast<PrecisionTYPE *>(T1->data);
         T1data = &T1data[multispec*BiasCorrected->nvox];
 
-        for(int i=0; i<BiasCorrected->nvox; i++){
+        for( unsigned int i=0; i<BiasCorrected->nvox; i++){
             BiasCorrected_PTR[i]=0;
         }
 
@@ -2901,7 +2880,7 @@ nifti_image * Get_Bias_Corrected_mask(float * BiasFieldCoefs,
         float * BiasFieldCoefs_multispec = &BiasFieldCoefs[multispec*UsedBasisFunctions];
 
 
-        for(int i=0; i<BiasCorrected->nvox; i++){
+        for(unsigned int i=0; i<BiasCorrected->nvox; i++){
             BiasCorrected_PTR[i]=0;
         }
 
@@ -2940,7 +2919,7 @@ float * seg_norm4NCC(nifti_image * BaseImage, nifti_image * LNCC, nifti_image * 
 
     PrecisionTYPE * LNCCptr = static_cast<float *>(LNCC->data);
     PrecisionTYPE * BaseImageptr = static_cast<float *>(BaseImage->data);
-    bool * Lablesptr = static_cast<bool *>(Lables->data);
+
 
     int distance2=ceil((float)(distance));
     int distance3=ceil((float)(distance));
@@ -3150,7 +3129,7 @@ float * seg_norm4NCC(nifti_image * BaseImage, nifti_image * LNCC, nifti_image * 
 
 /* *************************************************************** */
 template <class NewTYPE, class DTYPE>
-void seg_changeDatatype1(nifti_image *image)
+int seg_changeDatatype1(nifti_image *image)
 {
         // the initial array is saved and freeed
         DTYPE *initialValue = (DTYPE *)malloc(image->nvox*sizeof(DTYPE));
@@ -3171,11 +3150,11 @@ void seg_changeDatatype1(nifti_image *image)
         for(unsigned int i=0; i<image->nvox; i++) dataPtr[i] = (NewTYPE)(initialValue[i]);
 
         free(initialValue);
-        return;
+        return 1;
 }
 /* *************************************************************** */
 template <class NewTYPE>
-void seg_changeDatatype(nifti_image *image)
+int seg_changeDatatype(nifti_image *image)
 {
         switch(image->datatype){
                 case NIFTI_TYPE_UINT8:
@@ -3206,10 +3185,11 @@ void seg_changeDatatype(nifti_image *image)
             fprintf(stderr,"[NiftyReg ERROR] seg_changeDatatype\tThe initial image data type is not supported\n");
             exit(1);
         }
+        return 1;
 }
 /* *************************************************************** */
-template void seg_changeDatatype<unsigned char>(nifti_image *);
-template void seg_changeDatatype<float>(nifti_image *);
-template void seg_changeDatatype<double>(nifti_image *);
+template int seg_changeDatatype<unsigned char>(nifti_image *);
+template int seg_changeDatatype<float>(nifti_image *);
+template int seg_changeDatatype<double>(nifti_image *);
 /* *************************************************************** */
 

@@ -14,31 +14,41 @@ template <class D> class matrix{
         delete[] data;
         data = new D [size*size2];
     };
-    matrix() {};
+    matrix() {
+        this->size = 0;
+        this->size2 = 0;
+        this->data = NULL;
+    };
 
 public:
     matrix(int tmpsize) {
+        this->size2 = 0;
+        this->size = 0;
+        this->data = NULL;
         if (tmpsize <= 0) tmpsize = 5;
-        size = tmpsize;
-        size2 = tmpsize;
-        data = 0;
+        this->size = tmpsize;
+        this->size2 = tmpsize;
+        this->data = NULL;
         allocate();
     };
     matrix(int tmpsize, int tmpsize2)  { // row, column
+        this->size2 = 0;
+        this->size = 0;
+        this->data = NULL;
         if (tmpsize <= 0){ cout << "ERROR: Size <= 0" << endl;
             return;
         }
         if (tmpsize2 <= 0){ cout << "ERROR: Size <= 0" << endl;
             return;
         }
-        size2 = tmpsize;
-        size = tmpsize2;
-        data = 0;
+        this->size2 = tmpsize;
+        this->size = tmpsize2;
+        this->data = NULL;
         allocate();
     };
     ~matrix() { delete[] data; };
     void comparetoidentity()  {
-        if(size=size2){
+        if(size==size2){
             int worstdiagonal = 0;
             D maxunitydeviation = 0.0;
             D currentunitydeviation;
@@ -87,11 +97,11 @@ public:
         size2=lsize2; // numb rows
         size=rsize; // numb cols
         allocate();
-
+        D leftvalue=0;
+        D rightvalue=0;
         for ( int i = 0; i < size2; i++ ) // for each row
             for ( int j = 0; j < size; j++ )  { // for each column
             D sum = 0.0;
-            D leftvalue, rightvalue;
             bool success;
             for (int c = 0; c < lsize; c++)  {
                 left.getvalue(i,c,leftvalue,success);
@@ -115,9 +125,9 @@ public:
         size = source.getsize();
         size2 = source.getsize2();
         allocate();
+        D value=0;
         for ( int i = 0; i < size2; i++ )// curr row
             for ( int j = 0; j < size; j++ )  {// curr column
-            D value;
             bool success;
             source.getvalue(i,j,value,success); // curr_row, curr_column
             data[i*size+j] = value;
@@ -142,9 +152,9 @@ public:
         }
     };
 
-    int getsize() { return size; };
+    int getsize() { return size; }
 
-    int getsize2() { return size2; };
+    int getsize2() { return size2; }
 
     void getvalue(int row, int column, D& returnvalue, bool& success)   {
         if ( (row>=size2) || (column>=size)
@@ -253,38 +263,38 @@ public:
 
     double Determinant_lib(double **a,int n)
     {
-       int i,j,j1,j2;
-       double det = 0;
-       double **m = NULL;
+        int i,j,j1,j2;
+        double det = 0;
+        double **m = NULL;
 
-       if (n < 1) { /* Error */
+        if (n < 1) { /* Error */
 
-       } else if (n == 1) { /* Shouldn't get used */
-          det = a[0][0];
-       } else if (n == 2) {
-          det = a[0][0] * a[1][1] - a[1][0] * a[0][1];
-       } else {
-          det = 0;
-          for (j1=0;j1<n;j1++) {
-             m = (double **) malloc((n-1)*sizeof(double *));
-             for (i=0;i<n-1;i++)
-                m[i] = (double *) malloc((n-1)*sizeof(double));
-             for (i=1;i<n;i++) {
-                j2 = 0;
-                for (j=0;j<n;j++) {
-                   if (j == j1)
-                      continue;
-                   m[i-1][j2] = a[i][j];
-                   j2++;
+        } else if (n == 1) { /* Shouldn't get used */
+            det = a[0][0];
+        } else if (n == 2) {
+            det = a[0][0] * a[1][1] - a[1][0] * a[0][1];
+        } else {
+            det = 0;
+            for (j1=0;j1<n;j1++) {
+                m = (double **) malloc((n-1)*sizeof(double *));
+                for (i=0;i<n-1;i++)
+                    m[i] = (double *) malloc((n-1)*sizeof(double));
+                for (i=1;i<n;i++) {
+                    j2 = 0;
+                    for (j=0;j<n;j++) {
+                        if (j == j1)
+                            continue;
+                        m[i-1][j2] = a[i][j];
+                        j2++;
+                    }
                 }
-             }
-             det += pow(-1.0,1.0+j1+1.0) * a[0][j1] * Determinant_lib(m,n-1);
-             for (i=0;i<n-1;i++)
-                free(m[i]);
-             free(m);
-          }
-       }
-       return(det);
+                det += pow(-1.0,1.0+j1+1.0) * a[0][j1] * Determinant_lib(m,n-1);
+                for (i=0;i<n-1;i++)
+                    free(m[i]);
+                free(m);
+            }
+        }
+        return(det);
     }
 };
 

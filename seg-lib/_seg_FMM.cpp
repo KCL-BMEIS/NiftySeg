@@ -12,7 +12,6 @@ void FMM(bool *Seeds,
     int index_long;
     int index_neighbour_short;
     NumElements=CurrSizes->numelmasked;
-    int number_of_dims=3;
     i=0;
     int neighbour6[6]={0};
     neighbour6[0]=-1;

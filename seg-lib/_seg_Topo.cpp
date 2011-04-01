@@ -96,11 +96,6 @@ void ConnectComp(int * Old,
     for(index=0;index<NumElements;index++){
         New[index]=CClist[New[index]];
     }
-    int oldCCcounter=CCcounter;
-    int oldnumblab=numblab;
-    // mexEvalString("pause(.001);");
-
-
 
     //Find lable counts
     int *Pixelcounter = (int *) calloc((int)numblab, sizeof(int));

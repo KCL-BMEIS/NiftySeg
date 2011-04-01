@@ -36,7 +36,7 @@ void MRFregularization_mask(const PrecisionTYPE * Expec,
             cout << "Optimising MRF"<<endl;
             flush(cout);
         }
-        register unsigned int currclass;
+        register int currclass;
 
         unsigned int numelmasked_currclass_shift[max_numbclass];
         unsigned int image_size_currclass_shift[max_numbclass];
@@ -142,7 +142,7 @@ void MRFregularization(const PrecisionTYPE * Expec,
             cout << "Optimising MRF"<<endl;
             flush(cout);
         }
-        register unsigned int currclass;
+        register int currclass;
 
         unsigned int numel_currclass_shift[max_numbclass];
         unsigned int image_size_currclass_shift[max_numbclass];
@@ -228,7 +228,7 @@ void MRFregularization_mask2D(const PrecisionTYPE * Expec,
     if(MRFflag){
         PrecisionTYPE * MRFpriorPtr = (PrecisionTYPE *)MRFprior;
         int * Long_2_Short_IndicesPtr = (int *)Long_2_Short_Indices;
-        int col_size, plane_size, indexCentre, indexWest, indexEast, indexSouth, indexNorth;
+        int col_size, indexCentre, indexWest, indexEast, indexSouth, indexNorth;
         int ix, iy,maxiy, maxix, neighbourclass;
         PrecisionTYPE Sum_Temp_MRF_Class_Expect;
         col_size = (int)(CurrSizes->xsize);
@@ -241,7 +241,7 @@ void MRFregularization_mask2D(const PrecisionTYPE * Expec,
             cout << "Optimising MRF"<<endl;
             flush(cout);
         }
-        register unsigned int currclass;
+        register int currclass;
 
         unsigned int numelmasked_currclass_shift[max_numbclass];
         unsigned int image_size_currclass_shift[max_numbclass];
@@ -323,7 +323,7 @@ void MRFregularization2D(const PrecisionTYPE * Expec,
     int image_size = (int)(CurrSizes->xsize)*(CurrSizes->ysize)*(CurrSizes->zsize);
     if(MRFflag){
         PrecisionTYPE * MRFpriorPtr = (PrecisionTYPE *)MRFprior;
-        int col_size, indexCentre, indexWest, indexEast, indexSouth, indexNorth, indexTop, indexBottom;
+        int col_size, indexCentre, indexWest, indexEast, indexSouth, indexNorth;
         int ix, iy,maxiy, maxix, neighbourclass;
         PrecisionTYPE Sum_Temp_MRF_Class_Expect;
         col_size = (int)(CurrSizes->xsize);
@@ -336,7 +336,7 @@ void MRFregularization2D(const PrecisionTYPE * Expec,
             cout << "Optimising MRF"<<endl;
             flush(cout);
         }
-        register unsigned int currclass;
+        register int currclass;
 
         unsigned int numel_currclass_shift[max_numbclass];
         unsigned int image_size_currclass_shift[max_numbclass];

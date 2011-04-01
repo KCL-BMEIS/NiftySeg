@@ -45,8 +45,8 @@ void BiasCorrection(PrecisionTYPE * BiasField,
             }
         }
     }
-    PrecisionTYPE invV[nrOfClasses];
-    PrecisionTYPE currM[nrOfClasses];
+    PrecisionTYPE invV[max_numbclass];
+    PrecisionTYPE currM[max_numbclass];
 
     for(int multispec=0; multispec<CurrSizes->usize; multispec++){
         sampledData = &sampledData[multispec*CurrSizes->numel];
@@ -268,7 +268,7 @@ void BiasCorrection(PrecisionTYPE * BiasField,
             RealC.dumpmatrix();
         }
 
-        double cvalue;
+        double cvalue=0.0f;
         bool success;
         for(int i2=0; i2<UsedBasisFunctions; i2++){
             RealC.getvalue(i2,0,cvalue,success);
@@ -360,8 +360,8 @@ void BiasCorrection_mask(PrecisionTYPE * BiasField,
             }
         }
     }
-    PrecisionTYPE invV[nrOfClasses];
-    PrecisionTYPE currM[nrOfClasses];
+    PrecisionTYPE invV[max_numbclass];
+    PrecisionTYPE currM[max_numbclass];
 
     for(int multispec=0; multispec<CurrSizes->usize; multispec++){
         sampledData = static_cast<PrecisionTYPE *>(T1->data);
@@ -593,7 +593,7 @@ void BiasCorrection_mask(PrecisionTYPE * BiasField,
             RealC.dumpmatrix();
         }
 
-        double cvalue;
+        double cvalue=0.0f;
         bool success;
         for(int i2=0; i2<UsedBasisFunctions; i2++){
             RealC.getvalue(i2,0,cvalue,success);
@@ -695,16 +695,14 @@ void BiasCorrection2D(PrecisionTYPE * BiasField,
     int ind=0;
     for(int order=0; order<=biasOrder; order++){
         for(int xorder=0; xorder<=order; xorder++){
-            for(int yorder=0; yorder<=(order-xorder); yorder++){
-                int zorder=order-yorder-xorder;
-                PowerOrder[ind] =xorder;
-                PowerOrder[ind+1] =yorder;
-                ind += 3;
-            }
+            int yorder=order-xorder;
+            PowerOrder[ind] =xorder;
+            PowerOrder[ind+1] =yorder;
+            ind += 3;
         }
     }
-    PrecisionTYPE invV[nrOfClasses];
-    PrecisionTYPE currM[nrOfClasses];
+    PrecisionTYPE invV[max_numbclass];
+    PrecisionTYPE currM[max_numbclass];
 
     for(int multispec=0; multispec<CurrSizes->usize; multispec++){
         sampledData = &sampledData[multispec*CurrSizes->numel];
@@ -735,11 +733,11 @@ void BiasCorrection2D(PrecisionTYPE * BiasField,
         int linearindexes=0;
         int currindex=0;
         if(CurrSizes->numelbias==0){
-                for (int iy=0; iy<maxiy; iy+=reduxfactor) {
-                    for (int ix=0; ix<maxix; ix+=reduxfactor) {
-                        samplecount++;
-                    }
+            for (int iy=0; iy<maxiy; iy+=reduxfactor) {
+                for (int ix=0; ix<maxix; ix+=reduxfactor) {
+                    samplecount++;
                 }
+            }
             if(verbose_level>0){
                 cout << "Samplecount = " << samplecount<<"\n";
                 flush(cout);
@@ -824,124 +822,124 @@ void BiasCorrection2D(PrecisionTYPE * BiasField,
 
 
 
-    matrix <double> RealA(UsedBasisFunctions,UsedBasisFunctions);
+        matrix <double> RealA(UsedBasisFunctions,UsedBasisFunctions);
 
-    for(int j2=0; j2<UsedBasisFunctions; j2++){
-        for(int i2=j2; i2<UsedBasisFunctions; i2++){
-            RealA.setvalue(i2,j2,(double)(A[i2+j2*UsedBasisFunctions]));
-            RealA.setvalue(j2,i2,(double)(A[i2+j2*UsedBasisFunctions]));
-        }
-    }
-
-    matrix <double> RealA_inv(UsedBasisFunctions);
-    RealA_inv.copymatrix(RealA);
-    RealA_inv.invert();
-
-    if(verbose_level>1){
-        matrix <double> RealA_test(UsedBasisFunctions);
-        RealA_test.settoproduct(RealA,RealA_inv);
-        RealA_test.comparetoidentity();
-        //RealA.dumpmatrix();
-    }
-
-
-
-    // CALC MATRIX B
-
-    //Precompute WR (Van Leemput 1999 eq 7)
-    PrecisionTYPE Wi;
-    PrecisionTYPE Wij;
-    PrecisionTYPE Yest;
-    PrecisionTYPE Ysum;
-    tempvarindex=0;
-    for (int iy=0; iy<maxiy; iy+=reduxfactor) {
-        for (int ix=0; ix<maxix; ix+=reduxfactor) {
-            linearindexes=(iy)*(CurrSizes->xsize)+ix;
-
-            Wi=0;
-            Wij=0;
-            Yest=0;
-            Ysum=0;
-            for(int j=0; j<nrOfClasses; j++){
-                PrecisionTYPE tmpexpec = (PrecisionTYPE)Expec[linearindexes+TotalLength*j];
-                Wij=tmpexpec*(invV[j]);
-                Wi+=Wij;
-                Yest+=Wij*(currM[j]);
-                Ysum+=Wij;
+        for(int j2=0; j2<UsedBasisFunctions; j2++){
+            for(int i2=j2; i2<UsedBasisFunctions; i2++){
+                RealA.setvalue(i2,j2,(double)(A[i2+j2*UsedBasisFunctions]));
+                RealA.setvalue(j2,i2,(double)(A[i2+j2*UsedBasisFunctions]));
             }
-            Tempvar[tempvarindex]=Wi*(sampledData[linearindexes]-(Yest/Ysum));
-            tempvarindex++;
-
         }
-    }
 
-    for(int i2=0; i2<UsedBasisFunctions; i2++){
+        matrix <double> RealA_inv(UsedBasisFunctions);
+        RealA_inv.copymatrix(RealA);
+        RealA_inv.invert();
+
+        if(verbose_level>1){
+            matrix <double> RealA_test(UsedBasisFunctions);
+            RealA_test.settoproduct(RealA,RealA_inv);
+            RealA_test.comparetoidentity();
+            //RealA.dumpmatrix();
+        }
+
+
+
+        // CALC MATRIX B
+
+        //Precompute WR (Van Leemput 1999 eq 7)
+        PrecisionTYPE Wi;
+        PrecisionTYPE Wij;
+        PrecisionTYPE Yest;
+        PrecisionTYPE Ysum;
         tempvarindex=0;
-        B[i2]=0;
         for (int iy=0; iy<maxiy; iy+=reduxfactor) {
             for (int ix=0; ix<maxix; ix+=reduxfactor) {
                 linearindexes=(iy)*(CurrSizes->xsize)+ix;
-                B[i2]+=pow_int((((PrecisionTYPE)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x),PowerOrder[0+i2*3])*
-                       pow_int((((PrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y),PowerOrder[1+i2*3])*
-                       Tempvar[tempvarindex];
-                if(B[i2]!=B[i2]){
-                    B[i2]=1;
+
+                Wi=0;
+                Wij=0;
+                Yest=0;
+                Ysum=0;
+                for(int j=0; j<nrOfClasses; j++){
+                    PrecisionTYPE tmpexpec = (PrecisionTYPE)Expec[linearindexes+TotalLength*j];
+                    Wij=tmpexpec*(invV[j]);
+                    Wi+=Wij;
+                    Yest+=Wij*(currM[j]);
+                    Ysum+=Wij;
                 }
+                Tempvar[tempvarindex]=Wi*(sampledData[linearindexes]-(Yest/Ysum));
                 tempvarindex++;
+
             }
         }
-    }
 
-    matrix <double> RealB(UsedBasisFunctions,1);
-
-    for(int i2=0; i2<UsedBasisFunctions; i2++){
-        RealB.setvalue(i2,0,(double)(B[i2]));
-    }
-
-    matrix <double> RealC(UsedBasisFunctions,1);
-
-    RealC.settoproduct(RealA_inv,RealB);
-    if(verbose_level>1){
-        cout << "C= " << endl;
-        RealC.dumpmatrix();
-    }
-
-    double cvalue;
-    bool success;
-    for(int i2=0; i2<UsedBasisFunctions; i2++){
-        RealC.getvalue(i2,0,cvalue,success);
-        C[i2]=(PrecisionTYPE)(cvalue);
-    }
-
-    PrecisionTYPE currxpower[maxallowedpowerorder];
-    PrecisionTYPE currypower[maxallowedpowerorder];
-    PrecisionTYPE tmpbiasfield=0.0f;
-    for (int iy=0; iy<maxiy; iy++) {
-        for (int ix=0; ix<maxix; ix++) {
-            linearindexes=(iy)*(CurrSizes->xsize)+ix;
-            tmpbiasfield=0.0f;
-            xpos=(((PrecisionTYPE)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x);
-            ypos=(((PrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y);
-            get_xy_pow_int(xpos, ypos, currxpower, currypower, biasOrder);
-            ind=0;
-            for(int order=0; order<=biasOrder; order++){
-                for(int xorder=0; xorder<=order; xorder++){
-                    int yorder=order-xorder;
-                    tmpbiasfield-=C[ind]*currxpower[xorder]*currypower[yorder];
-                    ind++;
+        for(int i2=0; i2<UsedBasisFunctions; i2++){
+            tempvarindex=0;
+            B[i2]=0;
+            for (int iy=0; iy<maxiy; iy+=reduxfactor) {
+                for (int ix=0; ix<maxix; ix+=reduxfactor) {
+                    linearindexes=(iy)*(CurrSizes->xsize)+ix;
+                    B[i2]+=pow_int((((PrecisionTYPE)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x),PowerOrder[0+i2*3])*
+                           pow_int((((PrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y),PowerOrder[1+i2*3])*
+                           Tempvar[tempvarindex];
+                    if(B[i2]!=B[i2]){
+                        B[i2]=1;
+                    }
+                    tempvarindex++;
                 }
             }
-            BiasField[linearindexes+multispec*CurrSizes->numel]=tmpbiasfield;
         }
-    }
 
-    for( int i=0; i<UsedBasisFunctions; i++){
-        BiasFieldCoefs[i+multispec*UsedBasisFunctions]=C[i];
-    }
+        matrix <double> RealB(UsedBasisFunctions,1);
 
-    delete [] Basis;
-    delete [] Tempvar;
-}
+        for(int i2=0; i2<UsedBasisFunctions; i2++){
+            RealB.setvalue(i2,0,(double)(B[i2]));
+        }
+
+        matrix <double> RealC(UsedBasisFunctions,1);
+
+        RealC.settoproduct(RealA_inv,RealB);
+        if(verbose_level>1){
+            cout << "C= " << endl;
+            RealC.dumpmatrix();
+        }
+
+        double cvalue=0.0f;
+        bool success;
+        for(int i2=0; i2<UsedBasisFunctions; i2++){
+            RealC.getvalue(i2,0,cvalue,success);
+            C[i2]=(PrecisionTYPE)(cvalue);
+        }
+
+        PrecisionTYPE currxpower[maxallowedpowerorder];
+        PrecisionTYPE currypower[maxallowedpowerorder];
+        PrecisionTYPE tmpbiasfield=0.0f;
+        for (int iy=0; iy<maxiy; iy++) {
+            for (int ix=0; ix<maxix; ix++) {
+                linearindexes=(iy)*(CurrSizes->xsize)+ix;
+                tmpbiasfield=0.0f;
+                xpos=(((PrecisionTYPE)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x);
+                ypos=(((PrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y);
+                get_xy_pow_int(xpos, ypos, currxpower, currypower, biasOrder);
+                ind=0;
+                for(int order=0; order<=biasOrder; order++){
+                    for(int xorder=0; xorder<=order; xorder++){
+                        int yorder=order-xorder;
+                        tmpbiasfield-=C[ind]*currxpower[xorder]*currypower[yorder];
+                        ind++;
+                    }
+                }
+                BiasField[linearindexes+multispec*CurrSizes->numel]=tmpbiasfield;
+            }
+        }
+
+        for( int i=0; i<UsedBasisFunctions; i++){
+            BiasFieldCoefs[i+multispec*UsedBasisFunctions]=C[i];
+        }
+
+        delete [] Basis;
+        delete [] Tempvar;
+    }
 
 
 }
@@ -989,8 +987,8 @@ void BiasCorrection_mask2D(PrecisionTYPE * BiasField,
             ind += 2;
         }
     }
-    PrecisionTYPE invV[nrOfClasses];
-    PrecisionTYPE currM[nrOfClasses];
+    PrecisionTYPE invV[max_numbclass];
+    PrecisionTYPE currM[max_numbclass];
 
     for(int multispec=0; multispec<CurrSizes->usize; multispec++){
         sampledData = static_cast<PrecisionTYPE *>(T1->data);
@@ -1196,7 +1194,7 @@ void BiasCorrection_mask2D(PrecisionTYPE * BiasField,
             RealC.dumpmatrix();
         }
 
-        double cvalue;
+        double cvalue=0.0f;
         bool success;
         for(int i2=0; i2<UsedBasisFunctions; i2++){
             RealC.getvalue(i2,0,cvalue,success);

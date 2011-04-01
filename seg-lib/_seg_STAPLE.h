@@ -4,11 +4,9 @@
 #include "_seg_tools.h"
 
 
-template <class T>
-        class seg_STAPLE
+class seg_STAPLE
 {
 protected:
-
     nifti_image*    inputLABLES; // pointer to external
     bool    inputImage_status;
     string  FilenameOut;
@@ -79,11 +77,8 @@ public:
     int CheckParameters_EM();
     int Initisalise_EM();
     int* Run_EM();
-
-
-    virtual int CheckMemoryMB_EM(){return 0;};
     nifti_image *GetResult();
 };
 
-#include "_seg_STAPLE.cpp"
+
 
