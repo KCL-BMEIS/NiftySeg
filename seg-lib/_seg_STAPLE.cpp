@@ -1,10 +1,9 @@
-#ifndef _SEG_STAPLE_CPP
-#define _SEG_STAPLE_CPP
 #include "_seg_STAPLE.h"
 
 
-template <class T>
-        seg_STAPLE<T>::seg_STAPLE(int _numb_lables)
+
+
+seg_STAPLE::seg_STAPLE(int _numb_lables)
 {
 
     inputLABLES = NULL; // pointer to external
@@ -54,8 +53,8 @@ template <class T>
 }
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template <class T>
-        seg_STAPLE<T>::~seg_STAPLE()
+
+seg_STAPLE::~seg_STAPLE()
 {
 
     if(this->W!=NULL){
@@ -70,11 +69,12 @@ template <class T>
 
     if(this->CurrSizes!=NULL)
         delete [] this->CurrSizes;
+
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_STAPLE<T>::SetInputLables(nifti_image *r)
+
+int seg_STAPLE::SetInputLables(nifti_image *r)
 {
 
     if(r->datatype!=DT_BINARY){
@@ -98,8 +98,8 @@ int seg_STAPLE<T>::SetInputLables(nifti_image *r)
 
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_STAPLE<T>::SetPrior(nifti_image * _Prior,float _lnccthresh)
+
+int seg_STAPLE::SetPrior(nifti_image * _Prior,float _lnccthresh)
 {
     PrecisionTYPE * _PriorPTR=NULL;
     if(_lnccthresh<1& _lnccthresh>0){
@@ -124,8 +124,8 @@ int seg_STAPLE<T>::SetPrior(nifti_image * _Prior,float _lnccthresh)
     return 0;
 }
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_STAPLE<T>::SetLNCC(nifti_image * _LNCC,nifti_image * BaseImage,int distance,float _lnccthresh,bool saveLNCC)
+
+int seg_STAPLE::SetLNCC(nifti_image * _LNCC,nifti_image * BaseImage,int distance,float _lnccthresh,bool saveLNCC)
 {
     if(_lnccthresh<1& _lnccthresh>0){
         this->lnccthresh=_lnccthresh;
@@ -152,26 +152,28 @@ int seg_STAPLE<T>::SetLNCC(nifti_image * _LNCC,nifti_image * BaseImage,int dista
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_STAPLE<T>::SetProp(float r)
+
+int seg_STAPLE::SetProp(float r)
 {
     this->Prop = r;
     this->Fixed_Prop_status = true;
+    return 0;
 }
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_STAPLE<T>::SetConv(float r)
+
+int seg_STAPLE::SetConv(float r)
 {
     if(this->verbose_level){
         cout<< "Convergence Ratio = " << r <<endl;
         flush(cout);
     }
     this->Conv = r;
+    return 0;
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_STAPLE<T>::SetFilenameOut(char *f)
+
+int seg_STAPLE::SetFilenameOut(char *f)
 {
     this->FilenameOut = f;
     return 0;
@@ -180,8 +182,8 @@ int seg_STAPLE<T>::SetFilenameOut(char *f)
 
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_STAPLE<T>::SetVerbose(unsigned int verblevel)
+
+int seg_STAPLE::SetVerbose(unsigned int verblevel)
 {
     if(verblevel<0){
         this->verbose_level=0;
@@ -196,8 +198,8 @@ int seg_STAPLE<T>::SetVerbose(unsigned int verblevel)
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_STAPLE<T>::SetMaximalIterationNumber(unsigned int numberiter)
+
+int seg_STAPLE::SetMaximalIterationNumber(unsigned int numberiter)
 {
     if(numberiter<3){
         this->maxIteration=3;
@@ -211,8 +213,8 @@ int seg_STAPLE<T>::SetMaximalIterationNumber(unsigned int numberiter)
 
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_STAPLE<T>::Turn_MRF_ON(float strength)
+
+int seg_STAPLE::Turn_MRF_ON(float strength)
 {
     this->MRF_status=true;
     this->MRF_strength=strength;
@@ -221,8 +223,8 @@ int seg_STAPLE<T>::Turn_MRF_ON(float strength)
 
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_STAPLE<T>::Create_CurrSizes()
+
+int seg_STAPLE::Create_CurrSizes()
 {
     this->CurrSizes = new ImageSize [1]();
     CurrSizes->numel=(int)(this->nx*this->ny*this->nz);
@@ -238,8 +240,8 @@ int seg_STAPLE<T>::Create_CurrSizes()
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_STAPLE<T>::Maximization()
+
+int seg_STAPLE::Maximization()
 {
 
 
@@ -296,8 +298,8 @@ int seg_STAPLE<T>::Maximization()
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_STAPLE<T>::Expectation()
+
+int seg_STAPLE::Expectation()
 {
     float DIJ1=1;
     float DIJ0=1;
@@ -310,8 +312,6 @@ int seg_STAPLE<T>::Expectation()
         Lablepointer[lable]=&inputLABLESptr[this->CurrSizes->numel*lable];
     }
     this->loglik=0;
-    float maxW=0;
-    float minW=0;
     if(this->MRF_status){
         for(int i=0;i<(this->CurrSizes->numel);i++){
             DIJ1=1;
@@ -415,8 +415,8 @@ int seg_STAPLE<T>::Expectation()
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_STAPLE<T>::UpdateMRF()
+
+int seg_STAPLE::UpdateMRF()
 {
     if(this->MRF_status){
         if(this->verbose_level>0){
@@ -427,7 +427,6 @@ int seg_STAPLE<T>::UpdateMRF()
         int maxiy = (int)(CurrSizes->ysize);
         int maxiz = (int)(CurrSizes->zsize);
         unsigned int numel_currclass_shift[2];
-        float U[2];
 
         for(int i=0; i<this->numb_lables; i++){
             numel_currclass_shift[i]=i*this->numel;
@@ -449,7 +448,6 @@ int seg_STAPLE<T>::UpdateMRF()
         neighShift[5]=-planesize;
         float * MRFptr2=NULL;
         float * MRFptr1=NULL;
-        float tmpW=0;
         for(int neighbour=0;neighbour<6;neighbour++){
             for (int iz=1; iz<maxiz-1; iz++) {
                 for (int iy=1; iy<maxiy-1; iy++) {
@@ -483,13 +481,13 @@ int seg_STAPLE<T>::UpdateMRF()
 
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_STAPLE<T>::EstimateInitialDensity()
+
+int seg_STAPLE::EstimateInitialDensity()
 {
     bool * inputLABLESptr = static_cast<bool *>(this->inputLABLES->data);
 
     this->Prop=0;
-    for(int i=0; i<this->inputLABLES->nvox; i++){
+    for(unsigned int i=0; i<this->inputLABLES->nvox; i++){
         this->Prop+=(float)inputLABLESptr[i];
     }
     this->Prop=this->Prop/(float)(this->inputLABLES->nvox);
@@ -505,8 +503,8 @@ int seg_STAPLE<T>::EstimateInitialDensity()
 
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_STAPLE<T>::SetPQ(float tmpP,float tmpQ)
+
+int seg_STAPLE::SetPQ(float tmpP,float tmpQ)
 {
     for(int i=0; i<this->numb_lables;i++){
         this->P[i]=tmpP;
@@ -516,8 +514,8 @@ int seg_STAPLE<T>::SetPQ(float tmpP,float tmpQ)
 
 }
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_STAPLE<T>::UpdateDensity()
+
+int seg_STAPLE::UpdateDensity()
 {
     if(this->PropUpdate && !this->LNCC_status){
         this->Prop=0;
@@ -537,8 +535,8 @@ int seg_STAPLE<T>::UpdateDensity()
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_STAPLE<T>::Turn_Prop_Update_ON()
+
+int seg_STAPLE::Turn_Prop_Update_ON()
 {
     this->PropUpdate=true;
     return 1;
@@ -547,8 +545,8 @@ int seg_STAPLE<T>::Turn_Prop_Update_ON()
 
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_STAPLE<T>::Allocate_Expec_and_MRF()
+
+int seg_STAPLE::Allocate_Expec_and_MRF()
 {
 
     this->W=new float [this->numel];
@@ -563,20 +561,20 @@ int seg_STAPLE<T>::Allocate_Expec_and_MRF()
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-nifti_image * seg_STAPLE<T>::GetResult()
+
+nifti_image * seg_STAPLE::GetResult()
 {
     nifti_image * Result = Copy_single_image_to_Result(this->W,this->inputLABLES,(char*)this->FilenameOut.c_str());
     return Result;
-
+return 0;
 }
 
 
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 
-template<class T>
-int *  seg_STAPLE<T>::Run_EM()
+
+int *  seg_STAPLE::Run_EM()
 {
     time_t start,end;
     time(&start);
@@ -637,6 +635,3 @@ int *  seg_STAPLE<T>::Run_EM()
     }
     return 0;
 }
-
-
-#endif

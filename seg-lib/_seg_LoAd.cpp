@@ -153,7 +153,7 @@ nifti_image * LoAd_Segment(nifti_image * T1, nifti_image * Mask, nifti_image * P
                         flags->out=false;
                     }
                     else{
-                        Sulci_and_gyri_correction(MRF_Beta,ShortPrior,Expec,MRF,Short_2_Long_Indices,Long_2_Short_Indices,CurrSizes,segment_param);
+                        Sulci_and_gyri_correction(MRF_Beta,ShortPrior,Expec,MRF,Short_2_Long_Indices,Long_2_Short_Indices,CurrSizes);
                         last_SGcorrect_loglik=flags->loglik;
                         flags->loglik=1;
                         iterchange=0;

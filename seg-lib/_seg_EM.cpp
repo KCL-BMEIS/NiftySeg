@@ -2,9 +2,7 @@
 #define _SEG_EM_CPP
 #include "_seg_EM.h"
 
-
-template <class T>
-        seg_EM<T>::seg_EM(int _numb_classes, int _nu,int _nt)
+seg_EM::seg_EM(int _numb_classes, int _nu,int _nt)
 {
 
     this->inputImage=NULL; // pointer to external
@@ -77,8 +75,8 @@ template <class T>
 }
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template <class T>
-        seg_EM<T>::~seg_EM()
+
+seg_EM::~seg_EM()
 {
 
     if(this->Expec!=NULL){
@@ -119,8 +117,8 @@ template <class T>
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_EM<T>::SetInputImage(nifti_image *r)
+
+int seg_EM::SetInputImage(nifti_image *r)
 {
     this->inputImage = r;
     this->inputImage_status = true;
@@ -141,8 +139,8 @@ int seg_EM<T>::SetInputImage(nifti_image *r)
     return 0;
 }
 
-template<class T>
-int seg_EM<T>::SetMAP( float *M, float* V)
+
+int seg_EM::SetMAP( float *M, float* V)
 {
     this->MAP_status=true;
     this->MAP_M=new float[this->numb_classes];
@@ -158,8 +156,8 @@ int seg_EM<T>::SetMAP( float *M, float* V)
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_EM<T>::SetPriorImage(nifti_image *r)
+
+int seg_EM::SetPriorImage(nifti_image *r)
 {
     this->Priors = r;
     this->Priors_status = true;
@@ -177,8 +175,8 @@ int seg_EM<T>::SetPriorImage(nifti_image *r)
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_EM<T>::SetFilenameOut(char *f)
+
+int seg_EM::SetFilenameOut(char *f)
 {
     this->FilenameOut = f;
     return 0;
@@ -186,8 +184,8 @@ int seg_EM<T>::SetFilenameOut(char *f)
 
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_EM<T>::SetMaskImage(nifti_image *f)
+
+int seg_EM::SetMaskImage(nifti_image *f)
 {
     this->Mask = f;
     this->maskImage_status = true;
@@ -215,8 +213,8 @@ int seg_EM<T>::SetMaskImage(nifti_image *f)
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_EM<T>::SetVerbose(unsigned int verblevel)
+
+int seg_EM::SetVerbose(unsigned int verblevel)
 {
     if(verblevel<0){
         this->verbose_level=0;
@@ -231,8 +229,8 @@ int seg_EM<T>::SetVerbose(unsigned int verblevel)
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_EM<T>::SetMaximalIterationNumber(unsigned int numberiter)
+
+int seg_EM::SetMaximalIterationNumber(unsigned int numberiter)
 {
     if(numberiter<3){
         this->maxIteration=3;
@@ -245,8 +243,8 @@ int seg_EM<T>::SetMaximalIterationNumber(unsigned int numberiter)
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_EM<T>::SetAprox(bool aproxval)
+
+int seg_EM::SetAprox(bool aproxval)
 {
     this->aprox=aproxval;
     return 0;
@@ -254,8 +252,8 @@ int seg_EM<T>::SetAprox(bool aproxval)
 
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_EM<T>::Turn_MRF_ON(float strength)
+
+int seg_EM::Turn_MRF_ON(float strength)
 {
     this->MRF_status=true;
     this->MRF_strength=strength;
@@ -280,16 +278,17 @@ int seg_EM<T>::Turn_MRF_ON(float strength)
     return 0;
 }
 
-template<class T>
-int seg_EM<T>::Turn_Relaxation_ON(float relax_factor,float relax_gauss_kernel){
+
+int seg_EM::Turn_Relaxation_ON(float relax_factor,float relax_gauss_kernel){
     this->Relax_status=true;
     this->Relax_factor=relax_factor;
     this->RelaxGaussKernelSize=relax_gauss_kernel;
+    return 1;
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_EM<T>::Turn_BiasField_ON(int powerOrder,float ratiothresh)
+
+int seg_EM::Turn_BiasField_ON(int powerOrder,float ratiothresh)
 {
     this->BiasField_status=true;
     this->BiasField_order=powerOrder;
@@ -305,8 +304,8 @@ int seg_EM<T>::Turn_BiasField_ON(int powerOrder,float ratiothresh)
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_EM<T>::Create_diagonal_MRF_transitionMatrix()
+
+int seg_EM::Create_diagonal_MRF_transitionMatrix()
 {
     for(int i=0;i<this->numb_classes;i++){
         for(int j=0;j<this->numb_classes;j++){
@@ -322,8 +321,8 @@ int seg_EM<T>::Create_diagonal_MRF_transitionMatrix()
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_EM<T>::Create_CurrSizes()
+
+int seg_EM::Create_CurrSizes()
 {
     this->CurrSizes = new ImageSize [1]();
     CurrSizes->numel=(int)(this->nx*this->ny*this->nz);
@@ -339,8 +338,8 @@ int seg_EM<T>::Create_CurrSizes()
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_EM<T>::Maximization()
+
+int seg_EM::Maximization()
 {
     if(this->MAP_status){
         if(this->maskImage_status){
@@ -358,11 +357,12 @@ int seg_EM<T>::Maximization()
             calcM(this->inputImage,this->Expec,this->BiasField,M,V,NULL,NULL,CurrSizes,this->verbose_level);
         }
     }
+    return 1;
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_EM<T>::Expectation()
+
+int seg_EM::Expectation()
 {
     /*
 if(this->aprox){
@@ -408,8 +408,8 @@ if(this->aprox){
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_EM<T>::UpdateMRF()
+
+int seg_EM::UpdateMRF()
 {
     if(this->nz>1){
         if(this->MRF_status){
@@ -431,19 +431,20 @@ int seg_EM<T>::UpdateMRF()
             }
         }
     }
+    return 1;
 }
 
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_EM<T>::UpdateBiasField()
+
+int seg_EM::UpdateBiasField()
 {
     if(this->BiasField_status){
         if((((this->loglik-this->oldloglik)/fabs(this->oldloglik))<(PrecisionTYPE)(this->BiasField_ratio) && this->iter>3)||((PrecisionTYPE)(this->BiasField_ratio)==0.0f)){
             if(this->maskImage_status){
                 if(this->nt>1){
 
-                BiasCorrection_mask(this->BiasField,this->BiasField_coeficients,this->inputImage,this->Long_2_Short_Indices,Expec,this->M,this->V,this->BiasField_order,CurrSizes,this->BiasField_status,this->verbose_level);
+                    BiasCorrection_mask(this->BiasField,this->BiasField_coeficients,this->inputImage,this->Long_2_Short_Indices,Expec,this->M,this->V,this->BiasField_order,CurrSizes,this->BiasField_status,this->verbose_level);
                 }
                 else{
                     BiasCorrection_mask2D(this->BiasField,this->BiasField_coeficients,this->inputImage,this->Long_2_Short_Indices,Expec,this->M,this->V,this->BiasField_order,CurrSizes,this->BiasField_status,this->verbose_level);
@@ -454,12 +455,13 @@ int seg_EM<T>::UpdateBiasField()
             }
         }
     }
+    return 1;
 }
 
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_EM<T>::UpdatePriorWeight()
+
+int seg_EM::UpdatePriorWeight()
 {
     if(this->Relax_status){
 
@@ -476,12 +478,13 @@ int seg_EM<T>::UpdatePriorWeight()
             // PriorWeight(this->ShortPrior,this->Priors,this->Expec,CurrSizes,this->verbose_level);
         }
     }
+    return 1;
 }
 
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_EM<T>::Normalize_Image_and_Priors()
+
+int seg_EM::Normalize_Image_and_Priors()
 {
     if(this->maskImage_status){
         Normalize_NaN_Priors_mask(this->Priors,this->Mask,this->verbose_level);
@@ -511,8 +514,8 @@ int seg_EM<T>::Normalize_Image_and_Priors()
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-int seg_EM<T>::Allocate_Expec_and_ShortPrior()
+
+int seg_EM::Allocate_Expec_and_ShortPrior()
 {
 
 
@@ -530,8 +533,8 @@ int seg_EM<T>::Allocate_Expec_and_ShortPrior()
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-nifti_image * seg_EM<T>::GetResult()
+
+nifti_image * seg_EM::GetResult()
 {
     nifti_image * Result=NULL;
 
@@ -545,8 +548,8 @@ nifti_image * seg_EM<T>::GetResult()
 
 }
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-nifti_image * seg_EM<T>::GetResultNeonate()
+
+nifti_image * seg_EM::GetResultNeonate()
 {
     nifti_image * Result=NULL;
 
@@ -557,8 +560,8 @@ nifti_image * seg_EM<T>::GetResultNeonate()
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-template<class T>
-nifti_image * seg_EM<T>::GetBiasCorrected(char * filename)
+
+nifti_image * seg_EM::GetBiasCorrected(char * filename)
 {
     nifti_image * Result=NULL;
 
@@ -574,8 +577,8 @@ nifti_image * seg_EM<T>::GetBiasCorrected(char * filename)
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 
-template<class T>
-int *  seg_EM<T>::Run_EM()
+
+int *  seg_EM::Run_EM()
 {
     time_t start,end;
     time(&start);
@@ -642,6 +645,5 @@ int *  seg_EM<T>::Run_EM()
     }
     return 0;
 }
-
 
 #endif

@@ -53,7 +53,7 @@ int main(int argc, char **argv)
     float tmpP=0;
     float tmpQ=0;
     float conv=0;
-    int LNCCdistance;
+    int LNCCdistance=3;
     bool saveLNCC=0;
     float lnccthresh=0.05;
 
@@ -159,7 +159,7 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    seg_STAPLE<float> STAPLE(LABLE->nt);
+    seg_STAPLE STAPLE(LABLE->nt);
     STAPLE.SetVerbose(verbose_level);
     STAPLE.SetInputLables(LABLE);
     if(LoadPrior){

@@ -255,7 +255,7 @@ int main(int argc, char **argv)
     delete [] Priors_temp;
 
 
-    seg_EM<float> SEG(segment_param->numb_classes,T1->dim[4],1);
+    seg_EM SEG(segment_param->numb_classes,T1->dim[4],1);
     SEG.SetInputImage(T1);
     if(segment_param->flag_mask) {
         SEG.SetMaskImage(Mask);
