@@ -83,13 +83,13 @@ int main(int argc, char **argv)
     }
     else if(mode==2){
         for(unsigned int i=0; i<Result->nvox; i++){
-        Result_PTR[i]=Segmentation_PTR[i+(WMclass)*Result->nvox];
+        Result_PTR[i]=Segmentation_PTR[i+(WMclass+1)*Result->nvox];
         }
 
     }
     else if(mode==1){
         for(unsigned int i=0; i<Result->nvox; i++){
-        Result_PTR[i]=Segmentation_PTR[i+(GMclass)*Result->nvox];
+        Result_PTR[i]=Segmentation_PTR[i+(GMclass+1)*Result->nvox];
         }
 
     }
