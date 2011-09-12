@@ -2206,24 +2206,6 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
         PrecisionTYPE Expec_tmp_sum=0;
         PrecisionTYPE Fractional_content=0;
 
-
-        PrecisionTYPE * T1data = static_cast<PrecisionTYPE *>(T1->data);
-        float to_resize=0;
-        if(BiasField!=NULL){
-            for(int i=0; i<CurrSizes->numelmasked; i++){
-                to_resize=exp((BiasField[i]+T1data[S2L[i]])*0.693147181)-1;
-                Resultdata[S2L[i]]=(to_resize*(CurrSizes->rescale_max[0]-CurrSizes->rescale_min[0])+CurrSizes->rescale_min[0]);
-            }
-        }else{
-            for(int i=0; i<CurrSizes->numelmasked; i++){
-                to_resize=exp((T1data[S2L[i]])*0.693147181)-1;
-                Resultdata[S2L[i]]=(to_resize*(CurrSizes->rescale_max[0]-CurrSizes->rescale_min[0])+CurrSizes->rescale_min[0]);
-            }
-        }
-
-
-
-
         if(BiasField!=NULL){
             for(int i=0; i<CurrSizes->numelmasked; i++){
                 Short_2_Long_Indices_tmp=S2L[i];
@@ -2231,11 +2213,11 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
                     Expec_tmp[currclass]=Expec[i+currclass*CurrSizes->numelmasked];
                 }
                 float classthreshold=0.1;
-                Resultdata[Short_2_Long_Indices_tmp+(WMclass+1)*class_nvox]=Expec_tmp[WMclass]>classthreshold?Expec_tmp[WMclass]:0;
-                Resultdata[Short_2_Long_Indices_tmp+(GMclass+1)*class_nvox]=Expec_tmp[GMclass]>classthreshold?Expec_tmp[GMclass]:0;
-                Resultdata[Short_2_Long_Indices_tmp+(CSFclass+1)*class_nvox]=Expec_tmp[CSFclass]>classthreshold?Expec_tmp[CSFclass]:0;
-                Resultdata[Short_2_Long_Indices_tmp+(dGMclass+1)*class_nvox]=Expec_tmp[dGMclass]>classthreshold?Expec_tmp[dGMclass]:0;
-                Resultdata[Short_2_Long_Indices_tmp+(iCSFclass+1)*class_nvox]=Expec_tmp[iCSFclass]>classthreshold?Expec_tmp[iCSFclass]:0;
+                Resultdata[Short_2_Long_Indices_tmp+(WMclass)*class_nvox]=Expec_tmp[WMclass]>classthreshold?Expec_tmp[WMclass]:0;
+                Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=Expec_tmp[GMclass]>classthreshold?Expec_tmp[GMclass]:0;
+                Resultdata[Short_2_Long_Indices_tmp+(CSFclass)*class_nvox]=Expec_tmp[CSFclass]>classthreshold?Expec_tmp[CSFclass]:0;
+                Resultdata[Short_2_Long_Indices_tmp+(dGMclass)*class_nvox]=Expec_tmp[dGMclass]>classthreshold?Expec_tmp[dGMclass]:0;
+                Resultdata[Short_2_Long_Indices_tmp+(iCSFclass)*class_nvox]=Expec_tmp[iCSFclass]>classthreshold?Expec_tmp[iCSFclass]:0;
 
 
                 // Estimating WM/GM fractional content from the T1 bias corrected data
@@ -2245,16 +2227,16 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
                         Fractional_content=(M[WMclass]-(T1ptrtmp[Short_2_Long_Indices_tmp]+BiasField[i]))/(M[WMclass]-M[GMclass]);
                         Fractional_content=(Fractional_content<0)?0:Fractional_content;
                         Fractional_content=(Fractional_content>1)?1:Fractional_content;
-                        Resultdata[Short_2_Long_Indices_tmp+(WMclass+1)*class_nvox]=(1-Fractional_content)/Expec_tmp_sum;
-                        Resultdata[Short_2_Long_Indices_tmp+(GMclass+1)*class_nvox]=(Fractional_content)/Expec_tmp_sum;
+                        Resultdata[Short_2_Long_Indices_tmp+(WMclass)*class_nvox]=(1-Fractional_content)/Expec_tmp_sum;
+                        Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=(Fractional_content)/Expec_tmp_sum;
                     }
                     else if(Expec_tmp[WMclass]>Expec_tmp[GMclass]){
-                        Resultdata[Short_2_Long_Indices_tmp+(WMclass+1)*class_nvox]=1;
-                        Resultdata[Short_2_Long_Indices_tmp+(GMclass+1)*class_nvox]=0;
+                        Resultdata[Short_2_Long_Indices_tmp+(WMclass)*class_nvox]=1;
+                        Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=0;
                     }
                     else{
-                        Resultdata[Short_2_Long_Indices_tmp+(WMclass+1)*class_nvox]=0;
-                        Resultdata[Short_2_Long_Indices_tmp+(GMclass+1)*class_nvox]=1;
+                        Resultdata[Short_2_Long_Indices_tmp+(WMclass)*class_nvox]=0;
+                        Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=1;
                     }
                 }
 
@@ -2265,26 +2247,26 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
                         Fractional_content=(M[CSFclass]-(T1ptrtmp[Short_2_Long_Indices_tmp]+BiasField[i]))/(M[CSFclass]-M[GMclass]);
                         Fractional_content=(Fractional_content<0)?0:Fractional_content;
                         Fractional_content=(Fractional_content>1)?1:Fractional_content;
-                        Resultdata[Short_2_Long_Indices_tmp+(CSFclass+1)*class_nvox]=(1-Fractional_content)/Expec_tmp_sum;
-                        Resultdata[Short_2_Long_Indices_tmp+(GMclass+1)*class_nvox]=(Fractional_content)/Expec_tmp_sum;
+                        Resultdata[Short_2_Long_Indices_tmp+(CSFclass)*class_nvox]=(1-Fractional_content)/Expec_tmp_sum;
+                        Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=(Fractional_content)/Expec_tmp_sum;
                     }
                     else if(Expec_tmp[CSFclass]>Expec_tmp[GMclass]){
-                        Resultdata[Short_2_Long_Indices_tmp+(CSFclass+1)*class_nvox]=1;
-                        Resultdata[Short_2_Long_Indices_tmp+(GMclass+1)*class_nvox]=0;
+                        Resultdata[Short_2_Long_Indices_tmp+(CSFclass)*class_nvox]=1;
+                        Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=0;
                     }
                     else{
-                        Resultdata[Short_2_Long_Indices_tmp+(CSFclass+1)*class_nvox]=0;
-                        Resultdata[Short_2_Long_Indices_tmp+(GMclass+1)*class_nvox]=1;
+                        Resultdata[Short_2_Long_Indices_tmp+(CSFclass)*class_nvox]=0;
+                        Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=1;
                     }
                 }
 
                 // Normalizing the fractional contents
                 Expec_tmp_sum=0;
                 for(int currclass=0; currclass<non_PV_numclass;currclass++){
-                    Expec_tmp_sum+=Resultdata[Short_2_Long_Indices_tmp+(currclass+1)*class_nvox];
+                    Expec_tmp_sum+=Resultdata[Short_2_Long_Indices_tmp+(currclass)*class_nvox];
                 }
                 for(int currclass=0; currclass<non_PV_numclass;currclass++){
-                    Resultdata[Short_2_Long_Indices_tmp+(currclass+1)*class_nvox]=Resultdata[Short_2_Long_Indices_tmp+(currclass+1)*class_nvox]/Expec_tmp_sum;
+                    Resultdata[Short_2_Long_Indices_tmp+(currclass)*class_nvox]=Resultdata[Short_2_Long_Indices_tmp+(currclass)*class_nvox]/Expec_tmp_sum;
                 }
 
             }
@@ -2297,11 +2279,11 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
                     Expec_tmp[currclass]=Expec[i+currclass*CurrSizes->numelmasked];
                 }
                 float classthreshold=0.1;
-                Resultdata[Short_2_Long_Indices_tmp+(WMclass+1)*class_nvox]=Expec_tmp[WMclass]>classthreshold?Expec_tmp[WMclass]:0;
-                Resultdata[Short_2_Long_Indices_tmp+(GMclass+1)*class_nvox]=Expec_tmp[GMclass]>classthreshold?Expec_tmp[GMclass]:0;
-                Resultdata[Short_2_Long_Indices_tmp+(CSFclass+1)*class_nvox]=Expec_tmp[CSFclass]>classthreshold?Expec_tmp[CSFclass]:0;
-                Resultdata[Short_2_Long_Indices_tmp+(dGMclass+1)*class_nvox]=Expec_tmp[dGMclass]>classthreshold?Expec_tmp[dGMclass]:0;
-                Resultdata[Short_2_Long_Indices_tmp+(iCSFclass+1)*class_nvox]=Expec_tmp[iCSFclass]>classthreshold?Expec_tmp[iCSFclass]:0;
+                Resultdata[Short_2_Long_Indices_tmp+(WMclass)*class_nvox]=Expec_tmp[WMclass]>classthreshold?Expec_tmp[WMclass]:0;
+                Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=Expec_tmp[GMclass]>classthreshold?Expec_tmp[GMclass]:0;
+                Resultdata[Short_2_Long_Indices_tmp+(CSFclass)*class_nvox]=Expec_tmp[CSFclass]>classthreshold?Expec_tmp[CSFclass]:0;
+                Resultdata[Short_2_Long_Indices_tmp+(dGMclass)*class_nvox]=Expec_tmp[dGMclass]>classthreshold?Expec_tmp[dGMclass]:0;
+                Resultdata[Short_2_Long_Indices_tmp+(iCSFclass)*class_nvox]=Expec_tmp[iCSFclass]>classthreshold?Expec_tmp[iCSFclass]:0;
 
 
                 // Estimating WM/GM fractional content from the T1 data
@@ -2311,16 +2293,16 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
                         Fractional_content=(M[WMclass]-(T1ptrtmp[Short_2_Long_Indices_tmp]))/(M[WMclass]-M[GMclass]);
                         Fractional_content=(Fractional_content<0)?0:Fractional_content;
                         Fractional_content=(Fractional_content>1)?1:Fractional_content;
-                        Resultdata[Short_2_Long_Indices_tmp+(WMclass+1)*class_nvox]=(1-Fractional_content)/Expec_tmp_sum;
-                        Resultdata[Short_2_Long_Indices_tmp+(GMclass+1)*class_nvox]=(Fractional_content)/Expec_tmp_sum;
+                        Resultdata[Short_2_Long_Indices_tmp+(WMclass)*class_nvox]=(1-Fractional_content)/Expec_tmp_sum;
+                        Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=(Fractional_content)/Expec_tmp_sum;
                     }
                     else if(Expec_tmp[WMclass]>Expec_tmp[GMclass]){
-                        Resultdata[Short_2_Long_Indices_tmp+(WMclass+1)*class_nvox]=1;
-                        Resultdata[Short_2_Long_Indices_tmp+(GMclass+1)*class_nvox]=0;
+                        Resultdata[Short_2_Long_Indices_tmp+(WMclass)*class_nvox]=1;
+                        Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=0;
                     }
                     else{
-                        Resultdata[Short_2_Long_Indices_tmp+(WMclass+1)*class_nvox]=0;
-                        Resultdata[Short_2_Long_Indices_tmp+(GMclass+1)*class_nvox]=1;
+                        Resultdata[Short_2_Long_Indices_tmp+(WMclass)*class_nvox]=0;
+                        Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=1;
                     }
                 }
 
@@ -2331,26 +2313,26 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
                         Fractional_content=(M[CSFclass]-(T1ptrtmp[Short_2_Long_Indices_tmp]))/(M[CSFclass]-M[GMclass]);
                         Fractional_content=(Fractional_content<0)?0:Fractional_content;
                         Fractional_content=(Fractional_content>1)?1:Fractional_content;
-                        Resultdata[Short_2_Long_Indices_tmp+(CSFclass+1)*class_nvox]=(1-Fractional_content)/Expec_tmp_sum;
-                        Resultdata[Short_2_Long_Indices_tmp+(GMclass+1)*class_nvox]=(Fractional_content)/Expec_tmp_sum;
+                        Resultdata[Short_2_Long_Indices_tmp+(CSFclass)*class_nvox]=(1-Fractional_content)/Expec_tmp_sum;
+                        Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=(Fractional_content)/Expec_tmp_sum;
                     }
                     else if(Expec_tmp[CSFclass]>Expec_tmp[GMclass]){
-                        Resultdata[Short_2_Long_Indices_tmp+(CSFclass+1)*class_nvox]=1;
-                        Resultdata[Short_2_Long_Indices_tmp+(GMclass+1)*class_nvox]=0;
+                        Resultdata[Short_2_Long_Indices_tmp+(CSFclass)*class_nvox]=1;
+                        Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=0;
                     }
                     else{
-                        Resultdata[Short_2_Long_Indices_tmp+(CSFclass+1)*class_nvox]=0;
-                        Resultdata[Short_2_Long_Indices_tmp+(GMclass+1)*class_nvox]=1;
+                        Resultdata[Short_2_Long_Indices_tmp+(CSFclass)*class_nvox]=0;
+                        Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=1;
                     }
                 }
 
                 // Normalizing the fractional contents
                 Expec_tmp_sum=0;
                 for(int currclass=0; currclass<non_PV_numclass;currclass++){
-                    Expec_tmp_sum+=Resultdata[Short_2_Long_Indices_tmp+(currclass+1)*class_nvox];
+                    Expec_tmp_sum+=Resultdata[Short_2_Long_Indices_tmp+(currclass)*class_nvox];
                 }
                 for(int currclass=0; currclass<non_PV_numclass;currclass++){
-                    Resultdata[Short_2_Long_Indices_tmp+(currclass+1)*class_nvox]=Resultdata[Short_2_Long_Indices_tmp+(currclass+1)*class_nvox]/Expec_tmp_sum;
+                    Resultdata[Short_2_Long_Indices_tmp+(currclass)*class_nvox]=Resultdata[Short_2_Long_Indices_tmp+(currclass)*class_nvox]/Expec_tmp_sum;
                 }
 
 
@@ -2363,7 +2345,7 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
     }
     else{
         Result->dim[0]=4;
-        Result->dim[4]=(CurrSizes->numclass+1);
+        Result->dim[4]=(CurrSizes->numclass);
         Result->datatype=DT_FLOAT32;
         Result->cal_max=1;
         nifti_set_filenames(Result,segment_param->filename_out,0,0);
@@ -2380,7 +2362,7 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
         int class_nvox=CurrSizes->numel;
         for(int currclass=0; currclass<CurrSizes->numclass;currclass++){
 
-            PrecisionTYPE * Resultdata_class = &Resultdata[(currclass+1)*class_nvox];
+            PrecisionTYPE * Resultdata_class = &Resultdata[(currclass)*class_nvox];
             PrecisionTYPE * Expec_PTR = &Expec[(currclass)*CurrSizes->numelmasked];
             S2L_PRT= (int *) S2L;
 
