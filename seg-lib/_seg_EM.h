@@ -114,12 +114,8 @@ public:
     int Initisalise_EM();
     int* Run_EM();
 
-
-    virtual int CheckMemoryMB_EM(){return 0;};
     nifti_image *GetResult();
     nifti_image *GetResultNeonate();
     nifti_image *GetBiasCorrected(char * filename);
 };
-
-#include "_seg_EM.cpp"
 

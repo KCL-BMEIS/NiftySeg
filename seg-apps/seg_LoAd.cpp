@@ -19,8 +19,8 @@ void Usage(char *exec)
     printf("\t-max_iter <int>\t\tMaximum number of iterations (default = 100)\n");
     printf("\t-rf <int>\t\tRelaxation factor 0<RF<1 (default = 1)\n");
     printf("\t-v <int>\t\tVerbose level [0 = off, 1 = verbose, 2 = debug] (default = 0)\n");
-    printf("\t-mrf_beta <float>\tMRF prior strength [off = 0] (default = 0.15) \n");
-    printf("\t-bc_order <int>\t\tPolinomial order for the bias field [off = 0, max = 6] (default = 4) \n");
+    printf("\t-mrf_beta <float>\tMRF prior strength [off = 0] (default = 0.1) \n");
+    printf("\t-bc_order <int>\t\tPolinomial order for the bias field [off = 0, max = 6] (default = 5) \n");
     printf("\t-pv_off \t\tDo not preform the PV modeling \n");
     printf("\t-sg_off <int>\t\tDo not improve sulci and gyri deliniation\n");
     printf("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
@@ -70,7 +70,7 @@ int main(int argc, char **argv)
     segment_param->verbose_level=0;
     segment_param->flag_manual_priors=0;
     segment_param->bias_order=5;
-    segment_param->MRF_strength=0.15f;
+    segment_param->MRF_strength=0.1f;
     segment_param->numb_classes=0;
     /* read the input parameter */
     for(int i=1;i<argc;i++){

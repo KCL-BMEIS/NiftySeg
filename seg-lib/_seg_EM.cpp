@@ -329,8 +329,8 @@ int seg_EM::Create_CurrSizes()
     CurrSizes->xsize=this->nx;
     CurrSizes->ysize=this->ny;
     CurrSizes->zsize=this->nz;
-    CurrSizes->usize=this->nu;
-    CurrSizes->tsize=this->nt;
+    CurrSizes->usize=(this->nu>1)?this->nu:1;
+    CurrSizes->tsize=(this->nu>1)?this->nu:1;
     CurrSizes->numclass=this->numb_classes;
     CurrSizes->numelmasked=0;
     CurrSizes->numelbias=0;
@@ -442,7 +442,7 @@ int seg_EM::UpdateBiasField()
     if(this->BiasField_status){
         if((((this->loglik-this->oldloglik)/fabs(this->oldloglik))<(PrecisionTYPE)(this->BiasField_ratio) && this->iter>3)||((PrecisionTYPE)(this->BiasField_ratio)==0.0f)){
             if(this->maskImage_status){
-                if(this->nt>1){
+                if(this->nz>1){
 
                     BiasCorrection_mask(this->BiasField,this->BiasField_coeficients,this->inputImage,this->Long_2_Short_Indices,Expec,this->M,this->V,this->BiasField_order,CurrSizes,this->BiasField_status,this->verbose_level);
                 }

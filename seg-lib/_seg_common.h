@@ -12,7 +12,8 @@
 #include <iomanip>
 #include "nifti1_io.h"
 
-// LoAd Defines
+// NiftySeg Defines
+
 #define PrecisionTYPE float
 #define non_PV_numclass 5
 #define PV_numbclass 7
@@ -20,7 +21,9 @@
 #define maxallowedpowerorder 6
 #define redux_factor_for_bias 3
 #define MaxMultispectalSize 6
-#define MaxSTAPLElable 40
+
+#define LabFusion_datatype float
+#define classifier_datatype unsigned char
 
 // Class Define
 #define WMclass 0
@@ -92,7 +95,8 @@ typedef struct{
     PrecisionTYPE oldloglik;
     int improv_phase;
     bool prior_relax;
-    bool pv_modeling;
+    bool do_pv_modeling;
+    bool pv_modeling_on;
     bool sg_delineation;
     bool out;
 }FLAGS;

@@ -3,6 +3,7 @@
 #include "_seg_common.h"
 #include "_seg_matrix.h"
 #include "_seg_FMM.h"
+#include "_seg_Topo.h"
 #include "_seg_BiasCorrection.h"
 
 
@@ -179,7 +180,7 @@ int Gaussian_Filter_Short_4D(PrecisionTYPE * ShortData,
                               ImageSize * CurrSizes,
                               int class_with_CSF);
 
-PrecisionTYPE * Gaussian_Filter_4D(PrecisionTYPE * LongData,
+int Gaussian_Filter_4D(PrecisionTYPE * LongData,
                                    PrecisionTYPE gauss_std,
                                    ImageSize * CurrSizes);
 
@@ -298,8 +299,14 @@ nifti_image * Copy_single_image_to_Result(bool * Mask,
 nifti_image * Copy_single_image_to_Result(float * Mask,
                                           nifti_image * Original,
                                           char * filename);
+nifti_image * Copy_single_image_to_Result(double * Mask,
+                                          nifti_image * Original,
+                                          char * filename);
 
 int quickSort(int *arr, int elements);
+
+int * quickSort_order(int *arr, int elements);
+int * quickSort_order(float *arr, int elements);
 
 nifti_image * Get_Bias_Corrected(float * BiasField,
                                       nifti_image * T1,
@@ -312,7 +319,10 @@ nifti_image * Get_Bias_Corrected_mask(float * BiasFieldCoefs,
                                       ImageSize * CurrSizes,
                                       int biasOrder);
 
-float * seg_norm4NCC(nifti_image * BaseImage,nifti_image * LNCC,nifti_image * Lables,int distance,ImageSize * CurrSizes);
+char * seg_norm_4D_GNCC(nifti_image * BaseImage,nifti_image * NCC,int numberordered,ImageSize * CurrSizes,int verbose);
+float seg_norm3GNCC(nifti_image * BaseImage,nifti_image * Template,nifti_image * Mask,int verbose);
+char * seg_norm4ROINCC(nifti_image * LableImage,nifti_image * BaseImage,nifti_image * LNCC,int numberordered,ImageSize * CurrSizes,int DilSize, int verbose);
+char * seg_norm4LNCC(nifti_image * BaseImage,nifti_image * LNCC,float distance,int numberordered,ImageSize * CurrSizes,int verbose);
 
 extern "C++" template <class NewTYPE>
 int seg_changeDatatype(nifti_image *image);

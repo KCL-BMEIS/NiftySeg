@@ -26,8 +26,9 @@ nifti_image * LoAd_Segment(nifti_image * T1, nifti_image * Mask, nifti_image * P
     flags->oldloglik=(PrecisionTYPE)1.0;
     flags->loglik=(PrecisionTYPE)2.0;
     flags->prior_relax=!((segment_param->relax_factor)>0);
-    flags->pv_modeling=!(segment_param->flag_PV_model);;
-    flags->sg_delineation=!(segment_param->flag_SG_deli);;
+    flags->do_pv_modeling=segment_param->flag_PV_model;
+    flags->pv_modeling_on=0;
+    flags->sg_delineation=!(segment_param->flag_SG_deli);
 
     // Creating G and H matrixes
     PrecisionTYPE be=segment_param->MRF_strength*1.0f;
@@ -97,7 +98,7 @@ nifti_image * LoAd_Segment(nifti_image * T1, nifti_image * Mask, nifti_image * P
         // Print LogLik depending on the verbose level
         if(segment_param->verbose_level>0)printloglik(iter,flags->loglik,flags->oldloglik);
         //Maximization
-        calcM_mask_LoAd(T1,Expec,BiasField,Short_2_Long_Indices,M,V,CurrSizes,segment_param->verbose_level,flags->pv_modeling);
+        calcM_mask_LoAd(T1,Expec,BiasField,Short_2_Long_Indices,M,V,CurrSizes,segment_param->verbose_level,flags->pv_modeling_on);
 
         // Preform Segmentation Refinement Steps or Exit
         if((((flags->loglik-flags->oldloglik)/fabs(flags->oldloglik))<(PrecisionTYPE)(0.005) && iterchange>3) || iter>segment_param->maxIteration){
@@ -131,9 +132,9 @@ nifti_image * LoAd_Segment(nifti_image * T1, nifti_image * Mask, nifti_image * P
                  }
                  else{flags->improv_phase++;}
              case 3: // Run Implicit PV modeling
-                 if(flags->pv_modeling==false){
+                 if(flags->do_pv_modeling==true){
                      flags->improv_phase++;
-                     flags->pv_modeling=true;
+                     flags->pv_modeling_on=true;
                      Convert_to_PV(T1,BiasField,ShortPrior,Expec,MRF,M,V,Short_2_Long_Indices,Long_2_Short_Indices,CurrSizes,segment_param);
                      Create_GH_7class(G,H,ba,be,ratioGH,segment_param);
                      CurrSizes->numclass=7;
@@ -143,7 +144,7 @@ nifti_image * LoAd_Segment(nifti_image * T1, nifti_image * Mask, nifti_image * P
                      break;}
                  else{flags->improv_phase++;}
             case 4: // Run Sulci and Gyri deliniation
-                if(flags->sg_delineation==false){
+                if(flags->sg_delineation==false && flags->do_pv_modeling==true){
                     if(MRF_Beta==NULL){
                         MRF_Beta=new PrecisionTYPE [CurrSizes->numelmasked]();
                     }
@@ -176,7 +177,7 @@ nifti_image * LoAd_Segment(nifti_image * T1, nifti_image * Mask, nifti_image * P
     nifti_image * Result=NULL;
     //temporary save single image
     if(true){
-        if(flags->pv_modeling){
+        if(flags->do_pv_modeling){
         Result = Copy_ShortExpec_to_Result(T1,Expec,BiasField,BiasFieldCoefs,Short_2_Long_Indices,Priors,segment_param,M,CurrSizes);
     }
         else{
