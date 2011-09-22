@@ -14,7 +14,7 @@ void Usage(char *exec)
     printf("  * * * * * * * * * * * * * * * * * * Mandatory * * * * * * * * * * * * * * * * *\n\n");
     printf("  -in <filename>\t\t\tFilename of the 4D integer label image\n\n");
     printf("  \t\t- Type of Classifier Fusion (mutualy exclusive) -\n\n");
-    printf("  -STEPS <k> <n> <img> <tmpl> \tSTEPS algorithm\n");
+//    printf("  -STEPS <k> <n> <img> <tmpl> \tSTEPS algorithm\n");
     printf("  \t\t\t\tSize of the kernel (k), number of local labels to use (n),\n");
     printf("  \t\t\t\tOriginal image to segment (3D Image), registered templates (4D Image).\n");
     printf("  -STAPLE \t\t\tSTAPLE algorithm\n");
@@ -23,7 +23,7 @@ void Usage(char *exec)
 
     printf("  * * * * * * * * * * * * * * * * * * Options * * * * * * * * * * * * * * * * * *\n\n");
     printf("  -v <int>\t\t\tVerbose level [0 = off, 1 = on, 2 = debug] (default = 0)\n");
-    printf("  -unc <int>\t\t\tOnly consider non-consensus voxels\n");
+//    printf("  -unc <int>\t\t\tOnly consider non-consensus voxels\n");
     printf("  -out <filename>\t\tFilename of the segmented image (default=LabFusion.nii.gz)\n");
     //printf("  -thr <float> \t\t\tThreshold the final result at a different level (only with binary lables) \n\n");
 

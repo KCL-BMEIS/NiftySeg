@@ -13,15 +13,15 @@ void Usage(char *exec)
     printf("  * * * * * * * * * * * * * * * * * Mandatory * * * * * * * * * * * * * * * * *\n\n");
     printf("  -in <filename>\t\tFilename of the 4D probabilistic label image \n\n");
     printf("  \t\t--Type of Label Fusion (mutualy exclusive)--\n\n");
-    printf("  -STEPS <k> <n> <img> <tmp>\tSTEPS algorithm\n");
-    printf("  \t\t\t\tSize of the kernel (k), number of local labels to use (n),\n");
-    printf("  \t\t\t\tOriginal 3D image to segment, 4D image containing the registered templates.\n");
+   // printf("  -STEPS <k> <n> <img> <tmp>\tSTEPS algorithm\n");
+   // printf("  \t\t\t\tSize of the kernel (k), number of local labels to use (n),\n");
+   // printf("  \t\t\t\tOriginal 3D image to segment, 4D image containing the registered templates.\n");
     printf("  -STAPLE \t\t\tSTAPLE algorithm\n");
     printf("  -MV \t\t\t\tMajority Vote algorithm\n\n");
     //printf("  -SBA \t\t\t\tShape Based Averaging algorithm (NOT IMPLEMENTED)\n");
 
     printf("  * * * * * * * * * * * * * * * * * * Options * * * * * * * * * * * * * * * * * *\n\n");
-    printf("  -unc \t\t\t\tOnly use uncertain areas\n");
+    //printf("  -unc \t\t\t\tOnly use uncertain areas\n");
     printf("  -v <int>\t\t\tVerbose level [0 = off, 1 = on, 2 = debug] (default = 0)\n");
     printf("  -out <filename>\t\tFilename of the segmented image (default=LabFusion.nii.gz)\n");
     printf("  -thr <float> \t\t\tThreshold the final result\n\n");
