@@ -13,6 +13,7 @@ void Usage(char *exec)
 
     printf("\t * * * * Options * * * *\n\n");
     printf("\t -Dice <img1> <img2>\n");
+    printf("\t -Vol <img1>\n");
     printf("\t -DiceCSV <csv_file_name> <img1> <img2>\n");
     printf("\t\n");
     return;
@@ -44,6 +45,11 @@ int main(int argc, char **argv)
             numbimg=2;
             option=1;
         }
+        else if(strcmp(argv[i], "-Vol") == 0){
+            filenames[0] = argv[++i];
+            numbimg=1;
+            option=3;
+        }
         else if(strcmp(argv[i], "-DiceCSV") == 0){
             filenames[2] = argv[++i];
             filenames[0] = argv[++i];
@@ -57,6 +63,7 @@ int main(int argc, char **argv)
             return 1;
         }
     }
+
 
 
     nifti_image * Images[10];
@@ -111,9 +118,9 @@ int main(int argc, char **argv)
 
         }
         if(maxclass>1){
-        cout<< "MEAN DICE = "<< meanDice/(maxclass-1)<<endl;
-        cout<< "MEAN DICE Internal Areas in Hammer's= "<< meanDiceSelected/(numbmeanDiceSelected)<<endl;
-        flush(cout);
+            cout<< "MEAN DICE = "<< meanDice/(maxclass-1)<<endl;
+            cout<< "MEAN DICE Internal Areas in Hammer's= "<< meanDiceSelected/(numbmeanDiceSelected)<<endl;
+            flush(cout);
         }
     }
 
@@ -156,6 +163,22 @@ int main(int argc, char **argv)
 
     }
 
+    if(option==3){
+        for(int i=0; i<numbimg; i++){
+            seg_changeDatatype<float>(Images[i]);
+        }
+
+
+        float * Img1prt = static_cast<float *>(Images[0]->data);
+        int calcvol=0;
+
+        for(unsigned int index=0; index<Images[0]->nvox; index++){
+            calcvol += Img1prt[index]>0.5;
+        }
+
+        printf("%i %f\n",calcvol,(double)(calcvol)*(double)(Images[0]->dx)*(double)(Images[0]->dy)*(double)(Images[0]->dz));
+        flush(cout);
+    }
 
 
 

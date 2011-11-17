@@ -32,6 +32,11 @@ OPTION(INSTALL_NIFTYREG "To download and install NiftyReg. Internet connection i
 OPTION(INSTALL_PRIORS "Install prior images. Turn this off if you are really short on disk space" ON)
 SET(INSTALL_PRIORS_DIRECTORY ${CMAKE_INSTALL_PREFIX}/priors CACHE PATH "Folder in which to install the prior images.")
 #-----------------------------------------------------------------------------
+IF(BUILD_SHARED)
+  SET(LIBRARY_TYPE SHARED)
+ELSE(BUILD_SHARED)
+  SET(LIBRARY_TYPE STATIC)
+ENDIF(BUILD_SHARED)
 
 IF(USE_OPENMP)
 SET(CMAKE_CXX_FLAGS -fopenmp)
