@@ -30,6 +30,8 @@ protected:
     float     dz;
     int     numel;
     int     iter;
+    int checkpoint_iter;
+    float ratio;
     ImageSize * CurrSizes;
 
 
@@ -62,6 +64,12 @@ protected:
     float*  MRF_beta;
     float*  MRF_transitionMatrix; // G matrix
 
+    float * Outlierness;
+    float * OutliernessUSE;
+    bool OutliernessFlag;
+    float OutliernessThreshold;
+    float Outlierness_ratio;
+
     // BiasField Specific
     bool    BiasField_status;
     int     BiasField_order;
@@ -90,8 +98,10 @@ protected:
     int UpdateMRF();
     int UpdatePriorWeight();
     int UpdateBiasField();
+    int UpdateOutlierness();
     int Normalize_Image_and_Priors();
-    int Allocate_Expec_and_ShortPrior();
+    int Allocate_and_Initialize();
+    int Intensity_Based_Inisitalization_of_Means();
 
 public:
     seg_EM(int numb_classes,int NumbMultiSpec,int NumbTimePoints);
@@ -103,6 +113,7 @@ public:
     int SetMAP(float *M, float* V);
     int Turn_Relaxation_ON(float relax_factor,float relax_gauss_kernel);
     int Turn_MRF_ON(float MRF_strenght);
+    int OutliernessON(float OutliernessThreshold, float ratio);
     int Turn_BiasField_ON(int BiasField_order,float ratiothresh);
     int SetLoAd(float RelaxFactor,bool Relax_status,bool PV_model_status,bool SG_deli_status);
     int SetMaximalIterationNumber(unsigned int numberiter);
@@ -117,5 +128,6 @@ public:
     nifti_image *GetResult();
     nifti_image *GetResultNeonate();
     nifti_image *GetBiasCorrected(char * filename);
+    nifti_image *GetOutlierness(char * filename);
 };
 

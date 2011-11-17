@@ -153,6 +153,12 @@ void Dillate(bool * Image,
     shiftdirection[1]=dimensions[0];
     shiftdirection[2]=dimensions[1]*dimensions[0];
     bool * Buffer = new bool [dimensions[1]*dimensions[0]*dimensions[2]]();
+
+    if(Buffer == NULL){
+        fprintf(stderr,"* Error when alocating Buffer in void Dillate(): Not enough memory\n");
+        exit(1);
+    }
+
     bool tmpvalue=0;
     for(int currentdirection=0;currentdirection<3;currentdirection++){ //Buffer aint each direction
         int index=0;

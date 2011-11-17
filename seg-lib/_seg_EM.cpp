@@ -21,6 +21,8 @@ seg_EM::seg_EM(int _numb_classes, int _nu,int _nt)
     this->numel=0;
     this->aprox=true;
     this->iter=0;
+    this->checkpoint_iter=0;
+    this->ratio=0;
 
     this->numb_classes=_numb_classes;
     this->M= new float [MaxMultispectalSize*max_numbclass];
@@ -57,6 +59,12 @@ seg_EM::seg_EM(int _numb_classes, int _nu,int _nt)
     this->MRF_beta=NULL;
     this->MRF_transitionMatrix=NULL;
 
+    this->Outlierness=NULL;
+    this->OutliernessUSE=NULL;
+    this->OutliernessFlag=false;
+    this->OutliernessThreshold=0.0f;
+    this->Outlierness_ratio=0.01f;
+
     this->BiasField_status=false;
     this->BiasField_order=0;
     this->BiasField=NULL;
@@ -78,7 +86,6 @@ seg_EM::seg_EM(int _numb_classes, int _nu,int _nt)
 
 seg_EM::~seg_EM()
 {
-
     if(this->Expec!=NULL){
         delete[] this->Expec;
     }
@@ -99,6 +106,9 @@ seg_EM::~seg_EM()
     }
     this->BiasField_coeficients=NULL;
 
+    if(this->Outlierness!=NULL){
+        delete [] this->Outlierness;
+    }
     if(this->MRF_status){
         delete [] this->MRF;
         delete [] this->MRF_transitionMatrix;
@@ -232,9 +242,9 @@ int seg_EM::SetVerbose(unsigned int verblevel)
 
 int seg_EM::SetMaximalIterationNumber(unsigned int numberiter)
 {
-    if(numberiter<3){
-        this->maxIteration=3;
-        cout << "Warning: It will only stop at iteration 3"<< endl;
+    if(numberiter<1){
+        this->maxIteration=1;
+        cout << "Warning: It will only stop at iteration 1"<< endl;
     }
     else{
         this->maxIteration=numberiter;
@@ -338,23 +348,41 @@ int seg_EM::Create_CurrSizes()
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
+int seg_EM::OutliernessON(float in_OutliernessThreshold, float ratio){
 
+    this->OutliernessFlag=true;
+    this->OutliernessThreshold=in_OutliernessThreshold;
+    this->Outlierness_ratio=ratio;
+    return 0;
+}
+
+/* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
+int seg_EM::UpdateOutlierness()
+{
+
+
+
+    return 0;
+}
+
+
+/* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 int seg_EM::Maximization()
 {
     if(this->MAP_status){
         if(this->maskImage_status){
-            calcM_mask(this->inputImage,this->Expec,this->BiasField,this->Short_2_Long_Indices,M,V,this->MAP_M,this->MAP_V,CurrSizes,this->verbose_level);
+            calcM_mask(this->inputImage,this->Expec,this->BiasField,this->Outlierness,this->Short_2_Long_Indices,M,V,this->MAP_M,this->MAP_V,CurrSizes,this->verbose_level);
         }
         else{
-            calcM(this->inputImage,this->Expec,this->BiasField,M,V,this->MAP_M,this->MAP_V,CurrSizes,this->verbose_level);
+            calcM(this->inputImage,this->Expec,this->BiasField,this->Outlierness,M,V,this->MAP_M,this->MAP_V,CurrSizes,this->verbose_level);
         }
     }
     else{
         if(this->maskImage_status){
-            calcM_mask(this->inputImage,this->Expec,this->BiasField,this->Short_2_Long_Indices,M,V,NULL,NULL,CurrSizes,this->verbose_level);
+            calcM_mask(this->inputImage,this->Expec,this->BiasField,this->Outlierness,this->Short_2_Long_Indices,M,V,NULL,NULL,CurrSizes,this->verbose_level);
         }
         else{
-            calcM(this->inputImage,this->Expec,this->BiasField,M,V,NULL,NULL,CurrSizes,this->verbose_level);
+            calcM(this->inputImage,this->Expec,this->BiasField,this->Outlierness,M,V,NULL,NULL,CurrSizes,this->verbose_level);
         }
     }
     return 1;
@@ -364,42 +392,33 @@ int seg_EM::Maximization()
 
 int seg_EM::Expectation()
 {
-    /*
-if(this->aprox){
-        if(this->MRF_status){
-            if(this->maskImage_status){
-                calcE_mask_aprox(this->inputImage,this->MRF,this->Expec,&this->loglik,this->BiasField,this->Short_2_Long_Indices,this->M,this->V,CurrSizes,this->verbose_level);
-            }
-            else{
-                calcE_aprox(this->inputImage,this->MRF,this->Expec,&this->loglik,this->BiasField,this->M,this->V,CurrSizes,this->verbose_level);
-            }
+
+    if(this->ratio<(PrecisionTYPE)(this->Outlierness_ratio) && this->iter>3 && this->OutliernessUSE==NULL && this->OutliernessFlag){
+        this->OutliernessUSE=this->Outlierness;
+        if(this->verbose_level>0){
+            cout << "Updating Outlierness - LogRatio = "<<ratio<<endl;
         }
-        else{
-            if(this->maskImage_status){
-                calcE_mask_aprox(this->inputImage,this->ShortPrior,this->Expec,&this->loglik,this->BiasField,this->Short_2_Long_Indices,this->M,this->V,CurrSizes,this->verbose_level);
-            }
-            else{
-                calcE_aprox(this->inputImage,this->ShortPrior,this->Expec,&this->loglik,this->BiasField,this->M,this->V,CurrSizes,this->verbose_level);
-            }
-        }
+        this->loglik=2;
+        this->oldloglik=1;
+        this->checkpoint_iter=this->iter+2;
     }
-    else{
-*/
+
+    //update
     if(this->MRF_status){
         if(this->maskImage_status){
-            calcE_mask(this->inputImage,this->MRF,this->Expec,&this->loglik,this->BiasField,this->Short_2_Long_Indices,this->M,this->V,CurrSizes,this->verbose_level);
+            calcE_mask(this->inputImage,this->MRF,this->Expec,&this->loglik,this->BiasField,this->OutliernessUSE,this->OutliernessThreshold,this->Short_2_Long_Indices,this->M,this->V,CurrSizes,this->verbose_level);
         }
         else{
-            calcE(this->inputImage,this->MRF,this->Expec,&this->loglik,this->BiasField,this->M,this->V,CurrSizes,this->verbose_level);
+            calcE(this->inputImage,this->MRF,this->Expec,&this->loglik,this->BiasField,this->OutliernessUSE,this->OutliernessThreshold,this->M,this->V,CurrSizes,this->verbose_level);
         }
     }
     else{
 
         if(this->maskImage_status){
-            calcE_mask(this->inputImage,this->ShortPrior,this->Expec,&this->loglik,this->BiasField,this->Short_2_Long_Indices,this->M,this->V,CurrSizes,this->verbose_level);
+            calcE_mask(this->inputImage,this->ShortPrior,this->Expec,&this->loglik,this->BiasField,this->OutliernessUSE,this->OutliernessThreshold,this->Short_2_Long_Indices,this->M,this->V,CurrSizes,this->verbose_level);
         }
         else{
-            calcE(this->inputImage,this->ShortPrior,this->Expec,&this->loglik,this->BiasField,this->M,this->V,CurrSizes,this->verbose_level);
+            calcE(this->inputImage,this->ShortPrior,this->Expec,&this->loglik,this->BiasField,this->OutliernessUSE,this->OutliernessThreshold,this->M,this->V,CurrSizes,this->verbose_level);
         }
     }
     //}
@@ -444,14 +463,14 @@ int seg_EM::UpdateBiasField()
             if(this->maskImage_status){
                 if(this->nz>1){
 
-                    BiasCorrection_mask(this->BiasField,this->BiasField_coeficients,this->inputImage,this->Long_2_Short_Indices,Expec,this->M,this->V,this->BiasField_order,CurrSizes,this->BiasField_status,this->verbose_level);
+                    BiasCorrection_mask(this->BiasField,this->BiasField_coeficients,this->inputImage,this->Long_2_Short_Indices,Expec,this->OutliernessUSE,this->M,this->V,this->BiasField_order,CurrSizes,this->BiasField_status,this->verbose_level);
                 }
                 else{
-                    BiasCorrection_mask2D(this->BiasField,this->BiasField_coeficients,this->inputImage,this->Long_2_Short_Indices,Expec,this->M,this->V,this->BiasField_order,CurrSizes,this->BiasField_status,this->verbose_level);
+                    BiasCorrection_mask2D(this->BiasField,this->BiasField_coeficients,this->inputImage,this->Long_2_Short_Indices,Expec,this->OutliernessUSE,this->M,this->V,this->BiasField_order,CurrSizes,this->BiasField_status,this->verbose_level);
                 }
             }
             else{
-                BiasCorrection(this->BiasField,this->BiasField_coeficients,this->inputImage,Expec,this->M,this->V,this->BiasField_order,CurrSizes,this->BiasField_status,this->verbose_level);
+                BiasCorrection(this->BiasField,this->BiasField_coeficients,this->inputImage,Expec,this->OutliernessUSE,this->M,this->V,this->BiasField_order,CurrSizes,this->BiasField_status,this->verbose_level);
             }
         }
     }
@@ -487,7 +506,8 @@ int seg_EM::UpdatePriorWeight()
 int seg_EM::Normalize_Image_and_Priors()
 {
     if(this->maskImage_status){
-        Normalize_NaN_Priors_mask(this->Priors,this->Mask,this->verbose_level);
+        if(this->Priors_status)Normalize_NaN_Priors_mask(this->Priors,this->Mask,this->verbose_level);
+
         Normalize_Image_mask(this->inputImage,this->Mask,CurrSizes,this->verbose_level);
 
         this->Short_2_Long_Indices = Create_Short_2_Long_Matrix_from_NII(this->Mask,&(CurrSizes->numelmasked));
@@ -495,7 +515,8 @@ int seg_EM::Normalize_Image_and_Priors()
         this->numelmasked=(CurrSizes->numelmasked);
     }
     else{
-        Normalize_NaN_Priors(this->Priors,this->verbose_level);
+        if(this->Priors_status)Normalize_NaN_Priors(this->Priors,this->verbose_level);
+
         Normalize_Image(this->inputImage,CurrSizes,this->verbose_level);
     }
 
@@ -515,23 +536,142 @@ int seg_EM::Normalize_Image_and_Priors()
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 
-int seg_EM::Allocate_Expec_and_ShortPrior()
+int seg_EM::Allocate_and_Initialize()
 {
 
-
-
-    if(this->maskImage_status){
-        this->Expec = Create_cArray_from_Prior_mask(this->Mask,this->Priors,CurrSizes->numclass,this->PV_model_status);
-        this->ShortPrior = Create_cArray_from_Prior_mask(this->Mask,this->Priors,CurrSizes->numclass,this->PV_model_status);
+    if(this->Priors_status){
+        if(this->maskImage_status){
+            this->Expec = Create_cArray_from_Prior_mask(this->Mask,this->Priors,CurrSizes->numclass,this->PV_model_status);
+            this->ShortPrior = Create_cArray_from_Prior_mask(this->Mask,this->Priors,CurrSizes->numclass,this->PV_model_status);
+        }
+        else{
+            this->Expec = Create_cArray_from_Prior(this->Priors,CurrSizes->numclass,this->PV_model_status);
+            this->ShortPrior = Create_cArray_from_Prior(this->Priors,CurrSizes->numclass,this->PV_model_status);
+        }
     }
     else{
-        this->Expec = Create_cArray_from_Prior(this->Priors,CurrSizes->numclass,this->PV_model_status);
-        this->ShortPrior = Create_cArray_from_Prior(this->Priors,CurrSizes->numclass,this->PV_model_status);
+        Intensity_Based_Inisitalization_of_Means();
+        int tmpnumb_elem=0;
+        if(this->maskImage_status){
+            tmpnumb_elem=(this->numelmasked*(this->numb_classes+(int)(this->PV_model_status)*2));
+        }
+        else{
+            tmpnumb_elem=(numel*(this->numb_classes+(int)(this->PV_model_status)*2));
+        }
+
+        float tmpnumb_clas=((this->numb_classes+(int)(this->PV_model_status)*2));
+        this->Expec=new PrecisionTYPE [tmpnumb_elem] ();
+        this->ShortPrior=new PrecisionTYPE [tmpnumb_elem] ();
+        for(int i=0; i<tmpnumb_elem; i++){
+            this->Expec[i]=1.0/tmpnumb_clas;
+            this->ShortPrior[i]=1.0/tmpnumb_clas;
+        }
+        if(this->maskImage_status){
+            calcE_mask(this->inputImage,this->ShortPrior,this->Expec,&this->loglik,this->BiasField,NULL,0,this->Short_2_Long_Indices,this->M,this->V,CurrSizes,this->verbose_level);
+        }
+        else{
+            calcE(this->inputImage,this->ShortPrior,this->Expec,&this->loglik,this->BiasField,NULL,0,this->M,this->V,CurrSizes,this->verbose_level);
+        }
+
     }
+
+    if(this->OutliernessFlag){
+        int tmpnumb_elem=0;
+        if(this->maskImage_status){
+            tmpnumb_elem=(this->numelmasked*(this->numb_classes+(int)(this->PV_model_status)*2));
+        }
+        else{
+            tmpnumb_elem=(numel*(this->numb_classes+(int)(this->PV_model_status)*2));
+        }
+        this->OutliernessUSE=NULL;
+        this->Outlierness=new PrecisionTYPE [tmpnumb_elem] ();
+        for(int i=0; i<tmpnumb_elem; i++){
+            this->Outlierness[i]=1.0;
+        }
+    }
+
     return 0;
 
 }
 
+/* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
+int seg_EM::Intensity_Based_Inisitalization_of_Means()
+{
+    PrecisionTYPE * Intensity_PTR = static_cast<PrecisionTYPE *>(this->inputImage->data);
+
+    bool * MaskDataPtr=NULL;
+    if(this->maskImage_status){
+            MaskDataPtr = static_cast<bool *>(this->Mask->data);
+    }
+
+    int mycounter=0;
+    float meanval=0.0;
+    float variance=0.0;
+    for(unsigned int i=0; i<this->inputImage->nvox; i++){
+        if(!this->maskImage_status || MaskDataPtr[i]>0){
+            mycounter++;
+            meanval+=(Intensity_PTR[i]);
+        }
+    }
+    meanval=meanval/mycounter;
+    for(unsigned int i=0; i<this->inputImage->nvox; i++){
+        if(!this->maskImage_status || MaskDataPtr[i]>0 ){
+            variance+=pow((meanval-Intensity_PTR[i]),2);
+        }
+    }
+    variance=variance/mycounter;
+
+    int histogram[1001];
+    for(int i=0;i<1000;i++){
+        histogram[i]=0;
+    }
+    float tmpmax=-100000000.0f;
+    float tmpmin=100000000.0f;
+
+
+
+    for(unsigned int i=0; i<this->inputImage->nvox; i++){
+        if(!this->maskImage_status || MaskDataPtr[i]){
+            if(tmpmax<(int)(Intensity_PTR[i])){
+                tmpmax=(int)(Intensity_PTR[i]);
+            }
+            if(tmpmin>(int)(Intensity_PTR[i])){
+                tmpmin=(int)(Intensity_PTR[i]);
+            }
+        }
+    }
+
+    for(unsigned int i=0; i<this->inputImage->nvox; i++){
+        if(!this->maskImage_status || MaskDataPtr[i]>0){
+            int index4hist=(int)(1000.0*(float)(Intensity_PTR[i]-tmpmin)/(float)(tmpmax-tmpmin));
+            if((index4hist>1000) & (index4hist<0)){
+                cout<< "error"<<endl;
+            }
+            histogram[(int)(1000.0*(float)(Intensity_PTR[i]-tmpmin)/(float)(tmpmax-tmpmin))]++;
+        }
+    }
+
+
+    for(int clas=0; clas<this->numb_classes; clas++){
+        float tmpsum=0;
+        int tmpindex=0;
+        float percentile=((float)clas+1)/(this->numb_classes+2);
+        for(int i=999;i>0;i--){
+            tmpsum+=histogram[i];
+            tmpindex=i;
+            if((float)(tmpsum)>((1-percentile)*(float)(mycounter))){
+                i=0;
+            }
+        }
+        M[clas]=float(tmpindex)*(tmpmax-tmpmin)/1000.0f+(tmpmin);
+        V[clas]=variance/this->numb_classes/2;
+        if(this->verbose_level>0){
+        cout << "M["<<clas<<"] = "<<M[clas]<<"    V["<<(int)(clas)<<"]= "<<V[clas]<<endl;
+        }
+
+    }
+    return 0;
+}
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 
 nifti_image * seg_EM::GetResult()
@@ -577,6 +717,51 @@ nifti_image * seg_EM::GetBiasCorrected(char * filename)
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 
+nifti_image * seg_EM::GetOutlierness(char * filename)
+{
+    nifti_image * Result = nifti_copy_nim_info(this->inputImage);
+    Result->dim[0]=3;
+    Result->dim[4]=1;
+    Result->dim[5]=1;
+    Result->datatype=DT_FLOAT32;
+    Result->cal_max=1;
+    nifti_set_filenames(Result,filename,0,0);
+    nifti_update_dims_from_array(Result);
+    nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
+    Result->data = (void *) calloc(Result->nvox, sizeof(PrecisionTYPE));
+    PrecisionTYPE * Resultdata = static_cast<PrecisionTYPE *>(Result->data);
+    for(unsigned int i=0; i<Result->nvox; i++){Resultdata[i]=0;}
+
+
+
+    if(this->maskImage_status){
+        for(int i=0; i<CurrSizes->numelmasked; i++){
+            float currsum=0;
+            for(int currclass=0; currclass<CurrSizes->numclass;currclass++){
+                currsum+=this->Outlierness[i+(currclass)*CurrSizes->numelmasked]*Expec[i+(currclass)*CurrSizes->numelmasked];
+            }
+            Resultdata[Short_2_Long_Indices[i]]=1-currsum;
+        }
+
+    }
+    else{
+        int class_nvox=Result->nx*Result->ny*Result->nz;
+        for(int i=0; i<CurrSizes->numel; i++){
+            float currsum=0;
+            for(int currclass=0; currclass<CurrSizes->numclass;currclass++){
+                currsum+=this->Outlierness[i+(currclass)*class_nvox];
+            }
+            Resultdata[i]=1-currsum;
+        }
+    }
+
+
+    return Result;
+
+}
+
+/* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
+
 
 int *  seg_EM::Run_EM()
 {
@@ -584,6 +769,8 @@ int *  seg_EM::Run_EM()
     time(&start);
     if((int)(this->verbose_level)>(int)(0)){
         cout << "EM: Verbose level " << this->verbose_level << endl;
+    }
+    if(!Priors_status){
 
     }
 
@@ -592,13 +779,14 @@ int *  seg_EM::Run_EM()
     }
 
     Normalize_Image_and_Priors();
-    Allocate_Expec_and_ShortPrior();
+    Allocate_and_Initialize();
     if((int)(this->verbose_level)>(int)(0)){
         cout << "Number of voxels inside the mask = " << this->numelmasked << endl;
     }
     //**************
     // EM Algorithm
     //**************
+    //bool MRFreset=0;
     this->iter=0;
     bool out= true;
 
@@ -626,11 +814,11 @@ int *  seg_EM::Run_EM()
         if(this->verbose_level>0 && this->iter>0){
             printloglik(iter,this->loglik,this->oldloglik);
         }
-        // Preform Segmentation Refinement Steps or Exit
-        if((((this->loglik-this->oldloglik)/fabs(this->oldloglik))<(PrecisionTYPE)(0.005) && this->iter>3) || iter>this->maxIteration || (isinf(this->loglik) && this->iter>3)){
+        // Preform MRF reset or Exit
+        if((((this->loglik-this->oldloglik)/fabs(this->oldloglik))<(PrecisionTYPE)(0.0005) && this->iter>3 && this->iter>this->checkpoint_iter) || iter>=this->maxIteration || (isinf(this->loglik) && this->iter>3)){
             out=false;
         }
-
+        this->ratio=((this->loglik-this->oldloglik)/fabs(this->oldloglik));
         // Update LogLik
         this->oldloglik=this->loglik;
         iter++;

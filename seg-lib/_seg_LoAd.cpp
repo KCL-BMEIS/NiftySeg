@@ -69,7 +69,7 @@ nifti_image * LoAd_Segment(nifti_image * T1, nifti_image * Mask, nifti_image * P
 
 
     // Initialize
-    calcM_mask(T1,Expec,BiasField,Short_2_Long_Indices,M, V,NULL,NULL,CurrSizes,segment_param->verbose_level);
+    calcM_mask(T1,Expec,BiasField,NULL,Short_2_Long_Indices,M, V,NULL,NULL,CurrSizes,segment_param->verbose_level);
     bool BFupdate=!(segment_param->flag_Bias);
     bool MRFupdate=!(segment_param->flag_MRF);
     int CurrentBF=segment_param->bias_order<=1?segment_param->bias_order:1;
@@ -90,9 +90,9 @@ nifti_image * LoAd_Segment(nifti_image * T1, nifti_image * Mask, nifti_image * P
 
         // Iterative Components - EM, MRF, Bias Correction
         //Expectation and LogLik
-        calcE_mask(T1,MRF,Expec,&flags->loglik,BiasField,Short_2_Long_Indices,M,V,CurrSizes,segment_param->verbose_level);
+        calcE_mask(T1,MRF,Expec,&flags->loglik,BiasField,NULL,0,Short_2_Long_Indices,M,V,CurrSizes,segment_param->verbose_level);
         //Bias Correction
-        if(BFupdate)BiasCorrection_mask(BiasField,BiasFieldCoefs,T1,Long_2_Short_Indices,Expec,M,V,CurrentBF,CurrSizes,segment_param->flag_Bias,segment_param->verbose_level);
+        if(BFupdate)BiasCorrection_mask(BiasField,BiasFieldCoefs,T1,Long_2_Short_Indices,Expec,NULL,M,V,CurrentBF,CurrSizes,segment_param->flag_Bias,segment_param->verbose_level);
         //MRF
         if(MRFupdate)MRFregularization_mask(Expec,G,H,MRF_Beta,MRF,ShortPrior,Long_2_Short_Indices,Short_2_Long_Indices,CurrSizes,segment_param->flag_MRF,segment_param->verbose_level);
         // Print LogLik depending on the verbose level

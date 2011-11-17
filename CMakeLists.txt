@@ -6,8 +6,8 @@ include(ExternalProject)
 
 
 SET(NiftySeg_VERSION_MAJOR 0)
-SET(NiftySeg_VERSION_MINOR 91)
-
+SET(NiftySeg_VERSION_MINOR 9)
+SET(CMAKE_CXX_FLAGS -Wall)
 IF("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" MATCHES "^2\\.6\\.4$")
  MARK_AS_ADVANCED(FORCE CMAKE_BACKWARDS_COMPATIBILITY)
 ELSE("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" MATCHES "^2\\.6\\.4$")
@@ -18,17 +18,30 @@ ENDIF("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" MAT
 if(COMMAND cmake_policy)
       cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
-#add_definitions(-Wall -pedantic)
+add_definitions(-Wall -pedantic)
+
 #-----------------------------------------------------------------------------
 SET(ZLIB "z")
 #-----------------------------------------------------------------------------
 
 
 OPTION(BUILD_ALL "To build the LoAd segmentation tool" ON)
+OPTION(BUILD_SHARED "Build the libraries as shared." OFF)
+OPTION(USE_OPENMP "To use openMP for multi-CPU processing" OFF)
 OPTION(INSTALL_NIFTYREG "To download and install NiftyReg. Internet connection is required." OFF)
 OPTION(INSTALL_PRIORS "Install prior images. Turn this off if you are really short on disk space" ON)
 SET(INSTALL_PRIORS_DIRECTORY ${CMAKE_INSTALL_PREFIX}/priors CACHE PATH "Folder in which to install the prior images.")
 #-----------------------------------------------------------------------------
+
+IF(USE_OPENMP)
+SET(CMAKE_CXX_FLAGS -fopenmp)
+ENDIF(USE_OPENMP)
+
+IF(BUILD_SHARED)
+    SET(LIBRARY_TYPE SHARED)
+ELSE(BUILD_SHARED)
+       SET(LIBRARY_TYPE STATIC)
+ENDIF(BUILD_SHARED)
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/reg-lib)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/seg-lib)
@@ -52,6 +65,11 @@ IF(INSTALL_PRIORS)
   INSTALL(PROGRAMS ${PRIOR_FILES} DESTINATION ${INSTALL_PRIORS_DIRECTORY} COMPONENT applications)
 ENDIF(INSTALL_PRIORS)
 
+IF(USE_OPENMP)
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+ENDIF(USE_OPENMP)
+
 #-----------------------------------------------------------------------------
 
 IF(INSTALL_NIFTYREG)
@@ -68,10 +86,6 @@ ExternalProject_Add(niftyreg
             CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -DUSE_SSE=1
             BUILD_COMMAND ${CMAKE_BUILD_TOOL}
             INSTALL_COMMAND ${CMAKE_BUILD_TOOL} install
-            LOG_DOWNLOAD 1
-            LOG_UPDATE 1
-            LOG_CONFIGURE 1
-            LOG_BUILD 1
             )
 ENDIF(INSTALL_NIFTYREG)
 #-----------------------------------------------------------------------------

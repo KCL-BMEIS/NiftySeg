@@ -1,6 +1,6 @@
 #include "_seg_tools.h"
 #ifdef _OPENMP
-    #include "omp.h"
+#include "omp.h"
 #endif
 
 int Create_diagonal_GH_Nclass(PrecisionTYPE * G,
@@ -710,6 +710,8 @@ int calcE_mask(nifti_image * T1,
                PrecisionTYPE * Expec,
                PrecisionTYPE * loglik,
                PrecisionTYPE * BiasField,
+               PrecisionTYPE * Outlierness,
+               PrecisionTYPE OutliernessThreshold,
                int * S2L,
                PrecisionTYPE * M,
                PrecisionTYPE * V,
@@ -718,20 +720,9 @@ int calcE_mask(nifti_image * T1,
 {
     int numel_masked=CurrSizes->numelmasked;
     int num_class=CurrSizes->numclass;
-
-    PrecisionTYPE * IterPrior_PTR= (PrecisionTYPE *) IterPrior;
-    PrecisionTYPE * Expec_PTR= (PrecisionTYPE *) Expec;
-    PrecisionTYPE * T1_PTR = static_cast<PrecisionTYPE *>(T1->data);
-    PrecisionTYPE SumExpec=0.0f;
-    PrecisionTYPE expectmp=0.0f;
-
-
-
+    bool OutliernessFlag=(Outlierness==NULL)?0:1;
     PrecisionTYPE inv_v [max_numbclass*MaxMultispectalSize*MaxMultispectalSize]={0.0f};
     PrecisionTYPE inv_sqrt_V_2pi [max_numbclass]={0.0f};
-    PrecisionTYPE newM [max_numbclass*MaxMultispectalSize]={0.0f};
-    PrecisionTYPE T1_Bias_corr[MaxMultispectalSize]={0.0f};
-    PrecisionTYPE tmpT1_BC_minusM=0;
 
     int Expec_offset [max_numbclass]={0};
 
@@ -779,54 +770,81 @@ int calcE_mask(nifti_image * T1,
             }
         }
         else{
-            inv_sqrt_V_2pi[cl]=1/(sqrtf(2*M_PI* V[cl]));
+            inv_sqrt_V_2pi[cl]=1/(sqrtf(2*M_PI*V[cl]));
             inv_v[cl]=1/V[cl];
-            newM[cl]=M[cl];
-
         }
     }
     loglik[0]=0;
-    SumExpec=0.0f;
+
     //int * Expec_offset_PTR= (int *) Expec_offset;
-    float mahal=0.0f;
+
     float logliktmp=0.0f;
-    for (int i=0; i<numel_masked;i++, Expec_PTR++, IterPrior_PTR++) {
-        for(int Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
+
+
+#ifdef _OPENMP
+    float * loglikthread = new float [omp_get_max_threads()]();
+    for(int i=0; i<omp_get_max_threads(); i++)
+            loglikthread[i]=0;
+
+#pragma omp parallel for shared(Expec,loglikthread,T1,BiasField,Outlierness,IterPrior)
+#endif
+    for (int i=0; i<numel_masked;i++) {
+        PrecisionTYPE * T1_PTR = static_cast<PrecisionTYPE *>(T1->data);
+        PrecisionTYPE T1_Bias_corr[MaxMultispectalSize];
+        PrecisionTYPE SumExpec=0.0f;
+
+        for(int Multispec=0; Multispec<CurrSizes->usize; Multispec++)
             T1_Bias_corr[Multispec]=(BiasField!=NULL)?(T1_PTR[S2L[i]+Multispec*CurrSizes->numel] + BiasField[i+Multispec*numel_masked]):(T1_PTR[S2L[i]+Multispec*CurrSizes->numel]);
-        }
-        SumExpec=0.0f;
-        expectmp=0.0f;
-        mahal=0.0f;
+
+
+
         //Expec_offset_PTR=Expec_offset;
+
         for (int cl=0; cl<num_class; cl++) {
-            mahal=0.0f;
+            PrecisionTYPE mahal=0.0f;
             for(int Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
-                tmpT1_BC_minusM=(T1_Bias_corr[Multispec] - M[cl*(CurrSizes->usize)+Multispec]);
+                PrecisionTYPE tmpT1_BC_minusM=(T1_Bias_corr[Multispec] - M[cl*(CurrSizes->usize)+Multispec]);
                 for(int Multispec2=0; Multispec2<CurrSizes->usize; Multispec2++) {
                     mahal-=(0.5f)*(T1_Bias_corr[Multispec2] - M[cl*(CurrSizes->usize)+Multispec2])*inv_v[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize]*tmpT1_BC_minusM;
                 }
             }
-            Expec_PTR[Expec_offset[cl]]=IterPrior_PTR[Expec_offset[cl]] * expf(mahal) * inv_sqrt_V_2pi[cl];
 
-            SumExpec+=Expec_PTR[Expec_offset[cl]];
+            if(OutliernessFlag){
+                Expec[i+Expec_offset[cl]]=IterPrior[i+Expec_offset[cl]]*Outlierness[i+Expec_offset[cl]] * expf(mahal) * inv_sqrt_V_2pi[cl];
+                Outlierness[i+Expec_offset[cl]]=(expf(mahal))/(expf(mahal)+expf(-0.5*(OutliernessThreshold*OutliernessThreshold)));
+            }
+            else{
+                Expec[i+Expec_offset[cl]]=IterPrior[i+Expec_offset[cl]] * expf(mahal) * inv_sqrt_V_2pi[cl];
+            }
+            SumExpec+=Expec[i+Expec_offset[cl]];
         }
-
-        logliktmp+=logf(SumExpec);
-
 
 
         if (SumExpec<=0.0 || SumExpec!=SumExpec){
             for (int cl=0; cl<num_class; cl++) {
-                Expec_PTR[Expec_offset[cl]]=(float)(1)/(float)(num_class);
+                Expec[i+Expec_offset[cl]]=(float)(1)/(float)(num_class);
             }
+
         }
         else{
-            logliktmp+=logf(SumExpec);
+
             for (int cl=0; cl<num_class; cl++) {
-                Expec_PTR[Expec_offset[cl]]=Expec_PTR[Expec_offset[cl]]/SumExpec;
+                Expec[i+Expec_offset[cl]]=Expec[i+Expec_offset[cl]]/SumExpec;
             }
+#ifdef _OPENMP
+            loglikthread[omp_get_thread_num()]+=logf(SumExpec);
+#else
+            logliktmp+=logf(SumExpec);
+#endif
+
         }
     }
+
+#ifdef _OPENMP
+    for(int i =0; i<omp_get_max_threads(); i++)
+            logliktmp+=loglikthread[i];
+#endif
+
     loglik[0]=logliktmp;
     return 1;
 }
@@ -837,6 +855,8 @@ int calcE(nifti_image * T1,
           PrecisionTYPE * Expec,
           PrecisionTYPE * loglik,
           PrecisionTYPE * BiasField,
+          PrecisionTYPE * Outlierness,
+          PrecisionTYPE OutliernessThreshold,
           PrecisionTYPE * M,
           PrecisionTYPE * V,
           ImageSize * CurrSizes,
@@ -844,19 +864,15 @@ int calcE(nifti_image * T1,
 {
     int numel=CurrSizes->numel;
     int num_class=CurrSizes->numclass;
+    bool OutliernessFlag=(Outlierness==NULL)?0:1;
+
 
     PrecisionTYPE * IterPrior_PTR= (PrecisionTYPE *) IterPrior;
     PrecisionTYPE * Expec_PTR= (PrecisionTYPE *) Expec;
+    PrecisionTYPE * Outlierness_PTR= (PrecisionTYPE *) Outlierness;
     PrecisionTYPE * T1_PTR = static_cast<PrecisionTYPE *>(T1->data);
-    PrecisionTYPE SumExpec=0.0f;
-    PrecisionTYPE expectmp=0.0f;
-
-
-
     PrecisionTYPE inv_v [max_numbclass*MaxMultispectalSize*MaxMultispectalSize]={0.0f};
     PrecisionTYPE inv_sqrt_V_2pi [max_numbclass]={0.0f};
-    PrecisionTYPE newM [max_numbclass*MaxMultispectalSize]={0.0f};
-    PrecisionTYPE T1_Bias_corr[MaxMultispectalSize]={0.0f};
     PrecisionTYPE tmpT1_BC_minusM=0;
 
     int Expec_offset [max_numbclass]={0};
@@ -907,24 +923,30 @@ int calcE(nifti_image * T1,
         else{
             inv_sqrt_V_2pi[cl]=1/(sqrtf(2*M_PI)* V[cl]);
             inv_v[cl]=1/V[cl];
-            newM[cl]=M[cl];
-
         }
     }
     loglik[0]=0;
-    SumExpec=0.0f;
-    //int * Expec_offset_PTR= (int *) Expec_offset;
 
-    float mahal=0.0f;
-    float logliktmp=0.0f;
-    for (int i=0; i<numel;i++, Expec_PTR++, IterPrior_PTR++) {
+
+
+float logliktmp=0.0f;
+#ifdef _OPENMP
+    float * loglikthread = new float [omp_get_max_threads()]();
+    for(int i=0; i<omp_get_max_threads(); i++)
+            loglikthread[i]=0;
+
+#pragma omp parallel for shared(Expec,loglikthread,T1,BiasField,Outlierness,IterPrior)
+#endif
+    for (int i=0; i<numel;i++) {
+        PrecisionTYPE T1_Bias_corr[MaxMultispectalSize]={0.0f};
         for(int Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
             T1_Bias_corr[Multispec]=(BiasField!=NULL)?(T1_PTR[i+Multispec*numel] + BiasField[i+Multispec*numel]):(T1_PTR[i+Multispec*numel]);
         }
-        SumExpec=0.0f;
-        expectmp=0.0f;
-        mahal=0.0f;
+        PrecisionTYPE mahal=0.0f;
+        PrecisionTYPE SumExpec=0.0f;
+
         //Expec_offset_PTR=Expec_offset;
+
         for (int cl=0; cl<num_class; cl++) {
             mahal=0.0f;
             for(int Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
@@ -933,26 +955,40 @@ int calcE(nifti_image * T1,
                     mahal-=(0.5f)*(T1_Bias_corr[Multispec2] - M[cl*(CurrSizes->usize)+Multispec2])*inv_v[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize]*tmpT1_BC_minusM;
                 }
             }
-            Expec_PTR[Expec_offset[cl]]=IterPrior_PTR[Expec_offset[cl]] * expf(mahal) * inv_sqrt_V_2pi[cl];
-            SumExpec+=Expec_PTR[Expec_offset[cl]];
+            Expec_PTR[i+Expec_offset[cl]]=IterPrior_PTR[i+Expec_offset[cl]] * expf(mahal) * inv_sqrt_V_2pi[cl];
+            if(OutliernessFlag){
+                Outlierness_PTR[i+Expec_offset[cl]]=(expf(mahal))/(expf(mahal)+expf(-0.5*(OutliernessThreshold*OutliernessThreshold)));
+            }
+            SumExpec+=Expec_PTR[i+Expec_offset[cl]];
         }
         if (SumExpec<=0.0 || SumExpec!=SumExpec){
             SumExpec=0.01;
         }
-        logliktmp+=logf(SumExpec);
 
         if (SumExpec<=0.0 || SumExpec!=SumExpec){
             for (int cl=0; cl<num_class; cl++) {
-                Expec_PTR[Expec_offset[cl]]=(float)(1)/(float)(num_class);
+                Expec_PTR[i+Expec_offset[cl]]=(float)(1)/(float)(num_class);
             }
         }
         else{
-            logliktmp+=logf(SumExpec);
             for (int cl=0; cl<num_class; cl++) {
-                Expec_PTR[Expec_offset[cl]]=Expec_PTR[Expec_offset[cl]]/SumExpec;
+                Expec_PTR[i+Expec_offset[cl]]=Expec_PTR[i+Expec_offset[cl]]/SumExpec;
             }
+#ifdef _OPENMP
+            loglikthread[omp_get_thread_num()]+=logf(SumExpec);
+#else
+            logliktmp+=logf(SumExpec);
+#endif
+
         }
     }
+
+#ifdef _OPENMP
+    for(int i =0; i<omp_get_max_threads(); i++)
+            logliktmp+=loglikthread[i];
+#endif
+
+
     loglik[0]=logliktmp;
     return 1;
 }
@@ -1229,6 +1265,7 @@ int calcE_aprox(nifti_image * T1,
 int calcM(nifti_image * T1,
           PrecisionTYPE * Expec,
           PrecisionTYPE * BiasField,
+          PrecisionTYPE * Outlierness,
           PrecisionTYPE * M,
           PrecisionTYPE * V,
           PrecisionTYPE * M_MAP,
@@ -1237,6 +1274,8 @@ int calcM(nifti_image * T1,
           int verbose)
 {
 
+    bool OutliernessFlag=(Outlierness==NULL)?0:1;
+
     if(verbose>0){
         cout<< "Optimising Gaussian Parameters" << endl;
         flush(cout);
@@ -1244,6 +1283,7 @@ int calcM(nifti_image * T1,
     int numel=CurrSizes->numel;
     int currentnum_class=CurrSizes->numclass;
     PrecisionTYPE * Expec_PTR = (PrecisionTYPE *) Expec;
+    PrecisionTYPE * OutliernessPTR = (PrecisionTYPE *) Outlierness;
     PrecisionTYPE * T1_PTR = static_cast<PrecisionTYPE *>(T1->data);
     PrecisionTYPE * BiasField_PTR= (PrecisionTYPE *) BiasField;
     PrecisionTYPE * T1_PTR2= static_cast<PrecisionTYPE *>(T1->data);
@@ -1255,33 +1295,53 @@ int calcM(nifti_image * T1,
     }
     PrecisionTYPE tempsum= (PrecisionTYPE) 0.0;
     PrecisionTYPE SumPriors= (PrecisionTYPE) 0.0;
-    PrecisionTYPE tempexpec= (PrecisionTYPE) 0.0;
 
     // ***********
 
     for (int cl=0; cl<currentnum_class; cl++) {
         // MEAN
-        tempexpec=0;
         for(int Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
             Expec_PTR=(PrecisionTYPE *) &Expec[Expec_offset[cl]];
-
+            OutliernessPTR=(PrecisionTYPE *) &Outlierness[Expec_offset[cl]];
             T1_PTR = static_cast<PrecisionTYPE *>(T1->data);
             T1_PTR =&T1_PTR[Multispec*CurrSizes->numel];
             tempsum=(PrecisionTYPE)0.0;
             SumPriors=(PrecisionTYPE)0.0;
 
-            if(BiasField!=NULL){
-                BiasField_PTR= &BiasField[Multispec*numel];
-                for (int i=0; i<numel; i++, Expec_PTR++,BiasField_PTR++) {
-                    tempsum+=(*Expec_PTR) * (T1_PTR[i]+(*BiasField_PTR));
-                    SumPriors+=(*Expec_PTR);
-                }
-            }else{
-                for (int i=0; i<numel; i++, Expec_PTR++) {
-                    tempsum+=(*Expec_PTR)*(T1_PTR[i]);
-                    SumPriors+=(*Expec_PTR);
+
+            if(OutliernessFlag){
+
+                if(BiasField!=NULL){
+                    BiasField_PTR= &BiasField[Multispec*numel];
+                    for (int i=0; i<numel; i++, Expec_PTR++,OutliernessPTR++,BiasField_PTR++) {
+                        tempsum+=(*Expec_PTR) * (*OutliernessPTR)*(T1_PTR[i]+(*BiasField_PTR));
+                        SumPriors+=(*Expec_PTR)*(*OutliernessPTR);
+                    }
+                }else{
+                    for (int i=0; i<numel; i++, Expec_PTR++,OutliernessPTR++) {
+                        tempsum+=(*Expec_PTR)*(*OutliernessPTR)*(T1_PTR[i]);
+                        SumPriors+=(*Expec_PTR)*(*OutliernessPTR);
+                    }
                 }
             }
+            else{
+
+                if(BiasField!=NULL){
+                    BiasField_PTR= &BiasField[Multispec*numel];
+                    for (int i=0; i<numel; i++, Expec_PTR++,BiasField_PTR++) {
+                        tempsum+=(*Expec_PTR) * (T1_PTR[i]+(*BiasField_PTR));
+                        SumPriors+=(*Expec_PTR);
+                    }
+                }else{
+                    for (int i=0; i<numel; i++, Expec_PTR++) {
+                        tempsum+=(*Expec_PTR)*(T1_PTR[i]);
+                        SumPriors+=(*Expec_PTR);
+                    }
+                }
+
+            }
+
+
             if(M_MAP==NULL){
                 M[cl*(CurrSizes->usize)+Multispec]=tempsum/SumPriors;
             }
@@ -1301,18 +1361,36 @@ int calcM(nifti_image * T1,
                 //STD
                 tempsum=0;
                 Expec_PTR=&Expec[Expec_offset[cl]];
-                if(BiasField!=NULL){
-                    BiasField_PTR=&BiasField[Multispec*numel];
-                    BiasField_PTR2=&BiasField[Multispec2*numel];
-                    for (int i=0; i<numel;i++,Expec_PTR++,BiasField_PTR++,BiasField_PTR2++) {
-                        tempsum+=(*Expec_PTR) * (T1_PTR[i]+(*BiasField_PTR)-tmpM) * (T1_PTR2[i]+(*BiasField_PTR2)-tmpM2);
-                    }
-                }else{
-                    for (int i=0; i<numel;i++,Expec_PTR++) {
-                        tempsum+=(*Expec_PTR) * (T1_PTR[i]-tmpM) * (T1_PTR2[i]-tmpM2);
-                    }
+                OutliernessPTR=(PrecisionTYPE *) &Outlierness[Expec_offset[cl]];
+                if(OutliernessFlag){
+                    if(BiasField!=NULL){
+                        BiasField_PTR=&BiasField[Multispec*numel];
+                        BiasField_PTR2=&BiasField[Multispec2*numel];
+                        for (int i=0; i<numel;i++,Expec_PTR++,BiasField_PTR++,OutliernessPTR++,BiasField_PTR2++) {
+                            tempsum+=(*Expec_PTR) *(*OutliernessPTR)* (T1_PTR[i]+(*BiasField_PTR)-tmpM) * (T1_PTR2[i]+(*BiasField_PTR2)-tmpM2);
+                        }
+                    }else{
+                        for (int i=0; i<numel;i++,Expec_PTR++,OutliernessPTR++) {
+                            tempsum+=(*Expec_PTR) *(*OutliernessPTR)* (T1_PTR[i]-tmpM) * (T1_PTR2[i]-tmpM2);
+                        }
 
+                    }
                 }
+                else{
+                    if(BiasField!=NULL){
+                        BiasField_PTR=&BiasField[Multispec*numel];
+                        BiasField_PTR2=&BiasField[Multispec2*numel];
+                        for (int i=0; i<numel;i++,Expec_PTR++,BiasField_PTR++,BiasField_PTR2++) {
+                            tempsum+=(*Expec_PTR) * (T1_PTR[i]+(*BiasField_PTR)-tmpM) * (T1_PTR2[i]+(*BiasField_PTR2)-tmpM2);
+                        }
+                    }else{
+                        for (int i=0; i<numel;i++,Expec_PTR++) {
+                            tempsum+=(*Expec_PTR) * (T1_PTR[i]-tmpM) * (T1_PTR2[i]-tmpM2);
+                        }
+
+                    }
+                }
+
                 V[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize]=tempsum/SumPriors+0.00001f;
                 V[cl*CurrSizes->usize*CurrSizes->usize+Multispec2+Multispec*CurrSizes->usize]=V[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize];
             }
@@ -1357,6 +1435,7 @@ int calcM(nifti_image * T1,
 int calcM_mask(nifti_image * T1,
                PrecisionTYPE * Expec,
                PrecisionTYPE * BiasField,
+               PrecisionTYPE * Outlierness,
                int * S2L,
                PrecisionTYPE * M,
                PrecisionTYPE * V,
@@ -1370,30 +1449,34 @@ int calcM_mask(nifti_image * T1,
         cout<< "Optimising Gaussian Parameters" << endl;
         flush(cout);
     }
+    bool OutliernessFlag=(Outlierness==NULL)?0:1;
+
     int numel_masked=CurrSizes->numelmasked;
     int num_class=CurrSizes->numclass;
-    int * S2L_PTR = (int *) S2L;
-    PrecisionTYPE * Expec_PTR = (PrecisionTYPE *) Expec;
-    PrecisionTYPE * T1_PTR = static_cast<PrecisionTYPE *>(T1->data);
-    PrecisionTYPE * BiasField_PTR= (PrecisionTYPE *) BiasField;
-    PrecisionTYPE * T1_PTR2= static_cast<PrecisionTYPE *>(T1->data);
-    PrecisionTYPE * BiasField_PTR2= (PrecisionTYPE *) BiasField;
-
     int Expec_offset[PV_numbclass];
     for (int cl=0; cl<num_class; cl++) {
         Expec_offset[cl]=cl*numel_masked;
     }
-    PrecisionTYPE tempsum= (PrecisionTYPE) 0.0;
-    PrecisionTYPE SumPriors= (PrecisionTYPE) 0.0;
-    PrecisionTYPE tempexpec= (PrecisionTYPE) 0.0;
 
+#ifdef _OPENMP
+#pragma omp parallel for shared(T1,BiasField,Outlierness)
+#endif
     // ***********
-
     for (int cl=0; cl<num_class; cl++) {
+        int * S2L_PTR = (int *) S2L;
+        PrecisionTYPE * Expec_PTR = (PrecisionTYPE *) Expec;
+        PrecisionTYPE * OutliernessPTR = (PrecisionTYPE *) Outlierness;
+        PrecisionTYPE * T1_PTR = static_cast<PrecisionTYPE *>(T1->data);
+        PrecisionTYPE * BiasField_PTR= (PrecisionTYPE *) BiasField;
+        PrecisionTYPE tempsum= (PrecisionTYPE) 0.0;
+        PrecisionTYPE SumPriors= (PrecisionTYPE) 0.0;
+        PrecisionTYPE * T1_PTR2= static_cast<PrecisionTYPE *>(T1->data);
+        PrecisionTYPE * BiasField_PTR2= (PrecisionTYPE *) BiasField;
+
         // MEAN
-        tempexpec=0;
         for(int Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
             Expec_PTR=(PrecisionTYPE *) &Expec[Expec_offset[cl]];
+            OutliernessPTR=(PrecisionTYPE *) &Outlierness[Expec_offset[cl]];
             S2L_PTR = (int *) S2L;
 
             T1_PTR = static_cast<PrecisionTYPE *>(T1->data);
@@ -1401,20 +1484,36 @@ int calcM_mask(nifti_image * T1,
             tempsum=(PrecisionTYPE)0.0;
             SumPriors=(PrecisionTYPE)0.0;
 
-            if(BiasField!=NULL){
-                BiasField_PTR= &BiasField[Multispec*numel_masked];
-                for (int i=0; i<numel_masked; i++, Expec_PTR++,BiasField_PTR++,S2L_PTR++) {
-                    tempsum+=(*Expec_PTR) * (T1_PTR[(*S2L_PTR)]+(*BiasField_PTR));
-                    SumPriors+=(*Expec_PTR);
-                }
-            }else{
-                for (int i=0; i<numel_masked; i++, Expec_PTR++,S2L_PTR++) {
-                    tempsum+=(*Expec_PTR)*(T1_PTR[(*S2L_PTR)]);
-                    SumPriors+=(*Expec_PTR);
+            if(OutliernessFlag){
+                if(BiasField!=NULL){
+                    BiasField_PTR= &BiasField[Multispec*numel_masked];
+                    for (int i=0; i<numel_masked; i++, Expec_PTR++,OutliernessPTR++,BiasField_PTR++,S2L_PTR++) {
+                        tempsum+=(*Expec_PTR)*(*OutliernessPTR)*(T1_PTR[(*S2L_PTR)]+(*BiasField_PTR));
+                        SumPriors+=(*Expec_PTR)*(*OutliernessPTR);
+                    }
+                }else{
+                    for (int i=0; i<numel_masked; i++, Expec_PTR++,S2L_PTR++) {
+                        tempsum+=(*Expec_PTR)*(*OutliernessPTR)*(T1_PTR[(*S2L_PTR)]);
+                        SumPriors+=(*Expec_PTR)*(*OutliernessPTR);
+                    }
                 }
             }
-            if(M_MAP==NULL){
+            else{
+                if(BiasField!=NULL){
+                    BiasField_PTR= &BiasField[Multispec*numel_masked];
+                    for (int i=0; i<numel_masked; i++, Expec_PTR++,BiasField_PTR++,S2L_PTR++) {
+                        tempsum+=(*Expec_PTR) * (T1_PTR[(*S2L_PTR)]+(*BiasField_PTR));
+                        SumPriors+=(*Expec_PTR);
+                    }
+                }else{
+                    for (int i=0; i<numel_masked; i++, Expec_PTR++,S2L_PTR++) {
+                        tempsum+=(*Expec_PTR)*(T1_PTR[(*S2L_PTR)]);
+                        SumPriors+=(*Expec_PTR);
+                    }
+                }
 
+            }
+            if(M_MAP==NULL){
                 M[cl*(CurrSizes->usize)+Multispec]=tempsum/SumPriors;
             }
             else{
@@ -1434,11 +1533,19 @@ int calcM_mask(nifti_image * T1,
                 //STD
                 tempsum=0;
                 Expec_PTR=&Expec[Expec_offset[cl]];
+                OutliernessPTR=(PrecisionTYPE *) &Outlierness[Expec_offset[cl]];
                 if(BiasField!=NULL){
                     BiasField_PTR=&BiasField[Multispec*numel_masked];
                     BiasField_PTR2=&BiasField[Multispec2*numel_masked];
-                    for (int i=0; i<numel_masked;i++,Expec_PTR++,BiasField_PTR++,BiasField_PTR2++,S2L_PTR++) {
-                        tempsum+=(*Expec_PTR) * (T1_PTR[(*S2L_PTR)]+(*BiasField_PTR)-tmpM) * (T1_PTR2[(*S2L_PTR)]+(*BiasField_PTR2)-tmpM2);
+                    if(OutliernessFlag){
+                        for (int i=0; i<numel_masked;i++,Expec_PTR++,BiasField_PTR++,OutliernessPTR++,BiasField_PTR2++,S2L_PTR++) {
+                            tempsum+=(*Expec_PTR) * (*OutliernessPTR)*(T1_PTR[(*S2L_PTR)]+(*BiasField_PTR)-tmpM) * (T1_PTR2[(*S2L_PTR)]+(*BiasField_PTR2)-tmpM2);
+                        }
+                    }
+                    else{
+                        for (int i=0; i<numel_masked;i++,Expec_PTR++,BiasField_PTR++,BiasField_PTR2++,S2L_PTR++) {
+                            tempsum+=(*Expec_PTR) * (T1_PTR[(*S2L_PTR)]+(*BiasField_PTR)-tmpM) * (T1_PTR2[(*S2L_PTR)]+(*BiasField_PTR2)-tmpM2);
+                        }
                     }
                 }else{
                     for (int i=0; i<numel_masked;i++,Expec_PTR++,S2L_PTR++) {
@@ -1446,13 +1553,18 @@ int calcM_mask(nifti_image * T1,
                     }
 
                 }
-
-                V[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize]=tempsum/SumPriors+0.0001f;
-                if(Multispec2!=Multispec){
-                    V[cl*CurrSizes->usize*CurrSizes->usize+Multispec2+Multispec*CurrSizes->usize]=V[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize];
+                if( (tempsum/SumPriors>0) & (!isnan(tempsum/SumPriors))){
+                    V[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize]=tempsum/SumPriors;
+                    if(Multispec2!=Multispec){
+                        V[cl*CurrSizes->usize*CurrSizes->usize+Multispec2+Multispec*CurrSizes->usize]=V[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize];
+                    }
                 }
             }
         }
+
+    }
+
+    for (int cl=0; cl<num_class; cl++) {
         if(verbose>0){
             if(CurrSizes->usize==1){
                 cout.fill('0');
@@ -1480,10 +1592,8 @@ int calcM_mask(nifti_image * T1,
                 cout<< endl;
                 flush(cout);
             }
-
         }
     }
-
     return 1;
 }
 
@@ -1518,7 +1628,6 @@ int calcM_mask_LoAd(nifti_image * T1,
     }
     PrecisionTYPE tempsum= (PrecisionTYPE) 0.0;
     PrecisionTYPE SumPriors= (PrecisionTYPE) 0.0;
-    PrecisionTYPE tempexpec= (PrecisionTYPE) 0.0;
 
 
     for (int cl=0; cl<5; cl++) {
@@ -1529,7 +1638,6 @@ int calcM_mask_LoAd(nifti_image * T1,
         SumPriors=(PrecisionTYPE)0.0;
 
         // MEAN
-        tempexpec=0;
         if(BiasField!=NULL){
             for (int i=0; i<numel_masked; i++, Expec_PTR++,S2L_PTR++,BiasField_PTR++) {
                 tempsum+=(*Expec_PTR) * (T1_PTR[(*S2L_PTR)]+(*BiasField_PTR));
@@ -1590,7 +1698,7 @@ int calcM_mask_LoAd(nifti_image * T1,
 int printloglik(int iter,
                 PrecisionTYPE loglik,
                 PrecisionTYPE oldloglik){
-    if(iter>1){
+    if(iter>0){
         if ((loglik-oldloglik)/fabsf(oldloglik)>0 && (loglik-oldloglik)/fabsf(oldloglik)<100){
             cout<< "Loglik = " << loglik << " : Ratio = " << (loglik-oldloglik)/fabsf(oldloglik) << endl;
         }
@@ -1599,7 +1707,7 @@ int printloglik(int iter,
         }
     }
     else {
-        cout<< "Loglik = " << loglik << endl;
+        cout<< "Initial Loglik = " << loglik << endl;
     }
     return 1;
 }
@@ -1922,11 +2030,7 @@ PrecisionTYPE * Gaussian_Filter_4D_inside_mask(PrecisionTYPE * LongData,
     dim_array[2]=(int)CurrSizes->zsize;
 
 
-    //Outside the mask is considered Pure CSF
-    int outsiderangevalue[10];
-    for(int i=0; i<10; i++){
-        outsiderangevalue[i]=0;
-    }
+
     for(int curr4d=0; curr4d<CurrSizes->numclass; curr4d++){ //For Each Class
         int current_4dShift_short=curr4d*CurrSizes->numel;
         for(int index=0;index<CurrSizes->numel;index++){ //Copy Class to Buffer in LongFormat
@@ -2037,8 +2141,6 @@ int Sulci_and_gyri_correction(PrecisionTYPE * MRF_Beta,
 
 
     float sumed_all=0;
-    float toremove_Gyri=0;
-    float toremove_Sulci=0;
     float wSulci_tmp=0;
     float wGyri_tmp=0;
     float MRFbeta_tmp=0;
@@ -2050,9 +2152,6 @@ int Sulci_and_gyri_correction(PrecisionTYPE * MRF_Beta,
         MRF_Beta[i]=MRFbeta_tmp;
         sumed_all=0;
         if((wSulci_tmp+wGyri_tmp)>0){
-            toremove_Gyri=Expec[i+GMclass*CurrSizes->numelmasked]*(1-MRFbeta_tmp)*(wGyri_tmp/(wSulci_tmp+wGyri_tmp));
-            toremove_Sulci=Expec[i+GMclass*CurrSizes->numelmasked]*(1-MRFbeta_tmp)*(wSulci_tmp/(wSulci_tmp+wGyri_tmp));
-
             Expec[i+WMGMpvclass*CurrSizes->numelmasked]=Expec[i+WMGMpvclass*CurrSizes->numelmasked]+wGyri[i]*Expec[i+GMclass*CurrSizes->numelmasked];
             Expec[i+GMCSFpvclass*CurrSizes->numelmasked]=Expec[i+GMCSFpvclass*CurrSizes->numelmasked]+wSulci[i]*Expec[i+GMclass*CurrSizes->numelmasked];
             Expec[i+GMclass*CurrSizes->numelmasked]=Expec[i+GMclass*CurrSizes->numelmasked]*(MRFbeta_tmp);
@@ -2503,6 +2602,7 @@ nifti_image * Copy_Expec_to_Result_Neonate_mask(PrecisionTYPE * Expec,
     nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
     Result->data = (void *) calloc(Result->nvox, sizeof(PrecisionTYPE));
     PrecisionTYPE * Resultdata = static_cast<PrecisionTYPE *>(Result->data);
+
     PrecisionTYPE * T1ptrtmp = static_cast<PrecisionTYPE *>(T1->data);
     for(unsigned int i=0; i<Result->nvox; i++){Resultdata[i]=0;}
 
@@ -3042,14 +3142,6 @@ char * seg_norm_4D_GNCC(nifti_image * BaseImage,nifti_image * NCC,int numberorde
     LabFusion_datatype * NCCptr = static_cast<LabFusion_datatype *>(NCC->data);
     LabFusion_datatype * BaseImageptr = static_cast<LabFusion_datatype *>(BaseImage->data);
 
-    int directionShift[3];
-    int dim_array[3];
-    dim_array[0]=(int)BaseImage->nx;
-    dim_array[1]=(int)BaseImage->ny;
-    dim_array[2]=(int)BaseImage->nz;
-    directionShift[0]=1;
-    directionShift[1]=BaseImage->nx;
-    directionShift[2]=BaseImage->nx*BaseImage->ny;
     LabFusion_datatype BaseMean=0.0f;
     LabFusion_datatype BaseSTD=0.0f;
 
@@ -3146,14 +3238,7 @@ float seg_norm3GNCC(nifti_image * BaseImage,nifti_image * Template,nifti_image *
             Maskcount+=Maskptr[i];
         }
     }
-    int directionShift[3];
-    int dim_array[3];
-    dim_array[0]=(int)BaseImage->nx;
-    dim_array[1]=(int)BaseImage->ny;
-    dim_array[2]=(int)BaseImage->nz;
-    directionShift[0]=1;
-    directionShift[1]=BaseImage->nx;
-    directionShift[2]=BaseImage->nx*BaseImage->ny;
+
     LabFusion_datatype BaseMean=0.0f;
     LabFusion_datatype BaseSTD=0.0f;
 
@@ -3234,14 +3319,6 @@ char * seg_norm4ROINCC(nifti_image * LableImage,nifti_image * BaseImage,nifti_im
     LabFusion_datatype * BaseImageptr = static_cast<LabFusion_datatype *>(BaseImage->data);
     bool * ROIarea=new bool [BaseImage->nx*BaseImage->ny*BaseImage->nz];
 
-    int directionShift[3];
-    int dim_array[3];
-    dim_array[0]=(int)BaseImage->nx;
-    dim_array[1]=(int)BaseImage->ny;
-    dim_array[2]=(int)BaseImage->nz;
-    directionShift[0]=1;
-    directionShift[1]=BaseImage->nx;
-    directionShift[2]=BaseImage->nx*BaseImage->ny;
     LabFusion_datatype BaseMean=0.0f;
     LabFusion_datatype BaseSTD=0.0f;
     LabFusion_datatype bufferMean=0.0f;
@@ -3272,6 +3349,10 @@ char * seg_norm4ROINCC(nifti_image * LableImage,nifti_image * BaseImage,nifti_im
         }
     }
 
+    int dim_array[3];
+    dim_array[0]=(int)BaseImage->nx;
+    dim_array[1]=(int)BaseImage->ny;
+    dim_array[2]=(int)BaseImage->nz;
     Dillate(ROIarea,DilSize,dim_array);
 
 
@@ -3356,19 +3437,203 @@ char * seg_norm4ROINCC(nifti_image * LableImage,nifti_image * BaseImage,nifti_im
 }
 
 
+char * seg_norm4MLLNCC(nifti_image * BaseImage, nifti_image * LNCC,float distance,int levels, int numberordered,ImageSize * CurrSizes,int verbose){
+
+    LabFusion_datatype * LNCCptr = static_cast<LabFusion_datatype *>(LNCC->data);
+    LabFusion_datatype * BaseImageptr = static_cast<LabFusion_datatype *>(BaseImage->data);
+    char * LNCC_ordered=NULL;
+    char * LNCC_ordered_save=NULL;
+
+
+    int numbordered_level_old=LNCC->nt;
+
+    for(int curlevel=levels; curlevel;curlevel--){
+
+        if(curlevel==levels){
+            LNCC_ordered_save=new char [numbordered_level_old*BaseImage->nx*BaseImage->ny*BaseImage->nz];
+            if(LNCC_ordered_save == NULL){
+                fprintf(stderr,"* Error when alocating LNCC_ordered_save in function seg_norm4MLLNCC");
+                exit(-1);
+            }
+
+            for(int cl=0;cl<numbordered_level_old; cl++){
+                for(int cl_index=0;cl_index<BaseImage->nx*BaseImage->ny*BaseImage->nz; cl_index++){
+                    LNCC_ordered_save[cl_index+cl*(BaseImage->nx*BaseImage->ny*BaseImage->nz)]=cl;
+                }
+            }
+        }
+
+
+        float distance_level=distance*pow(2,(curlevel-1));
+        int numbordered_level=(curlevel*numberordered)<=LNCC->nt?(curlevel*numberordered):LNCC->nt;
+
+
+        LabFusion_datatype * BaseMean=new LabFusion_datatype [BaseImage->nx*BaseImage->ny*BaseImage->nz];
+        if(BaseMean == NULL){
+            fprintf(stderr,"* Error when alocating BaseMean in function seg_norm4LNCC");
+            exit(-1);
+        }
+        LabFusion_datatype * BaseSTD=new LabFusion_datatype [BaseImage->nx*BaseImage->ny*BaseImage->nz];
+        if(BaseSTD == NULL){
+            fprintf(stderr,"* Error when alocating BaseSTD in function seg_norm4LNCC");
+            exit(-1);
+        }
+
+        // CALC MEAN AND STD OF THE BASE
+        if (verbose>0){
+            cout << "Calculating LNCC at level "<<curlevel<< " ( kernel size = "<<distance_level<<" , number templates = "<<numbordered_level<<" )"<<endl;
+            cout << "Local Mean and STD of the base image"<<endl;
+            flush(cout);
+        }
+        for(int i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
+            BaseMean[i]=BaseImageptr[i];
+            BaseSTD[i]=BaseImageptr[i]*BaseImageptr[i];
+        }
+        // Calc Mean
+        int realt=CurrSizes->numclass;
+        CurrSizes->numclass=1;
+        Gaussian_Filter_4D(BaseMean,(float)(distance_level),CurrSizes);
+        Gaussian_Filter_4D(BaseSTD,(float)(distance_level),CurrSizes);
+
+        for(int i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
+            BaseSTD[i]=BaseSTD[i]-BaseMean[i]*BaseMean[i];
+        }
+
+        // CALC LNCC FOR EACH
+        if (verbose>0){
+            cout << "Local Mean and STD of the Template images"<<endl;
+            flush(cout);
+        }
+        int currlable=0;
+
+#ifdef _OPENMP
+#pragma omp parallel for shared(BaseImageptr, BaseSTD, BaseMean, LNCC,BaseImage,stderr, verbose,cout,LNCCptr,CurrSizes,distance_level)
+#endif
+
+        for(currlable=0;currlable<LNCC->nt; currlable++){
+            LabFusion_datatype * bufferMean=new LabFusion_datatype [BaseImage->nx*BaseImage->ny*BaseImage->nz];
+            if(bufferMean == NULL){
+                fprintf(stderr,"* Error when alocating bufferMean in function seg_norm4LNCC");
+                exit(-1);
+            }
+            LabFusion_datatype * bufferSTD=new LabFusion_datatype [ BaseImage->nx * BaseImage->ny * BaseImage->nz ];
+            if(bufferSTD == NULL){
+                fprintf(stderr,"* Error when alocating bufferSTD in function seg_norm4LNCC");
+                exit(-1);
+            }
+            LabFusion_datatype * bufferDATA=new LabFusion_datatype [BaseImage->nx*BaseImage->ny*BaseImage->nz];
+            if(bufferDATA == NULL){
+                fprintf(stderr,"* Error when alocating bufferDATA in function seg_norm4LNCC");
+                exit(-1);
+            }
+
+            if (verbose>0){
+                cout << currlable+1 << "/" << LNCC->nt<<"\n";
+                flush(cout);
+            }
+            LabFusion_datatype * currLNCCptr=&LNCCptr[currlable*BaseImage->nx*BaseImage->ny*BaseImage->nz];
+            for(int i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
+                bufferDATA[i]=currLNCCptr[i]*BaseImageptr[i];
+                bufferMean[i]=currLNCCptr[i];
+                bufferSTD[i]=currLNCCptr[i]*currLNCCptr[i];
+            }
+
+            // Calc Mean
+            Gaussian_Filter_4D(bufferMean,(float)(distance_level),CurrSizes);
+            Gaussian_Filter_4D(bufferSTD,(float)(distance_level),CurrSizes);
+            Gaussian_Filter_4D(bufferDATA,(float)(distance_level),CurrSizes);
+            for(int i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
+                bufferSTD[i]=bufferSTD[i]-bufferMean[i]*bufferMean[i];
+                currLNCCptr[i]=(bufferDATA[i]-BaseMean[i]*bufferMean[i])/(sqrt(bufferSTD[i]*BaseSTD[i])+0.0000001);
+                currLNCCptr[i]=currLNCCptr[i]>0?currLNCCptr[i]:0;
+            }
+            delete [] bufferSTD;
+            delete [] bufferMean;
+            delete [] bufferDATA;
+        }
+
+        delete [] BaseSTD;
+        delete [] BaseMean;
+
+        CurrSizes->numclass=realt;
+        LNCC_ordered=new char [numbordered_level*BaseImage->nx*BaseImage->ny*BaseImage->nz];
+        if(LNCC_ordered == NULL){
+            fprintf(stderr,"* Error when alocating LNCC_ordered in function seg_norm4LNCC");
+            exit(-1);
+        }
+
+
+        if (verbose>0){
+            cout << "Sorting"<<endl;
+        }
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+    shared(LNCC,LNCCptr,CurrSizes,numbordered_level,LNCC_ordered,numbordered_level_old,LNCC_ordered_save)
+#endif
+        for(int i=0; i<LNCC->nx*LNCC->ny*LNCC->nz;i++){
+            LabFusion_datatype LNCCvalue_tmp[1000];
+            char old_sort[1000];;
+            for(int currlable=0;currlable<LNCC->nt; currlable++){
+                LNCCvalue_tmp[currlable]=LNCCptr[i+currlable*LNCC->nx*LNCC->ny*LNCC->nz];
+            }
+
+            for(int currlable=0;currlable<numbordered_level_old; currlable++){
+                old_sort[currlable]=LNCC_ordered_save[i+currlable*LNCC->nx*LNCC->ny*LNCC->nz];
+            }
+
+            int * ordertmp=quickSort_order(&LNCCvalue_tmp[0],LNCC->nt);
+
+            int label_order_index=0;
+            for(int lable_order=0;lable_order<LNCC->nt;lable_order++){
+                char cur_LNCC_ordered_label=(char)ordertmp[LNCC->nt-lable_order-1];
+                for(int currlable=0;currlable<numbordered_level_old; currlable++){
+                    if(cur_LNCC_ordered_label==old_sort[currlable]){
+                        LNCC_ordered[i+label_order_index*LNCC->nx*LNCC->ny*LNCC->nz]=cur_LNCC_ordered_label;
+                        label_order_index++;
+                        currlable=numbordered_level_old;
+                    }
+                }
+                if((label_order_index)>=numbordered_level){
+                    lable_order=LNCC->nt;
+                }
+
+            }
+            delete [] ordertmp;
+
+        }
+
+        if(curlevel>1){
+            numbordered_level_old=numbordered_level;
+            delete [] LNCC_ordered_save;
+            LNCC_ordered_save=new char [numbordered_level_old*LNCC->nx*LNCC->ny*LNCC->nz];
+            if(LNCC_ordered_save == NULL){
+                fprintf(stderr,"* Error when alocating LNCC_ordered_save in function seg_norm4MLLNCC");
+                exit(-1);
+            }
+            for(int cl=0;cl<numbordered_level_old*LNCC->nx*LNCC->ny*LNCC->nz; cl++){
+                LNCC_ordered_save[cl]=LNCC_ordered[cl];
+            }
+            delete [] LNCC_ordered;
+        }
+
+        if (verbose>0){
+            cout << "Finished sorting"<< endl;
+            flush(cout);
+        }
+    }
+
+    return LNCC_ordered;
+}
+
+/* *************************************************************** */
+
+
 char * seg_norm4LNCC(nifti_image * BaseImage, nifti_image * LNCC,float distance,int numberordered,ImageSize * CurrSizes,int verbose){
 
     LabFusion_datatype * LNCCptr = static_cast<LabFusion_datatype *>(LNCC->data);
     LabFusion_datatype * BaseImageptr = static_cast<LabFusion_datatype *>(BaseImage->data);
-    int directionShift[3];
     char * LNCC_ordered=NULL;
-    int dim_array[3];
-    dim_array[0]=(int)BaseImage->nx;
-    dim_array[1]=(int)BaseImage->ny;
-    dim_array[2]=(int)BaseImage->nz;
-    directionShift[0]=1;
-    directionShift[1]=BaseImage->nx;
-    directionShift[2]=BaseImage->nx*BaseImage->ny;
     LabFusion_datatype * BaseMean=new LabFusion_datatype [BaseImage->nx*BaseImage->ny*BaseImage->nz];
     if(BaseMean == NULL){
         fprintf(stderr,"* Error when alocating BaseMean in function seg_norm4LNCC");
@@ -3406,9 +3671,9 @@ char * seg_norm4LNCC(nifti_image * BaseImage, nifti_image * LNCC,float distance,
         flush(cout);
     }
 
-    #ifdef _OPENMP
-        #pragma omp parallel for shared(BaseImageptr, BaseSTD, BaseMean, LNCC,BaseImage,stderr, verbose,cout,LNCCptr,CurrSizes,distance)
-    #endif
+#ifdef _OPENMP
+#pragma omp parallel for shared(BaseImageptr, BaseSTD, BaseMean, LNCC,BaseImage,stderr, verbose,cout,LNCCptr,CurrSizes,distance)
+#endif
 
     for(int currlable=0;currlable<LNCC->nt; currlable++){
         LabFusion_datatype * bufferMean=new LabFusion_datatype [BaseImage->nx*BaseImage->ny*BaseImage->nz];
@@ -3428,7 +3693,7 @@ char * seg_norm4LNCC(nifti_image * BaseImage, nifti_image * LNCC,float distance,
         }
         //for(int currlable=0;currlable<3; currlable++){
         if (verbose>0){
-            cout << currlable+1 << "/" << LNCC->nt<< endl;
+            cout << currlable+1 << "/" << LNCC->nt<<"\n";
             flush(cout);
         }
         LabFusion_datatype * currLNCCptr=&LNCCptr[currlable*BaseImage->nx*BaseImage->ny*BaseImage->nz];
@@ -3470,10 +3735,10 @@ char * seg_norm4LNCC(nifti_image * BaseImage, nifti_image * LNCC,float distance,
         cout << "Sorting LNCC"<<endl;
     }
 
-    #ifdef _OPENMP
-    #pragma omp parallel for default(none) \
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
     shared(LNCC,BaseImage,LNCCptr,CurrSizes,numberordered,LNCC_ordered)
-    #endif
+#endif
     for(int i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
         LabFusion_datatype * LNCCvalue_tmp = new LabFusion_datatype [LNCC->nt];
         for(int currlable=0;currlable<LNCC->nt; currlable++){
@@ -3495,6 +3760,9 @@ char * seg_norm4LNCC(nifti_image * BaseImage, nifti_image * LNCC,float distance,
 }
 
 /* *************************************************************** */
+
+
+
 template <class NewTYPE, class DTYPE>
 int seg_changeDatatype1(nifti_image *image)
 {
@@ -3514,7 +3782,13 @@ int seg_changeDatatype1(nifti_image *image)
     image->nbyper = sizeof(NewTYPE);
     image->data = (void *)calloc(image->nvox,sizeof(NewTYPE));
     NewTYPE *dataPtr = static_cast<NewTYPE *>(image->data);
-    for(unsigned int i=0; i<image->nvox; i++) dataPtr[i] = (NewTYPE)(initialValue[i]);
+    if(sizeof(NewTYPE)==sizeof(unsigned char)){
+        for(unsigned int i=0; i<image->nvox; i++) dataPtr[i] = (unsigned char)(round(initialValue[i]));
+    }
+    else{
+        for(unsigned int i=0; i<image->nvox; i++) dataPtr[i] = (NewTYPE)(initialValue[i]);
+    }
+
 
     free(initialValue);
     return 1;

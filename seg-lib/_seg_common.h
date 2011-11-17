@@ -19,8 +19,9 @@
 #define PV_numbclass 7
 #define max_numbclass 10
 #define maxallowedpowerorder 6
-#define redux_factor_for_bias 3
+#define redux_factor_for_bias 2
 #define MaxMultispectalSize 6
+#define MaxMultiLableClass 250
 
 #define LabFusion_datatype float
 #define classifier_datatype unsigned char
@@ -79,6 +80,10 @@ typedef struct{
     bool flag_SG_deli;
     bool flag_bc_out;
     bool flag_manual_priors;
+    bool flag_Outlierness;
+    char * filename_out_outlier;
+    bool flag_out_outlier;
+    float OutliernessThreshold;
     float * MAP_M;
     float * MAP_V;
     bool flag_MAP;

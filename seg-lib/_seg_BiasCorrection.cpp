@@ -8,6 +8,7 @@ void BiasCorrection(PrecisionTYPE * BiasField,
                     PrecisionTYPE * BiasFieldCoefs,
                     nifti_image * T1,
                     PrecisionTYPE * Expec,
+                    PrecisionTYPE * Outlierness,
                     PrecisionTYPE * M,
                     PrecisionTYPE * V,
                     int biasOrder,
@@ -63,7 +64,9 @@ void BiasCorrection(PrecisionTYPE * BiasField,
         PrecisionTYPE B [((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3)/3)]={0.0f};
         PrecisionTYPE C [((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3)/3)]={0.0f};
 
-
+//#ifdef _OPENMP
+//        PrecisionTYPE * Athread =new PrecisionTYPE [omp_get_max_threads()*((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3)/3)*((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3)/3)]();
+//#endif
         // Precompute sizes
         int col_size = (int)(CurrSizes->xsize);
         int plane_size = (int)(CurrSizes->xsize)*(CurrSizes->ysize);
@@ -107,6 +110,7 @@ void BiasCorrection(PrecisionTYPE * BiasField,
         PrecisionTYPE Tempvar_tmp=0;
         currindex=0;
         int tempvarindex=0;
+
         for (int iz=0; iz<maxiz; iz+=reduxfactor) {
             for (int iy=0; iy<maxiy; iy+=reduxfactor) {
                 for (int ix=0; ix<maxix; ix+=reduxfactor) {
@@ -146,6 +150,9 @@ void BiasCorrection(PrecisionTYPE * BiasField,
         PrecisionTYPE * Basisptr1= (PrecisionTYPE *) Basis;
         PrecisionTYPE * Basisptr2= (PrecisionTYPE *) Basis;
         PrecisionTYPE * Aptr= (PrecisionTYPE *) A;
+//#ifdef _OPENMP
+//#pragma omp parallel
+//#endif
         for (int iz=0; iz<maxiz; iz+=reduxfactor) {
             for (int iy=0; iy<maxiy; iy+=reduxfactor) {
                 for (int ix=0; ix<maxix; ix+=reduxfactor) {
@@ -166,6 +173,16 @@ void BiasCorrection(PrecisionTYPE * BiasField,
                         // TmpA=(pow(xpos,PowerOrder[0+j2*3])*pow(ypos,PowerOrder[1+j2*3])*pow(zpos,PowerOrder[2+j2*3]));
                     }
                     Basisptr1= (PrecisionTYPE *) Basis;
+//#ifdef _OPENMP
+//                    Aptr=&Athread[omp_get_thread_num()*((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3)/3)*((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3)/3)];
+//                    for(int j2=0; j2<UsedBasisFunctions; j2++, Basisptr1++){
+//                        Basisptr2= &Basis[j2];
+//                        PrecisionTYPE * Aptr2= &Aptr[j2+j2*UsedBasisFunctions];
+//                        for(int i2=j2; i2<UsedBasisFunctions; i2++, Aptr2++, Basisptr2++){
+//                            (*Aptr2)+=(*Basisptr2)*(current_Tempvar)*(*Basisptr1);
+//                        }
+//                    }
+//#else
                     Aptr= (PrecisionTYPE *) A;
                     for(int j2=0; j2<UsedBasisFunctions; j2++, Basisptr1++){
                         Basisptr2= &Basis[j2];
@@ -174,11 +191,20 @@ void BiasCorrection(PrecisionTYPE * BiasField,
                             (*Aptr)+=(*Basisptr2)*(current_Tempvar)*(*Basisptr1);
                         }
                     }
+//#endif
                     tempvarindex++;
                 }
             }
         }
 
+//#ifdef _OPENMP
+//        for(int j=0; j<omp_get_max_threads(); j++){
+//            Aptr=&Athread[j*((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3)/3)*((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3)/3)];
+//            for(int j2=0; j2<UsedBasisFunctions*UsedBasisFunctions; j2++){
+//                A[j2]=Aptr[j2];
+//            }
+//        }
+//#endif
 
 
         matrix <double> RealA(UsedBasisFunctions,UsedBasisFunctions);
@@ -234,6 +260,9 @@ void BiasCorrection(PrecisionTYPE * BiasField,
             }
         }
 
+//#ifdef _OPENMP
+//#pragma omp parallel
+//#endif
         for(int i2=0; i2<UsedBasisFunctions; i2++){
             tempvarindex=0;
             B[i2]=0;
@@ -242,9 +271,9 @@ void BiasCorrection(PrecisionTYPE * BiasField,
                     for (int ix=0; ix<maxix; ix+=reduxfactor) {
                         linearindexes=(iz)*(CurrSizes->xsize)*(CurrSizes->ysize)+(iy)*(CurrSizes->xsize)+ix;
                         B[i2]+=pow_int((((PrecisionTYPE)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x),PowerOrder[0+i2*3])*
-                               pow_int((((PrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y),PowerOrder[1+i2*3])*
-                               pow_int((((PrecisionTYPE)iz-not_point_five_times_dims_z)*inv_not_point_five_times_dims_z),PowerOrder[2+i2*3])*
-                               Tempvar[tempvarindex];
+                                pow_int((((PrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y),PowerOrder[1+i2*3])*
+                                pow_int((((PrecisionTYPE)iz-not_point_five_times_dims_z)*inv_not_point_five_times_dims_z),PowerOrder[2+i2*3])*
+                                Tempvar[tempvarindex];
                         if(B[i2]!=B[i2]){
                             B[i2]=1;
                         }
@@ -275,13 +304,18 @@ void BiasCorrection(PrecisionTYPE * BiasField,
             C[i2]=(PrecisionTYPE)(cvalue);
         }
 
-        PrecisionTYPE currxpower[maxallowedpowerorder];
-        PrecisionTYPE currypower[maxallowedpowerorder];
-        PrecisionTYPE currzpower[maxallowedpowerorder];
-        PrecisionTYPE tmpbiasfield=0.0f;
+
+
+//#ifdef _OPENMP
+//#pragma omp parallel
+//#endif
         for (int iz=0; iz<maxiz; iz++) {
             for (int iy=0; iy<maxiy; iy++) {
                 for (int ix=0; ix<maxix; ix++) {
+                    PrecisionTYPE tmpbiasfield=0.0f;
+                    PrecisionTYPE currxpower[maxallowedpowerorder];
+                    PrecisionTYPE currypower[maxallowedpowerorder];
+                    PrecisionTYPE currzpower[maxallowedpowerorder];
                     linearindexes=(iz)*(CurrSizes->xsize)*(CurrSizes->ysize)+(iy)*(CurrSizes->xsize)+ix;
                     tmpbiasfield=0.0f;
                     xpos=(((PrecisionTYPE)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x);
@@ -323,6 +357,7 @@ void BiasCorrection_mask(PrecisionTYPE * BiasField,
                          nifti_image * T1,
                          int * Long_2_Short_Indices,
                          PrecisionTYPE * Expec,
+                         PrecisionTYPE * Outlierness,
                          PrecisionTYPE * M,
                          PrecisionTYPE * V,
                          int biasOrder,
@@ -430,8 +465,16 @@ void BiasCorrection_mask(PrecisionTYPE * BiasField,
                     currshortindex=Long_2_Short_Indices[iz*plane_size+iy*col_size+ix];
                     if(currshortindex>=0){
                         Tempvar_tmp=0;
-                        for(int j=0; j<nrOfClasses; j++){
-                            Tempvar_tmp+=Expec[currshortindex+TotalLength*j]*invV[j];
+                        if(Outlierness==NULL){
+                            for(int j=0; j<nrOfClasses; j++){
+                                Tempvar_tmp+=Expec[currshortindex+TotalLength*j]*invV[j];
+                            }
+                        }
+                        else{
+                            for(int j=0; j<nrOfClasses; j++){
+                                Tempvar_tmp+=Expec[currshortindex+TotalLength*j]*Outlierness[currshortindex+TotalLength*j]*invV[j];
+                            }
+
                         }
                         Tempvar[tempvarindex]=Tempvar_tmp;
                         tempvarindex++;
@@ -554,31 +597,38 @@ void BiasCorrection_mask(PrecisionTYPE * BiasField,
             }
         }
 
-        for(int i2=0; i2<UsedBasisFunctions; i2++){
-            tempvarindex=0;
-            B[i2]=0;
-            for (int iz=0; iz<maxiz; iz+=reduxfactor) {
-                for (int iy=0; iy<maxiy; iy+=reduxfactor) {
-                    for (int ix=0; ix<maxix; ix+=reduxfactor) {
-                        linearindexes=(iz)*(CurrSizes->xsize)*(CurrSizes->ysize)+(iy)*(CurrSizes->xsize)+ix;
-                        currshortindex=Long_2_Short_Indices[linearindexes];
-                        if(currshortindex>=0){
+//#ifdef _OPENMP
+//#pragma omp parallel shared(Tempvar,PowerOrder,CurrSizes,B,Long_2_Short_Indices) private(UsedBasisFunctions,maxiz,maxiy,maxix, not_point_five_times_dims_x, not_point_five_times_dims_y, not_point_five_times_dims_z,reduxfactor,inv_not_point_five_times_dims_x, inv_not_point_five_times_dims_y, inv_not_point_five_times_dims_z)
+//#endif
+        for(int bfindex=0; bfindex<UsedBasisFunctions; bfindex++){
+            int tempvarindex2=0;
+            int linearindexes2=0;
+            PrecisionTYPE * BPTR=&B[bfindex];
+            *BPTR=0;
+            for (int iz2=0; iz2<maxiz; iz2+=reduxfactor) {
+                for (int iy2=0; iy2<maxiy; iy2+=reduxfactor) {
+                    for (int ix2=0; ix2<maxix; ix2+=reduxfactor) {
+                        linearindexes2=(iz2)*(CurrSizes->xsize)*(CurrSizes->ysize)+(iy2)*(CurrSizes->xsize)+ix2;
+                        if(Long_2_Short_Indices[linearindexes2]>=0){
+                            *BPTR+=pow_int((((PrecisionTYPE)ix2-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x),PowerOrder[0+bfindex*3])*
+                                    pow_int((((PrecisionTYPE)iy2-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y),PowerOrder[1+bfindex*3])*
+                                    pow_int((((PrecisionTYPE)iz2-not_point_five_times_dims_z)*inv_not_point_five_times_dims_z),PowerOrder[2+bfindex*3])*
+                                    Tempvar[tempvarindex2];
 
-                            B[i2]+=pow_int((((PrecisionTYPE)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x),PowerOrder[0+i2*3])*
-                                   pow_int((((PrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y),PowerOrder[1+i2*3])*
-                                   pow_int((((PrecisionTYPE)iz-not_point_five_times_dims_z)*inv_not_point_five_times_dims_z),PowerOrder[2+i2*3])*
-                                   Tempvar[tempvarindex];
 
-                            if(B[i2]!=B[i2]){
-                                B[i2]=1;
-                            }
-                            tempvarindex++;
+                            tempvarindex2++;
                         }
                     }
                 }
             }
+            if(*BPTR!=*BPTR){
+                *BPTR=1;
+            }
         }
 
+//#ifdef _OPENMP
+//#pragma omp barrier
+//#endif
         matrix <double> RealB(UsedBasisFunctions,1);
 
         for(int i2=0; i2<UsedBasisFunctions; i2++){
@@ -600,11 +650,14 @@ void BiasCorrection_mask(PrecisionTYPE * BiasField,
             C[i2]=(PrecisionTYPE)(cvalue);
         }
 
-        PrecisionTYPE currxpower[maxallowedpowerorder];
-        PrecisionTYPE currypower[maxallowedpowerorder];
-        PrecisionTYPE currzpower[maxallowedpowerorder];
-        PrecisionTYPE tmpbiasfield=0.0f;
+//#ifdef _OPENMP
+//#pragma omp parallel
+//#endif
         for (int iz=0; iz<maxiz; iz++) {
+            PrecisionTYPE currxpower[maxallowedpowerorder];
+            PrecisionTYPE currypower[maxallowedpowerorder];
+            PrecisionTYPE currzpower[maxallowedpowerorder];
+            PrecisionTYPE tmpbiasfield=0.0f;
             for (int iy=0; iy<maxiy; iy++) {
                 for (int ix=0; ix<maxix; ix++) {
                     linearindexes=(iz)*(CurrSizes->xsize)*(CurrSizes->ysize)+(iy)*(CurrSizes->xsize)+ix;
@@ -615,13 +668,13 @@ void BiasCorrection_mask(PrecisionTYPE * BiasField,
                         ypos=(((PrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y);
                         zpos=(((PrecisionTYPE)iz-not_point_five_times_dims_z)*inv_not_point_five_times_dims_z);
                         get_xyz_pow_int(xpos, ypos, zpos, currxpower, currypower, currzpower, biasOrder);
-                        ind=0;
+                        int ind2=0;
                         for(int order=0; order<=biasOrder; order++){
                             for(int xorder=0; xorder<=order; xorder++){
                                 for(int yorder=0; yorder<=(order-xorder); yorder++){
                                     int zorder=order-yorder-xorder;
-                                    tmpbiasfield-=C[ind]*currxpower[xorder]*currypower[yorder]*currzpower[zorder];
-                                    ind++;
+                                    tmpbiasfield-=C[ind2]*currxpower[xorder]*currypower[yorder]*currzpower[zorder];
+                                    ind2++;
                                 }
                             }
                         }
@@ -668,6 +721,7 @@ void BiasCorrection2D(PrecisionTYPE * BiasField,
                       PrecisionTYPE * BiasFieldCoefs,
                       nifti_image * T1,
                       PrecisionTYPE * Expec,
+                      PrecisionTYPE * Outlierness,
                       PrecisionTYPE * M,
                       PrecisionTYPE * V,
                       int biasOrder,
@@ -880,8 +934,8 @@ void BiasCorrection2D(PrecisionTYPE * BiasField,
                 for (int ix=0; ix<maxix; ix+=reduxfactor) {
                     linearindexes=(iy)*(CurrSizes->xsize)+ix;
                     B[i2]+=pow_int((((PrecisionTYPE)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x),PowerOrder[0+i2*3])*
-                           pow_int((((PrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y),PowerOrder[1+i2*3])*
-                           Tempvar[tempvarindex];
+                            pow_int((((PrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y),PowerOrder[1+i2*3])*
+                            Tempvar[tempvarindex];
                     if(B[i2]!=B[i2]){
                         B[i2]=1;
                     }
@@ -953,6 +1007,7 @@ void BiasCorrection_mask2D(PrecisionTYPE * BiasField,
                            nifti_image * T1,
                            int * Long_2_Short_Indices,
                            PrecisionTYPE * Expec,
+                           PrecisionTYPE * Outlierness,
                            PrecisionTYPE * M,
                            PrecisionTYPE * V,
                            int biasOrder,
@@ -1168,8 +1223,8 @@ void BiasCorrection_mask2D(PrecisionTYPE * BiasField,
                     currshortindex=Long_2_Short_Indices[linearindexes];
                     if(currshortindex>=0){
                         B[i2]+=pow_int((((PrecisionTYPE)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x),PowerOrder[0+i2*2])*
-                               pow_int((((PrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y),PowerOrder[1+i2*2])*
-                               Tempvar[tempvarindex];
+                                pow_int((((PrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y),PowerOrder[1+i2*2])*
+                                Tempvar[tempvarindex];
 
                         if(B[i2]!=B[i2]){
                             B[i2]=1;
