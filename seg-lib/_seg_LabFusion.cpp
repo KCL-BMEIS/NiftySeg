@@ -66,7 +66,7 @@ seg_LabFusion::seg_LabFusion(int _numb_classif, int numbclasses, int _Numb_Neigh
     this->maxIteration=100;
     this->LNCC=NULL;
     this->NCC=NULL;
-    this->Numb_Neigh=5;
+    this->Numb_Neigh=3;
     this->LNCC_status=false;
     this->NCC_status=false;
 
@@ -151,6 +151,7 @@ int seg_LabFusion::SetinputCLASSIFIER(nifti_image *r,bool UNCERTAINflag)
     this->dx=r->dx;
     this->dy=r->dy;
     this->dz=r->dz;
+    this->Numb_Neigh=r->dt;
     this->numel=r->nz*r->ny*r->nx;
     if(this->CurrSizes==NULL) Create_CurrSizes();
 
@@ -1484,7 +1485,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
         cout<< "Allocating num_true";
         flush(cout);
      }
-    int * num_true=new int [this->NUMBER_OF_CLASSES];
+    int * num_true=new int [this->NUMBER_OF_CLASSES+1];
     if(num_true == NULL){
         fprintf(stderr,"* Error when alocating num_true: Not enough memory\n");
         exit(1);
@@ -1496,7 +1497,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
 
 
     if(this->verbose_level>1){
-        cout<< "Calc Initial W";
+        cout<< "Calc Initial W - numel=" <<this->numel<<" - Numb_Neigh=" <<this->Numb_Neigh<<" - Numb Classes=" <<this->NUMBER_OF_CLASSES<<endl;
         flush(cout);
      }
     classifier_datatype * inputCLASSIFIERptr = static_cast<classifier_datatype *>(this->inputCLASSIFIER->data);
@@ -1513,7 +1514,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
                 num_true[(int)(inputCLASSIFIERptr[i+(int)NCC[currClassifier]*(this->numel)])]++;
             }
             else{
-                num_true[(int)(inputCLASSIFIERptr[i+currClassifier*(this->numel)])]++;
+                num_true[(int)(inputCLASSIFIERptr[i+(int)currClassifier*(this->numel)])]++;
             }
         }
         this->uncertainarea[i]=true ;
@@ -1531,7 +1532,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
         flush(cout);
      }
 
-    int dim_array[3];
+    int *dim_array=new int[10];
     dim_array[0]=(int)inputCLASSIFIER->nx;
     dim_array[1]=(int)inputCLASSIFIER->ny;
     dim_array[2]=(int)inputCLASSIFIER->nz;
@@ -1589,7 +1590,8 @@ nifti_image * seg_LabFusion::GetResult(int ProbOutput)
     if(this->FilenameOut.empty()){
         this->FilenameOut.assign("LabFusion.nii.gz");
     }
-    nifti_set_filenames(Result,(char*)this->FilenameOut.c_str(),0,0);
+
+   nifti_set_filenames(Result,(char*)this->FilenameOut.c_str(),0,0);
 
     nifti_update_dims_from_array(Result);
 
