@@ -461,7 +461,7 @@ int main(int argc, char **argv)
     time(&start);
 
     if(verbose_level>1){
-        cout << "Creating Object";
+        cout << endl<<"Creating Object";
     }
     seg_LabFusion LabFusion(CLASSIFIER->nt,MaxLab,Numb_Neigh);
     if(verbose_level>1){
