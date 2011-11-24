@@ -1541,7 +1541,11 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
         cout<< "Dilating uncertainarea";
         flush(cout);
      }
+
+    if(this->uncertainflag){
     Dillate(uncertainarea,1,dim_array);
+    }
+
     if(this->verbose_level>1){
         cout<< " - Done"<<endl;
         flush(cout);
