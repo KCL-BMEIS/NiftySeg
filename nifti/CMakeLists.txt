@@ -1,6 +1,6 @@
 #-----------------------------------------------------------------------------
 ADD_DEFINITIONS(-DHAVE_ZLIB)
-SET(NAME seg_nifti)
+SET(NAME _seg_nifti)
 ADD_LIBRARY(${NAME} nifti1.h nifti1_io.c nifti1_io.h znzlib.c znzlib.h)
 TARGET_LINK_LIBRARIES(${NAME} z)
 INSTALL(TARGETS ${NAME}
