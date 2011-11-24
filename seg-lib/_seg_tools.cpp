@@ -397,8 +397,8 @@ int Normalize_Image_mask(nifti_image * input,
                     PrecisionTYPE * Inputptrtmp = static_cast<PrecisionTYPE *>(input->data);
                     PrecisionTYPE * Inputptr=&Inputptrtmp[numel*tdir+(CurrSizes->tsize)*numel*udir];
 
-                    float tempmax=-1000000000;
-                    float tempmin=1000000000;
+                    float tempmax=-1000000.f;
+                    float tempmin=1000000.f;
                     for (int i=0; i<numel; i++) {
                         if(*brainmaskptr){
                             if (*Inputptr<tempmin) {
@@ -454,7 +454,7 @@ int Normalize_Image(nifti_image * input,
                 PrecisionTYPE * Inputptr=&Inputptrtmp[numel*tdir+(CurrSizes->tsize)*numel*udir];
 
                 float tempmax=0;
-                float tempmin=10000000000;
+                float tempmin=1000000.f;
                 for (int i=0; i<numel; i++) {
                     if (*Inputptr<tempmin) {
                         tempmin=*Inputptr;
