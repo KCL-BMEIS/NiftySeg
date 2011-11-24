@@ -1543,7 +1543,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
      }
 
     if(this->uncertainflag){
-    Dillate(uncertainarea,1,dim_array);
+    Dillate(uncertainarea,1,dim_array,this->verbose_level);
     }
 
     if(this->verbose_level>1){

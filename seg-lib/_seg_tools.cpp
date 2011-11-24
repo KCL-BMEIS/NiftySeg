@@ -3353,7 +3353,7 @@ char * seg_norm4ROINCC(nifti_image * LableImage,nifti_image * BaseImage,nifti_im
     dim_array[0]=(int)BaseImage->nx;
     dim_array[1]=(int)BaseImage->ny;
     dim_array[2]=(int)BaseImage->nz;
-    Dillate(ROIarea,DilSize,dim_array);
+    Dillate(ROIarea,DilSize,dim_array,verbose);
 
 
     // CALC MEAN AND STD OF THE BASE

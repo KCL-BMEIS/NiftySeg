@@ -4,7 +4,7 @@
 
 void ConnectComp(int * Old, int * New, int dimensions[3],int varin);
 
-void Dillate(bool * Image, int kernel, int dimensions[3]);
+void Dillate(bool * Image, int kernel, int dimensions[3],int verbose);
 
 void Dillate_const(bool * Image,
                    bool * Const,

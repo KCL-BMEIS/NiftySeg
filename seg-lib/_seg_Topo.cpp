@@ -145,7 +145,7 @@ void ConnectComp(int * Old,
 
 void Dillate(bool * Image,
              int kernel,
-             int dimensions[3] ){
+             int dimensions[3], int verbose ){
 
     int xyzpos[3];
     int shiftdirection[3];
@@ -153,12 +153,19 @@ void Dillate(bool * Image,
     shiftdirection[1]=dimensions[0];
     shiftdirection[2]=dimensions[1]*dimensions[0];
     bool * Buffer = new bool [dimensions[1]*dimensions[0]*dimensions[2]]();
-
+    if(verbose>1){
+        cout<<"Buffer allocated sucessfully"<<endl;
+        flush(cout);
+    }
     if(Buffer == NULL){
         fprintf(stderr,"* Error when alocating Buffer in void Dillate(): Not enough memory\n");
         exit(1);
     }
 
+    if(verbose>1){
+        cout<<"Dilating image now";
+        flush(cout);
+    }
     bool tmpvalue=0;
     for(int currentdirection=0;currentdirection<3;currentdirection++){ //Buffer aint each direction
         int index=0;
@@ -183,6 +190,10 @@ void Dillate(bool * Image,
         }
     }
 
+    if(verbose>1){
+        cout<<" - Done"<<endl;
+        flush(cout);
+    }
     delete [] Buffer;
 
     return;
