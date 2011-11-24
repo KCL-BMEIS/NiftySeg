@@ -151,7 +151,7 @@ int seg_LabFusion::SetinputCLASSIFIER(nifti_image *r,bool UNCERTAINflag)
     this->dx=r->dx;
     this->dy=r->dy;
     this->dz=r->dz;
-    this->Numb_Neigh=r->dt;
+    this->Numb_Neigh=r->nt;
     this->numel=r->nz*r->ny*r->nx;
     if(this->CurrSizes==NULL) Create_CurrSizes();
 
