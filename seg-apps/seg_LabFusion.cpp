@@ -41,6 +41,7 @@ void Usage(char *exec)
     printf("  * * * * * * * * * * * * * * STAPLE and STEPS options * * * * * * * * * * * * * *\n\n");
     printf("  -prop <proportion> \t\t| Proportion of the classifier (automatically estimated by default)\n");
     printf("  -prop_update \t\t\t| Update label proportions at each iteration.\n");
+    printf("  -dil_unc <int> \t\t\t| Dilate uncertainty region by <int>.\n");
     printf("  -setPQ <P> <Q> \t\t| Value of P and Q [ 0 < (P,Q) < 1 ] (default = 0.99 0.99) \n");
     printf("  -MRF_beta <float>\t\t| MRF prior strength [ 0 < beta < 5 ] \n");
     printf("  -max_iter <int>\t\t| Maximum number of iterations (default = 50)\n");
@@ -86,6 +87,7 @@ int main(int argc, char **argv)
     float tmpP=0;
     float tmpQ=0;
     float conv=0.000001;
+    int dilunc=0;
 
     float LNCC_kernel=3;
 
@@ -252,6 +254,9 @@ int main(int argc, char **argv)
         else if(strcmp(argv[i], "-outProb") == 0){
             filename_OUT = argv[++i];
             ProbOutput=1;
+        }
+        else if(strcmp(argv[i], "-dil_unc") == 0){
+            dilunc = atoi(argv[++i]);
         }
         else if(strcmp(argv[i], "-conv") == 0){
             conv = atof(argv[++i]);
@@ -475,6 +480,9 @@ int main(int argc, char **argv)
     if(verbose_level>1){
         cout << " - Done"<<endl;
         flush(cout);
+    }
+    if(dilunc>0){
+        LabFusion.SetDilUnc(dilunc);
     }
 
     if(verbose_level>1){

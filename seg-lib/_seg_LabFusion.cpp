@@ -57,6 +57,7 @@ seg_LabFusion::seg_LabFusion(int _numb_classif, int numbclasses, int _Numb_Neigh
     this->W=NULL;
     this->uncertainarea=NULL;
     this->uncertainflag=false;
+    this->dilunc=0;
     this->Prop=new LabFusion_datatype [numbclasses];
     this->Fixed_Prop_status=false;
     this->PropUpdate=false;
@@ -379,6 +380,14 @@ int seg_LabFusion::SetVerbose(unsigned int verblevel)
     else{
         this->verbose_level=verblevel;
     }
+    return 0;
+}
+
+/* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
+
+int seg_LabFusion::SetDilUnc(int _dilunc)
+{
+    this->dilunc=_dilunc;
     return 0;
 }
 
@@ -1458,7 +1467,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
     if(this->verbose_level>1){
         cout<< "Allocating this->W";
         flush(cout);
-     }
+    }
     this->W=new LabFusion_datatype [this->numel*this->NUMBER_OF_CLASSES];
     if(this->W == NULL){
         fprintf(stderr,"* Error when alocating this->W: Not enough memory\n");
@@ -1467,24 +1476,24 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
     if(this->verbose_level>1){
         cout<< " - Done"<<endl;
         flush(cout);
-     }
+    }
 
     if(this->verbose_level>1){
         cout<< "Initializing this->W";
         flush(cout);
-     }
+    }
     for(int i=0;i<(this->numel*this->NUMBER_OF_CLASSES);i++){
         this->W[i]=1/this->NUMBER_OF_CLASSES;
     }
     if(this->verbose_level>1){
         cout<< " - Done"<<endl;
         flush(cout);
-     }
+    }
 
     if(this->verbose_level>1){
         cout<< "Allocating num_true";
         flush(cout);
-     }
+    }
     int * num_true=new int [this->NUMBER_OF_CLASSES+1];
     if(num_true == NULL){
         fprintf(stderr,"* Error when alocating num_true: Not enough memory\n");
@@ -1493,13 +1502,13 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
     if(this->verbose_level>1){
         cout<< " - Done"<<endl;
         flush(cout);
-     }
+    }
 
 
     if(this->verbose_level>1){
         cout<< "Calc Initial W - numel=" <<this->numel<<" - Numb_Neigh=" <<this->Numb_Neigh<<" - Numb Classes=" <<this->NUMBER_OF_CLASSES<<endl;
         flush(cout);
-     }
+    }
     classifier_datatype * inputCLASSIFIERptr = static_cast<classifier_datatype *>(this->inputCLASSIFIER->data);
     for(int i=0;i<(this->numel);i++){
         for(int currClass=0; currClass<this->NUMBER_OF_CLASSES;currClass++){
@@ -1526,11 +1535,12 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
             }
             this->W[i+currClass*(this->numel)]=num_true[currClass]/this->Numb_Neigh;
         }
+
     }
     if(this->verbose_level>1){
         cout<< " - Done"<<endl;
         flush(cout);
-     }
+    }
 
     int *dim_array=new int[10];
     dim_array[0]=(int)inputCLASSIFIER->nx;
@@ -1541,22 +1551,24 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
     if(this->verbose_level>1){
         cout<< "Dilating uncertainarea";
         flush(cout);
-     }
+    }
 
     if(this->uncertainflag){
-    Dillate(uncertainarea,1,dim_array,this->verbose_level);
+        if(dilunc>0){
+           Dillate(this->uncertainarea,dilunc,dim_array,this->verbose_level);
+        }
     }
 
     if(this->verbose_level>1){
         cout<< " - Done"<<endl;
         flush(cout);
-     }
+    }
     delete [] num_true;
 
     if(this->verbose_level>1){
         cout<< "Allocating MRF";
         flush(cout);
-     }
+    }
     if(this->MRF_status){
         this->MRF=new LabFusion_datatype [this->numel*this->NUMBER_OF_CLASSES];
         if(MRF == NULL){
@@ -1569,7 +1581,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
     if(this->verbose_level>1){
         cout<< " - Done"<<endl;
         flush(cout);
-     }
+    }
 
     return 0;
 
@@ -1591,7 +1603,7 @@ nifti_image * seg_LabFusion::GetResult(int ProbOutput)
         this->FilenameOut.assign("LabFusion.nii.gz");
     }
 
-   nifti_set_filenames(Result,(char*)this->FilenameOut.c_str(),0,0);
+    nifti_set_filenames(Result,(char*)this->FilenameOut.c_str(),0,0);
 
     nifti_update_dims_from_array(Result);
 

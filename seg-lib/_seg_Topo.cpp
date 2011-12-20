@@ -156,7 +156,6 @@ void Dillate(bool * Image,
         cout<<"Buffer allocating size:" << dimensions[1]*dimensions[0]*dimensions[2] << " - " << dimensions[0]<<" - " << dimensions[1]<<" - " << dimensions[2]<<endl;
         flush(cout);
     }
-    return;
     bool * Buffer = new bool [(dimensions[1])*(dimensions[0])*(dimensions[2])];
 
     if(verbose>1){

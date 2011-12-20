@@ -37,6 +37,7 @@ protected:
     LabFusion_datatype *  Prop;
     bool*  uncertainarea;
     bool    uncertainflag;
+    int dilunc;
     bool    Fixed_Prop_status;
     bool    PropUpdate;
     int     numb_classif;
@@ -83,6 +84,7 @@ public:
     int SetROINCC(nifti_image * _ROINCC,nifti_image * BaseImage,int Numb_Neigh, int DilSize);
     int SetProp(float prior);
     int SetConv(float conv);
+    int SetDilUnc(int _dilunc);
     int SetImgThresh(float Thresh_IMG_value);
     int SetFilenameOut(char *);
     int SetPQ(float tmpP,float tmpQ);

@@ -2,24 +2,26 @@
 #include <iostream>
 #include <time.h>
 #include <stdlib.h>
+#include <tclap/CmdLine.h>
 
 using namespace std;
 #define PrecisionTYPE float
+using namespace TCLAP;
 
 
 void Usage(char *exec)
 {
     printf("\n  EM Statistical Segmentation:\n  Usage ->\t%s -in <filename> [OPTIONS]\n\n",exec);
     printf("  * * * * * * * * * * * * * * * * * Mandatory * * * * * * * * * * * * * * * * * *\n\n");
-    printf("\t-in <filename>\t\t| Filename of the input image image\n");
+    printf("\t-in <filename>\t\t| Filename of the input image\n");
+    printf("\t-out <filename>\t\t| Filename of the segmented image\n");
     printf("\t\t\t\t| The input image should be 2D, 3D or 4D images. 2D images should be on the XY plane.\n");
     printf("\t\t\t\t| 4D images are segmented as if they were multimodal.\n\n");
     printf("  \t\t- Select one of the following (mutually exclusive) -\n\n");
-    printf("\t-priors <n> <fnames>\t| The number of priors (n>0) and their filenames\n");
+    printf("\t-priors <n> <fnames>\t| The number of priors (n>0) and their filenames. Priors should be registerd to the input image\n");
     printf("\t\t\t\t| Priors are mandatory for now. Won't be in the next release.\n");
-    printf("\t-nopriors <n>\t\t| The number of priors (n>0) \n\n");
+    printf("\t-nopriors <n>\t\t| The number of classes (n>0) \n\n");
     printf("  * * * * * * * * * * * * * * * * General Options * * * * * * * * * * * * * * * * *\n\n");
-    printf("\t-out <filename>\t\t| Filename of the segmented image (default = Segmentation.nii.gz)\n");
     printf("\t-mask <filename>\t| Filename of the brain-mask of the input image\n");
     printf("\t-max_iter <int>\t\t| Maximum number of iterations (default = 100)\n");
     printf("\t-v <int>\t\t| Verbose level [0 = off, 1 = on, 2 = debug] (default = 0)\n");
@@ -55,15 +57,11 @@ void Merge_Priors(nifti_image * Priors, nifti_image ** Priors_temp, SEG_PARAM * 
 int main(int argc, char **argv)
 {
 
-
-
-
-    if (argc < 2)
+    if (argc < 1)
     {
         Usage(argv[0]);
         return 0;
     }
-
 
     SEG_PARAM * segment_param = new SEG_PARAM [1]();
     segment_param->maxIteration=100;
@@ -88,9 +86,11 @@ int main(int argc, char **argv)
     segment_param->OutliernessThreshold=0;
     segment_param->flag_out_outlier=0;
     float OutliernessRatio=0.01;
+    int To_do_MAP_index_argv=0;
+
+
 
     /* read the input parameter */
-    int To_do_MAP_index_argv=0;
     for(int i=1;i<argc;i++){
         if(strcmp(argv[i], "-help")==0 || strcmp(argv[i], "-Help")==0 ||
                 strcmp(argv[i], "-HELP")==0 || strcmp(argv[i], "-h")==0 ||
@@ -198,7 +198,6 @@ int main(int argc, char **argv)
         segment_param->flag_MRF=0;
     }
 
-
     //string envVarName="NIFTYSEG";
     //char * currpath_char=NULL;
     //currpath_char=getenv(envVarName.c_str());
@@ -216,6 +215,7 @@ int main(int argc, char **argv)
             segment_param->flag_MAP=true;
         }
     }
+
     if(segment_param->flag_out==0){
         fprintf(stderr,"Err:\tThe output image name has to be defined.\n");
         return 1;
@@ -228,12 +228,12 @@ int main(int argc, char **argv)
     }
 
     // READING T1
-    nifti_image * T1=nifti_image_read(segment_param->filename_T1,true);
-    if(T1 == NULL){
+    nifti_image * InputImage=nifti_image_read(segment_param->filename_T1,true);
+    if(InputImage == NULL){
         fprintf(stderr,"* Error when reading the T1 image: %s\n",segment_param->filename_T1);
         return 1;
     }
-    seg_changeDatatype<PrecisionTYPE>(T1);
+    seg_changeDatatype<PrecisionTYPE>(InputImage);
 
 
     nifti_image * Mask=NULL;
@@ -243,6 +243,10 @@ int main(int argc, char **argv)
 
         if(Mask == NULL){
             fprintf(stderr,"* Error when reading the mask image: %s\n",segment_param->filename_mask);
+            return 1;
+        }
+        if( (Mask->nx != InputImage->nx) || (Mask->ny != InputImage->ny) || (Mask->nz != InputImage->nz) ){
+            fprintf(stderr,"* Error: Mask image not the same size as input\n");
             return 1;
         }
     }
@@ -256,13 +260,17 @@ int main(int argc, char **argv)
             Priors_temp[i] = nifti_image_read(segment_param->filename_priors[i],true);
 
             if(Priors_temp[i] == NULL){
-                fprintf(stderr,"* Error when reading the WM Prior image: %s\n",segment_param->filename_priors[i]);
+                fprintf(stderr,"* Error when reading the Prior image: %s\n",segment_param->filename_priors[i]);
+                return 1;
+            }
+            if( (Priors_temp[i]->nx != InputImage->nx) || (Priors_temp[i]->ny != InputImage->ny) || (Priors_temp[i]->nz != InputImage->nz) ){
+                fprintf(stderr,"* Error: Prior image ( %s ) not the same size as input\n",segment_param->filename_priors[i]);
                 return 1;
             }
             seg_changeDatatype<PrecisionTYPE>(Priors_temp[i]);
         }
 
-        Priors=nifti_copy_nim_info(T1);
+        Priors=nifti_copy_nim_info(InputImage);
         Priors->dim[0]=4;
         Priors->dim[4]=segment_param->numb_classes;
         Priors->datatype=DT_FLOAT32;
@@ -294,8 +302,8 @@ int main(int argc, char **argv)
 
 
 
-    seg_EM SEG(segment_param->numb_classes,T1->dim[4],1);
-    SEG.SetInputImage(T1);
+    seg_EM SEG(segment_param->numb_classes,InputImage->dim[4],1);
+    SEG.SetInputImage(InputImage);
     if(segment_param->flag_mask)
         SEG.SetMaskImage(Mask);
     if(segment_param->flag_manual_priors)
@@ -351,7 +359,7 @@ int main(int argc, char **argv)
 
 
 
-    nifti_image_free(T1);
+    nifti_image_free(InputImage);
     nifti_image_free(Mask);
 
     free(segment_param->filename_priors);
