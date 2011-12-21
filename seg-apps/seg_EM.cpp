@@ -2,11 +2,9 @@
 #include <iostream>
 #include <time.h>
 #include <stdlib.h>
-#include <tclap/CmdLine.h>
 
 using namespace std;
 #define PrecisionTYPE float
-using namespace TCLAP;
 
 
 void Usage(char *exec)
