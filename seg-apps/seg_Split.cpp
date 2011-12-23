@@ -13,7 +13,7 @@ void Usage(char *exec)
     printf("\t-out <filename>\t\tFilename of the brainmask of the input image\n");
     printf("\t* * Options * *\n");
     printf("\t-tp <int>\t\tTimepoint\n");
-    printf("\t-bin     \t\tInteger image with the highest probability value.\n");
+    printf("\t-bin\t\tInteger image with the highest probability value.\n");
     printf("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
     return;
 }
@@ -89,7 +89,7 @@ int main(int argc, char **argv)
         for(int i=0; i<(Result->nx*Result->ny*Result->nz); i++){
             float lab_at_index=0;
             float val_at_index=0.01;
-            for(int cl=0; cl<6; cl++){
+            for(int cl=0; cl<Segmentation->nt; cl++){
                 if(Segmentation_PTR[i+(cl)*(Result->nx*Result->ny*Result->nz)]>val_at_index){
                     val_at_index=Segmentation_PTR[i+cl*(Result->nx*Result->ny*Result->nz)];
                     lab_at_index=(int)cl+1;

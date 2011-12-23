@@ -23,11 +23,12 @@ void Usage(char *exec)
     printf("  * * * * * * * * * * * * * * * * * * Mandatory * * * * * * * * * * * * * * * * *\n\n");
     printf("  -in <filename>\t\t| Filename of the 4D integer label image\n\n");
     printf("  \t\t- Type of Classifier Fusion (mutually exclusive) -\n\n");
-    printf("  -STEPS <k> <n> <img> <tmpl> \t| STEPS algorithm\n");
+    printf("  -STEPS <k> <n> <i> <t> \t| STEPS algorithm\n");
     printf("  \t\t\t\t| Size of the kernel (k), number of local labels to use (n),\n");
     printf("  \t\t\t\t| Original image to segment (3D Image), registered templates (4D Image).\n");
-    printf("  -MLSTEPS <k> <n> <img> <tmpl>\t| Multi-level STEPS algorithm (3 Levels)\n");
-    printf("  \t\t\t\t| Same options as -STEPS\n");
+    printf("  -MLSTEPS <k> <l> <n> <i> <t>\t| Multi-level STEPS algorithm\n");
+    printf("  \t\t\t\t| Size of the kernel (k), number of levels (l) and local labels to use (n),\n");
+    printf("  \t\t\t\t| Original image to segment (3D Image), registered templates (4D Image).\n");
     printf("  -STAPLE \t\t\t| STAPLE algorithm\n");
     printf("  -MV \t\t\t\t| Majority Vote algorithm\n");
     printf("  -SBA \t\t\t\t| Shape Based Averaging algorithm (Beta)\n\n");
