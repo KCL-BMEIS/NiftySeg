@@ -179,23 +179,27 @@ float * DoubleEuclideanDistance_3D(bool *LablePtr, float * speedptr,
 
     for(centre_index=0;centre_index<NumElements;centre_index++){
         GeoTime[centre_index]=LablePtr[centre_index]<0.5?(-1*GeoTime[centre_index]):(GeoTime2[centre_index]);
-        /*if(Border[centre_index]){
-            float curr_max=0;
-            for(i=0; i<6; i++){
-                if(!Border[centre_index+neighbour6[i]] && GeoTime[centre_index+neighbour6[i]]>curr_max){
-                    curr_max=GeoTime[centre_index+neighbour6[i]];
+    }
+
+    centre_index=0;
+    for(int zpos=0; zpos<CurrSizes->zsize; zpos++){
+        for(int ypos=0; ypos<CurrSizes->ysize; ypos++){
+            for(int xpos=0; xpos<CurrSizes->xsize; xpos++){
+                if(Border[centre_index]){
+                    int xshift=(xpos==0)?1:(xpos==(CurrSizes->xsize-1)?-1:0);
+                    int yshift=(ypos==0)?1:(ypos==(CurrSizes->ysize-1)?-1:0);
+                    int zshift=(zpos==0)?1:(zpos==(CurrSizes->zsize-1)?-1:0);
+                    GeoTime[centre_index]=GeoTime[(centre_index+neighbour6[1]*xshift+neighbour6[3]*yshift+neighbour6[5]*zshift)];
                 }
+                centre_index++;
             }
-            GeoTime[centre_index]=curr_max;
-        }*/
+        }
     }
 
     free(Labels);
     free(Border);
     free(GeoTime2);
     return GeoTime;
-
-
 }
 
 void FMM(bool *Seeds,

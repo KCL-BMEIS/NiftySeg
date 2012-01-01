@@ -37,7 +37,7 @@ void Usage(char *exec)
     printf("  -v <int>\t\t\t| Verbose level [0 = off, 1 = on, 2 = debug] (default = 0)\n");
     printf("  -unc <int>\t\t\t| Only consider non-consensus voxels to calculate statistics\n");
     printf("  -out <filename>\t\t| Filename of the integer segmented image (default=LabFusion.nii.gz)\n");
-    printf("  -outProb <filename>\t\t| Filename of the probabilistic segmented image (only for single label)\n\n");
+    printf("  -outProb \t\t\t| Probabilistic/Fuzzy segmented image (only for 1 label)\n\n");
 
     printf("  * * * * * * * * * * * * * * STAPLE and STEPS options * * * * * * * * * * * * * *\n\n");
     printf("  -prop <proportion> \t\t| Proportion of the classifier (automatically estimated by default)\n");
@@ -174,7 +174,6 @@ int main(int argc, char **argv)
             }
         }
         else if(strcmp(argv[i], "-MV") == 0){
-            ProbOutput=2;
             if(LabFusType==10){
                 LabFusType = 2;
                 Thresh_IMG_value=0.5;
@@ -186,7 +185,6 @@ int main(int argc, char **argv)
 
         }
         else if(strcmp(argv[i], "-SBA") == 0){
-            ProbOutput=2;
             if(LabFusType==10){
                 LabFusType = 3;
                 Thresh_IMG_value=0.0;
@@ -250,10 +248,8 @@ int main(int argc, char **argv)
         }
         else if(strcmp(argv[i], "-out") == 0){
             filename_OUT = argv[++i];
-            ProbOutput=0;
         }
         else if(strcmp(argv[i], "-outProb") == 0){
-            filename_OUT = argv[++i];
             ProbOutput=1;
         }
         else if(strcmp(argv[i], "-dil_unc") == 0){
@@ -299,11 +295,6 @@ int main(int argc, char **argv)
             SmallUsage(argv[0]);
             return 1;
         }
-    }
-
-
-    if(LabFusType>1){
-        ProbOutput=2;
     }
 
     // READING Labels

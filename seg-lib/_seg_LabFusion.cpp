@@ -1043,9 +1043,9 @@ int seg_LabFusion::SBA_Estimate()
         flush(cout);
     }
 
-#ifdef _OPENMP
-#pragma omp parallel for
-#endif
+    //#ifdef _OPENMP
+    //#pragma omp parallel for
+    //#endif
     for(int classifier=0; classifier<this->numb_classif;classifier++){
         LabFusion_datatype * geotime=NULL;
         LabFusion_datatype * speedfunc=NULL;
@@ -1058,7 +1058,7 @@ int seg_LabFusion::SBA_Estimate()
                         lnccexists=true;
                     }
                 }
-                speedfunc[i]=((LabFusion_datatype)lnccexists+eps);
+                speedfunc[i]=((LabFusion_datatype)(1-lnccexists)+eps);
             }
             for(int currclass=0; currclass<this->NUMBER_OF_CLASSES;currclass++){
                 if(this->verbose_level>0){
@@ -1100,7 +1100,7 @@ int seg_LabFusion::SBA_Estimate()
 
         }
         else{
-            for(int currclass=0; currclass<this->NUMBER_OF_CLASSES;currclass++){
+            for( int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++ ){
                 if(this->verbose_level>0){
                     cout<<"Classifier "<<classifier+1<<" - Lable "<<currclass<<endl;
                     flush(cout);
@@ -1555,7 +1555,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
 
     if(this->uncertainflag){
         if(dilunc>0){
-           Dillate(this->uncertainarea,dilunc,dim_array,this->verbose_level);
+            Dillate(this->uncertainarea,dilunc,dim_array,this->verbose_level);
         }
     }
 
@@ -1593,11 +1593,12 @@ nifti_image * seg_LabFusion::GetResult(int ProbOutput)
     nifti_image * Result = nifti_copy_nim_info(this->inputCLASSIFIER);
     Result->dim[0]=4;
     Result->dim[4]=1;
-
+    Result->cal_min=10.0e30;
+    Result->cal_max=-10.0e30;
     Result->datatype=DT_FLOAT;
 
     Result->cal_min=0;
-    Result->cal_max=1;
+    Result->cal_max=this->LableCorrespondences_small_to_big[this->NUMBER_OF_CLASSES];
 
     if(this->FilenameOut.empty()){
         this->FilenameOut.assign("LabFusion.nii.gz");
@@ -1621,7 +1622,13 @@ nifti_image * seg_LabFusion::GetResult(int ProbOutput)
         }
         for(unsigned int i=0; i<Result->nvox; i++){
             Resultdata[i]=(float)(W[i+this->numel]);
+
+            if(Result->cal_min>(float)(W[i+this->numel]))
+                Result->cal_min=(float)(W[i+this->numel]);
+            if(Result->cal_max<(float)(W[i+this->numel]))
+                Result->cal_max=(float)(W[i+this->numel]);
         }
+
     }
     else if(ProbOutput==0 || (ProbOutput==3 && (this->NUMBER_OF_CLASSES>2))){
         if(this->verbose_level>0){
@@ -1637,6 +1644,11 @@ nifti_image * seg_LabFusion::GetResult(int ProbOutput)
                 }
             }
             Resultdata[i]=this->LableCorrespondences_small_to_big[wmaxindex];
+
+            if(Result->cal_min>this->LableCorrespondences_small_to_big[wmaxindex])
+                Result->cal_min=this->LableCorrespondences_small_to_big[wmaxindex];
+            if(Result->cal_max<this->LableCorrespondences_small_to_big[wmaxindex])
+                Result->cal_max=this->LableCorrespondences_small_to_big[wmaxindex];
         }
     }
     else{
@@ -1645,6 +1657,11 @@ nifti_image * seg_LabFusion::GetResult(int ProbOutput)
         }
         for(unsigned int i=0; i<Result->nvox; i++){
             Resultdata[i]=(float)(W[i]);
+
+            if(Result->cal_min>(float)(W[i+this->numel]))
+                Result->cal_min=(float)(W[i+this->numel]);
+            if(Result->cal_max<(float)(W[i+this->numel]))
+                Result->cal_max=(float)(W[i+this->numel]);
         }
     }
 
