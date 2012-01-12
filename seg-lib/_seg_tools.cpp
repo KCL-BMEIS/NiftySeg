@@ -3772,6 +3772,7 @@ int seg_changeDatatype1(nifti_image *image)
 
     // the new array is allocated and then filled
     if(sizeof(NewTYPE)==sizeof(unsigned char)) image->datatype = NIFTI_TYPE_UINT8;
+    if(sizeof(NewTYPE)==sizeof(int)) image->datatype = NIFTI_TYPE_INT32;
     else if(sizeof(NewTYPE)==sizeof(float)) image->datatype = NIFTI_TYPE_FLOAT32;
     else if(sizeof(NewTYPE)==sizeof(double)) image->datatype = NIFTI_TYPE_FLOAT64;
     else{
@@ -3830,6 +3831,7 @@ int seg_changeDatatype(nifti_image *image)
 }
 /* *************************************************************** */
 template int seg_changeDatatype<unsigned char>(nifti_image *);
+template int seg_changeDatatype<int>(nifti_image *);
 template int seg_changeDatatype<float>(nifti_image *);
 template int seg_changeDatatype<double>(nifti_image *);
 /* *************************************************************** */

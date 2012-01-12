@@ -3,6 +3,8 @@
 #include "_seg_common.h"
 
 void ConnectComp(int * Old, int * New, int dimensions[3],int varin);
+void Close_Forground_ConnectComp(int * Old, int * New, int dimensions[3]);
+
 
 void Dillate(bool * Image, int kernel, int dimensions[3],int verbose);
 

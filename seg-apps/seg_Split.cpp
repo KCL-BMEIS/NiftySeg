@@ -1,6 +1,10 @@
 #include "_seg_common.h"
 #include <iostream>
 #include <time.h>
+#include "_seg_common.h"
+#include "_seg_tools.h"
+#include "_seg_Topo.h"
+
 using namespace std;
 #define PrecisionTYPE float
 
@@ -14,10 +18,10 @@ void Usage(char *exec)
     printf("\t* * Options * *\n");
     printf("\t-tp <int>\t\tTimepoint\n");
     printf("\t-bin\t\tInteger image with the highest probability value.\n");
+    printf("\t-fill\t\tFill masked image.\n");
     printf("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
     return;
 }
-
 int main(int argc, char **argv)
 {
     char * filename_out=NULL;
@@ -45,6 +49,9 @@ int main(int argc, char **argv)
         else if(strcmp(argv[i], "-bin") == 0){
             mode=1;
         }
+        else if(strcmp(argv[i], "-fill") == 0){
+            mode=2;
+        }
     }
 
 
@@ -67,7 +74,6 @@ int main(int argc, char **argv)
     }
 
 
-
     nifti_image * Result = nifti_copy_nim_info(Segmentation);
     Result->dim[0]=3;
     Result->dim[4]=0;
@@ -79,6 +85,8 @@ int main(int argc, char **argv)
     Result->data = (void *) calloc(Result->nvox, sizeof(PrecisionTYPE));
     PrecisionTYPE * Result_PTR = static_cast<PrecisionTYPE *>(Result->data);
     PrecisionTYPE * Segmentation_PTR = static_cast<PrecisionTYPE *>(Segmentation->data);
+    seg_changeDatatype<PrecisionTYPE>(Segmentation);
+
 
     if(mode==0){
         for(unsigned int i=0; i<Result->nvox; i++){
@@ -99,6 +107,18 @@ int main(int argc, char **argv)
             }
             Result_PTR[i]=lab_at_index;
         }
+    }
+    if(mode==2){
+        int dimensions[3];
+        dimensions[0]=Segmentation->nx;
+        dimensions[1]=Segmentation->ny;
+        dimensions[2]=Segmentation->nz;
+
+        seg_changeDatatype<int>(Segmentation);
+        seg_changeDatatype<int>(Result);
+        int * Result_PTR2 = static_cast<int *>(Result->data);
+        int * Segmentation_PTR2 = static_cast<int *>(Segmentation->data);
+        Close_Forground_ConnectComp(Segmentation_PTR2,Result_PTR2,dimensions);
     }
 
 
