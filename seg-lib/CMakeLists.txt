@@ -62,4 +62,3 @@
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
 
-

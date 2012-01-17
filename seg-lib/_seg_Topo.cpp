@@ -145,8 +145,8 @@ void ConnectComp(int * Old,
 }
 
 
-void Close_Forground_ConnectComp(int * Old,
-                                 int * New,
+void Close_Forground_ConnectComp(unsigned char * Old,
+                                 unsigned char * New,
                                  int dimensions[3]){
 
     // Create Counter image

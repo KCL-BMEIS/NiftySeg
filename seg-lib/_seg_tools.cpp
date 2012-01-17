@@ -180,6 +180,8 @@ int seg_convert2binary(nifti_image *image,
                        float thresh)
 {
     switch(image->datatype){
+    case DT_BINARY:
+        break;
     case NIFTI_TYPE_UINT8:
         seg_convert2binary_data<unsigned char>(image,thresh);
         break;
@@ -205,7 +207,7 @@ int seg_convert2binary(nifti_image *image,
         seg_convert2binary_data<PrecisionTYPE>(image,thresh);
         break;
     default:
-        printf("err\tseg_changeDatatype\tThe initial image data type is not supported\n");
+        printf("err\tseg_convert2binary\tThe initial image data type (%d) is not supported\n",image->datatype);
         return 1;
     }
     return 1;
@@ -389,49 +391,50 @@ int Normalize_Image_mask(nifti_image * input,
         cout<< "Normalizing Input Image" << endl;
     }
     int numel=(int)(rowsize(input)*colsize(input)*depth(input));
-    if(Mask->datatype==DT_BINARY){
-        if(input->datatype==NIFTI_TYPE_FLOAT32){
-            for(int udir=0; udir<CurrSizes->usize;udir++){ // Per Multispectral Image
-                for(int tdir=0; tdir<CurrSizes->tsize;tdir++){ // Per Time point Image
-                    bool * brainmaskptr = static_cast<bool *> (Mask->data);
-                    PrecisionTYPE * Inputptrtmp = static_cast<PrecisionTYPE *>(input->data);
-                    PrecisionTYPE * Inputptr=&Inputptrtmp[numel*tdir+(CurrSizes->tsize)*numel*udir];
+    if(Mask->datatype!=DT_BINARY){
+        seg_convert2binary(Mask,0.0f);
+    }
+    if(input->datatype!=NIFTI_TYPE_FLOAT32){
+       seg_changeDatatype<PrecisionTYPE>(input);
+    }
 
-                    float tempmax=-1000000.f;
-                    float tempmin=1000000.f;
-                    for (int i=0; i<numel; i++) {
-                        if(*brainmaskptr){
-                            if (*Inputptr<tempmin) {
-                                tempmin=*Inputptr;
-                            }
-                            if (*Inputptr>tempmax) {
-                                tempmax=*Inputptr;
-                            }
-                        }
-                        brainmaskptr++;
-                        Inputptr++;
+    for(int udir=0; udir<CurrSizes->usize;udir++){ // Per Multispectral Image
+        for(int tdir=0; tdir<CurrSizes->tsize;tdir++){ // Per Time point Image
+            bool * brainmaskptr = static_cast<bool *> (Mask->data);
+            PrecisionTYPE * Inputptrtmp = static_cast<PrecisionTYPE *>(input->data);
+            PrecisionTYPE * Inputptr=&Inputptrtmp[numel*tdir+(CurrSizes->tsize)*numel*udir];
+
+            float tempmax=-(1e32);
+            float tempmin=1e32;
+
+            for (int i=0; i<numel; i++) {
+                if(*brainmaskptr){
+                    if (*Inputptr<tempmin) {
+                        tempmin=*Inputptr;
                     }
-                    CurrSizes->rescale_max[udir]=tempmax;
-                    CurrSizes->rescale_min[udir]=tempmin;
-                    Inputptr=&Inputptrtmp[numel*tdir+(CurrSizes->tsize)*numel*udir];
-                    brainmaskptr = static_cast<bool *> (Mask->data);
-                    for (int i=0; i<numel; i++) {
-                        //log(number_between_0_and_1 + 1)/log(2)
-
-                        *Inputptr=logf((((*Inputptr)-tempmin)/(tempmax-tempmin))+1)/0.693147181;
-
-                        brainmaskptr++;
-                        Inputptr++;
+                    if (*Inputptr>tempmax) {
+                        tempmax=*Inputptr;
                     }
                 }
+                brainmaskptr++;
+                Inputptr++;
             }
-        }
-        else{
-            {
-                printf("err\tNormalize_T1\tWrong Mask datatype\n");
+            CurrSizes->rescale_max[udir]=tempmax;
+            CurrSizes->rescale_min[udir]=tempmin;
+            Inputptr=&Inputptrtmp[numel*tdir+(CurrSizes->tsize)*numel*udir];
+            brainmaskptr = static_cast<bool *> (Mask->data);
+            cout << tempmax << "  "<<tempmin<< endl;
+            for (int i=0; i<numel; i++) {
+                //log(number_between_0_and_1 + 1)/log(2)
+                *Inputptr=logf((((*Inputptr)-tempmin)/(tempmax-tempmin))+1)/0.693147181;
+
+                brainmaskptr++;
+                Inputptr++;
             }
         }
     }
+
+    
     return 1;
 }
 
@@ -784,7 +787,7 @@ int calcE_mask(nifti_image * T1,
 #ifdef _OPENMP
     float * loglikthread = new float [omp_get_max_threads()]();
     for(int i=0; i<omp_get_max_threads(); i++)
-            loglikthread[i]=0;
+        loglikthread[i]=0;
 
 #pragma omp parallel for shared(Expec,loglikthread,T1,BiasField,Outlierness,IterPrior)
 #endif
@@ -842,7 +845,7 @@ int calcE_mask(nifti_image * T1,
 
 #ifdef _OPENMP
     for(int i =0; i<omp_get_max_threads(); i++)
-            logliktmp+=loglikthread[i];
+        logliktmp+=loglikthread[i];
 #endif
 
     loglik[0]=logliktmp;
@@ -929,11 +932,11 @@ int calcE(nifti_image * T1,
 
 
 
-float logliktmp=0.0f;
+    float logliktmp=0.0f;
 #ifdef _OPENMP
     float * loglikthread = new float [omp_get_max_threads()]();
     for(int i=0; i<omp_get_max_threads(); i++)
-            loglikthread[i]=0;
+        loglikthread[i]=0;
 
 #pragma omp parallel for shared(Expec,loglikthread,T1,BiasField,Outlierness,IterPrior)
 #endif
@@ -985,7 +988,7 @@ float logliktmp=0.0f;
 
 #ifdef _OPENMP
     for(int i =0; i<omp_get_max_threads(); i++)
-            logliktmp+=loglikthread[i];
+        logliktmp+=loglikthread[i];
 #endif
 
 
@@ -3772,7 +3775,6 @@ int seg_changeDatatype1(nifti_image *image)
 
     // the new array is allocated and then filled
     if(sizeof(NewTYPE)==sizeof(unsigned char)) image->datatype = NIFTI_TYPE_UINT8;
-    if(sizeof(NewTYPE)==sizeof(int)) image->datatype = NIFTI_TYPE_INT32;
     else if(sizeof(NewTYPE)==sizeof(float)) image->datatype = NIFTI_TYPE_FLOAT32;
     else if(sizeof(NewTYPE)==sizeof(double)) image->datatype = NIFTI_TYPE_FLOAT64;
     else{
@@ -3799,6 +3801,9 @@ template <class NewTYPE>
 int seg_changeDatatype(nifti_image *image)
 {
     switch(image->datatype){
+    case DT_BINARY:
+        seg_changeDatatype1<NewTYPE,bool>(image);
+        break;
     case NIFTI_TYPE_UINT8:
         seg_changeDatatype1<NewTYPE,unsigned char>(image);
         break;
@@ -3824,14 +3829,13 @@ int seg_changeDatatype(nifti_image *image)
         seg_changeDatatype1<NewTYPE,double>(image);
         break;
     default:
-        fprintf(stderr,"[NiftyReg ERROR] seg_changeDatatype\tThe initial image data type is not supported\n");
+        fprintf(stderr,"[NiftyReg ERROR] seg_changeDatatype\tThe initial image data type (%d) is not supported\n",image->datatype);
         exit(1);
     }
     return 1;
 }
 /* *************************************************************** */
 template int seg_changeDatatype<unsigned char>(nifti_image *);
-template int seg_changeDatatype<int>(nifti_image *);
 template int seg_changeDatatype<float>(nifti_image *);
 template int seg_changeDatatype<double>(nifti_image *);
 /* *************************************************************** */

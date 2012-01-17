@@ -114,10 +114,10 @@ int main(int argc, char **argv)
         dimensions[1]=Segmentation->ny;
         dimensions[2]=Segmentation->nz;
 
-        seg_changeDatatype<int>(Segmentation);
-        seg_changeDatatype<int>(Result);
-        int * Result_PTR2 = static_cast<int *>(Result->data);
-        int * Segmentation_PTR2 = static_cast<int *>(Segmentation->data);
+        seg_changeDatatype<unsigned char>(Segmentation);
+        seg_changeDatatype<unsigned char>(Result);
+        unsigned char * Result_PTR2 = static_cast<unsigned char *>(Result->data);
+        unsigned char * Segmentation_PTR2 = static_cast<unsigned char *>(Segmentation->data);
         Close_Forground_ConnectComp(Segmentation_PTR2,Result_PTR2,dimensions);
     }
 
