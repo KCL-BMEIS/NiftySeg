@@ -61,6 +61,7 @@ deep_grey_prior=${pathatlas}/DGM_prior.nii.gz
 internal_csf_prior=${pathatlas}/ICSF_prior.nii.gz
 
 fslmaths ${mask} -bin ${name}_mask2.nii
+seg_Split -in ${name}_mask2.nii -out ${name}_mask2.nii -fill
 
 #ucltkDilate -i ${name}_mask2.nii -o ${name}_mask2.nii -it 15 -d 1 
 #ucltkDilate -i ${name}_mask2.nii -o ${name}_mask2.nii -it 14 -d 0 -r 1

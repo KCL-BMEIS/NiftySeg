@@ -144,10 +144,15 @@ void ConnectComp(int * Old,
     return;
 }
 
+template <class OldType, class NewType>
+void Close_Forground_ConnectComp(void * Old_void, void * New_void, ImageSize * Currentsize){
 
-void Close_Forground_ConnectComp(unsigned char * Old,
-                                 unsigned char * New,
-                                 int dimensions[3]){
+    OldType * Old = static_cast<OldType *>(Old_void);
+    NewType * New = static_cast<NewType *>(New_void);
+    int dimensions[3];
+    dimensions[0]=Currentsize->xsize;
+    dimensions[1]=Currentsize->ysize;
+    dimensions[2]=Currentsize->zsize;
 
     // Create Counter image
     int index;
@@ -297,6 +302,170 @@ void Close_Forground_ConnectComp(unsigned char * Old,
 
     return;
 }
+template void Close_Forground_ConnectComp<unsigned char, unsigned char>(void * Old, void * New, ImageSize * Currentsize);
+template void Close_Forground_ConnectComp<float, float>(void * Old, void * New, ImageSize * Currentsize);
+
+
+template <class OldType, class NewType>
+void Largest_ConnectComp(void * Old_void, void * New_void, ImageSize * Currentsize){
+
+    OldType * Old = static_cast<OldType *>(Old_void);
+    NewType * New = static_cast<NewType *>(New_void);
+    int dimensions[3];
+    dimensions[0]=Currentsize->xsize;
+    dimensions[1]=Currentsize->ysize;
+    dimensions[2]=Currentsize->zsize;
+
+    // Create Counter image
+    int index;
+    int CCcounter=1;
+    int NumElements=((int)dimensions[0]*(int)dimensions[1]*(int)dimensions[2]);
+    int * tempimg= (int *) calloc(NumElements, sizeof(int));
+
+    //  **********    Foreground    ***********
+    index=0;
+    for(int z=0; z<((int)dimensions[2]); z++){
+        for(int y=0; y<((int)dimensions[1]); y++){
+            for(int x=0; x<((int)dimensions[0]); x++){
+                tempimg[index]=0;
+                if(Old[index]==0){
+                    Old[index]=0;
+                }
+                else{
+                    Old[index]=1;
+                }
+                index++;
+            }
+        }
+    }
+
+    index=0;
+    for(int z=0; z<((int)dimensions[2]); z++){
+        for(int y=0; y<((int)dimensions[1]); y++){
+            for(int x=0; x<((int)dimensions[0]); x++){
+                tempimg[index]=0;
+                if(Old[index]>0){
+                    tempimg[index]=CCcounter;
+                    CCcounter++;
+                }
+                index++;
+            }
+        }
+    }
+    //cout << "Test [" << indexprob<<"] = "<< New[indexprob]<< " "<<Old[indexprob]<<endl;
+
+    int tempmin;
+    int numbchanges=1;
+
+
+    int *CClist = (int *) calloc(CCcounter, sizeof(int));
+    for(int i=1; i<CCcounter; i++){
+        CClist[i]=i;
+    }
+
+    int iter=0;
+    while(numbchanges!=0){
+        //while(iter<3){
+
+        flush(cout);
+        iter++;
+        numbchanges=0;
+        int currindex=0;
+        for(int z=1; z<((int)dimensions[2]-1); z++){
+            for(int y=1; y<((int)dimensions[1]-1); y++){
+                for(int x=1; x<((int)dimensions[0]-1); x++){
+                    index = z*dimensions[1]*dimensions[0]+y*dimensions[0]+x;
+                    if(Old[index]>0 && CClist[tempimg[index]]>0){
+                        tempmin=CClist[tempimg[index]];
+
+                        for(int deltaZ=-1;deltaZ<=1;deltaZ+=2){
+                            currindex=index+deltaZ*dimensions[0]*dimensions[1];
+                            if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]]){tempmin=CClist[tempimg[currindex]];}
+                        }
+                        for(int deltaY=-1;deltaY<=1;deltaY+=2){
+                            currindex=index+deltaY*dimensions[0];
+                            if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]]){tempmin=CClist[tempimg[currindex]];}
+                        }
+                        for(int deltaX=-1;deltaX<=1;deltaX+=2){
+                            currindex=index+deltaX;
+                            if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]]){tempmin=CClist[tempimg[currindex]];}
+                        }
+                        if(tempmin>0 && tempmin<CClist[tempimg[index]]){
+                            CClist[tempimg[index]]=tempmin;
+                            numbchanges++;
+                        }
+                    }
+                }
+            }
+        }
+
+        for(int index=0;index<((int)dimensions[0]*(int)dimensions[1]*(int)dimensions[2]);index++){
+            if(Old[index]>0){
+                tempimg[index]=CClist[tempimg[index]];
+            }
+        }
+
+        //cout << numbchanges<<" "<<New[index]<<" "<<CClist[New[index]]<< endl;
+        //probarea=New[index];
+    }
+
+
+    // Update C. Components
+
+
+    //Find lable counts
+    int *Pixelcounter = (int *) calloc((int)CCcounter, sizeof(int));
+    int maxForground=0, maxForgroundIndex=0;
+
+    for(index=0;index<NumElements;index++){
+        if(tempimg[index]>0 && Old[index]>0){
+            Pixelcounter[(int)tempimg[index]]++;
+        }
+    }
+
+    //cout<<Pixelcounter[probarea]<<endl;
+    // If lable touches the edge, errase that lable
+//    index=0;
+//    for(int iz=0;iz<dimensions[2]; iz++){
+//        for(int iy=0;iy<dimensions[1]; iy++){
+//            for(int ix=0;ix<dimensions[0]; ix++){
+//                if(((ix==0) || (iy==0) || (iz==0) || (ix==(dimensions[0]-1)) || (iy==(dimensions[1]-1)) || (iz==(dimensions[2]-1))) && (Old[index]>0)){
+//                    Pixelcounter[(int)tempimg[index]]=0;
+//                }
+//                index++;
+//            }
+//        }
+//    }
+    // Find Biggest Component
+    for(index=0;index<CCcounter;index++){
+        if(maxForground<Pixelcounter[index]){
+            maxForgroundIndex=(int)index;
+            maxForground=(int)Pixelcounter[index];
+        }
+    }
+
+
+    //Rassign to oposit class
+    for(index=0;index<NumElements;index++){
+        if(Old[index]>0){
+
+            if(Pixelcounter[tempimg[index]]==maxForground){
+                New[index]=1;
+            }
+            else{New[index]=0;}
+        }
+        else{
+            New[index]=0;
+        }
+    }
+    delete [] tempimg;
+    delete [] Pixelcounter;
+
+
+    return;
+}
+template void Largest_ConnectComp<unsigned char, unsigned char>(void * Old, void * New, ImageSize * Currentsize);
+template void Largest_ConnectComp<float, float>(void * Old, void * New, ImageSize * Currentsize);
 
 void Dillate(bool * Image,
              int kernel,
@@ -359,6 +528,100 @@ void Dillate(bool * Image,
     return;
 }
 
+void Dillate(float * Image,
+             int kernel,
+             ImageSize * Currentsize){
+
+    int dimensions[3];
+    dimensions[0]=Currentsize->xsize;
+    dimensions[1]=Currentsize->ysize;
+    dimensions[2]=Currentsize->zsize;
+    int xyzpos[3];
+    int shiftdirection[3];
+    shiftdirection[0]=1;
+    shiftdirection[1]=dimensions[0];
+    shiftdirection[2]=dimensions[1]*dimensions[0];
+    float * Buffer = new float [(dimensions[1])*(dimensions[0])*(dimensions[2])];
+
+    if(Buffer == NULL){
+        fprintf(stderr,"* Error when alocating Buffer in void Dillate(): Not enough memory\n");
+        exit(1);
+    }
+
+    float tmpvalue=0;
+    for(int currentdirection=0;currentdirection<3;currentdirection++){ //Buffer aint each direction
+        int index=0;
+        for(xyzpos[2]=0;xyzpos[2]<dimensions[2];xyzpos[2]++){
+            for(xyzpos[1]=0;xyzpos[1]<dimensions[1];xyzpos[1]++){
+                for(xyzpos[0]=0;xyzpos[0]<dimensions[0];xyzpos[0]++){
+                    tmpvalue=-1e32;
+                    for(int shift=((xyzpos[currentdirection]<kernel)?-xyzpos[currentdirection]:-kernel); shift<=((xyzpos[currentdirection]>=(dimensions[currentdirection]-kernel))?(int)dimensions[currentdirection]-xyzpos[currentdirection]-1:kernel);shift++){
+                        if(Image[index+shift*shiftdirection[currentdirection]]>tmpvalue){
+                            tmpvalue=Image[index+shift*shiftdirection[currentdirection]];
+                        }
+
+                    }
+                    Buffer[index]=tmpvalue;
+                    index++;
+                }
+            }
+        }
+        for(int i=0; i<(dimensions[1]*dimensions[0]*dimensions[2]); i++){
+            Image[i]=Buffer[i];
+        }
+    }
+
+    delete [] Buffer;
+
+    return;
+}
+
+
+void Erosion(float * Image,
+             int kernel,
+             ImageSize *Currentsize ){
+
+    int dimensions[3];
+    dimensions[0]=Currentsize->xsize;
+    dimensions[1]=Currentsize->ysize;
+    dimensions[2]=Currentsize->zsize;
+    int xyzpos[3];
+    int shiftdirection[3];
+    shiftdirection[0]=1;
+    shiftdirection[1]=dimensions[0];
+    shiftdirection[2]=dimensions[1]*dimensions[0];
+    float * Buffer = new float [(dimensions[1])*(dimensions[0])*(dimensions[2])];
+    if(Buffer == NULL){
+        fprintf(stderr,"* Error when alocating Buffer in void Dillate(): Not enough memory\n");
+        exit(1);
+    }
+
+    float tmpvalue=0;
+    for(int currentdirection=0;currentdirection<3;currentdirection++){ //Buffer aint each direction
+        int index=0;
+        for(xyzpos[2]=0;xyzpos[2]<dimensions[2];xyzpos[2]++){
+            for(xyzpos[1]=0;xyzpos[1]<dimensions[1];xyzpos[1]++){
+                for(xyzpos[0]=0;xyzpos[0]<dimensions[0];xyzpos[0]++){
+                    tmpvalue=1e32;
+                    for(int shift=((xyzpos[currentdirection]<kernel)?-xyzpos[currentdirection]:-kernel); shift<=((xyzpos[currentdirection]>=(dimensions[currentdirection]-kernel))?(int)dimensions[currentdirection]-xyzpos[currentdirection]-1:kernel);shift++){
+                        if(Image[index+shift*shiftdirection[currentdirection]]<tmpvalue){
+                            tmpvalue=Image[index+shift*shiftdirection[currentdirection]];
+                        }
+
+                    }
+                    Buffer[index]=tmpvalue;
+                    index++;
+                }
+            }
+        }
+        for(int i=0; i<(dimensions[1]*dimensions[0]*dimensions[2]); i++){
+            Image[i]=Buffer[i];
+        }
+    }
+    delete [] Buffer;
+
+    return;
+}
 
 
 void Dillate_const(bool * Image,

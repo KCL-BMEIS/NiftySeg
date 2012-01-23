@@ -1938,7 +1938,7 @@ int Gaussian_Filter_4D(PrecisionTYPE * LongData,
     dim_array[2]=(int)CurrSizes->zsize;
 
 
-    for(int curr4d=0; curr4d<CurrSizes->numclass; curr4d++){ //For Each Class
+    for(int curr4d=0; curr4d<CurrSizes->tsize; curr4d++){ //For Each Class
 
         int current_4dShift_short=curr4d*CurrSizes->numel;
         PrecisionTYPE * longdataptr=&LongData[current_4dShift_short];
