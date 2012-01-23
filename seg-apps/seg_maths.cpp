@@ -507,9 +507,9 @@ int main(int argc, char **argv)
             if(strtod(parserstd.c_str(),NULL)){
                 if(NewImage->nt<2&&NewImage->nx==InputImage->nx&&NewImage->ny==InputImage->ny&&NewImage->nz==InputImage->nz){
                     float * NewImageMean=new float [NewImage->nx*NewImage->ny*NewImage->nz];
-                    float * NewImageStd=new float [NewImage->nx*NewImage->ny*NewImage->nz];
+                    //float * NewImageStd=new float [NewImage->nx*NewImage->ny*NewImage->nz];
                     float * InputImageMean=new float [InputImage->nx*InputImage->ny*InputImage->nz];
-                    float * InputImageStd=new float [InputImage->nx*InputImage->ny*InputImage->nz];
+                    //float * InputImageStd=new float [InputImage->nx*InputImage->ny*InputImage->nz];
                     float allmeanNew=0;
                     float allmeanInput=0;
                     float allstdNew=0;
@@ -517,15 +517,15 @@ int main(int argc, char **argv)
                     for(int i=0; i<InputImage->nx*InputImage->ny*InputImage->nz;i++){
                         allmeanNew+=NewImagePtr[i];
                         NewImageMean[i]=NewImagePtr[i];
-                        NewImageStd[i]=NewImagePtr[i]*NewImagePtr[i];
+                        //NewImageStd[i]=NewImagePtr[i]*NewImagePtr[i];
                         allmeanInput+=bufferImages[current_buffer][i];
                         InputImageMean[i]=bufferImages[current_buffer][i];
-                        InputImageStd[i]=bufferImages[current_buffer][i]*bufferImages[current_buffer][i];
+                        //InputImageStd[i]=bufferImages[current_buffer][i]*bufferImages[current_buffer][i];
                     }
                     Gaussian_Filter_4D(NewImageMean,strtod(parserstd.c_str(),NULL)*3,CurrSize);
-                    Gaussian_Filter_4D(NewImageStd,strtod(parserstd.c_str(),NULL)*3,CurrSize);
+                    //Gaussian_Filter_4D(NewImageStd,strtod(parserstd.c_str(),NULL)*3,CurrSize);
                     Gaussian_Filter_4D(InputImageMean,strtod(parserstd.c_str(),NULL)*3,CurrSize);
-                    Gaussian_Filter_4D(InputImageStd,strtod(parserstd.c_str(),NULL)*3,CurrSize);
+                    //Gaussian_Filter_4D(InputImageStd,strtod(parserstd.c_str(),NULL)*3,CurrSize);
 
 
                     allmeanNew=allmeanNew/(InputImage->nx*InputImage->ny*InputImage->nz);
@@ -545,6 +545,66 @@ int main(int argc, char **argv)
                     current_buffer=current_buffer?0:1;
                     Gaussian_Filter_4D(bufferImages[current_buffer],strtod(parserstd.c_str(),NULL),CurrSize);
                     delete [] NewImageMean;
+                    //delete [] NewImageStd;
+                    delete [] InputImageMean;
+                    //delete [] InputImageStd;
+                }
+                else{
+                    cout << "ERROR: Image "<< parser << " is the wrong size"<<endl;
+                    i=argc;
+                }
+            }
+        }
+        // *********************  Get LNCC  *************************
+        else if(strcmp(argv[i], "-lncc") == 0){
+            string parser=argv[++i];
+            nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
+            if(InputImage->datatype!=DT_FLOAT32){
+                seg_changeDatatype<PrecisionTYPE>(NewImage);
+            }
+            PrecisionTYPE * NewImagePtr = static_cast<PrecisionTYPE *>(NewImage->data);
+
+            string parserstd=argv[++i];
+            if(strtod(parserstd.c_str(),NULL)){
+                if(NewImage->nt<2&&NewImage->nx==InputImage->nx&&NewImage->ny==InputImage->ny&&NewImage->nz==InputImage->nz){
+                    float * NewImageMean=new float [NewImage->nx*NewImage->ny*NewImage->nz];
+                    float * NewImageStd=new float [NewImage->nx*NewImage->ny*NewImage->nz];
+                    float * InputImageMean=new float [InputImage->nx*InputImage->ny*InputImage->nz];
+                    float * InputImageStd=new float [InputImage->nx*InputImage->ny*InputImage->nz];
+                    float allmeanNew=0;
+                    float allmeanInput=0;
+                    float allstdNew=0;
+                    float allstdInput=0;
+                    for(int i=0; i<InputImage->nx*InputImage->ny*InputImage->nz;i++){
+                        allmeanNew+=NewImagePtr[i];
+                        NewImageMean[i]=NewImagePtr[i];
+                        NewImageStd[i]=NewImagePtr[i]*NewImagePtr[i];
+                        allmeanInput+=bufferImages[current_buffer][i];
+                        InputImageMean[i]=bufferImages[current_buffer][i];
+                        InputImageStd[i]=bufferImages[current_buffer][i]*bufferImages[current_buffer][i];
+                    }
+                    allmeanNew=allmeanNew/(InputImage->nx*InputImage->ny*InputImage->nz);
+                    allmeanInput=allmeanInput/(InputImage->nx*InputImage->ny*InputImage->nz);
+                    for(int i=0; i<InputImage->nx*InputImage->ny*InputImage->nz;i++){
+                        allstdNew+=(NewImagePtr[i]-allmeanNew)*(NewImagePtr[i]-allmeanNew);
+                        allstdInput+=(bufferImages[current_buffer][i]-allmeanInput)*(bufferImages[current_buffer][i]-allmeanInput);
+                        bufferImages[current_buffer][i]=NewImagePtr[i]*bufferImages[current_buffer][i];
+                    }
+                    allstdNew=allstdNew/(InputImage->nx*InputImage->ny*InputImage->nz);
+                    allstdInput=allstdInput/(InputImage->nx*InputImage->ny*InputImage->nz);
+                    //cout << allstdInput <<"  "<< allstdNew<<endl;
+                    Gaussian_Filter_4D(bufferImages[current_buffer],strtod(parserstd.c_str(),NULL),CurrSize);
+                    Gaussian_Filter_4D(NewImageMean,strtod(parserstd.c_str(),NULL),CurrSize);
+                    Gaussian_Filter_4D(NewImageStd,strtod(parserstd.c_str(),NULL),CurrSize);
+                    Gaussian_Filter_4D(InputImageMean,strtod(parserstd.c_str(),NULL),CurrSize);
+                    Gaussian_Filter_4D(InputImageStd,strtod(parserstd.c_str(),NULL),CurrSize);
+                    for(int i=0; i<InputImage->nx*InputImage->ny*InputImage->nz;i++){
+                        NewImageStd[i]=NewImageStd[i]-NewImageMean[i]*NewImageMean[i];
+                        InputImageStd[i]=InputImageStd[i]-InputImageMean[i]*InputImageMean[i];
+                        bufferImages[current_buffer?0:1][i]=(bufferImages[current_buffer][i]-InputImageMean[i]*NewImageMean[i])/(sqrt(NewImageStd[i]*InputImageStd[i])+(0.01*(allstdNew+allstdInput)));
+                    }
+                    current_buffer=current_buffer?0:1;
+                    delete [] NewImageMean;
                     delete [] NewImageStd;
                     delete [] InputImageMean;
                     delete [] InputImageStd;
@@ -552,66 +612,6 @@ int main(int argc, char **argv)
                 else{
                     cout << "ERROR: Image "<< parser << " is the wrong size"<<endl;
                     i=argc;
-                }
-            }
-            // *********************  Get LNCC  *************************
-            else if(strcmp(argv[i], "-lncc") == 0){
-                string parser=argv[++i];
-                nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
-                if(InputImage->datatype!=DT_FLOAT32){
-                    seg_changeDatatype<PrecisionTYPE>(NewImage);
-                }
-                PrecisionTYPE * NewImagePtr = static_cast<PrecisionTYPE *>(NewImage->data);
-
-                string parserstd=argv[++i];
-                if(strtod(parserstd.c_str(),NULL)){
-                    if(NewImage->nt<2&&NewImage->nx==InputImage->nx&&NewImage->ny==InputImage->ny&&NewImage->nz==InputImage->nz){
-                        float * NewImageMean=new float [NewImage->nx*NewImage->ny*NewImage->nz];
-                        float * NewImageStd=new float [NewImage->nx*NewImage->ny*NewImage->nz];
-                        float * InputImageMean=new float [InputImage->nx*InputImage->ny*InputImage->nz];
-                        float * InputImageStd=new float [InputImage->nx*InputImage->ny*InputImage->nz];
-                        float allmeanNew=0;
-                        float allmeanInput=0;
-                        float allstdNew=0;
-                        float allstdInput=0;
-                        for(int i=0; i<InputImage->nx*InputImage->ny*InputImage->nz;i++){
-                            allmeanNew+=NewImagePtr[i];
-                            NewImageMean[i]=NewImagePtr[i];
-                            NewImageStd[i]=NewImagePtr[i]*NewImagePtr[i];
-                            allmeanInput+=bufferImages[current_buffer][i];
-                            InputImageMean[i]=bufferImages[current_buffer][i];
-                            InputImageStd[i]=bufferImages[current_buffer][i]*bufferImages[current_buffer][i];
-                        }
-                        allmeanNew=allmeanNew/(InputImage->nx*InputImage->ny*InputImage->nz);
-                        allmeanInput=allmeanInput/(InputImage->nx*InputImage->ny*InputImage->nz);
-                        for(int i=0; i<InputImage->nx*InputImage->ny*InputImage->nz;i++){
-                            allstdNew+=(NewImagePtr[i]-allmeanNew)*(NewImagePtr[i]-allmeanNew);
-                            allstdInput+=(bufferImages[current_buffer][i]-allmeanInput)*(bufferImages[current_buffer][i]-allmeanInput);
-                            bufferImages[current_buffer][i]=NewImagePtr[i]*bufferImages[current_buffer][i];
-                        }
-                        allstdNew=allstdNew/(InputImage->nx*InputImage->ny*InputImage->nz);
-                        allstdInput=allstdInput/(InputImage->nx*InputImage->ny*InputImage->nz);
-                        //cout << allstdInput <<"  "<< allstdNew<<endl;
-                        Gaussian_Filter_4D(bufferImages[current_buffer],strtod(parserstd.c_str(),NULL),CurrSize);
-                        Gaussian_Filter_4D(NewImageMean,strtod(parserstd.c_str(),NULL),CurrSize);
-                        Gaussian_Filter_4D(NewImageStd,strtod(parserstd.c_str(),NULL),CurrSize);
-                        Gaussian_Filter_4D(InputImageMean,strtod(parserstd.c_str(),NULL),CurrSize);
-                        Gaussian_Filter_4D(InputImageStd,strtod(parserstd.c_str(),NULL),CurrSize);
-                        for(int i=0; i<InputImage->nx*InputImage->ny*InputImage->nz;i++){
-                            NewImageStd[i]=NewImageStd[i]-NewImageMean[i]*NewImageMean[i];
-                            InputImageStd[i]=InputImageStd[i]-InputImageMean[i]*InputImageMean[i];
-                            bufferImages[current_buffer?0:1][i]=(bufferImages[current_buffer][i]-InputImageMean[i]*NewImageMean[i])/(sqrt(NewImageStd[i]*InputImageStd[i])+(0.01*(allstdNew+allstdInput)));
-                        }
-                        current_buffer=current_buffer?0:1;
-                        delete [] NewImageMean;
-                        delete [] NewImageStd;
-                        delete [] InputImageMean;
-                        delete [] InputImageStd;
-                    }
-                    else{
-                        cout << "ERROR: Image "<< parser << " is the wrong size"<<endl;
-                        i=argc;
-                    }
                 }
             }
             else{
