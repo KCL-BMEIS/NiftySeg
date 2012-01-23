@@ -16,9 +16,9 @@
         TARGET_LINK_LIBRARIES(seg_LabFusion _seg_LabFusion _seg_tools _seg_Topo _seg_MRF _seg_FMM _seg_BiasCorrection _seg_nifti ${ZLIB})
     INSTALL_TARGETS(/bin seg_LabFusion)
 
-    ADD_EXECUTABLE(seg_Split seg_Split.cpp)
-        TARGET_LINK_LIBRARIES(seg_Split _seg_tools _seg_Topo _seg_nifti ${ZLIB})
-    INSTALL_TARGETS(/bin seg_Split)
+    ADD_EXECUTABLE(seg_maths seg_maths.cpp)
+        TARGET_LINK_LIBRARIES(seg_maths _seg_tools _seg_Topo _seg_MRF _seg_FMM _seg_BiasCorrection _seg_nifti ${ZLIB})
+    INSTALL_TARGETS(/bin seg_maths)
 
 
 #-----------------------------------------------------------------------------
