@@ -43,6 +43,8 @@ void Usage(char *exec)
     //printf("\t-lmi\t<file> <std>\tLocal MI between current img and <int> on a kernel with <std>\n");
     printf("\n\t* * Image header operations * *\n");
     printf("\t-hdr_copy <file> \tCopy header from working image to <file> and save in <output>.\n");
+    printf("\n\t* * Datatype output * *\n");
+    printf("\t-odt <datatype> \tSet output <datatype> (char, short, int, uchar, ushort, uint, float, double).\n");
     printf("\n\n* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
     return;
 }
@@ -79,6 +81,7 @@ int main(int argc, char **argv)
     CurrSize->zsize=InputImage->nz;
     CurrSize->usize=(InputImage->nu>1)?InputImage->nu:1;
     CurrSize->tsize=(InputImage->nt>1)?InputImage->nt:1;
+    int datatypeoutput=NIFTI_TYPE_FLOAT32;
 
     PrecisionTYPE ** bufferImages = new PrecisionTYPE * [2];
     bufferImages[0] = new PrecisionTYPE [InputImage->nvox];
@@ -474,21 +477,21 @@ int main(int argc, char **argv)
         else if(strcmp(argv[i], "-hdr_copy") == 0){
             string parser=argv[++i];
 
-                nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
-                if(NewImage->datatype!=DT_FLOAT32){
-                    seg_changeDatatype<PrecisionTYPE>(NewImage);
-                }
-                PrecisionTYPE * NewImagePtr = static_cast<PrecisionTYPE *>(NewImage->data);
-                if(NewImage->nx==InputImage->nx&&NewImage->ny==InputImage->ny&&NewImage->nz==InputImage->nz&&NewImage->nt==InputImage->nt&&NewImage->nu==InputImage->nu&&NewImage->nv==InputImage->nv&&NewImage->nw==InputImage->nw){
-                    for(unsigned int i=0; i<InputImage->nvox; i++)
-                        bufferImages[current_buffer?0:1][i]=NewImagePtr[i];
-                    current_buffer=current_buffer?0:1;
-                }
-                else{
-                    cout << "ERROR: Image "<< parser << " is the wrong size"<<endl;
-                    i=argc;
-                }
-                nifti_image_free(NewImage);
+            nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
+            if(NewImage->datatype!=DT_FLOAT32){
+                seg_changeDatatype<PrecisionTYPE>(NewImage);
+            }
+            PrecisionTYPE * NewImagePtr = static_cast<PrecisionTYPE *>(NewImage->data);
+            if(NewImage->nx==InputImage->nx&&NewImage->ny==InputImage->ny&&NewImage->nz==InputImage->nz&&NewImage->nt==InputImage->nt&&NewImage->nu==InputImage->nu&&NewImage->nv==InputImage->nv&&NewImage->nw==InputImage->nw){
+                for(unsigned int i=0; i<InputImage->nvox; i++)
+                    bufferImages[current_buffer?0:1][i]=NewImagePtr[i];
+                current_buffer=current_buffer?0:1;
+            }
+            else{
+                cout << "ERROR: Image "<< parser << " is the wrong size"<<endl;
+                i=argc;
+            }
+            nifti_image_free(NewImage);
 
         }
         // *********************  Get LSSD  *************************
@@ -617,6 +620,39 @@ int main(int argc, char **argv)
             }
             nifti_image_free(NewImage);
         }
+        // *********************  output data type  *************************
+        else if(strcmp(argv[i], "-odt") == 0){
+            string parser=argv[++i];
+            cout << parser<<" "<<parser.find("char")<<endl;
+            if(parser.find("uchar")>=0){
+                datatypeoutput=NIFTI_TYPE_UINT8;
+            }
+            else if(parser.find("ushort")>=0){
+                datatypeoutput=NIFTI_TYPE_UINT16;
+            }
+            else if(parser.find("uint")>=0){
+                datatypeoutput=NIFTI_TYPE_UINT32;
+            }
+            else if(parser.find("char")>=0){
+                datatypeoutput=NIFTI_TYPE_INT8;
+            }
+            else if(parser.find("short")>=0){
+                datatypeoutput=NIFTI_TYPE_INT16;
+            }
+            else if(parser.find("int")>=0){
+                datatypeoutput=NIFTI_TYPE_INT32;
+            }
+            else if(parser.find("float")>=0){
+                datatypeoutput=NIFTI_TYPE_FLOAT32;
+            }
+            else if(parser.find("double")>=0){
+                datatypeoutput=NIFTI_TYPE_FLOAT64;
+            }
+            else{
+                cout << "ERROR: Datatype "<< parser << " is unknown"<<endl;
+                i=argc;
+            }
+        }
         else{
             cout << "Option "<< string(argv[i]) << " unkown"<<endl;
             i=argc;
@@ -629,7 +665,7 @@ int main(int argc, char **argv)
         // saving output
         char * filename_out=argv[argc-1];
         nifti_image * OutputImage = nifti_copy_nim_info(InputImage);
-        OutputImage->datatype=DT_FLOAT32;
+        OutputImage->datatype=datatypeoutput;
         nifti_set_filenames(OutputImage,filename_out,0,0);
         OutputImage->dim[4]=OutputImage->nt=CurrSize->tsize;
         OutputImage->dim[5]=OutputImage->nu=CurrSize->usize;
@@ -638,10 +674,46 @@ int main(int argc, char **argv)
         OutputImage->dim[0]=(int)(OutputImage->dim[1]>0)+(int)(OutputImage->dim[2]>0)+(int)(OutputImage->dim[3]>0)+(int)(OutputImage->dim[4]>0)+(int)(OutputImage->dim[5]>0)+(int)(OutputImage->dim[6]>0)+(int)(OutputImage->dim[7]>0);
         nifti_update_dims_from_array(OutputImage);
         nifti_datatype_sizes(OutputImage->datatype,&OutputImage->nbyper,&OutputImage->swapsize);
-
-        OutputImage->data = (void *) calloc(OutputImage->nvox, sizeof(PrecisionTYPE));
-        PrecisionTYPE * OutputImagePtr = static_cast<PrecisionTYPE *>(OutputImage->data);
-        for(int i=0; i<(CurrSize->numel*CurrSize->tsize); i++){OutputImagePtr[i]=bufferImages[current_buffer][i];}
+        if(datatypeoutput==NIFTI_TYPE_UINT8){
+            OutputImage->data = (void *) calloc(OutputImage->nvox, sizeof(unsigned char));
+            unsigned char * OutputImagePtr = static_cast<unsigned char *>(OutputImage->data);
+            for(int i=0; i<(CurrSize->numel*CurrSize->tsize); i++){OutputImagePtr[i]=(unsigned char)round(bufferImages[current_buffer][i]);}
+        }
+        else if(datatypeoutput==NIFTI_TYPE_UINT16){
+            OutputImage->data = (void *) calloc(OutputImage->nvox, sizeof(unsigned short));
+            unsigned short * OutputImagePtr = static_cast<unsigned short *>(OutputImage->data);
+            for(int i=0; i<(CurrSize->numel*CurrSize->tsize); i++){OutputImagePtr[i]=(unsigned short)round(bufferImages[current_buffer][i]);}
+        }
+        else if(datatypeoutput==NIFTI_TYPE_UINT32){
+            OutputImage->data = (void *) calloc(OutputImage->nvox, sizeof(unsigned int));
+            unsigned int * OutputImagePtr = static_cast<unsigned int *>(OutputImage->data);
+            for(int i=0; i<(CurrSize->numel*CurrSize->tsize); i++){OutputImagePtr[i]=(unsigned int)round(bufferImages[current_buffer][i]);}
+        }
+        else if(datatypeoutput==NIFTI_TYPE_INT8){
+            OutputImage->data = (void *) calloc(OutputImage->nvox, sizeof(char));
+            char * OutputImagePtr = static_cast<char *>(OutputImage->data);
+            for(int i=0; i<(CurrSize->numel*CurrSize->tsize); i++){OutputImagePtr[i]=(char)round(bufferImages[current_buffer][i]);}
+        }
+        else if(datatypeoutput==NIFTI_TYPE_INT16){
+            OutputImage->data = (void *) calloc(OutputImage->nvox, sizeof(short));
+            short * OutputImagePtr = static_cast<short *>(OutputImage->data);
+            for(int i=0; i<(CurrSize->numel*CurrSize->tsize); i++){OutputImagePtr[i]=(short)round(bufferImages[current_buffer][i]);}
+        }
+        else if(datatypeoutput==NIFTI_TYPE_INT32){
+            OutputImage->data = (void *) calloc(OutputImage->nvox, sizeof(int));
+            int * OutputImagePtr = static_cast<int *>(OutputImage->data);
+            for(int i=0; i<(CurrSize->numel*CurrSize->tsize); i++){OutputImagePtr[i]=(int)round(bufferImages[current_buffer][i]);}
+        }
+        else if(datatypeoutput==NIFTI_TYPE_FLOAT32){
+            OutputImage->data = (void *) calloc(OutputImage->nvox, sizeof(float));
+            float * OutputImagePtr = static_cast<float *>(OutputImage->data);
+            for(int i=0; i<(CurrSize->numel*CurrSize->tsize); i++){OutputImagePtr[i]=(float)bufferImages[current_buffer][i];}
+        }
+        else if(datatypeoutput==NIFTI_TYPE_FLOAT64){
+            OutputImage->data = (void *) calloc(OutputImage->nvox, sizeof(double));
+            double * OutputImagePtr = static_cast<double *>(OutputImage->data);
+            for(int i=0; i<(CurrSize->numel*CurrSize->tsize); i++){OutputImagePtr[i]=(double)round(bufferImages[current_buffer][i]);}
+        }
         nifti_image_write(OutputImage);
         nifti_image_free(OutputImage);
     }
