@@ -103,7 +103,7 @@ int main(int argc, char **argv)
         // *********************  MUTIPLY  *************************
         else if(strcmp(argv[i], "-mul") == 0){
             string parser=argv[++i];
-            if(strtod(parser.c_str(),NULL)){
+            if((strtod(parser.c_str(),NULL)!=0 | (parser.length()==1 && parser.find("0")>=0))){
                 double multfactor=strtod(parser.c_str(),NULL);
                 for(unsigned int i=0; i<InputImage->nvox; i++)
                     bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]*multfactor;
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
         // *********************  ADD  *************************
         else if(strcmp(argv[i], "-add") == 0){
             string parser=argv[++i];
-            if(strtod(parser.c_str(),NULL)){
+            if((strtod(parser.c_str(),NULL)!=0 | (parser.length()==1 && parser.find("0")>=0))){
                 double addfactor=strtod(parser.c_str(),NULL);
                 for(unsigned int i=0; i<InputImage->nvox; i++)
                     bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]+addfactor;
@@ -158,7 +158,7 @@ int main(int argc, char **argv)
         // *********************  SUBTRACT  *************************
         else if(strcmp(argv[i], "-sub") == 0){
             string parser=argv[++i];
-            if(strtod(parser.c_str(),NULL)){
+            if((strtod(parser.c_str(),NULL)!=0 | (parser.length()==1 && parser.find("0")>=0))){
                 double factor=strtod(parser.c_str(),NULL);
                 for(unsigned int i=0; i<InputImage->nvox; i++)
                     bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]-factor;
@@ -183,9 +183,9 @@ int main(int argc, char **argv)
             }
         }
         // *********************  DIV  *************************
-        else if(strcmp(argv[i], "-sub") == 0){
+        else if(strcmp(argv[i], "-div") == 0){
             string parser=argv[++i];
-            if(strtod(parser.c_str(),NULL)){
+            if((strtod(parser.c_str(),NULL)!=0 | (parser.length()==1 && parser.find("0")>=0))){
                 double factor=strtod(parser.c_str(),NULL);
                 for(unsigned int i=0; i<InputImage->nvox; i++)
                     bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]/factor;
@@ -212,55 +212,34 @@ int main(int argc, char **argv)
         // *********************  POWER  *************************
         else if(strcmp(argv[i], "-pow") == 0){
             string parser=argv[++i];
-            if(strtod(parser.c_str(),NULL)){
+            if((strtod(parser.c_str(),NULL)!=0 | (parser.length()==1 && parser.find("0")>=0))){
                 float factor=strtof(parser.c_str(),NULL);
                 for(unsigned int i=0; i<InputImage->nvox; i++)
                     bufferImages[current_buffer?0:1][i]=powf(bufferImages[current_buffer][i],factor);
                 current_buffer=current_buffer?0:1;
             }
             else{
-                cout << "ERROR: "<< parser << " is not a number"<<endl;
+                cout << "ERROR: "<< parser << " is not a valid number"<<endl;
                 i=argc;
             }
         }
         // *********************  square_root  *************************
         else if(strcmp(argv[i], "-sqrt") == 0){
-            string parser=argv[++i];
-            if(strtod(parser.c_str(),NULL)){
                 for(unsigned int i=0; i<InputImage->nvox; i++)
                     bufferImages[current_buffer?0:1][i]=sqrtf(bufferImages[current_buffer][i]);
                 current_buffer=current_buffer?0:1;
-            }
-            else{
-                cout << "ERROR: "<< parser << " is not a number"<<endl;
-                i=argc;
-            }
         }
-        // *********************  square_root  *************************
+        // *********************  Exponential  *************************
         else if(strcmp(argv[i], "-exp") == 0){
-            string parser=argv[++i];
-            if(strtod(parser.c_str(),NULL)){
                 for(unsigned int i=0; i<InputImage->nvox; i++)
                     bufferImages[current_buffer?0:1][i]=expf(bufferImages[current_buffer][i]);
                 current_buffer=current_buffer?0:1;
-            }
-            else{
-                cout << "ERROR: "<< parser << " is not a number"<<endl;
-                i=argc;
-            }
         }
         // *********************  reciprocal  *************************
         else if(strcmp(argv[i], "-recip") == 0){
-            string parser=argv[++i];
-            if(strtod(parser.c_str(),NULL)){
                 for(unsigned int i=0; i<InputImage->nvox; i++)
                     bufferImages[current_buffer?0:1][i]=1/(bufferImages[current_buffer][i]);
                 current_buffer=current_buffer?0:1;
-            }
-            else{
-                cout << "ERROR: "<< parser << " is not a number"<<endl;
-                i=argc;
-            }
         }
         // *********************  absolute value  *************************
         else if(strcmp(argv[i], "-abs") == 0){
@@ -278,35 +257,35 @@ int main(int argc, char **argv)
         // *********************  THRESHOLD below  *************************
         else if(strcmp(argv[i], "-thr") == 0){
             string parser=argv[++i];
-            if(strtod(parser.c_str(),NULL)){
+            if((strtod(parser.c_str(),NULL)!=0 | (parser.length()==1 && parser.find("0")>=0))){
                 double factor=strtod(parser.c_str(),NULL);
                 for(unsigned int i=0; i<InputImage->nvox; i++)
                     bufferImages[current_buffer?0:1][i]=(bufferImages[current_buffer][i]>factor)?bufferImages[current_buffer][i]:0;
                 current_buffer=current_buffer?0:1;
             }
             else{
-                cout << "ERROR: "<< parser << " is not a number"<<endl;
+                cout << "ERROR: "<< parser << " is not a valid number"<<endl;
                 i=argc;
             }
         }
         // *********************  THRESHOLD ABOVE  *************************
         else if(strcmp(argv[i], "-uthr") == 0){
             string parser=argv[++i];
-            if(strtod(parser.c_str(),NULL)){
+            if((strtod(parser.c_str(),NULL)!=0 | (parser.length()==1 && parser.find("0")>=0))){
                 double factor=strtod(parser.c_str(),NULL);
                 for(unsigned int i=0; i<InputImage->nvox; i++)
                     bufferImages[current_buffer?0:1][i]=(bufferImages[current_buffer][i]<factor)?bufferImages[current_buffer][i]:0;
                 current_buffer=current_buffer?0:1;
             }
             else{
-                cout << "ERROR: "<< parser << " is not a number"<<endl;
+                cout << "ERROR: "<< parser << " is not a valid number"<<endl;
                 i=argc;
             }
         }
         // *********************  Dilate   *************************
         else if(strcmp(argv[i], "-dil") == 0){
             string parser=argv[++i];
-            if(strtod(parser.c_str(),NULL)){
+            if((strtod(parser.c_str(),NULL)>0)){
                 double factor=strtod(parser.c_str(),NULL);
                 Dillate(bufferImages[current_buffer],(int)round(factor),CurrSize);
                 for(unsigned int i=0; i<InputImage->nvox; i++)
@@ -314,14 +293,14 @@ int main(int argc, char **argv)
                 current_buffer=current_buffer?0:1;
             }
             else{
-                cout << "ERROR: "<< parser << " is not a number"<<endl;
+                cout << "ERROR: "<< parser << " has to be an integer > 0"<<endl;
                 i=argc;
             }
         }
         // *********************  Erosion   *************************
         else if(strcmp(argv[i], "-ero") == 0){
             string parser=argv[++i];
-            if(strtod(parser.c_str(),NULL)){
+            if((strtod(parser.c_str(),NULL)>0 )){
                 double factor=strtod(parser.c_str(),NULL);
                 Erosion(bufferImages[current_buffer],(int)round(factor),CurrSize);
                 for(unsigned int i=0; i<InputImage->nvox; i++)
@@ -329,7 +308,7 @@ int main(int argc, char **argv)
                 current_buffer=current_buffer?0:1;
             }
             else{
-                cout << "ERROR: "<< parser << " is not a number"<<endl;
+                cout << "ERROR: "<< parser << " has to be an integer > 0"<<endl;
                 i=argc;
             }
         }
@@ -337,7 +316,7 @@ int main(int argc, char **argv)
         // *********************  GAUSSIAN SMOTHING *************************
         else if(strcmp(argv[i], "-smo") == 0){
             string parser=argv[++i];
-            if(strtod(parser.c_str(),NULL)){
+            if(strtod(parser.c_str(),NULL)!=0){
                 float factor=strtof(parser.c_str(),NULL);
 
                 Gaussian_Filter_4D(&bufferImages[current_buffer][0], factor, CurrSize);
@@ -347,7 +326,7 @@ int main(int argc, char **argv)
                 current_buffer=current_buffer?0:1;
             }
             else{
-                cout << "ERROR: "<< parser << " is not a number"<<endl;
+                cout << "ERROR: "<< parser << " has to be a number > 0"<<endl;
                 i=argc;
             }
         }
@@ -377,7 +356,7 @@ int main(int argc, char **argv)
         // *********************  Extract time point  *************************
         else if(strcmp(argv[i], "-tp") == 0){
             string parser=argv[++i];
-            if(strtod(parser.c_str(),NULL) && strtod(parser.c_str(),NULL)<CurrSize->tsize){
+            if((strtod(parser.c_str(),NULL)!=0 || (parser.length()==1 && parser.find("0")>=0 && parser.find("0")>=0) )&& strtod(parser.c_str(),NULL)<CurrSize->tsize ){
                 float factor=strtof(parser.c_str(),NULL);
                 CurrSize->tsize=1;
                 for(int i=0; i<CurrSize->numel; i++)
@@ -386,14 +365,14 @@ int main(int argc, char **argv)
                 current_buffer=current_buffer?0:1;
             }
             else{
-                cout << "ERROR: "<< parser << " is not a number"<<endl;
+                cout << "ERROR: "<< parser << " is not an integer"<<endl;
                 i=argc;
             }
         }
         // *********************  merge time points  *************************
         else if(strcmp(argv[i], "-merge") == 0){
             string parser=argv[++i];
-            if(strtod(parser.c_str(),NULL) && strtod(parser.c_str(),NULL)>0){
+            if(strtod(parser.c_str(),NULL) && strtod(parser.c_str(),NULL)!=0){
                 int numberofTP=(int)strtof(parser.c_str(),NULL);
                 int oldnumbTP=CurrSize->tsize;
                 delete [] bufferImages[current_buffer?0:1];
@@ -431,7 +410,7 @@ int main(int argc, char **argv)
                 current_buffer=current_buffer?0:1;
             }
             else{
-                cout << "ERROR: "<< parser << " is not a number"<<endl;
+                cout << "ERROR: "<< parser << " has to be an integer > 0"<<endl;
                 i=argc;
             }
         }
@@ -517,29 +496,21 @@ int main(int argc, char **argv)
                     for(int i=0; i<InputImage->nx*InputImage->ny*InputImage->nz;i++){
                         allmeanNew+=NewImagePtr[i];
                         NewImageMean[i]=NewImagePtr[i];
-                        //NewImageStd[i]=NewImagePtr[i]*NewImagePtr[i];
                         allmeanInput+=bufferImages[current_buffer][i];
                         InputImageMean[i]=bufferImages[current_buffer][i];
-                        //InputImageStd[i]=bufferImages[current_buffer][i]*bufferImages[current_buffer][i];
                     }
                     Gaussian_Filter_4D(NewImageMean,strtod(parserstd.c_str(),NULL)*3,CurrSize);
-                    //Gaussian_Filter_4D(NewImageStd,strtod(parserstd.c_str(),NULL)*3,CurrSize);
                     Gaussian_Filter_4D(InputImageMean,strtod(parserstd.c_str(),NULL)*3,CurrSize);
-                    //Gaussian_Filter_4D(InputImageStd,strtod(parserstd.c_str(),NULL)*3,CurrSize);
-
-
                     allmeanNew=allmeanNew/(InputImage->nx*InputImage->ny*InputImage->nz);
                     allmeanInput=allmeanInput/(InputImage->nx*InputImage->ny*InputImage->nz);
                     for(int i=0; i<InputImage->nx*InputImage->ny*InputImage->nz;i++){
                         allstdNew+=(NewImagePtr[i]-allmeanNew)*(NewImagePtr[i]-allmeanNew);
                         allstdInput+=(bufferImages[current_buffer][i]-allmeanInput)*(bufferImages[current_buffer][i]-allmeanInput);
-
                     }
                     allstdNew=allstdNew/(InputImage->nx*InputImage->ny*InputImage->nz);
                     allstdInput=allstdInput/(InputImage->nx*InputImage->ny*InputImage->nz);
-                    //cout << allstdInput <<"  "<< allstdNew<<endl;
                     for(int i=0; i<InputImage->nx*InputImage->ny*InputImage->nz;i++){
-                        bufferImages[current_buffer][i]=((bufferImages[current_buffer][i]-InputImageMean[i])/allstdInput)-((NewImagePtr[i]-NewImageMean[i])/allstdNew);
+                        bufferImages[current_buffer][i]=(((bufferImages[current_buffer][i]-(InputImageMean[i]-allmeanInput))/allstdInput)-((NewImagePtr[i]-(NewImageMean[i]-allmeanNew))/allstdNew));
                         bufferImages[current_buffer?0:1][i]=(bufferImages[current_buffer][i]*bufferImages[current_buffer][i]);
                     }
                     current_buffer=current_buffer?0:1;
@@ -623,7 +594,6 @@ int main(int argc, char **argv)
         // *********************  output data type  *************************
         else if(strcmp(argv[i], "-odt") == 0){
             string parser=argv[++i];
-            cout << parser<<" "<<parser.find("char")<<endl;
             if(parser.find("uchar")>=0){
                 datatypeoutput=NIFTI_TYPE_UINT8;
             }

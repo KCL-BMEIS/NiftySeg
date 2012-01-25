@@ -1,4 +1,4 @@
-#!/bin/sh 
+#!/bin/sh
 
 # This is set as the minimum number of arguments for the script to run
 ndefargs=2
@@ -60,17 +60,13 @@ csf_prior=${pathatlas}/ECSF_prior.nii.gz
 deep_grey_prior=${pathatlas}/DGM_prior.nii.gz
 internal_csf_prior=${pathatlas}/ICSF_prior.nii.gz
 
-fslmaths ${mask} -bin ${name}_mask2.nii
-seg_Split -in ${name}_mask2.nii -out ${name}_mask2.nii -fill
-
-#ucltkDilate -i ${name}_mask2.nii -o ${name}_mask2.nii -it 15 -d 1 
-#ucltkDilate -i ${name}_mask2.nii -o ${name}_mask2.nii -it 14 -d 0 -r 1
+seg_maths ${mask} -bin -dil 3 -ero 3 -fill -dill ${name}__mask_filled.nii
 
 fslmaths ${image} -mul ${name}_mask2.nii ${name}__masked.nii  
 
 if [ ! -f ${name}__affine.mat ]; then
   echo Starting reg_aladin
-  linearArgs="-target ${name}__masked.nii -source ${atlas} -aff ${name}__affine.mat -ln 3 -lp 2 -result ${name}__affine_result.nii.gz"  
+  linearArgs="-target ${image} -tmask ${name}__mask_filled.nii -source ${atlas} -aff ${name}__affine.mat -ln 3 -lp 2 -result ${name}__affine_result.nii.gz"
   LinearExecutable=`which reg_aladin`
   $LinearExecutable $linearArgs
 fi
@@ -78,7 +74,7 @@ fi
 if [ ! -f ${name}__cpp.nii ]; then
   echo Starting reg_f3d
   nonLinearExecutable=`which reg_f3d`
-  nonLinearArgs=" -ln 4 -lp 3 -sx 10 -target ${name}__masked.nii -source ${atlas} -aff ${name}__affine.mat -cpp ${name}__cpp.nii"  
+  nonLinearArgs=" -ln 3 -lp 2 -sx 5 -target ${image} -tmask ${name}__mask_filled.nii -source ${atlas} -aff ${name}__affine.mat -cpp ${name}__cpp.nii"
   $nonLinearExecutable $nonLinearArgs
   echo Finished reg_f3d
 
@@ -97,10 +93,8 @@ fi
 # Run LoAd
 ################################################################
 
-cmd="seg_LoAd -in ${image} -mask ${name}_mask2.nii -priors ${name}__registered_white.nii ${name}__registered_grey.nii ${name}__registered_csf.nii ${name}__registered_deep_grey.nii ${name}__registered_internal_csf.nii -out ${name}_segmentation.nii -v 1 $max_iter_arg $bc_order_arg"
+cmd="seg_LoAd -in ${image} -mask ${name}__mask_filled.nii -priors ${name}__registered_white.nii ${name}__registered_grey.nii ${name}__registered_csf.nii ${name}__registered_deep_grey.nii ${name}__registered_internal_csf.nii -out ${name}_segmentation.nii -v 1 $max_iter_arg $bc_order_arg"
 echo "Running command:$cmd"
 eval $cmd 
 
-#rm ${name}__*
-#rm ${name}_mask2.nii
-
+rm ${name}__*
