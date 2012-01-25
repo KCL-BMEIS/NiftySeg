@@ -62,8 +62,6 @@ internal_csf_prior=${pathatlas}/ICSF_prior.nii.gz
 
 seg_maths ${mask} -bin -dil 3 -ero 3 -fill -dill ${name}__mask_filled.nii
 
-fslmaths ${image} -mul ${name}_mask2.nii ${name}__masked.nii  
-
 if [ ! -f ${name}__affine.mat ]; then
   echo Starting reg_aladin
   linearArgs="-target ${image} -tmask ${name}__mask_filled.nii -source ${atlas} -aff ${name}__affine.mat -ln 3 -lp 2 -result ${name}__affine_result.nii.gz"
