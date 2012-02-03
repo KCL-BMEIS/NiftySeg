@@ -5,7 +5,7 @@
 #include "_seg_Topo.h"
 
 using namespace std;
-#define PrecisionTYPE float
+#define SegPrecisionTYPE float
 
 void Usage(char *exec)
 {
@@ -71,9 +71,9 @@ int main(int argc, char **argv)
         return 1;
     }
     if(InputImage->datatype!=DT_FLOAT32){
-        seg_changeDatatype<PrecisionTYPE>(InputImage);
+        seg_changeDatatype<SegPrecisionTYPE>(InputImage);
     }
-    PrecisionTYPE * InputImagePtr = static_cast<PrecisionTYPE *>(InputImage->data);
+    SegPrecisionTYPE * InputImagePtr = static_cast<SegPrecisionTYPE *>(InputImage->data);
     ImageSize * CurrSize = new ImageSize [1]();
     CurrSize->numel=(int)(InputImage->nx*InputImage->ny*InputImage->nz);
     CurrSize->xsize=InputImage->nx;
@@ -83,9 +83,9 @@ int main(int argc, char **argv)
     CurrSize->tsize=(InputImage->nt>1)?InputImage->nt:1;
     int datatypeoutput=NIFTI_TYPE_FLOAT32;
 
-    PrecisionTYPE ** bufferImages = new PrecisionTYPE * [2];
-    bufferImages[0] = new PrecisionTYPE [InputImage->nvox];
-    bufferImages[1] = new PrecisionTYPE [InputImage->nvox];
+    SegPrecisionTYPE ** bufferImages = new SegPrecisionTYPE * [2];
+    bufferImages[0] = new SegPrecisionTYPE [InputImage->nvox];
+    bufferImages[1] = new SegPrecisionTYPE [InputImage->nvox];
     for(unsigned int i=0; i<InputImage->nvox; i++){
         bufferImages[0][i]=InputImagePtr[i];
     }
@@ -103,7 +103,7 @@ int main(int argc, char **argv)
         // *********************  MUTIPLY  *************************
         else if(strcmp(argv[i], "-mul") == 0){
             string parser=argv[++i];
-            if((strtod(parser.c_str(),NULL)!=0 | (parser.length()==1 && parser.find("0")>=0))){
+            if((strtod(parser.c_str(),NULL)!=0 || (parser.length()==1 && parser.find("0")>=0))){
                 double multfactor=strtod(parser.c_str(),NULL);
                 for(unsigned int i=0; i<InputImage->nvox; i++)
                     bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]*multfactor;
@@ -112,9 +112,9 @@ int main(int argc, char **argv)
             else{
                 nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
                 if(InputImage->datatype!=DT_FLOAT32){
-                    seg_changeDatatype<PrecisionTYPE>(NewImage);
+                    seg_changeDatatype<SegPrecisionTYPE>(NewImage);
                 }
-                PrecisionTYPE * NewImagePtr = static_cast<PrecisionTYPE *>(NewImage->data);
+                SegPrecisionTYPE * NewImagePtr = static_cast<SegPrecisionTYPE *>(NewImage->data);
                 if(NewImage->nx==InputImage->nx&&NewImage->ny==InputImage->ny&&NewImage->nz==InputImage->nz&&NewImage->nt==InputImage->nt&&NewImage->nu==InputImage->nu&&NewImage->nv==InputImage->nv&&NewImage->nw==InputImage->nw){
                     for(unsigned int i=0; i<InputImage->nvox; i++)
                         bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]*NewImagePtr[i];
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
         // *********************  ADD  *************************
         else if(strcmp(argv[i], "-add") == 0){
             string parser=argv[++i];
-            if((strtod(parser.c_str(),NULL)!=0 | (parser.length()==1 && parser.find("0")>=0))){
+            if((strtod(parser.c_str(),NULL)!=0 || (parser.length()==1 && parser.find("0")>=0))){
                 double addfactor=strtod(parser.c_str(),NULL);
                 for(unsigned int i=0; i<InputImage->nvox; i++)
                     bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]+addfactor;
@@ -140,9 +140,9 @@ int main(int argc, char **argv)
             else{
                 nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
                 if(NewImage->datatype!=DT_FLOAT32){
-                    seg_changeDatatype<PrecisionTYPE>(NewImage);
+                    seg_changeDatatype<SegPrecisionTYPE>(NewImage);
                 }
-                PrecisionTYPE * NewImagePtr = static_cast<PrecisionTYPE *>(NewImage->data);
+                SegPrecisionTYPE * NewImagePtr = static_cast<SegPrecisionTYPE *>(NewImage->data);
                 if(NewImage->nx==InputImage->nx&&NewImage->ny==InputImage->ny&&NewImage->nz==InputImage->nz&&NewImage->nt==InputImage->nt&&NewImage->nu==InputImage->nu&&NewImage->nv==InputImage->nv&&NewImage->nw==InputImage->nw){
                     for(unsigned int i=0; i<InputImage->nvox; i++)
                         bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]+NewImagePtr[i];
@@ -158,7 +158,7 @@ int main(int argc, char **argv)
         // *********************  SUBTRACT  *************************
         else if(strcmp(argv[i], "-sub") == 0){
             string parser=argv[++i];
-            if((strtod(parser.c_str(),NULL)!=0 | (parser.length()==1 && parser.find("0")>=0))){
+            if((strtod(parser.c_str(),NULL)!=0 || (parser.length()==1 && parser.find("0")>=0))){
                 double factor=strtod(parser.c_str(),NULL);
                 for(unsigned int i=0; i<InputImage->nvox; i++)
                     bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]-factor;
@@ -167,9 +167,9 @@ int main(int argc, char **argv)
             else{
                 nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
                 if(NewImage->datatype!=DT_FLOAT32){
-                    seg_changeDatatype<PrecisionTYPE>(NewImage);
+                    seg_changeDatatype<SegPrecisionTYPE>(NewImage);
                 }
-                PrecisionTYPE * NewImagePtr = static_cast<PrecisionTYPE *>(NewImage->data);
+                SegPrecisionTYPE * NewImagePtr = static_cast<SegPrecisionTYPE *>(NewImage->data);
                 if(NewImage->nx==InputImage->nx&&NewImage->ny==InputImage->ny&&NewImage->nz==InputImage->nz&&NewImage->nt==InputImage->nt&&NewImage->nu==InputImage->nu&&NewImage->nv==InputImage->nv&&NewImage->nw==InputImage->nw){
                     for(unsigned int i=0; i<InputImage->nvox; i++)
                         bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]-NewImagePtr[i];
@@ -185,7 +185,7 @@ int main(int argc, char **argv)
         // *********************  DIV  *************************
         else if(strcmp(argv[i], "-div") == 0){
             string parser=argv[++i];
-            if((strtod(parser.c_str(),NULL)!=0 | (parser.length()==1 && parser.find("0")>=0))){
+            if((strtod(parser.c_str(),NULL)!=0 || (parser.length()==1 && parser.find("0")>=0))){
                 double factor=strtod(parser.c_str(),NULL);
                 for(unsigned int i=0; i<InputImage->nvox; i++)
                     bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]/factor;
@@ -194,9 +194,9 @@ int main(int argc, char **argv)
             else{
                 nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
                 if(NewImage->datatype!=DT_FLOAT32){
-                    seg_changeDatatype<PrecisionTYPE>(NewImage);
+                    seg_changeDatatype<SegPrecisionTYPE>(NewImage);
                 }
-                PrecisionTYPE * NewImagePtr = static_cast<PrecisionTYPE *>(NewImage->data);
+                SegPrecisionTYPE * NewImagePtr = static_cast<SegPrecisionTYPE *>(NewImage->data);
                 if(NewImage->nx==InputImage->nx&&NewImage->ny==InputImage->ny&&NewImage->nz==InputImage->nz&&NewImage->nt==InputImage->nt&&NewImage->nu==InputImage->nu&&NewImage->nv==InputImage->nv&&NewImage->nw==InputImage->nw){
                     for(unsigned int i=0; i<InputImage->nvox; i++)
                         bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]/NewImagePtr[i];
@@ -212,7 +212,7 @@ int main(int argc, char **argv)
         // *********************  POWER  *************************
         else if(strcmp(argv[i], "-pow") == 0){
             string parser=argv[++i];
-            if((strtod(parser.c_str(),NULL)!=0 | (parser.length()==1 && parser.find("0")>=0))){
+            if((strtod(parser.c_str(),NULL)!=0 || (parser.length()==1 && parser.find("0")>=0))){
                 float factor=strtof(parser.c_str(),NULL);
                 for(unsigned int i=0; i<InputImage->nvox; i++)
                     bufferImages[current_buffer?0:1][i]=powf(bufferImages[current_buffer][i],factor);
@@ -257,7 +257,7 @@ int main(int argc, char **argv)
         // *********************  THRESHOLD below  *************************
         else if(strcmp(argv[i], "-thr") == 0){
             string parser=argv[++i];
-            if((strtod(parser.c_str(),NULL)!=0 | (parser.length()==1 && parser.find("0")>=0))){
+            if((strtod(parser.c_str(),NULL)!=0 || (parser.length()==1 && parser.find("0")>=0))){
                 double factor=strtod(parser.c_str(),NULL);
                 for(unsigned int i=0; i<InputImage->nvox; i++)
                     bufferImages[current_buffer?0:1][i]=(bufferImages[current_buffer][i]>factor)?bufferImages[current_buffer][i]:0;
@@ -271,7 +271,7 @@ int main(int argc, char **argv)
         // *********************  THRESHOLD ABOVE  *************************
         else if(strcmp(argv[i], "-uthr") == 0){
             string parser=argv[++i];
-            if((strtod(parser.c_str(),NULL)!=0 | (parser.length()==1 && parser.find("0")>=0))){
+            if((strtod(parser.c_str(),NULL)!=0 || (parser.length()==1 && parser.find("0")>=0))){
                 double factor=strtod(parser.c_str(),NULL);
                 for(unsigned int i=0; i<InputImage->nvox; i++)
                     bufferImages[current_buffer?0:1][i]=(bufferImages[current_buffer][i]<factor)?bufferImages[current_buffer][i]:0;
@@ -376,11 +376,11 @@ int main(int argc, char **argv)
                 int numberofTP=(int)strtof(parser.c_str(),NULL);
                 int oldnumbTP=CurrSize->tsize;
                 delete [] bufferImages[current_buffer?0:1];
-                bufferImages[current_buffer?0:1]= new PrecisionTYPE [CurrSize->numel*(CurrSize->tsize+(int)numberofTP)];
+                bufferImages[current_buffer?0:1]= new SegPrecisionTYPE [CurrSize->numel*(CurrSize->tsize+(int)numberofTP)];
                 for(int index=0; index<(CurrSize->numel*CurrSize->tsize); index++)
                     bufferImages[current_buffer?0:1][index]=bufferImages[current_buffer][index];
                 delete [] bufferImages[current_buffer];
-                bufferImages[current_buffer]= new PrecisionTYPE [CurrSize->numel*(CurrSize->tsize+(int)numberofTP)];
+                bufferImages[current_buffer]= new SegPrecisionTYPE [CurrSize->numel*(CurrSize->tsize+(int)numberofTP)];
                 for(int index=0; index<(CurrSize->numel*CurrSize->tsize); index++)
                     bufferImages[current_buffer][index]=bufferImages[current_buffer?0:1][index];
                 current_buffer=current_buffer?0:1;
@@ -395,9 +395,9 @@ int main(int argc, char **argv)
                         }
                         if(NewImage->nx==InputImage->nx&&NewImage->ny==InputImage->ny&&NewImage->nz==InputImage->nz&&NewImage->nt==1){
                             if(NewImage->datatype!=DT_FLOAT32){
-                                seg_changeDatatype<PrecisionTYPE>(NewImage);
+                                seg_changeDatatype<SegPrecisionTYPE>(NewImage);
                             }
-                            PrecisionTYPE * NewImagePtr = static_cast<PrecisionTYPE *>(NewImage->data);
+                            SegPrecisionTYPE * NewImagePtr = static_cast<SegPrecisionTYPE *>(NewImage->data);
                             for(int index=0; index<CurrSize->numel; index++)
                                 bufferImages[current_buffer?0:1][index+tp*CurrSize->numel]=NewImagePtr[index];
                         }
@@ -458,9 +458,9 @@ int main(int argc, char **argv)
 
             nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
             if(NewImage->datatype!=DT_FLOAT32){
-                seg_changeDatatype<PrecisionTYPE>(NewImage);
+                seg_changeDatatype<SegPrecisionTYPE>(NewImage);
             }
-            PrecisionTYPE * NewImagePtr = static_cast<PrecisionTYPE *>(NewImage->data);
+            SegPrecisionTYPE * NewImagePtr = static_cast<SegPrecisionTYPE *>(NewImage->data);
             if(NewImage->nx==InputImage->nx&&NewImage->ny==InputImage->ny&&NewImage->nz==InputImage->nz&&NewImage->nt==InputImage->nt&&NewImage->nu==InputImage->nu&&NewImage->nv==InputImage->nv&&NewImage->nw==InputImage->nw){
                 for(unsigned int i=0; i<InputImage->nvox; i++)
                     bufferImages[current_buffer?0:1][i]=NewImagePtr[i];
@@ -477,13 +477,13 @@ int main(int argc, char **argv)
         else if(strcmp(argv[i], "-lssd") == 0){
             string parser=argv[++i];
             nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
-            if(InputImage->datatype!=DT_FLOAT32){
-                seg_changeDatatype<PrecisionTYPE>(NewImage);
+            if(NewImage->datatype!=DT_FLOAT32){
+                seg_changeDatatype<SegPrecisionTYPE>(NewImage);
             }
-            PrecisionTYPE * NewImagePtr = static_cast<PrecisionTYPE *>(NewImage->data);
+            SegPrecisionTYPE * NewImagePtr = static_cast<SegPrecisionTYPE *>(NewImage->data);
 
             string parserstd=argv[++i];
-            if(strtod(parserstd.c_str(),NULL)){
+            if(strtod(parserstd.c_str(),NULL)>0){
                 if(NewImage->nt<2&&NewImage->nx==InputImage->nx&&NewImage->ny==InputImage->ny&&NewImage->nz==InputImage->nz){
                     float * NewImageMean=new float [NewImage->nx*NewImage->ny*NewImage->nz];
                     //float * NewImageStd=new float [NewImage->nx*NewImage->ny*NewImage->nz];
@@ -493,28 +493,28 @@ int main(int argc, char **argv)
                     float allmeanInput=0;
                     float allstdNew=0;
                     float allstdInput=0;
-                    for(int i=0; i<InputImage->nx*InputImage->ny*InputImage->nz;i++){
-                        allmeanNew+=NewImagePtr[i];
-                        NewImageMean[i]=NewImagePtr[i];
-                        allmeanInput+=bufferImages[current_buffer][i];
-                        InputImageMean[i]=bufferImages[current_buffer][i];
+                    for(int index=0; index<InputImage->nx*InputImage->ny*InputImage->nz;index++){
+                        allmeanNew+=NewImagePtr[index];
+                        NewImageMean[index]=NewImagePtr[index];
+                        allmeanInput+=bufferImages[current_buffer][index];
+                        InputImageMean[index]=bufferImages[current_buffer][index];
                     }
                     Gaussian_Filter_4D(NewImageMean,strtod(parserstd.c_str(),NULL)*3,CurrSize);
                     Gaussian_Filter_4D(InputImageMean,strtod(parserstd.c_str(),NULL)*3,CurrSize);
                     allmeanNew=allmeanNew/(InputImage->nx*InputImage->ny*InputImage->nz);
                     allmeanInput=allmeanInput/(InputImage->nx*InputImage->ny*InputImage->nz);
-                    for(int i=0; i<InputImage->nx*InputImage->ny*InputImage->nz;i++){
-                        allstdNew+=(NewImagePtr[i]-allmeanNew)*(NewImagePtr[i]-allmeanNew);
-                        allstdInput+=(bufferImages[current_buffer][i]-allmeanInput)*(bufferImages[current_buffer][i]-allmeanInput);
+                    for(int index=0; index<InputImage->nx*InputImage->ny*InputImage->nz;index++){
+                        allstdNew+=(NewImagePtr[index]-allmeanNew)*(NewImagePtr[index]-allmeanNew);
+                        allstdInput+=(bufferImages[current_buffer][index]-allmeanInput)*(bufferImages[current_buffer][index]-allmeanInput);
                     }
                     allstdNew=allstdNew/(InputImage->nx*InputImage->ny*InputImage->nz);
                     allstdInput=allstdInput/(InputImage->nx*InputImage->ny*InputImage->nz);
-                    for(int i=0; i<InputImage->nx*InputImage->ny*InputImage->nz;i++){
-                        bufferImages[current_buffer][i]=(((bufferImages[current_buffer][i]-(InputImageMean[i]-allmeanInput))/allstdInput)-((NewImagePtr[i]-(NewImageMean[i]-allmeanNew))/allstdNew));
-                        bufferImages[current_buffer?0:1][i]=(bufferImages[current_buffer][i]*bufferImages[current_buffer][i]);
+                    for(int index=0; index<InputImage->nx*InputImage->ny*InputImage->nz;index++){
+                        bufferImages[current_buffer][index]=(((bufferImages[current_buffer][index]-(InputImageMean[index]-allmeanInput))/allstdInput)-((NewImagePtr[index]-(NewImageMean[index]-allmeanNew))/allstdNew));
+                        bufferImages[current_buffer?0:1][index]=(bufferImages[current_buffer][index]*bufferImages[current_buffer][index]);
                     }
                     current_buffer=current_buffer?0:1;
-                    Gaussian_Filter_4D(bufferImages[current_buffer],strtod(parserstd.c_str(),NULL),CurrSize);
+                    Gaussian_Filter_4D(bufferImages[current_buffer],strtof(parserstd.c_str(),NULL),CurrSize);
                     delete [] NewImageMean;
                     //delete [] NewImageStd;
                     delete [] InputImageMean;
@@ -530,10 +530,10 @@ int main(int argc, char **argv)
         else if(strcmp(argv[i], "-lncc") == 0){
             string parser=argv[++i];
             nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
-            if(InputImage->datatype!=DT_FLOAT32){
-                seg_changeDatatype<PrecisionTYPE>(NewImage);
+            if(NewImage->datatype!=DT_FLOAT32){
+                seg_changeDatatype<float>(NewImage);
             }
-            PrecisionTYPE * NewImagePtr = static_cast<PrecisionTYPE *>(NewImage->data);
+            SegPrecisionTYPE * NewImagePtr = static_cast<SegPrecisionTYPE *>(NewImage->data);
 
             string parserstd=argv[++i];
             if(strtod(parserstd.c_str(),NULL)){
@@ -546,20 +546,20 @@ int main(int argc, char **argv)
                     float allmeanInput=0;
                     float allstdNew=0;
                     float allstdInput=0;
-                    for(int i=0; i<InputImage->nx*InputImage->ny*InputImage->nz;i++){
-                        allmeanNew+=NewImagePtr[i];
-                        NewImageMean[i]=NewImagePtr[i];
-                        NewImageStd[i]=NewImagePtr[i]*NewImagePtr[i];
-                        allmeanInput+=bufferImages[current_buffer][i];
-                        InputImageMean[i]=bufferImages[current_buffer][i];
-                        InputImageStd[i]=bufferImages[current_buffer][i]*bufferImages[current_buffer][i];
+                    for(int index=0; index<InputImage->nx*InputImage->ny*InputImage->nz;index++){
+                        allmeanNew+=NewImagePtr[index];
+                        NewImageMean[index]=NewImagePtr[index];
+                        NewImageStd[index]=NewImagePtr[index]*NewImagePtr[index];
+                        allmeanInput+=bufferImages[current_buffer][index];
+                        InputImageMean[index]=bufferImages[current_buffer][index];
+                        InputImageStd[index]=bufferImages[current_buffer][index]*bufferImages[current_buffer][index];
                     }
                     allmeanNew=allmeanNew/(InputImage->nx*InputImage->ny*InputImage->nz);
                     allmeanInput=allmeanInput/(InputImage->nx*InputImage->ny*InputImage->nz);
-                    for(int i=0; i<InputImage->nx*InputImage->ny*InputImage->nz;i++){
-                        allstdNew+=(NewImagePtr[i]-allmeanNew)*(NewImagePtr[i]-allmeanNew);
-                        allstdInput+=(bufferImages[current_buffer][i]-allmeanInput)*(bufferImages[current_buffer][i]-allmeanInput);
-                        bufferImages[current_buffer][i]=NewImagePtr[i]*bufferImages[current_buffer][i];
+                    for(int index=0; index<InputImage->nx*InputImage->ny*InputImage->nz;index++){
+                        allstdNew+=(NewImagePtr[index]-allmeanNew)*(NewImagePtr[index]-allmeanNew);
+                        allstdInput+=(bufferImages[current_buffer][index]-allmeanInput)*(bufferImages[current_buffer][index]-allmeanInput);
+                        bufferImages[current_buffer][index]=NewImagePtr[index]*bufferImages[current_buffer][index];
                     }
                     allstdNew=allstdNew/(InputImage->nx*InputImage->ny*InputImage->nz);
                     allstdInput=allstdInput/(InputImage->nx*InputImage->ny*InputImage->nz);
@@ -569,10 +569,10 @@ int main(int argc, char **argv)
                     Gaussian_Filter_4D(NewImageStd,strtod(parserstd.c_str(),NULL),CurrSize);
                     Gaussian_Filter_4D(InputImageMean,strtod(parserstd.c_str(),NULL),CurrSize);
                     Gaussian_Filter_4D(InputImageStd,strtod(parserstd.c_str(),NULL),CurrSize);
-                    for(int i=0; i<InputImage->nx*InputImage->ny*InputImage->nz;i++){
-                        NewImageStd[i]=NewImageStd[i]-NewImageMean[i]*NewImageMean[i];
-                        InputImageStd[i]=InputImageStd[i]-InputImageMean[i]*InputImageMean[i];
-                        bufferImages[current_buffer?0:1][i]=(bufferImages[current_buffer][i]-InputImageMean[i]*NewImageMean[i])/(sqrt(NewImageStd[i]*InputImageStd[i])+(0.01*(allstdNew+allstdInput)));
+                    for(int index=0; index<InputImage->nx*InputImage->ny*InputImage->nz;index++){
+                        NewImageStd[index]=NewImageStd[index]-NewImageMean[index]*NewImageMean[index];
+                        InputImageStd[index]=InputImageStd[index]-InputImageMean[index]*InputImageMean[index];
+                        bufferImages[current_buffer?0:1][index]=(bufferImages[current_buffer][index]-InputImageMean[index]*NewImageMean[index])/(sqrt(NewImageStd[index]*InputImageStd[index])+(0.01*(allstdNew+allstdInput)));
                     }
                     current_buffer=current_buffer?0:1;
                     delete [] NewImageMean;

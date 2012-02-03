@@ -253,7 +253,6 @@ void Close_Forground_ConnectComp(void * Old_void, void * New_void, ImageSize * C
 
     //Find lable counts
     int *Pixelcounter = (int *) calloc((int)CCcounter, sizeof(int));
-    int maxForground=0, maxForgroundIndex=0;
 
     for(index=0;index<NumElements;index++){
         if(tempimg[index]>0 && Old[index]>0){
@@ -275,18 +274,11 @@ void Close_Forground_ConnectComp(void * Old_void, void * New_void, ImageSize * C
         }
     }
     // Find Biggest Component
-    for(index=0;index<CCcounter;index++){
-        if(maxForground<Pixelcounter[index]){
-            maxForgroundIndex=(int)index;
-            maxForground=(int)Pixelcounter[index];
-        }
-    }
 
 
     //Rassign to oposit class
     for(index=0;index<NumElements;index++){
         if(Old[index]>0){
-
             if(Pixelcounter[tempimg[index]]>0){
                 New[index]=1;
             }
@@ -415,7 +407,7 @@ void Largest_ConnectComp(void * Old_void, void * New_void, ImageSize * Currentsi
 
     //Find lable counts
     int *Pixelcounter = (int *) calloc((int)CCcounter, sizeof(int));
-    int maxForground=0, maxForgroundIndex=0;
+    int maxForground=0;
 
     for(index=0;index<NumElements;index++){
         if(tempimg[index]>0 && Old[index]>0){
@@ -423,23 +415,9 @@ void Largest_ConnectComp(void * Old_void, void * New_void, ImageSize * Currentsi
         }
     }
 
-    //cout<<Pixelcounter[probarea]<<endl;
-    // If lable touches the edge, errase that lable
-//    index=0;
-//    for(int iz=0;iz<dimensions[2]; iz++){
-//        for(int iy=0;iy<dimensions[1]; iy++){
-//            for(int ix=0;ix<dimensions[0]; ix++){
-//                if(((ix==0) || (iy==0) || (iz==0) || (ix==(dimensions[0]-1)) || (iy==(dimensions[1]-1)) || (iz==(dimensions[2]-1))) && (Old[index]>0)){
-//                    Pixelcounter[(int)tempimg[index]]=0;
-//                }
-//                index++;
-//            }
-//        }
-//    }
     // Find Biggest Component
     for(index=0;index<CCcounter;index++){
         if(maxForground<Pixelcounter[index]){
-            maxForgroundIndex=(int)index;
             maxForground=(int)Pixelcounter[index];
         }
     }

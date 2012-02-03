@@ -1238,19 +1238,19 @@ int seg_LabFusion::UpdateMRF()
         }
         int col_size, plane_size,indexCentre, indexWest, indexEast, indexSouth, indexNorth, indexTop, indexBottom;
         int ix, iy, iz,maxiy, maxix, maxiz, neighbourclass;
-        PrecisionTYPE Sum_Temp_MRF_Class_Expect;
+        SegPrecisionTYPE Sum_Temp_MRF_Class_Expect;
         col_size = (int)(CurrSizes->xsize);
         plane_size = (int)(CurrSizes->xsize)*(CurrSizes->ysize);
         maxix = (int)(CurrSizes->xsize);
         maxiy = (int)(CurrSizes->ysize);
         maxiz = (int)(CurrSizes->zsize);
-        PrecisionTYPE Clique[MaxMultiLableClass]={0};
+        SegPrecisionTYPE Clique[MaxMultiLableClass]={0};
         if(Clique == NULL){
             fprintf(stderr,"* The variable Clique was not allocated: OUT OF MEMORY!");
             exit(1);
         }
 
-        PrecisionTYPE Temp_MRF_Class_Expect[MaxMultiLableClass]={0};
+        SegPrecisionTYPE Temp_MRF_Class_Expect[MaxMultiLableClass]={0};
         if(Temp_MRF_Class_Expect == NULL){
             fprintf(stderr,"* The variable Temp_MRF_Class_Expect was not allocated: OUT OF MEMORY!");
             exit(1);

@@ -302,13 +302,13 @@ int seg_EM::Turn_BiasField_ON(int powerOrder,float ratiothresh)
 {
     this->BiasField_status=true;
     this->BiasField_order=powerOrder;
-    this->BiasField_coeficients = new PrecisionTYPE[((powerOrder+1)*(powerOrder+2)/2*(powerOrder+3)/3)*this->nu*this->nt]();
+    this->BiasField_coeficients = new SegPrecisionTYPE[((powerOrder+1)*(powerOrder+2)/2*(powerOrder+3)/3)*this->nu*this->nt]();
     this->BiasField_ratio=ratiothresh;
     if(this->maskImage_status){
-        this->BiasField = new PrecisionTYPE[this->numelmasked*this->nu*this->nt]();
+        this->BiasField = new SegPrecisionTYPE[this->numelmasked*this->nu*this->nt]();
     }
     else{
-        this->BiasField = new PrecisionTYPE[this->numel*this->nu*this->nt]();
+        this->BiasField = new SegPrecisionTYPE[this->numel*this->nu*this->nt]();
     }
     return 0;
 }
@@ -393,7 +393,7 @@ int seg_EM::Maximization()
 int seg_EM::Expectation()
 {
 
-    if(this->ratio<(PrecisionTYPE)(this->Outlierness_ratio) && this->iter>3 && this->OutliernessUSE==NULL && this->OutliernessFlag){
+    if(this->ratio<(SegPrecisionTYPE)(this->Outlierness_ratio) && this->iter>3 && this->OutliernessUSE==NULL && this->OutliernessFlag){
         this->OutliernessUSE=this->Outlierness;
         if(this->verbose_level>0){
             cout << "Updating Outlierness - LogRatio = "<<ratio<<endl;
@@ -459,7 +459,7 @@ int seg_EM::UpdateMRF()
 int seg_EM::UpdateBiasField()
 {
     if(this->BiasField_status){
-        if((((this->loglik-this->oldloglik)/fabs(this->oldloglik))<(PrecisionTYPE)(this->BiasField_ratio) && this->iter>3)||((PrecisionTYPE)(this->BiasField_ratio)==0.0f)){
+        if((((this->loglik-this->oldloglik)/fabs(this->oldloglik))<(SegPrecisionTYPE)(this->BiasField_ratio) && this->iter>3)||((SegPrecisionTYPE)(this->BiasField_ratio)==0.0f)){
             if(this->maskImage_status){
                 if(this->nz>1){
 
@@ -560,8 +560,8 @@ int seg_EM::Allocate_and_Initialize()
         }
 
         float tmpnumb_clas=((this->numb_classes+(int)(this->PV_model_status)*2));
-        this->Expec=new PrecisionTYPE [tmpnumb_elem] ();
-        this->ShortPrior=new PrecisionTYPE [tmpnumb_elem] ();
+        this->Expec=new SegPrecisionTYPE [tmpnumb_elem] ();
+        this->ShortPrior=new SegPrecisionTYPE [tmpnumb_elem] ();
         for(int i=0; i<tmpnumb_elem; i++){
             this->Expec[i]=1.0/tmpnumb_clas;
             this->ShortPrior[i]=1.0/tmpnumb_clas;
@@ -584,7 +584,7 @@ int seg_EM::Allocate_and_Initialize()
             tmpnumb_elem=(numel*(this->numb_classes+(int)(this->PV_model_status)*2));
         }
         this->OutliernessUSE=NULL;
-        this->Outlierness=new PrecisionTYPE [tmpnumb_elem] ();
+        this->Outlierness=new SegPrecisionTYPE [tmpnumb_elem] ();
         for(int i=0; i<tmpnumb_elem; i++){
             this->Outlierness[i]=1.0;
         }
@@ -597,7 +597,7 @@ int seg_EM::Allocate_and_Initialize()
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 int seg_EM::Intensity_Based_Inisitalization_of_Means()
 {
-    PrecisionTYPE * Intensity_PTR = static_cast<PrecisionTYPE *>(this->inputImage->data);
+    SegPrecisionTYPE * Intensity_PTR = static_cast<SegPrecisionTYPE *>(this->inputImage->data);
 
     bool * MaskDataPtr=NULL;
     if(this->maskImage_status){
@@ -728,8 +728,8 @@ nifti_image * seg_EM::GetOutlierness(char * filename)
     nifti_set_filenames(Result,filename,0,0);
     nifti_update_dims_from_array(Result);
     nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
-    Result->data = (void *) calloc(Result->nvox, sizeof(PrecisionTYPE));
-    PrecisionTYPE * Resultdata = static_cast<PrecisionTYPE *>(Result->data);
+    Result->data = (void *) calloc(Result->nvox, sizeof(SegPrecisionTYPE));
+    SegPrecisionTYPE * Resultdata = static_cast<SegPrecisionTYPE *>(Result->data);
     for(unsigned int i=0; i<Result->nvox; i++){Resultdata[i]=0;}
 
 
@@ -815,7 +815,7 @@ int *  seg_EM::Run_EM()
             printloglik(iter,this->loglik,this->oldloglik);
         }
         // Preform MRF reset or Exit
-        if((((this->loglik-this->oldloglik)/fabs(this->oldloglik))<(PrecisionTYPE)(0.0005) && this->iter>3 && this->iter>this->checkpoint_iter) || iter>=this->maxIteration || (isinf(this->loglik) && this->iter>3)){
+        if((((this->loglik-this->oldloglik)/fabs(this->oldloglik))<(SegPrecisionTYPE)(0.0005) && this->iter>3 && this->iter>this->checkpoint_iter) || iter>=this->maxIteration || (isinf(this->loglik) && this->iter>3)){
             out=false;
         }
         this->ratio=((this->loglik-this->oldloglik)/fabs(this->oldloglik));

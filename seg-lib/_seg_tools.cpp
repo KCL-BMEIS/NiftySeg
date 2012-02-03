@@ -3,9 +3,9 @@
 #include "omp.h"
 #endif
 
-int Create_diagonal_GH_Nclass(PrecisionTYPE * G,
-                              PrecisionTYPE * H,
-                              PrecisionTYPE ratio,
+int Create_diagonal_GH_Nclass(SegPrecisionTYPE * G,
+                              SegPrecisionTYPE * H,
+                              SegPrecisionTYPE ratio,
                               SEG_PARAM * segment_param)
 {
     //WM - neighbours GM and dGM
@@ -29,7 +29,7 @@ int Create_diagonal_GH_Nclass(PrecisionTYPE * G,
         cout<<"G=" << endl;
         for (int i=0; i<numclass; i++) {
             for (int  j=0; j<numclass; j++) {
-                cout<< (PrecisionTYPE)G[i+j*numclass] << '\t';
+                cout<< (SegPrecisionTYPE)G[i+j*numclass] << '\t';
             }
             cout<< endl;
         }
@@ -47,11 +47,11 @@ int Create_diagonal_GH_Nclass(PrecisionTYPE * G,
 }
 
 
-int Create_GH_5class(PrecisionTYPE * G,
-                     PrecisionTYPE * H,
-                     PrecisionTYPE ba,
-                     PrecisionTYPE be,
-                     PrecisionTYPE ratio,
+int Create_GH_5class(SegPrecisionTYPE * G,
+                     SegPrecisionTYPE * H,
+                     SegPrecisionTYPE ba,
+                     SegPrecisionTYPE be,
+                     SegPrecisionTYPE ratio,
                      SEG_PARAM * segment_param)
 {
     //WM - neighbours GM and dGM
@@ -86,7 +86,7 @@ int Create_GH_5class(PrecisionTYPE * G,
         cout<<"G=" << endl;
         for (i=0; i<numclass; i++) {
             for (j=0; j<numclass; j++) {
-                cout<< (PrecisionTYPE)G[i+j*numclass] << '\t';
+                cout<< (SegPrecisionTYPE)G[i+j*numclass] << '\t';
             }
             cout<< endl;
         }
@@ -104,11 +104,11 @@ int Create_GH_5class(PrecisionTYPE * G,
 }
 
 
-int Create_GH_7class(PrecisionTYPE * G,
-                     PrecisionTYPE * H,
-                     PrecisionTYPE ba,
-                     PrecisionTYPE be,
-                     PrecisionTYPE ratio,
+int Create_GH_7class(SegPrecisionTYPE * G,
+                     SegPrecisionTYPE * H,
+                     SegPrecisionTYPE ba,
+                     SegPrecisionTYPE be,
+                     SegPrecisionTYPE ratio,
                      SEG_PARAM * segment_param)
 {
     //WM - neighbours WMGMpv and dGM
@@ -204,7 +204,7 @@ int seg_convert2binary(nifti_image *image,
         seg_convert2binary_data<float>(image,thresh);
         break;
     case NIFTI_TYPE_FLOAT64:
-        seg_convert2binary_data<PrecisionTYPE>(image,thresh);
+        seg_convert2binary_data<SegPrecisionTYPE>(image,thresh);
         break;
     default:
         printf("err\tseg_convert2binary\tThe initial image data type (%d) is not supported\n",image->datatype);
@@ -247,7 +247,7 @@ int Normalize_NaN_Priors(nifti_image * Priors,
         cout<< "Normalizing Priors" << endl;
     }
     if(Priors->datatype==NIFTI_TYPE_FLOAT32){
-        PrecisionTYPE * priorsptr = static_cast<PrecisionTYPE *>(Priors->data);
+        SegPrecisionTYPE * priorsptr = static_cast<SegPrecisionTYPE *>(Priors->data);
         for (int i=0; i<numel; i++) {
             float tempsum=0;
             for (int j=0; j<Priors->nt; j++) {
@@ -320,7 +320,7 @@ int Normalize_NaN_Priors_mask(nifti_image * Priors,
     }
     if(Mask->datatype==DT_BINARY){
         if(Priors->datatype==NIFTI_TYPE_FLOAT32){
-            PrecisionTYPE * priorsptr = static_cast<PrecisionTYPE *>(Priors->data);
+            SegPrecisionTYPE * priorsptr = static_cast<SegPrecisionTYPE *>(Priors->data);
             bool * brainmaskptr = static_cast<bool *> (Mask->data);
 
             for (int i=0; i<numel; i++) {
@@ -395,14 +395,14 @@ int Normalize_Image_mask(nifti_image * input,
         seg_convert2binary(Mask,0.0f);
     }
     if(input->datatype!=NIFTI_TYPE_FLOAT32){
-       seg_changeDatatype<PrecisionTYPE>(input);
+       seg_changeDatatype<SegPrecisionTYPE>(input);
     }
 
     for(int udir=0; udir<CurrSizes->usize;udir++){ // Per Multispectral Image
         for(int tdir=0; tdir<CurrSizes->tsize;tdir++){ // Per Time point Image
             bool * brainmaskptr = static_cast<bool *> (Mask->data);
-            PrecisionTYPE * Inputptrtmp = static_cast<PrecisionTYPE *>(input->data);
-            PrecisionTYPE * Inputptr=&Inputptrtmp[numel*tdir+(CurrSizes->tsize)*numel*udir];
+            SegPrecisionTYPE * Inputptrtmp = static_cast<SegPrecisionTYPE *>(input->data);
+            SegPrecisionTYPE * Inputptr=&Inputptrtmp[numel*tdir+(CurrSizes->tsize)*numel*udir];
 
             float tempmax=-(1e32);
             float tempmin=1e32;
@@ -453,8 +453,8 @@ int Normalize_Image(nifti_image * input,
         for(int udir=0; udir<CurrSizes->usize;udir++){ // Per Multispectral Image
             for(int tdir=0; tdir<CurrSizes->tsize;tdir++){ // Per Time point Image
                 int numel=(int)(rowsize(input)*colsize(input)*depth(input));
-                PrecisionTYPE * Inputptrtmp = static_cast<PrecisionTYPE *>(input->data);
-                PrecisionTYPE * Inputptr=&Inputptrtmp[numel*tdir+(CurrSizes->tsize)*numel*udir];
+                SegPrecisionTYPE * Inputptrtmp = static_cast<SegPrecisionTYPE *>(input->data);
+                SegPrecisionTYPE * Inputptr=&Inputptrtmp[numel*tdir+(CurrSizes->tsize)*numel*udir];
 
                 float tempmax=0;
                 float tempmin=1000000.f;
@@ -483,14 +483,14 @@ int Normalize_Image(nifti_image * input,
 
 int Normalize_T1_and_MV(nifti_image * T1,
                         nifti_image * Mask,
-                        PrecisionTYPE * M,
-                        PrecisionTYPE * V,
+                        SegPrecisionTYPE * M,
+                        SegPrecisionTYPE * V,
                         ImageSize * CurrSizes)
 {
 
-    PrecisionTYPE * T1ptrtmp = static_cast<PrecisionTYPE *>(T1->data);
+    SegPrecisionTYPE * T1ptrtmp = static_cast<SegPrecisionTYPE *>(T1->data);
     bool * brainmaskptr = static_cast<bool *>(Mask->data);
-    PrecisionTYPE * T1ptr=T1ptrtmp;
+    SegPrecisionTYPE * T1ptr=T1ptrtmp;
     int numel=(int)(rowsize(T1)*colsize(T1)*depth(T1));
     float tempmax=0;
     float tempmin=100000;
@@ -633,7 +633,7 @@ int *  Create_Long_2_Short_Matrix_from_Carray(bool * Mask,
 
 }
 
-PrecisionTYPE * Create_cArray_from_Prior_mask(nifti_image * Mask,
+SegPrecisionTYPE * Create_cArray_from_Prior_mask(nifti_image * Mask,
                                               nifti_image * Priors,
                                               int numclass,
                                               bool PV_ON)
@@ -647,9 +647,9 @@ PrecisionTYPE * Create_cArray_from_Prior_mask(nifti_image * Mask,
     }
     int pluspv=(int)(PV_ON)*2;
 
-    PrecisionTYPE * Expec = new PrecisionTYPE [numel_masked*(numclass+pluspv)] ();
-    PrecisionTYPE * tempExpec= (PrecisionTYPE *) Expec;
-    PrecisionTYPE * PriorPTR = static_cast<PrecisionTYPE *>(Priors->data);
+    SegPrecisionTYPE * Expec = new SegPrecisionTYPE [numel_masked*(numclass+pluspv)] ();
+    SegPrecisionTYPE * tempExpec= (SegPrecisionTYPE *) Expec;
+    SegPrecisionTYPE * PriorPTR = static_cast<SegPrecisionTYPE *>(Priors->data);
     for(int cl=0; cl<numclass;cl++){
         Maskptrtmp = static_cast<bool *> (Mask->data);;
         for (int i=numel; i--; Maskptrtmp++,PriorPTR++) {
@@ -663,15 +663,15 @@ PrecisionTYPE * Create_cArray_from_Prior_mask(nifti_image * Mask,
     return Expec;
 }
 
-PrecisionTYPE * Create_cArray_from_Prior(nifti_image * Priors,
+SegPrecisionTYPE * Create_cArray_from_Prior(nifti_image * Priors,
                                          int numclass,
                                          bool PV_ON)
 {
     register int numel=(int)(rowsize(Priors)*colsize(Priors)*depth(Priors));
     int pluspv=(int)(PV_ON)*2;
-    PrecisionTYPE * Expec = new PrecisionTYPE [numel*(numclass+pluspv)] ();
-    PrecisionTYPE * Expec_PTR= Expec;
-    PrecisionTYPE * PriorPTR = static_cast<PrecisionTYPE *>(Priors->data);
+    SegPrecisionTYPE * Expec = new SegPrecisionTYPE [numel*(numclass+pluspv)] ();
+    SegPrecisionTYPE * Expec_PTR= Expec;
+    SegPrecisionTYPE * PriorPTR = static_cast<SegPrecisionTYPE *>(Priors->data);
     for(int cl=0; cl<numclass;cl++){
         for (int i=numel; i--; PriorPTR++,Expec_PTR++) {
             *Expec_PTR = *PriorPTR;
@@ -680,7 +680,7 @@ PrecisionTYPE * Create_cArray_from_Prior(nifti_image * Priors,
     return Expec;
 }
 
-PrecisionTYPE * Create_cArray_from_3D_image(nifti_image * Mask,
+SegPrecisionTYPE * Create_cArray_from_3D_image(nifti_image * Mask,
                                             nifti_image * SourceImage)
 {
     register int numel=(int)(rowsize(Mask)*colsize(Mask)*depth(Mask));
@@ -691,9 +691,9 @@ PrecisionTYPE * Create_cArray_from_3D_image(nifti_image * Mask,
         *Maskptrtmp?numel_masked++:0;
     }
 
-    PrecisionTYPE * outimage = new PrecisionTYPE [numel_masked] ();
-    PrecisionTYPE * outimage_ptr= outimage;
-    PrecisionTYPE * SourceImagePTR = static_cast<PrecisionTYPE *>(SourceImage->data);
+    SegPrecisionTYPE * outimage = new SegPrecisionTYPE [numel_masked] ();
+    SegPrecisionTYPE * outimage_ptr= outimage;
+    SegPrecisionTYPE * SourceImagePTR = static_cast<SegPrecisionTYPE *>(SourceImage->data);
     Maskptrtmp = static_cast<bool *> (Mask->data);
 
     for (int i=numel; i--; Maskptrtmp++,SourceImagePTR++) {
@@ -709,23 +709,23 @@ PrecisionTYPE * Create_cArray_from_3D_image(nifti_image * Mask,
 
 
 int calcE_mask(nifti_image * T1,
-               PrecisionTYPE * IterPrior,
-               PrecisionTYPE * Expec,
-               PrecisionTYPE * loglik,
-               PrecisionTYPE * BiasField,
-               PrecisionTYPE * Outlierness,
-               PrecisionTYPE OutliernessThreshold,
+               SegPrecisionTYPE * IterPrior,
+               SegPrecisionTYPE * Expec,
+               SegPrecisionTYPE * loglik,
+               SegPrecisionTYPE * BiasField,
+               SegPrecisionTYPE * Outlierness,
+               SegPrecisionTYPE OutliernessThreshold,
                int * S2L,
-               PrecisionTYPE * M,
-               PrecisionTYPE * V,
+               SegPrecisionTYPE * M,
+               SegPrecisionTYPE * V,
                ImageSize * CurrSizes,
                int verbose)
 {
     int numel_masked=CurrSizes->numelmasked;
     int num_class=CurrSizes->numclass;
     bool OutliernessFlag=(Outlierness==NULL)?0:1;
-    PrecisionTYPE inv_v [max_numbclass*MaxMultispectalSize*MaxMultispectalSize]={0.0f};
-    PrecisionTYPE inv_sqrt_V_2pi [max_numbclass]={0.0f};
+    SegPrecisionTYPE inv_v [max_numbclass*MaxMultispectalSize*MaxMultispectalSize]={0.0f};
+    SegPrecisionTYPE inv_sqrt_V_2pi [max_numbclass]={0.0f};
 
     int Expec_offset [max_numbclass]={0};
 
@@ -760,7 +760,7 @@ int calcE_mask(nifti_image * T1,
                 }
                 for(int i2=0; i2<CurrSizes->usize; i2++){
                     Vmat.getvalue(i2,j2,cvalue,success);
-                    inv_v[i2+j2*CurrSizes->usize+cl*CurrSizes->usize*CurrSizes->usize]=(PrecisionTYPE)(cvalue);
+                    inv_v[i2+j2*CurrSizes->usize+cl*CurrSizes->usize*CurrSizes->usize]=(SegPrecisionTYPE)(cvalue);
                     if(verbose>1){
                         cout<<inv_v[i2+j2*CurrSizes->usize+cl*CurrSizes->usize*CurrSizes->usize]<< "\t";
                         flush(cout);
@@ -792,9 +792,9 @@ int calcE_mask(nifti_image * T1,
 #pragma omp parallel for shared(Expec,loglikthread,T1,BiasField,Outlierness,IterPrior)
 #endif
     for (int i=0; i<numel_masked;i++) {
-        PrecisionTYPE * T1_PTR = static_cast<PrecisionTYPE *>(T1->data);
-        PrecisionTYPE T1_Bias_corr[MaxMultispectalSize];
-        PrecisionTYPE SumExpec=0.0f;
+        SegPrecisionTYPE * T1_PTR = static_cast<SegPrecisionTYPE *>(T1->data);
+        SegPrecisionTYPE T1_Bias_corr[MaxMultispectalSize];
+        SegPrecisionTYPE SumExpec=0.0f;
 
         for(int Multispec=0; Multispec<CurrSizes->usize; Multispec++)
             T1_Bias_corr[Multispec]=(BiasField!=NULL)?(T1_PTR[S2L[i]+Multispec*CurrSizes->numel] + BiasField[i+Multispec*numel_masked]):(T1_PTR[S2L[i]+Multispec*CurrSizes->numel]);
@@ -804,9 +804,9 @@ int calcE_mask(nifti_image * T1,
         //Expec_offset_PTR=Expec_offset;
 
         for (int cl=0; cl<num_class; cl++) {
-            PrecisionTYPE mahal=0.0f;
+            SegPrecisionTYPE mahal=0.0f;
             for(int Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
-                PrecisionTYPE tmpT1_BC_minusM=(T1_Bias_corr[Multispec] - M[cl*(CurrSizes->usize)+Multispec]);
+                SegPrecisionTYPE tmpT1_BC_minusM=(T1_Bias_corr[Multispec] - M[cl*(CurrSizes->usize)+Multispec]);
                 for(int Multispec2=0; Multispec2<CurrSizes->usize; Multispec2++) {
                     mahal-=(0.5f)*(T1_Bias_corr[Multispec2] - M[cl*(CurrSizes->usize)+Multispec2])*inv_v[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize]*tmpT1_BC_minusM;
                 }
@@ -854,14 +854,14 @@ int calcE_mask(nifti_image * T1,
 
 
 int calcE(nifti_image * T1,
-          PrecisionTYPE * IterPrior,
-          PrecisionTYPE * Expec,
-          PrecisionTYPE * loglik,
-          PrecisionTYPE * BiasField,
-          PrecisionTYPE * Outlierness,
-          PrecisionTYPE OutliernessThreshold,
-          PrecisionTYPE * M,
-          PrecisionTYPE * V,
+          SegPrecisionTYPE * IterPrior,
+          SegPrecisionTYPE * Expec,
+          SegPrecisionTYPE * loglik,
+          SegPrecisionTYPE * BiasField,
+          SegPrecisionTYPE * Outlierness,
+          SegPrecisionTYPE OutliernessThreshold,
+          SegPrecisionTYPE * M,
+          SegPrecisionTYPE * V,
           ImageSize * CurrSizes,
           int verbose)
 {
@@ -870,13 +870,13 @@ int calcE(nifti_image * T1,
     bool OutliernessFlag=(Outlierness==NULL)?0:1;
 
 
-    PrecisionTYPE * IterPrior_PTR= (PrecisionTYPE *) IterPrior;
-    PrecisionTYPE * Expec_PTR= (PrecisionTYPE *) Expec;
-    PrecisionTYPE * Outlierness_PTR= (PrecisionTYPE *) Outlierness;
-    PrecisionTYPE * T1_PTR = static_cast<PrecisionTYPE *>(T1->data);
-    PrecisionTYPE inv_v [max_numbclass*MaxMultispectalSize*MaxMultispectalSize]={0.0f};
-    PrecisionTYPE inv_sqrt_V_2pi [max_numbclass]={0.0f};
-    PrecisionTYPE tmpT1_BC_minusM=0;
+    SegPrecisionTYPE * IterPrior_PTR= (SegPrecisionTYPE *) IterPrior;
+    SegPrecisionTYPE * Expec_PTR= (SegPrecisionTYPE *) Expec;
+    SegPrecisionTYPE * Outlierness_PTR= (SegPrecisionTYPE *) Outlierness;
+    SegPrecisionTYPE * T1_PTR = static_cast<SegPrecisionTYPE *>(T1->data);
+    SegPrecisionTYPE inv_v [max_numbclass*MaxMultispectalSize*MaxMultispectalSize]={0.0f};
+    SegPrecisionTYPE inv_sqrt_V_2pi [max_numbclass]={0.0f};
+    SegPrecisionTYPE tmpT1_BC_minusM=0;
 
     int Expec_offset [max_numbclass]={0};
 
@@ -911,7 +911,7 @@ int calcE(nifti_image * T1,
                 }
                 for(int i2=0; i2<CurrSizes->usize; i2++){
                     Vmat.getvalue(i2,j2,cvalue,success);
-                    inv_v[i2+j2*CurrSizes->usize+cl*CurrSizes->usize*CurrSizes->usize]=(PrecisionTYPE)(cvalue);
+                    inv_v[i2+j2*CurrSizes->usize+cl*CurrSizes->usize*CurrSizes->usize]=(SegPrecisionTYPE)(cvalue);
                     if(verbose>1){
                         cout<<inv_v[i2+j2*CurrSizes->usize+cl*CurrSizes->usize*CurrSizes->usize]<< "\t";
                         flush(cout);
@@ -941,12 +941,12 @@ int calcE(nifti_image * T1,
 #pragma omp parallel for shared(Expec,loglikthread,T1,BiasField,Outlierness,IterPrior)
 #endif
     for (int i=0; i<numel;i++) {
-        PrecisionTYPE T1_Bias_corr[MaxMultispectalSize]={0.0f};
+        SegPrecisionTYPE T1_Bias_corr[MaxMultispectalSize]={0.0f};
         for(int Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
             T1_Bias_corr[Multispec]=(BiasField!=NULL)?(T1_PTR[i+Multispec*numel] + BiasField[i+Multispec*numel]):(T1_PTR[i+Multispec*numel]);
         }
-        PrecisionTYPE mahal=0.0f;
-        PrecisionTYPE SumExpec=0.0f;
+        SegPrecisionTYPE mahal=0.0f;
+        SegPrecisionTYPE SumExpec=0.0f;
 
         //Expec_offset_PTR=Expec_offset;
 
@@ -1001,32 +1001,32 @@ int calcE(nifti_image * T1,
 
 /*
 int calcE_mask_aprox(nifti_image * T1,
-                      PrecisionTYPE * IterPrior,
-                      PrecisionTYPE * Expec,
-                      PrecisionTYPE * loglik,
-                      PrecisionTYPE * BiasField,
+                      SegPrecisionTYPE * IterPrior,
+                      SegPrecisionTYPE * Expec,
+                      SegPrecisionTYPE * loglik,
+                      SegPrecisionTYPE * BiasField,
                       int * S2L,
-                      PrecisionTYPE * M,
-                      PrecisionTYPE * V,
+                      SegPrecisionTYPE * M,
+                      SegPrecisionTYPE * V,
                       ImageSize * CurrSizes,
                       int verbose)
 {
     int numel_masked=CurrSizes->numelmasked;
     int num_class=CurrSizes->numclass;
 
-    PrecisionTYPE * IterPrior_PTR= (PrecisionTYPE *) IterPrior;
-    PrecisionTYPE * Expec_PTR= (PrecisionTYPE *) Expec;
-    PrecisionTYPE * T1_PTR = static_cast<PrecisionTYPE *>(T1->data);
-    PrecisionTYPE SumExpec=0.0f;
-    PrecisionTYPE expectmp=0.0f;
+    SegPrecisionTYPE * IterPrior_PTR= (SegPrecisionTYPE *) IterPrior;
+    SegPrecisionTYPE * Expec_PTR= (SegPrecisionTYPE *) Expec;
+    SegPrecisionTYPE * T1_PTR = static_cast<SegPrecisionTYPE *>(T1->data);
+    SegPrecisionTYPE SumExpec=0.0f;
+    SegPrecisionTYPE expectmp=0.0f;
 
 
 
-    PrecisionTYPE inv_v [max_numbclass*MaxMultispectalSize*MaxMultispectalSize]={0.0f};
-    PrecisionTYPE inv_sqrt_V_2pi [max_numbclass]={0.0f};
-    PrecisionTYPE newM [max_numbclass*MaxMultispectalSize]={0.0f};
-    PrecisionTYPE T1_Bias_corr[MaxMultispectalSize]={0.0f};
-    PrecisionTYPE tmpT1_BC_minusM=0;
+    SegPrecisionTYPE inv_v [max_numbclass*MaxMultispectalSize*MaxMultispectalSize]={0.0f};
+    SegPrecisionTYPE inv_sqrt_V_2pi [max_numbclass]={0.0f};
+    SegPrecisionTYPE newM [max_numbclass*MaxMultispectalSize]={0.0f};
+    SegPrecisionTYPE T1_Bias_corr[MaxMultispectalSize]={0.0f};
+    SegPrecisionTYPE tmpT1_BC_minusM=0;
 
     int Expec_offset [max_numbclass]={0};
 
@@ -1063,7 +1063,7 @@ int calcE_mask_aprox(nifti_image * T1,
                     Vmat.getvalue(i2,j2,cvalue,success);
 
 
-                    inv_v[i2+j2*CurrSizes->usize+cl*CurrSizes->usize*CurrSizes->usize]=(PrecisionTYPE)(cvalue);
+                    inv_v[i2+j2*CurrSizes->usize+cl*CurrSizes->usize*CurrSizes->usize]=(SegPrecisionTYPE)(cvalue);
                     if(verbose>1){
                         cout<<inv_v[i2+j2*CurrSizes->usize+cl*CurrSizes->usize*CurrSizes->usize]<< "\t";
                         flush(cout);
@@ -1085,7 +1085,7 @@ int calcE_mask_aprox(nifti_image * T1,
     loglik[0]=0;
     SumExpec=0.0f;
     //int * Expec_offset_PTR= (int *) Expec_offset;
-    register PrecisionTYPE tempvar=0.0f;
+    register SegPrecisionTYPE tempvar=0.0f;
     float mahal=0.0f;
     float logliktmp=0.0f;
     for (int i=0; i<numel_masked;i++, Expec_PTR++, IterPrior_PTR++) {
@@ -1135,31 +1135,31 @@ int calcE_mask_aprox(nifti_image * T1,
 */
 /*
 int calcE_aprox(nifti_image * T1,
-                 PrecisionTYPE * IterPrior,
-                 PrecisionTYPE * Expec,
-                 PrecisionTYPE * loglik,
-                 PrecisionTYPE * BiasField,
-                 PrecisionTYPE * M,
-                 PrecisionTYPE * V,
+                 SegPrecisionTYPE * IterPrior,
+                 SegPrecisionTYPE * Expec,
+                 SegPrecisionTYPE * loglik,
+                 SegPrecisionTYPE * BiasField,
+                 SegPrecisionTYPE * M,
+                 SegPrecisionTYPE * V,
                  ImageSize * CurrSizes,
                  int verbose)
 {
     int numel=CurrSizes->numel;
     int num_class=CurrSizes->numclass;
 
-    PrecisionTYPE * IterPrior_PTR= (PrecisionTYPE *) IterPrior;
-    PrecisionTYPE * Expec_PTR= (PrecisionTYPE *) Expec;
-    PrecisionTYPE * T1_PTR = static_cast<PrecisionTYPE *>(T1->data);
-    PrecisionTYPE SumExpec=0.0f;
-    PrecisionTYPE expectmp=0.0f;
+    SegPrecisionTYPE * IterPrior_PTR= (SegPrecisionTYPE *) IterPrior;
+    SegPrecisionTYPE * Expec_PTR= (SegPrecisionTYPE *) Expec;
+    SegPrecisionTYPE * T1_PTR = static_cast<SegPrecisionTYPE *>(T1->data);
+    SegPrecisionTYPE SumExpec=0.0f;
+    SegPrecisionTYPE expectmp=0.0f;
 
 
 
-    PrecisionTYPE inv_v [max_numbclass*MaxMultispectalSize*MaxMultispectalSize]={0.0f};
-    PrecisionTYPE inv_sqrt_V_2pi [max_numbclass]={0.0f};
-    PrecisionTYPE newM [max_numbclass*MaxMultispectalSize]={0.0f};
-    PrecisionTYPE T1_Bias_corr[MaxMultispectalSize]={0.0f};
-    PrecisionTYPE tmpT1_BC_minusM=0;
+    SegPrecisionTYPE inv_v [max_numbclass*MaxMultispectalSize*MaxMultispectalSize]={0.0f};
+    SegPrecisionTYPE inv_sqrt_V_2pi [max_numbclass]={0.0f};
+    SegPrecisionTYPE newM [max_numbclass*MaxMultispectalSize]={0.0f};
+    SegPrecisionTYPE T1_Bias_corr[MaxMultispectalSize]={0.0f};
+    SegPrecisionTYPE tmpT1_BC_minusM=0;
 
     int Expec_offset [max_numbclass]={0};
 
@@ -1194,7 +1194,7 @@ int calcE_aprox(nifti_image * T1,
                 }
                 for(int i2=0; i2<CurrSizes->usize; i2++){
                     Vmat.getvalue(i2,j2,cvalue,success);
-                    inv_v[i2+j2*CurrSizes->usize+cl*CurrSizes->usize*CurrSizes->usize]=(PrecisionTYPE)(cvalue);
+                    inv_v[i2+j2*CurrSizes->usize+cl*CurrSizes->usize*CurrSizes->usize]=(SegPrecisionTYPE)(cvalue);
                     if(verbose>1){
                         cout<<inv_v[i2+j2*CurrSizes->usize+cl*CurrSizes->usize*CurrSizes->usize]<< "\t";
                         flush(cout);
@@ -1216,11 +1216,11 @@ int calcE_aprox(nifti_image * T1,
     loglik[0]=0;
     SumExpec=0.0f;
     //int * Expec_offset_PTR= (int *) Expec_offset;
-    register PrecisionTYPE tempvar=0.0f;
+    register SegPrecisionTYPE tempvar=0.0f;
     float mahal=0.0f;
     float logliktmp=0.0f;
-    IterPrior_PTR= (PrecisionTYPE *) IterPrior;
-    Expec_PTR= (PrecisionTYPE *) Expec;
+    IterPrior_PTR= (SegPrecisionTYPE *) IterPrior;
+    Expec_PTR= (SegPrecisionTYPE *) Expec;
     for (int i=0; i<numel;i++, Expec_PTR++, IterPrior_PTR++) {
         for(int Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
             T1_Bias_corr[Multispec]=(BiasField!=NULL)?(T1_PTR[i+Multispec*numel] + BiasField[i+Multispec*numel]):(T1_PTR[i+Multispec*numel]);
@@ -1266,13 +1266,13 @@ int calcE_aprox(nifti_image * T1,
 
 */
 int calcM(nifti_image * T1,
-          PrecisionTYPE * Expec,
-          PrecisionTYPE * BiasField,
-          PrecisionTYPE * Outlierness,
-          PrecisionTYPE * M,
-          PrecisionTYPE * V,
-          PrecisionTYPE * M_MAP,
-          PrecisionTYPE * V_MAP,
+          SegPrecisionTYPE * Expec,
+          SegPrecisionTYPE * BiasField,
+          SegPrecisionTYPE * Outlierness,
+          SegPrecisionTYPE * M,
+          SegPrecisionTYPE * V,
+          SegPrecisionTYPE * M_MAP,
+          SegPrecisionTYPE * V_MAP,
           ImageSize * CurrSizes,
           int verbose)
 {
@@ -1285,31 +1285,31 @@ int calcM(nifti_image * T1,
     }
     int numel=CurrSizes->numel;
     int currentnum_class=CurrSizes->numclass;
-    PrecisionTYPE * Expec_PTR = (PrecisionTYPE *) Expec;
-    PrecisionTYPE * OutliernessPTR = (PrecisionTYPE *) Outlierness;
-    PrecisionTYPE * T1_PTR = static_cast<PrecisionTYPE *>(T1->data);
-    PrecisionTYPE * BiasField_PTR= (PrecisionTYPE *) BiasField;
-    PrecisionTYPE * T1_PTR2= static_cast<PrecisionTYPE *>(T1->data);
-    PrecisionTYPE * BiasField_PTR2= (PrecisionTYPE *) BiasField;
+    SegPrecisionTYPE * Expec_PTR = (SegPrecisionTYPE *) Expec;
+    SegPrecisionTYPE * OutliernessPTR = (SegPrecisionTYPE *) Outlierness;
+    SegPrecisionTYPE * T1_PTR = static_cast<SegPrecisionTYPE *>(T1->data);
+    SegPrecisionTYPE * BiasField_PTR= (SegPrecisionTYPE *) BiasField;
+    SegPrecisionTYPE * T1_PTR2= static_cast<SegPrecisionTYPE *>(T1->data);
+    SegPrecisionTYPE * BiasField_PTR2= (SegPrecisionTYPE *) BiasField;
 
     int Expec_offset[PV_numbclass];
     for (int cl=0; cl<currentnum_class; cl++) {
         Expec_offset[cl]=cl*numel;
     }
-    PrecisionTYPE tempsum= (PrecisionTYPE) 0.0;
-    PrecisionTYPE SumPriors= (PrecisionTYPE) 0.0;
+    SegPrecisionTYPE tempsum= (SegPrecisionTYPE) 0.0;
+    SegPrecisionTYPE SumPriors= (SegPrecisionTYPE) 0.0;
 
     // ***********
 
     for (int cl=0; cl<currentnum_class; cl++) {
         // MEAN
         for(int Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
-            Expec_PTR=(PrecisionTYPE *) &Expec[Expec_offset[cl]];
-            OutliernessPTR=(PrecisionTYPE *) &Outlierness[Expec_offset[cl]];
-            T1_PTR = static_cast<PrecisionTYPE *>(T1->data);
+            Expec_PTR=(SegPrecisionTYPE *) &Expec[Expec_offset[cl]];
+            OutliernessPTR=(SegPrecisionTYPE *) &Outlierness[Expec_offset[cl]];
+            T1_PTR = static_cast<SegPrecisionTYPE *>(T1->data);
             T1_PTR =&T1_PTR[Multispec*CurrSizes->numel];
-            tempsum=(PrecisionTYPE)0.0;
-            SumPriors=(PrecisionTYPE)0.0;
+            tempsum=(SegPrecisionTYPE)0.0;
+            SumPriors=(SegPrecisionTYPE)0.0;
 
 
             if(OutliernessFlag){
@@ -1354,17 +1354,17 @@ int calcM(nifti_image * T1,
 
             for(int Multispec2=Multispec; Multispec2<CurrSizes->usize; Multispec2++) {
 
-                T1_PTR = static_cast<PrecisionTYPE *>(T1->data);
+                T1_PTR = static_cast<SegPrecisionTYPE *>(T1->data);
                 T1_PTR =&T1_PTR[Multispec*CurrSizes->numel];
 
-                T1_PTR2 = static_cast<PrecisionTYPE *>(T1->data);
+                T1_PTR2 = static_cast<SegPrecisionTYPE *>(T1->data);
                 T1_PTR2 =&T1_PTR2[Multispec2*CurrSizes->numel];
                 float tmpM=M[cl*CurrSizes->usize+Multispec];
                 float tmpM2=M[cl*CurrSizes->usize+Multispec2];
                 //STD
                 tempsum=0;
                 Expec_PTR=&Expec[Expec_offset[cl]];
-                OutliernessPTR=(PrecisionTYPE *) &Outlierness[Expec_offset[cl]];
+                OutliernessPTR=(SegPrecisionTYPE *) &Outlierness[Expec_offset[cl]];
                 if(OutliernessFlag){
                     if(BiasField!=NULL){
                         BiasField_PTR=&BiasField[Multispec*numel];
@@ -1401,14 +1401,14 @@ int calcM(nifti_image * T1,
         if(verbose>0){
             if(CurrSizes->usize==1){
                 cout.fill('0');
-                cout<< "M["<<(int)(cl)<<"]= "<<setw(10)<<setprecision(7)<<left<<(PrecisionTYPE)(M[cl])<<"\tV["<<(int)(cl)<<"]="<<setw(10)<<setprecision(7)<<left<<(PrecisionTYPE)(V[cl])<< endl;
+                cout<< "M["<<(int)(cl)<<"]= "<<setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(M[cl])<<"\tV["<<(int)(cl)<<"]="<<setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(V[cl])<< endl;
                 flush(cout);
             }
             else{
 
                 cout<< "M["<<(int)(cl)<<"]= ";
                 for(int Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
-                    cout<< setw(10)<<setprecision(7)<<left<<(PrecisionTYPE)(M[cl*CurrSizes->usize+Multispec])<<"\t";
+                    cout<< setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(M[cl*CurrSizes->usize+Multispec])<<"\t";
                 }
                 cout<< endl;
                 flush(cout);
@@ -1418,7 +1418,7 @@ int calcM(nifti_image * T1,
                         cout<< "      ";
                     }
                     for(int Multispec2=0; Multispec2<CurrSizes->usize; Multispec2++) {
-                        cout<<setw(10)<<setprecision(7)<<left<<(PrecisionTYPE)(V[cl*CurrSizes->usize*CurrSizes->usize+Multispec*CurrSizes->usize+Multispec2])<<"\t";
+                        cout<<setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(V[cl*CurrSizes->usize*CurrSizes->usize+Multispec*CurrSizes->usize+Multispec2])<<"\t";
                     }
                     cout<< endl;
                 }
@@ -1436,14 +1436,14 @@ int calcM(nifti_image * T1,
 
 
 int calcM_mask(nifti_image * T1,
-               PrecisionTYPE * Expec,
-               PrecisionTYPE * BiasField,
-               PrecisionTYPE * Outlierness,
+               SegPrecisionTYPE * Expec,
+               SegPrecisionTYPE * BiasField,
+               SegPrecisionTYPE * Outlierness,
                int * S2L,
-               PrecisionTYPE * M,
-               PrecisionTYPE * V,
-               PrecisionTYPE * M_MAP,
-               PrecisionTYPE * V_MAP,
+               SegPrecisionTYPE * M,
+               SegPrecisionTYPE * V,
+               SegPrecisionTYPE * M_MAP,
+               SegPrecisionTYPE * V_MAP,
                ImageSize * CurrSizes,
                int verbose)
 {
@@ -1467,25 +1467,25 @@ int calcM_mask(nifti_image * T1,
     // ***********
     for (int cl=0; cl<num_class; cl++) {
         int * S2L_PTR = (int *) S2L;
-        PrecisionTYPE * Expec_PTR = (PrecisionTYPE *) Expec;
-        PrecisionTYPE * OutliernessPTR = (PrecisionTYPE *) Outlierness;
-        PrecisionTYPE * T1_PTR = static_cast<PrecisionTYPE *>(T1->data);
-        PrecisionTYPE * BiasField_PTR= (PrecisionTYPE *) BiasField;
-        PrecisionTYPE tempsum= (PrecisionTYPE) 0.0;
-        PrecisionTYPE SumPriors= (PrecisionTYPE) 0.0;
-        PrecisionTYPE * T1_PTR2= static_cast<PrecisionTYPE *>(T1->data);
-        PrecisionTYPE * BiasField_PTR2= (PrecisionTYPE *) BiasField;
+        SegPrecisionTYPE * Expec_PTR = (SegPrecisionTYPE *) Expec;
+        SegPrecisionTYPE * OutliernessPTR = (SegPrecisionTYPE *) Outlierness;
+        SegPrecisionTYPE * T1_PTR = static_cast<SegPrecisionTYPE *>(T1->data);
+        SegPrecisionTYPE * BiasField_PTR= (SegPrecisionTYPE *) BiasField;
+        SegPrecisionTYPE tempsum= (SegPrecisionTYPE) 0.0;
+        SegPrecisionTYPE SumPriors= (SegPrecisionTYPE) 0.0;
+        SegPrecisionTYPE * T1_PTR2= static_cast<SegPrecisionTYPE *>(T1->data);
+        SegPrecisionTYPE * BiasField_PTR2= (SegPrecisionTYPE *) BiasField;
 
         // MEAN
         for(int Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
-            Expec_PTR=(PrecisionTYPE *) &Expec[Expec_offset[cl]];
-            OutliernessPTR=(PrecisionTYPE *) &Outlierness[Expec_offset[cl]];
+            Expec_PTR=(SegPrecisionTYPE *) &Expec[Expec_offset[cl]];
+            OutliernessPTR=(SegPrecisionTYPE *) &Outlierness[Expec_offset[cl]];
             S2L_PTR = (int *) S2L;
 
-            T1_PTR = static_cast<PrecisionTYPE *>(T1->data);
+            T1_PTR = static_cast<SegPrecisionTYPE *>(T1->data);
             T1_PTR =&T1_PTR[Multispec*CurrSizes->numel];
-            tempsum=(PrecisionTYPE)0.0;
-            SumPriors=(PrecisionTYPE)0.0;
+            tempsum=(SegPrecisionTYPE)0.0;
+            SumPriors=(SegPrecisionTYPE)0.0;
 
             if(OutliernessFlag){
                 if(BiasField!=NULL){
@@ -1526,17 +1526,17 @@ int calcM_mask(nifti_image * T1,
             for(int Multispec2=Multispec; Multispec2<CurrSizes->usize; Multispec2++) {
                 S2L_PTR = (int *) S2L;
 
-                T1_PTR = static_cast<PrecisionTYPE *>(T1->data);
+                T1_PTR = static_cast<SegPrecisionTYPE *>(T1->data);
                 T1_PTR =&T1_PTR[Multispec*CurrSizes->numel];
 
-                T1_PTR2 = static_cast<PrecisionTYPE *>(T1->data);
+                T1_PTR2 = static_cast<SegPrecisionTYPE *>(T1->data);
                 T1_PTR2 =&T1_PTR2[Multispec2*CurrSizes->numel];
                 float tmpM=M[cl*CurrSizes->usize+Multispec];
                 float tmpM2=M[cl*CurrSizes->usize+Multispec2];
                 //STD
                 tempsum=0;
                 Expec_PTR=&Expec[Expec_offset[cl]];
-                OutliernessPTR=(PrecisionTYPE *) &Outlierness[Expec_offset[cl]];
+                OutliernessPTR=(SegPrecisionTYPE *) &Outlierness[Expec_offset[cl]];
                 if(BiasField!=NULL){
                     BiasField_PTR=&BiasField[Multispec*numel_masked];
                     BiasField_PTR2=&BiasField[Multispec2*numel_masked];
@@ -1571,14 +1571,14 @@ int calcM_mask(nifti_image * T1,
         if(verbose>0){
             if(CurrSizes->usize==1){
                 cout.fill('0');
-                cout<< "M["<<(int)(cl)<<"]= "<<setw(10)<<setprecision(7)<<left<<(PrecisionTYPE)(M[cl])<<"\tV["<<(int)(cl)<<"]="<<setw(10)<<setprecision(7)<<left<<(PrecisionTYPE)(V[cl])<< endl;
+                cout<< "M["<<(int)(cl)<<"]= "<<setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(M[cl])<<"\tV["<<(int)(cl)<<"]="<<setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(V[cl])<< endl;
                 flush(cout);
             }
             else{
 
                 cout<< "M["<<(int)(cl)<<"]= ";
                 for(int Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
-                    cout<< setw(10)<<setprecision(7)<<left<<(PrecisionTYPE)(M[cl*CurrSizes->usize+Multispec])<<"\t";
+                    cout<< setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(M[cl*CurrSizes->usize+Multispec])<<"\t";
                 }
                 cout<< endl;
                 flush(cout);
@@ -1588,7 +1588,7 @@ int calcM_mask(nifti_image * T1,
                         cout<< "      ";
                     }
                     for(int Multispec2=0; Multispec2<CurrSizes->usize; Multispec2++) {
-                        cout<< setw(10)<<setprecision(7)<<left<<(PrecisionTYPE)(V[cl*CurrSizes->usize*CurrSizes->usize+Multispec*CurrSizes->usize+Multispec2])<<"\t";
+                        cout<< setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(V[cl*CurrSizes->usize*CurrSizes->usize+Multispec*CurrSizes->usize+Multispec2])<<"\t";
                     }
                     cout<< endl;
                 }
@@ -1605,11 +1605,11 @@ int calcM_mask(nifti_image * T1,
 
 
 int calcM_mask_LoAd(nifti_image * T1,
-                    PrecisionTYPE * Expec,
-                    PrecisionTYPE * BiasField,
+                    SegPrecisionTYPE * Expec,
+                    SegPrecisionTYPE * BiasField,
                     int * S2L,
-                    PrecisionTYPE * M,
-                    PrecisionTYPE * V,
+                    SegPrecisionTYPE * M,
+                    SegPrecisionTYPE * V,
                     ImageSize * CurrSizes,
                     int verbose,
                     bool PVon)
@@ -1622,23 +1622,23 @@ int calcM_mask_LoAd(nifti_image * T1,
     int numel_masked=CurrSizes->numelmasked;
     int currentnum_class=CurrSizes->numclass;
     int * S2L_PTR = (int *) S2L;
-    PrecisionTYPE * Expec_PTR = (PrecisionTYPE *) Expec;
-    PrecisionTYPE * T1_PTR = static_cast<PrecisionTYPE *>(T1->data);
-    PrecisionTYPE * BiasField_PTR= (PrecisionTYPE *) BiasField;
+    SegPrecisionTYPE * Expec_PTR = (SegPrecisionTYPE *) Expec;
+    SegPrecisionTYPE * T1_PTR = static_cast<SegPrecisionTYPE *>(T1->data);
+    SegPrecisionTYPE * BiasField_PTR= (SegPrecisionTYPE *) BiasField;
     int Expec_offset[PV_numbclass];
     for (int cl=0; cl<currentnum_class; cl++) {
         Expec_offset[cl]=cl*numel_masked;
     }
-    PrecisionTYPE tempsum= (PrecisionTYPE) 0.0;
-    PrecisionTYPE SumPriors= (PrecisionTYPE) 0.0;
+    SegPrecisionTYPE tempsum= (SegPrecisionTYPE) 0.0;
+    SegPrecisionTYPE SumPriors= (SegPrecisionTYPE) 0.0;
 
 
     for (int cl=0; cl<5; cl++) {
-        Expec_PTR=(PrecisionTYPE *) &Expec[Expec_offset[cl]];
-        BiasField_PTR= (PrecisionTYPE *) BiasField;
+        Expec_PTR=(SegPrecisionTYPE *) &Expec[Expec_offset[cl]];
+        BiasField_PTR= (SegPrecisionTYPE *) BiasField;
         S2L_PTR = (int *) S2L;
-        tempsum=(PrecisionTYPE)0.0;
-        SumPriors=(PrecisionTYPE)0.0;
+        tempsum=(SegPrecisionTYPE)0.0;
+        SumPriors=(SegPrecisionTYPE)0.0;
 
         // MEAN
         if(BiasField!=NULL){
@@ -1678,7 +1678,7 @@ int calcM_mask_LoAd(nifti_image * T1,
 
         if(verbose>0){
             cout.fill('0');
-            cout << "M[" << (int)(cl) << "]= " << setw(10) << setprecision(7) << left << (PrecisionTYPE)(M[cl]) << "\tV[" << (int)(cl) << "]=" << setw(10) << setprecision(7) <<left << (PrecisionTYPE)(V[cl]) << endl;
+            cout << "M[" << (int)(cl) << "]= " << setw(10) << setprecision(7) << left << (SegPrecisionTYPE)(M[cl]) << "\tV[" << (int)(cl) << "]=" << setw(10) << setprecision(7) <<left << (SegPrecisionTYPE)(V[cl]) << endl;
             flush(cout);
         }
     }
@@ -1690,8 +1690,8 @@ int calcM_mask_LoAd(nifti_image * T1,
         if(V[WMGMpvclass]<0.0003 || V[WMGMpvclass]!=V[WMGMpvclass])V[WMGMpvclass]=0.0003;
         V[GMCSFpvclass]=0.5*V[GMclass]+(0.5)*V[CSFclass];
         if(V[GMCSFpvclass]<0.0003 || V[GMCSFpvclass]!=V[GMCSFpvclass])V[GMCSFpvclass]=0.0003;
-        cout<< "M["<<(int)(WMGMpvclass)<<"]= "<<setw(10)<<setprecision(7)<<left<<(PrecisionTYPE)(M[WMGMpvclass])<<"\tV["<<(int)(WMGMpvclass)<<"]="<<setw(10)<<setprecision(7)<<left<<(PrecisionTYPE)(V[WMGMpvclass])<< endl;
-        cout<< "M["<<(int)(GMCSFpvclass)<<"]= "<<setw(10)<<setprecision(7)<<left<<(PrecisionTYPE)(M[GMCSFpvclass])<<"\tV["<<(int)(GMCSFpvclass)<<"]="<<setw(10)<<setprecision(7)<<left<<(PrecisionTYPE)(V[GMCSFpvclass])<< endl;
+        cout<< "M["<<(int)(WMGMpvclass)<<"]= "<<setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(M[WMGMpvclass])<<"\tV["<<(int)(WMGMpvclass)<<"]="<<setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(V[WMGMpvclass])<< endl;
+        cout<< "M["<<(int)(GMCSFpvclass)<<"]= "<<setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(M[GMCSFpvclass])<<"\tV["<<(int)(GMCSFpvclass)<<"]="<<setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(V[GMCSFpvclass])<< endl;
         flush(cout);
     }
 
@@ -1699,8 +1699,8 @@ int calcM_mask_LoAd(nifti_image * T1,
 }
 
 int printloglik(int iter,
-                PrecisionTYPE loglik,
-                PrecisionTYPE oldloglik){
+                SegPrecisionTYPE loglik,
+                SegPrecisionTYPE oldloglik){
     if(iter>0){
         if ((loglik-oldloglik)/fabsf(oldloglik)>0 && (loglik-oldloglik)/fabsf(oldloglik)<100){
             cout<< "Loglik = " << loglik << " : Ratio = " << (loglik-oldloglik)/fabsf(oldloglik) << endl;
@@ -1715,15 +1715,15 @@ int printloglik(int iter,
     return 1;
 }
 
-int Relax_Priors(PrecisionTYPE * Priors,
-                 PrecisionTYPE * Expec,
-                 PrecisionTYPE * MRF,
+int Relax_Priors(SegPrecisionTYPE * Priors,
+                 SegPrecisionTYPE * Expec,
+                 SegPrecisionTYPE * MRF,
                  int * S2L,
                  int * L2S,
                  float RelaxFactor,
-                 PrecisionTYPE * G,
-                 PrecisionTYPE ba,
-                 PrecisionTYPE be,
+                 SegPrecisionTYPE * G,
+                 SegPrecisionTYPE ba,
+                 SegPrecisionTYPE be,
                  ImageSize *  CurrSizes,
                  SEG_PARAM * segment_param){
 
@@ -1750,26 +1750,26 @@ int Relax_Priors(PrecisionTYPE * Priors,
         Gaussian_Filter_Short_4D(Expec,S2L,L2S,2.0, CurrSizes,CSFclass);
         Relax_Priors_Share(Priors,Expec,RelaxFactor,G,be,CurrSizes);
         for(int i=0; i<(CurrSizes->numclass*CurrSizes->numelmasked);i++)MRF[i]=Priors[i];
-        memcpy(Priors,Expec,CurrSizes->numelmasked*CurrSizes->numclass*sizeof(PrecisionTYPE));
+        memcpy(Priors,Expec,CurrSizes->numelmasked*CurrSizes->numclass*sizeof(SegPrecisionTYPE));
     }
 
     return 1;
 
 }
 
-int Relax_Priors_Share(PrecisionTYPE * Priors,
-                       PrecisionTYPE * Expec,
+int Relax_Priors_Share(SegPrecisionTYPE * Priors,
+                       SegPrecisionTYPE * Expec,
                        float RelaxFactor,
-                       PrecisionTYPE * G,
-                       PrecisionTYPE be,
+                       SegPrecisionTYPE * G,
+                       SegPrecisionTYPE be,
                        ImageSize * CurrSizes){
     int numclass=CurrSizes->numclass;
 
     int N[PV_numbclass*PV_numbclass];
-    PrecisionTYPE Currexpec[PV_numbclass];
-    PrecisionTYPE Currexpec_updated[PV_numbclass];
-    PrecisionTYPE Currexpec_sumall;
-    PrecisionTYPE Currexpec_class;
+    SegPrecisionTYPE Currexpec[PV_numbclass];
+    SegPrecisionTYPE Currexpec_updated[PV_numbclass];
+    SegPrecisionTYPE Currexpec_sumall;
+    SegPrecisionTYPE Currexpec_class;
     int Class_shift[PV_numbclass];
     // Precompute Class Shift
     for (int cl=0; cl<numclass; cl++) {
@@ -1808,10 +1808,10 @@ int Relax_Priors_Share(PrecisionTYPE * Priors,
     return 1;
 }
 
-int Gaussian_Filter_Short_4D(PrecisionTYPE * ShortData,
+int Gaussian_Filter_Short_4D(SegPrecisionTYPE * ShortData,
                              int * S2L,
                              int * L2S,
-                             PrecisionTYPE gauss_std,
+                             SegPrecisionTYPE gauss_std,
                              ImageSize * CurrSizes,
                              int class_with_CSF){
 
@@ -1827,15 +1827,15 @@ int Gaussian_Filter_Short_4D(PrecisionTYPE * ShortData,
         kernelsize=kernelsizemin+1;}
 
     int kernelshift=(int)floorf(kernelsize/2);
-    PrecisionTYPE GaussKernel [100]= {0};
+    SegPrecisionTYPE GaussKernel [100]= {0};
 
     for(int i=0; i<kernelsize; i++){
         float kernelvalue=expf((float)(-0.5*powf((i-kernelshift)/gauss_std, 2)))/(sqrtf(2*3.14159265*powf(gauss_std, 2)));
         GaussKernel[i]=kernelvalue;
     }
 
-    PrecisionTYPE * Buffer= new PrecisionTYPE [CurrSizes->numel]();
-    PrecisionTYPE * LongData= new PrecisionTYPE [CurrSizes->numel]();
+    SegPrecisionTYPE * Buffer= new SegPrecisionTYPE [CurrSizes->numel]();
+    SegPrecisionTYPE * LongData= new SegPrecisionTYPE [CurrSizes->numel]();
 
 
     int shiftdirection[3];
@@ -1868,8 +1868,8 @@ int Gaussian_Filter_Short_4D(PrecisionTYPE * ShortData,
             for(xyzpos[2]=0;xyzpos[2]<(int)CurrSizes->zsize;xyzpos[2]++){
                 for(xyzpos[1]=0;xyzpos[1]<(int)CurrSizes->ysize;xyzpos[1]++){
                     for(xyzpos[0]=0;xyzpos[0]<(int)CurrSizes->xsize;xyzpos[0]++){
-                        PrecisionTYPE tmpvalue=0.0f;
-                        PrecisionTYPE tmpkernelsum=0.0f;
+                        SegPrecisionTYPE tmpvalue=0.0f;
+                        SegPrecisionTYPE tmpkernelsum=0.0f;
                         LongData[index]=0.0f;
                         if(L2S[index]>=0){
                             for(int shift=((xyzpos[currentdirection]<kernelshift)?-xyzpos[currentdirection]:-kernelshift);shift<=((xyzpos[currentdirection]>=(dim_array[currentdirection]-kernelshift))?(int)dim_array[currentdirection]-xyzpos[currentdirection]-1:kernelshift) ; shift++){
@@ -1900,8 +1900,8 @@ int Gaussian_Filter_Short_4D(PrecisionTYPE * ShortData,
     return 1;
 }
 
-int Gaussian_Filter_4D(PrecisionTYPE * LongData,
-                       PrecisionTYPE gauss_std,
+int Gaussian_Filter_4D(SegPrecisionTYPE * LongData,
+                       SegPrecisionTYPE gauss_std,
                        ImageSize * CurrSizes){
 
     int kernelsize=0;
@@ -1917,14 +1917,14 @@ int Gaussian_Filter_4D(PrecisionTYPE * LongData,
 
     int kernelshift=(int)floorf(kernelsize/2);
 
-    PrecisionTYPE GaussKernel [200]= {0};
+    SegPrecisionTYPE GaussKernel [200]= {0};
 
     for(int i=0; i<kernelsize; i++){
         GaussKernel[i]=expf((float)(-0.5*powf((i-kernelshift)/gauss_std, 2)))/(sqrtf(2*3.14159265*powf(gauss_std, 2)));
     }
 
 
-    PrecisionTYPE * Buffer= new PrecisionTYPE [CurrSizes->numel]();
+    SegPrecisionTYPE * Buffer= new SegPrecisionTYPE [CurrSizes->numel]();
 
 
 
@@ -1941,7 +1941,7 @@ int Gaussian_Filter_4D(PrecisionTYPE * LongData,
     for(int curr4d=0; curr4d<CurrSizes->tsize; curr4d++){ //For Each Class
 
         int current_4dShift_short=curr4d*CurrSizes->numel;
-        PrecisionTYPE * longdataptr=&LongData[current_4dShift_short];
+        SegPrecisionTYPE * longdataptr=&LongData[current_4dShift_short];
         for(int index=0;index<CurrSizes->numel;index++){ //Copy Class to Buffer in LongFormat
             Buffer[index]=longdataptr[index];
         }
@@ -1950,7 +1950,7 @@ int Gaussian_Filter_4D(PrecisionTYPE * LongData,
         int xyzpos[3];
         for(int currentdirection=0;currentdirection<3;currentdirection++){ //Blur Buffer along each direction
             int index=0;
-            PrecisionTYPE * longdataptr2=&longdataptr[0];
+            SegPrecisionTYPE * longdataptr2=&longdataptr[0];
             for(xyzpos[2]=0;xyzpos[2]<(int)CurrSizes->zsize;xyzpos[2]++){
                 for(xyzpos[1]=0;xyzpos[1]<(int)CurrSizes->ysize;xyzpos[1]++){
                     xyzpos[0]=0;
@@ -1965,13 +1965,13 @@ int Gaussian_Filter_4D(PrecisionTYPE * LongData,
                             kernelshiftmplus=(int)dim_array[currentdirection]-xyzpos[currentdirection]-1;
                         }
 
-                        PrecisionTYPE * GaussKernelptr=&GaussKernel[kernelshiftminus+kernelshift];
-                        PrecisionTYPE * Bufferptr=&Buffer[index+kernelshiftminus*shiftdirection[currentdirection]];
-                        PrecisionTYPE tmpvalue=0.0f;
-                        PrecisionTYPE tmpkernelsum=0.0f;
+                        SegPrecisionTYPE * GaussKernelptr=&GaussKernel[kernelshiftminus+kernelshift];
+                        SegPrecisionTYPE * Bufferptr=&Buffer[index+kernelshiftminus*shiftdirection[currentdirection]];
+                        SegPrecisionTYPE tmpvalue=0.0f;
+                        SegPrecisionTYPE tmpkernelsum=0.0f;
 
                         for(int shift=kernelshiftminus;shift<=kernelshiftmplus ; shift++, GaussKernelptr++,Bufferptr+=shiftdirection[currentdirection]){
-                            PrecisionTYPE GaussKernelvar=(*GaussKernelptr);
+                            SegPrecisionTYPE GaussKernelvar=(*GaussKernelptr);
                             tmpvalue+=GaussKernelvar*(*Bufferptr);
                             tmpkernelsum+=GaussKernelvar;
                         }
@@ -1995,9 +1995,9 @@ int Gaussian_Filter_4D(PrecisionTYPE * LongData,
     return 0;
 }
 
-PrecisionTYPE * Gaussian_Filter_4D_inside_mask(PrecisionTYPE * LongData,
+SegPrecisionTYPE * Gaussian_Filter_4D_inside_mask(SegPrecisionTYPE * LongData,
                                                bool * mask,
-                                               PrecisionTYPE gauss_std,
+                                               SegPrecisionTYPE gauss_std,
                                                ImageSize * CurrSizes){
 
     int kernelsize=0;
@@ -2012,14 +2012,14 @@ PrecisionTYPE * Gaussian_Filter_4D_inside_mask(PrecisionTYPE * LongData,
         kernelsize=kernelsizemin+1;}
 
     int kernelshift=(int)floorf(kernelsize/2);
-    PrecisionTYPE GaussKernel [100]= {0};
+    SegPrecisionTYPE GaussKernel [100]= {0};
 
     for(int i=0; i<kernelsize; i++){
         float kernelvalue=expf((float)(-0.5*powf((i-kernelshift)/gauss_std, 2)))/(sqrtf(2*3.14159265*powf(gauss_std, 2)));
         GaussKernel[i]=kernelvalue;
     }
 
-    PrecisionTYPE * Buffer= new PrecisionTYPE [CurrSizes->numel]();
+    SegPrecisionTYPE * Buffer= new SegPrecisionTYPE [CurrSizes->numel]();
 
 
 
@@ -2047,8 +2047,8 @@ PrecisionTYPE * Gaussian_Filter_4D_inside_mask(PrecisionTYPE * LongData,
             for(xyzpos[2]=0;xyzpos[2]<(int)CurrSizes->zsize;xyzpos[2]++){
                 for(xyzpos[1]=0;xyzpos[1]<(int)CurrSizes->ysize;xyzpos[1]++){
                     for(xyzpos[0]=0;xyzpos[0]<(int)CurrSizes->xsize;xyzpos[0]++){
-                        PrecisionTYPE tmpvalue=0.0f;
-                        PrecisionTYPE tmpkernelsum=0.0f;
+                        SegPrecisionTYPE tmpvalue=0.0f;
+                        SegPrecisionTYPE tmpkernelsum=0.0f;
                         LongData[index]=0.0f;
                         if(mask[index]>0){
                             for(int shift=((xyzpos[currentdirection]<kernelshift)?-xyzpos[currentdirection]:-kernelshift);shift<=((xyzpos[currentdirection]>=(dim_array[currentdirection]-kernelshift))?(int)dim_array[currentdirection]-xyzpos[currentdirection]-1:kernelshift) ; shift++){
@@ -2080,12 +2080,12 @@ PrecisionTYPE * Gaussian_Filter_4D_inside_mask(PrecisionTYPE * LongData,
 }
 
 int Convert_to_PV(nifti_image * T1,
-                  PrecisionTYPE * BiasField,
-                  PrecisionTYPE * ShortPrior,
-                  PrecisionTYPE * Expec,
-                  PrecisionTYPE * MRF,
-                  PrecisionTYPE * M,
-                  PrecisionTYPE * V,
+                  SegPrecisionTYPE * BiasField,
+                  SegPrecisionTYPE * ShortPrior,
+                  SegPrecisionTYPE * Expec,
+                  SegPrecisionTYPE * MRF,
+                  SegPrecisionTYPE * M,
+                  SegPrecisionTYPE * V,
                   int * S2L,
                   int * L2S,
                   ImageSize * CurrSizes,
@@ -2103,10 +2103,10 @@ int Convert_to_PV(nifti_image * T1,
     return 1;
 }
 
-int Sulci_and_gyri_correction(PrecisionTYPE * MRF_Beta,
-                              PrecisionTYPE * ShortPrior,
-                              PrecisionTYPE * Expec,
-                              PrecisionTYPE *MRF,
+int Sulci_and_gyri_correction(SegPrecisionTYPE * MRF_Beta,
+                              SegPrecisionTYPE * ShortPrior,
+                              SegPrecisionTYPE * Expec,
+                              SegPrecisionTYPE *MRF,
                               int * S2L,
                               int * L2S,
                               ImageSize *CurrSizes){
@@ -2114,9 +2114,9 @@ int Sulci_and_gyri_correction(PrecisionTYPE * MRF_Beta,
     // Deep Sulci ->  Seed=WM+WMGMpv+dGM+iCSF
     cout<< "Sucli and Gyri correction" << endl;
     bool * Seed_Mask= new bool [CurrSizes->numelmasked]();
-    PrecisionTYPE * SpeedFunc= new PrecisionTYPE [CurrSizes->numelmasked]();
-    PrecisionTYPE * wSulci= new PrecisionTYPE [CurrSizes->numelmasked]();
-    PrecisionTYPE * wGyri= new PrecisionTYPE [CurrSizes->numelmasked]();
+    SegPrecisionTYPE * SpeedFunc= new SegPrecisionTYPE [CurrSizes->numelmasked]();
+    SegPrecisionTYPE * wSulci= new SegPrecisionTYPE [CurrSizes->numelmasked]();
+    SegPrecisionTYPE * wGyri= new SegPrecisionTYPE [CurrSizes->numelmasked]();
 
     for(int i=0; i<CurrSizes->numelmasked;i++){
         Seed_Mask[i]=(Expec[i+WMclass*CurrSizes->numelmasked]+
@@ -2193,12 +2193,12 @@ int Sulci_and_gyri_correction(PrecisionTYPE * MRF_Beta,
 }
 
 int Convert_WM_and_GM_to_PV(nifti_image * T1,
-                            PrecisionTYPE * BiasField,
-                            PrecisionTYPE * ShortPrior,
-                            PrecisionTYPE * Expec,
+                            SegPrecisionTYPE * BiasField,
+                            SegPrecisionTYPE * ShortPrior,
+                            SegPrecisionTYPE * Expec,
                             int * S2L,
-                            PrecisionTYPE * M,
-                            PrecisionTYPE * V,
+                            SegPrecisionTYPE * M,
+                            SegPrecisionTYPE * V,
                             ImageSize * CurrSizes){
 
     int WMindex=WMclass*CurrSizes->numelmasked;
@@ -2217,7 +2217,7 @@ int Convert_WM_and_GM_to_PV(nifti_image * T1,
     int count1=0;
     int count2=0;
 
-    PrecisionTYPE * T1ptrtmp = static_cast<PrecisionTYPE *>(T1->data);
+    SegPrecisionTYPE * T1ptrtmp = static_cast<SegPrecisionTYPE *>(T1->data);
     for (int i=0; i<CurrSizes->numelmasked;i++){
         currentT1=T1ptrtmp[S2L[i]]+BiasField[i];
 
@@ -2276,19 +2276,19 @@ int Convert_WM_and_GM_to_PV(nifti_image * T1,
 
 
 nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
-                                        PrecisionTYPE * Expec,
-                                        PrecisionTYPE * BiasField,
-                                        PrecisionTYPE * BiasFieldCoefs,
+                                        SegPrecisionTYPE * Expec,
+                                        SegPrecisionTYPE * BiasField,
+                                        SegPrecisionTYPE * BiasFieldCoefs,
                                         int * S2L,
                                         nifti_image * Priors,
                                         SEG_PARAM * segment_param,
-                                        PrecisionTYPE * M,
+                                        SegPrecisionTYPE * M,
                                         ImageSize * CurrSizes){
 
     nifti_image * Result = nifti_copy_nim_info(Priors);
     if(segment_param->flag_PV_model){
 
-        PrecisionTYPE * T1ptrtmp = static_cast<PrecisionTYPE *>(T1->data);
+        SegPrecisionTYPE * T1ptrtmp = static_cast<SegPrecisionTYPE *>(T1->data);
 
         Result->dim[0]=4;
         Result->dim[4]=6;
@@ -2297,16 +2297,16 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
         nifti_set_filenames(Result,segment_param->filename_out,0,0);
         nifti_update_dims_from_array(Result);
         nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
-        Result->data = (void *) calloc(Result->nvox, sizeof(PrecisionTYPE));
-        PrecisionTYPE * Result_PTR = static_cast<PrecisionTYPE *>(Result->data);
+        Result->data = (void *) calloc(Result->nvox, sizeof(SegPrecisionTYPE));
+        SegPrecisionTYPE * Result_PTR = static_cast<SegPrecisionTYPE *>(Result->data);
         for(unsigned int i=0; i<Result->nvox; i++){Result_PTR[i]=0;}
 
         int Short_2_Long_Indices_tmp = 0;
         int class_nvox=Result->nx*Result->ny*Result->nz;
-        PrecisionTYPE * Resultdata= static_cast<PrecisionTYPE *>(Result->data);
-        PrecisionTYPE * Expec_tmp = new PrecisionTYPE [CurrSizes->numclass]();
-        PrecisionTYPE Expec_tmp_sum=0;
-        PrecisionTYPE Fractional_content=0;
+        SegPrecisionTYPE * Resultdata= static_cast<SegPrecisionTYPE *>(Result->data);
+        SegPrecisionTYPE * Expec_tmp = new SegPrecisionTYPE [CurrSizes->numclass]();
+        SegPrecisionTYPE Expec_tmp_sum=0;
+        SegPrecisionTYPE Fractional_content=0;
 
         if(BiasField!=NULL){
             for(int i=0; i<CurrSizes->numelmasked; i++){
@@ -2453,19 +2453,19 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
         nifti_set_filenames(Result,segment_param->filename_out,0,0);
         nifti_update_dims_from_array(Result);
         nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
-        Result->data = (void *) calloc(Result->nvox, sizeof(PrecisionTYPE));
-        PrecisionTYPE * Result_PTR = static_cast<PrecisionTYPE *>(Result->data);
+        Result->data = (void *) calloc(Result->nvox, sizeof(SegPrecisionTYPE));
+        SegPrecisionTYPE * Result_PTR = static_cast<SegPrecisionTYPE *>(Result->data);
         for(unsigned int i=0; i<Result->nvox; i++){Result_PTR[i]=0;}
 
         int * S2L_PRT = (int *) S2L;
-        PrecisionTYPE * Resultdata= static_cast<PrecisionTYPE *>(Result->data);
+        SegPrecisionTYPE * Resultdata= static_cast<SegPrecisionTYPE *>(Result->data);
 
 
         int class_nvox=CurrSizes->numel;
         for(int currclass=0; currclass<CurrSizes->numclass;currclass++){
 
-            PrecisionTYPE * Resultdata_class = &Resultdata[(currclass)*class_nvox];
-            PrecisionTYPE * Expec_PTR = &Expec[(currclass)*CurrSizes->numelmasked];
+            SegPrecisionTYPE * Resultdata_class = &Resultdata[(currclass)*class_nvox];
+            SegPrecisionTYPE * Expec_PTR = &Expec[(currclass)*CurrSizes->numelmasked];
             S2L_PRT= (int *) S2L;
 
             for(int i=0; i<CurrSizes->numelmasked; i++,S2L_PRT++,Expec_PTR++){
@@ -2476,8 +2476,8 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
     return Result;
 }
 
-bool * binarise_image(PrecisionTYPE * SingleImage,
-                      PrecisionTYPE Threshold,
+bool * binarise_image(SegPrecisionTYPE * SingleImage,
+                      SegPrecisionTYPE Threshold,
                       ImageSize * CurrSizes){
 
     bool * Result = new bool [CurrSizes->numelmasked];
@@ -2488,7 +2488,7 @@ bool * binarise_image(PrecisionTYPE * SingleImage,
     return Result;
 }
 
-nifti_image * Copy_Single_ShortImage_to_Result(PrecisionTYPE * SingleImage,
+nifti_image * Copy_Single_ShortImage_to_Result(SegPrecisionTYPE * SingleImage,
                                                int * Short_2_Long_Indices,
                                                nifti_image * Sourceimage,
                                                char * filename,
@@ -2496,25 +2496,25 @@ nifti_image * Copy_Single_ShortImage_to_Result(PrecisionTYPE * SingleImage,
 
     nifti_image * Result = nifti_copy_nim_info(Sourceimage);
     nifti_set_filenames(Result,filename,0,0);
-    Result->data = (void *) calloc(Result->nvox, sizeof(PrecisionTYPE));
-    PrecisionTYPE * Result_PTR = static_cast<PrecisionTYPE *>(Result->data);
+    Result->data = (void *) calloc(Result->nvox, sizeof(SegPrecisionTYPE));
+    SegPrecisionTYPE * Result_PTR = static_cast<SegPrecisionTYPE *>(Result->data);
     for(unsigned int i=0; i<Result->nvox; i++){Result_PTR[i]=0;}
 
     int * Short_2_Long_Indices_PRT = (int *) Short_2_Long_Indices;
-    PrecisionTYPE * Resultdata= static_cast<PrecisionTYPE *>(Result->data);
+    SegPrecisionTYPE * Resultdata= static_cast<SegPrecisionTYPE *>(Result->data);
 
-    PrecisionTYPE * SingleImage_PTR =SingleImage;
+    SegPrecisionTYPE * SingleImage_PTR =SingleImage;
     Short_2_Long_Indices_PRT= (int *) Short_2_Long_Indices;
 
     for(int i=0; i<CurrSizes->numelmasked; i++,Short_2_Long_Indices_PRT++,SingleImage_PTR++){
-        Resultdata[*Short_2_Long_Indices_PRT]=(PrecisionTYPE)(*SingleImage_PTR);
+        Resultdata[*Short_2_Long_Indices_PRT]=(SegPrecisionTYPE)(*SingleImage_PTR);
     }
     return Result;
 }
 
 
 
-nifti_image * Copy_BiasCorrected_to_Result_mask(PrecisionTYPE * BiasField,
+nifti_image * Copy_BiasCorrected_to_Result_mask(SegPrecisionTYPE * BiasField,
                                                 int * Short_2_Long_Indices,
                                                 nifti_image * T1,
                                                 char * filename,
@@ -2528,15 +2528,15 @@ nifti_image * Copy_BiasCorrected_to_Result_mask(PrecisionTYPE * BiasField,
     nifti_set_filenames(Result,filename,0,0);
     nifti_update_dims_from_array(Result);
     nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
-    Result->data = (void *) calloc(Result->nvox, sizeof(PrecisionTYPE));
-    PrecisionTYPE * Resultdata = static_cast<PrecisionTYPE *>(Result->data);
-    PrecisionTYPE * T1data = static_cast<PrecisionTYPE *>(T1->data);
+    Result->data = (void *) calloc(Result->nvox, sizeof(SegPrecisionTYPE));
+    SegPrecisionTYPE * Resultdata = static_cast<SegPrecisionTYPE *>(Result->data);
+    SegPrecisionTYPE * T1data = static_cast<SegPrecisionTYPE *>(T1->data);
     for(unsigned int i=0; i<Result->nvox; i++){Resultdata[i]=0;}
 
     int * Short_2_Long_Indices_PRT = (int *) Short_2_Long_Indices;
 
     Short_2_Long_Indices_PRT= (int *) Short_2_Long_Indices;
-    PrecisionTYPE to_resize=0;
+    SegPrecisionTYPE to_resize=0;
     if(BiasField!=NULL){
         for(int i=0; i<CurrSizes->numelmasked; i++,Short_2_Long_Indices_PRT++){
             to_resize=exp((BiasField[i]+T1data[*Short_2_Long_Indices_PRT])*0.693147181)-1;
@@ -2551,7 +2551,7 @@ nifti_image * Copy_BiasCorrected_to_Result_mask(PrecisionTYPE * BiasField,
     return Result;
 }
 
-nifti_image * Copy_BiasCorrected_to_Result(PrecisionTYPE * BiasField,
+nifti_image * Copy_BiasCorrected_to_Result(SegPrecisionTYPE * BiasField,
                                            nifti_image * T1,
                                            char * filename,
                                            ImageSize * CurrSizes){
@@ -2564,11 +2564,11 @@ nifti_image * Copy_BiasCorrected_to_Result(PrecisionTYPE * BiasField,
     nifti_set_filenames(Result,filename,0,0);
     nifti_update_dims_from_array(Result);
     nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
-    Result->data = (void *) calloc(Result->nvox, sizeof(PrecisionTYPE));
-    PrecisionTYPE * Resultdata = static_cast<PrecisionTYPE *>(Result->data);
-    PrecisionTYPE * T1data = static_cast<PrecisionTYPE *>(T1->data);
+    Result->data = (void *) calloc(Result->nvox, sizeof(SegPrecisionTYPE));
+    SegPrecisionTYPE * Resultdata = static_cast<SegPrecisionTYPE *>(Result->data);
+    SegPrecisionTYPE * T1data = static_cast<SegPrecisionTYPE *>(T1->data);
     for(unsigned int i=0; i<Result->nvox; i++){Resultdata[i]=0;}
-    PrecisionTYPE to_resize=0;
+    SegPrecisionTYPE to_resize=0;
     if(BiasField!=NULL){
         for(int i=0; i<CurrSizes->numel; i++){
             to_resize=exp((BiasField[i]+T1data[i])*0.693147181)-1;
@@ -2585,7 +2585,7 @@ nifti_image * Copy_BiasCorrected_to_Result(PrecisionTYPE * BiasField,
 
 
 
-nifti_image * Copy_Expec_to_Result_Neonate_mask(PrecisionTYPE * Expec,
+nifti_image * Copy_Expec_to_Result_Neonate_mask(SegPrecisionTYPE * Expec,
                                                 int * Short_2_Long_Indices,
                                                 int * Long_2_Short_Indices,
                                                 nifti_image * T1,
@@ -2603,10 +2603,10 @@ nifti_image * Copy_Expec_to_Result_Neonate_mask(PrecisionTYPE * Expec,
     nifti_set_filenames(Result,filename,0,0);
     nifti_update_dims_from_array(Result);
     nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
-    Result->data = (void *) calloc(Result->nvox, sizeof(PrecisionTYPE));
-    PrecisionTYPE * Resultdata = static_cast<PrecisionTYPE *>(Result->data);
+    Result->data = (void *) calloc(Result->nvox, sizeof(SegPrecisionTYPE));
+    SegPrecisionTYPE * Resultdata = static_cast<SegPrecisionTYPE *>(Result->data);
 
-    PrecisionTYPE * T1ptrtmp = static_cast<PrecisionTYPE *>(T1->data);
+    SegPrecisionTYPE * T1ptrtmp = static_cast<SegPrecisionTYPE *>(T1->data);
     for(unsigned int i=0; i<Result->nvox; i++){Resultdata[i]=0;}
 
     int * Short_2_Long_Indices_PRT = (int *) Short_2_Long_Indices;
@@ -2615,8 +2615,8 @@ nifti_image * Copy_Expec_to_Result_Neonate_mask(PrecisionTYPE * Expec,
 
     Short_2_Long_Indices_PRT= (int *) Short_2_Long_Indices;
     for(int currclass=0; currclass<6;currclass++){
-        PrecisionTYPE * Resultdata_class = &Resultdata[(currclass)*class_nvox];
-        PrecisionTYPE * Expec_PTR = &Expec[(currclass)*CurrSizes->numelmasked];
+        SegPrecisionTYPE * Resultdata_class = &Resultdata[(currclass)*class_nvox];
+        SegPrecisionTYPE * Expec_PTR = &Expec[(currclass)*CurrSizes->numelmasked];
         Short_2_Long_Indices_PRT= (int *) Short_2_Long_Indices;
         for(int i=0; i<CurrSizes->numelmasked; i++,Short_2_Long_Indices_PRT++,Expec_PTR++){
             Resultdata_class[(*Short_2_Long_Indices_PRT)]=(*Expec_PTR);
@@ -2715,7 +2715,7 @@ nifti_image * Copy_Expec_to_Result_Neonate_mask(PrecisionTYPE * Expec,
     return Result;
 }
 
-nifti_image * Copy_Expec_to_Result_mask(PrecisionTYPE * Expec,
+nifti_image * Copy_Expec_to_Result_mask(SegPrecisionTYPE * Expec,
                                         int * Short_2_Long_Indices,
                                         nifti_image * T1,
                                         char * filename,
@@ -2730,8 +2730,8 @@ nifti_image * Copy_Expec_to_Result_mask(PrecisionTYPE * Expec,
     nifti_set_filenames(Result,filename,0,0);
     nifti_update_dims_from_array(Result);
     nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
-    Result->data = (void *) calloc(Result->nvox, sizeof(PrecisionTYPE));
-    PrecisionTYPE * Resultdata = static_cast<PrecisionTYPE *>(Result->data);
+    Result->data = (void *) calloc(Result->nvox, sizeof(SegPrecisionTYPE));
+    SegPrecisionTYPE * Resultdata = static_cast<SegPrecisionTYPE *>(Result->data);
     for(unsigned int i=0; i<Result->nvox; i++){Resultdata[i]=0;}
 
     int * Short_2_Long_Indices_PRT = (int *) Short_2_Long_Indices;
@@ -2741,8 +2741,8 @@ nifti_image * Copy_Expec_to_Result_mask(PrecisionTYPE * Expec,
     Short_2_Long_Indices_PRT= (int *) Short_2_Long_Indices;
     for(int currclass=0; currclass<CurrSizes->numclass;currclass++){
 
-        PrecisionTYPE * Resultdata_class = &Resultdata[(currclass)*class_nvox];
-        PrecisionTYPE * Expec_PTR = &Expec[(currclass)*CurrSizes->numelmasked];
+        SegPrecisionTYPE * Resultdata_class = &Resultdata[(currclass)*class_nvox];
+        SegPrecisionTYPE * Expec_PTR = &Expec[(currclass)*CurrSizes->numelmasked];
         Short_2_Long_Indices_PRT= (int *) Short_2_Long_Indices;
 
         for(int i=0; i<CurrSizes->numelmasked; i++,Short_2_Long_Indices_PRT++,Expec_PTR++){
@@ -2753,7 +2753,7 @@ nifti_image * Copy_Expec_to_Result_mask(PrecisionTYPE * Expec,
 }
 
 
-nifti_image * Copy_Expec_to_Result(PrecisionTYPE * Expec,
+nifti_image * Copy_Expec_to_Result(SegPrecisionTYPE * Expec,
                                    nifti_image * T1,
                                    char * filename,
                                    ImageSize * CurrSizes){
@@ -2766,15 +2766,15 @@ nifti_image * Copy_Expec_to_Result(PrecisionTYPE * Expec,
     nifti_set_filenames(Result,filename,0,0);
     nifti_update_dims_from_array(Result);
     nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
-    Result->data = (void *) calloc(Result->nvox, sizeof(PrecisionTYPE));
-    PrecisionTYPE * Resultdata = static_cast<PrecisionTYPE *>(Result->data);
+    Result->data = (void *) calloc(Result->nvox, sizeof(SegPrecisionTYPE));
+    SegPrecisionTYPE * Resultdata = static_cast<SegPrecisionTYPE *>(Result->data);
     for(unsigned int i=0; i<Result->nvox; i++){Resultdata[i]=0;}
     int class_nvox=Result->nx*Result->ny*Result->nz;
 
     for(int currclass=0; currclass<CurrSizes->numclass;currclass++){
 
-        PrecisionTYPE * Resultdata_class = &Resultdata[(currclass)*class_nvox];
-        PrecisionTYPE * Expec_PTR = &Expec[(currclass)*CurrSizes->numel];
+        SegPrecisionTYPE * Resultdata_class = &Resultdata[(currclass)*class_nvox];
+        SegPrecisionTYPE * Expec_PTR = &Expec[(currclass)*CurrSizes->numel];
 
         for(int i=0; i<CurrSizes->numel; i++,Expec_PTR++){
             Resultdata_class[i]=*Expec_PTR;
@@ -3034,15 +3034,15 @@ nifti_image * Get_Bias_Corrected(float * BiasField,
     nifti_set_filenames(BiasCorrected,filename,0,0);
     nifti_update_dims_from_array(BiasCorrected);
     nifti_datatype_sizes(BiasCorrected->datatype,&BiasCorrected->nbyper,&BiasCorrected->swapsize);
-    BiasCorrected->data = (void *) calloc(BiasCorrected->nvox, sizeof(PrecisionTYPE));
-    PrecisionTYPE * BiasCorrected_PTR = static_cast<PrecisionTYPE *>(BiasCorrected->data);
-    PrecisionTYPE * T1data = static_cast<PrecisionTYPE *>(T1->data);
+    BiasCorrected->data = (void *) calloc(BiasCorrected->nvox, sizeof(SegPrecisionTYPE));
+    SegPrecisionTYPE * BiasCorrected_PTR = static_cast<SegPrecisionTYPE *>(BiasCorrected->data);
+    SegPrecisionTYPE * T1data = static_cast<SegPrecisionTYPE *>(T1->data);
     for(int multispec=0;multispec<CurrSizes->usize;multispec++){
 
-        BiasCorrected_PTR = static_cast<PrecisionTYPE *>(BiasCorrected->data);
+        BiasCorrected_PTR = static_cast<SegPrecisionTYPE *>(BiasCorrected->data);
         BiasCorrected_PTR = &BiasCorrected_PTR[multispec*BiasCorrected->nvox];
 
-        T1data = static_cast<PrecisionTYPE *>(T1->data);
+        T1data = static_cast<SegPrecisionTYPE *>(T1->data);
         T1data = &T1data[multispec*BiasCorrected->nvox];
 
         for( unsigned int i=0; i<BiasCorrected->nvox; i++){
@@ -3077,29 +3077,29 @@ nifti_image * Get_Bias_Corrected_mask(float * BiasFieldCoefs,
     nifti_set_filenames(BiasCorrected,filename,0,0);
     nifti_update_dims_from_array(BiasCorrected);
     nifti_datatype_sizes(BiasCorrected->datatype,&BiasCorrected->nbyper,&BiasCorrected->swapsize);
-    BiasCorrected->data = (void *) calloc(BiasCorrected->nvox, sizeof(PrecisionTYPE));
-    PrecisionTYPE * BiasCorrected_PTR = static_cast<PrecisionTYPE *>(BiasCorrected->data);
-    PrecisionTYPE * T1data = static_cast<PrecisionTYPE *>(T1->data);
+    BiasCorrected->data = (void *) calloc(BiasCorrected->nvox, sizeof(SegPrecisionTYPE));
+    SegPrecisionTYPE * BiasCorrected_PTR = static_cast<SegPrecisionTYPE *>(BiasCorrected->data);
+    SegPrecisionTYPE * T1data = static_cast<SegPrecisionTYPE *>(T1->data);
     float BiasField=0;
-    PrecisionTYPE currxpower[maxallowedpowerorder];
-    PrecisionTYPE currypower[maxallowedpowerorder];
-    PrecisionTYPE currzpower[maxallowedpowerorder];
+    SegPrecisionTYPE currxpower[maxallowedpowerorder];
+    SegPrecisionTYPE currypower[maxallowedpowerorder];
+    SegPrecisionTYPE currzpower[maxallowedpowerorder];
     float xpos=0.0f;
     float ypos=0.0f;
     float zpos=0.0f;
-    PrecisionTYPE not_point_five_times_dims_x=(0.5f*(PrecisionTYPE)CurrSizes->xsize);
-    PrecisionTYPE not_point_five_times_dims_y=(0.5f*(PrecisionTYPE)CurrSizes->ysize);
-    PrecisionTYPE not_point_five_times_dims_z=(0.5f*(PrecisionTYPE)CurrSizes->zsize);
-    PrecisionTYPE inv_not_point_five_times_dims_x=1.0f/(0.5f*(PrecisionTYPE)CurrSizes->xsize);
-    PrecisionTYPE inv_not_point_five_times_dims_y=1.0f/(0.5f*(PrecisionTYPE)CurrSizes->ysize);
-    PrecisionTYPE inv_not_point_five_times_dims_z=1.0f/(0.5f*(PrecisionTYPE)CurrSizes->zsize);
+    SegPrecisionTYPE not_point_five_times_dims_x=(0.5f*(SegPrecisionTYPE)CurrSizes->xsize);
+    SegPrecisionTYPE not_point_five_times_dims_y=(0.5f*(SegPrecisionTYPE)CurrSizes->ysize);
+    SegPrecisionTYPE not_point_five_times_dims_z=(0.5f*(SegPrecisionTYPE)CurrSizes->zsize);
+    SegPrecisionTYPE inv_not_point_five_times_dims_x=1.0f/(0.5f*(SegPrecisionTYPE)CurrSizes->xsize);
+    SegPrecisionTYPE inv_not_point_five_times_dims_y=1.0f/(0.5f*(SegPrecisionTYPE)CurrSizes->ysize);
+    SegPrecisionTYPE inv_not_point_five_times_dims_z=1.0f/(0.5f*(SegPrecisionTYPE)CurrSizes->zsize);
     int ind=0;
 
     for(int multispec=0;multispec<CurrSizes->usize;multispec++){
 
-        BiasCorrected_PTR = static_cast<PrecisionTYPE *>(BiasCorrected->data);
+        BiasCorrected_PTR = static_cast<SegPrecisionTYPE *>(BiasCorrected->data);
         BiasCorrected_PTR = &BiasCorrected_PTR[multispec*CurrSizes->numel];
-        T1data = static_cast<PrecisionTYPE *>(T1->data);
+        T1data = static_cast<SegPrecisionTYPE *>(T1->data);
         T1data = &T1data[multispec*CurrSizes->numel];
 
         float * BiasFieldCoefs_multispec = &BiasFieldCoefs[multispec*UsedBasisFunctions];
@@ -3115,9 +3115,9 @@ nifti_image * Get_Bias_Corrected_mask(float * BiasFieldCoefs,
             for (int iy=0; iy<CurrSizes->ysize; iy++) {
                 for (int ix=0; ix<CurrSizes->xsize; ix++) {
                     BiasField=0.0f;
-                    xpos=(((PrecisionTYPE)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x);
-                    ypos=(((PrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y);
-                    zpos=(((PrecisionTYPE)iz-not_point_five_times_dims_z)*inv_not_point_five_times_dims_z);
+                    xpos=(((SegPrecisionTYPE)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x);
+                    ypos=(((SegPrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y);
+                    zpos=(((SegPrecisionTYPE)iz-not_point_five_times_dims_z)*inv_not_point_five_times_dims_z);
                     get_xyz_pow_int(xpos, ypos, zpos, currxpower, currypower, currzpower, biasOrder);
                     ind=0;
                     for(int order=0; order<=biasOrder; order++){
@@ -3840,3 +3840,246 @@ template int seg_changeDatatype<float>(nifti_image *);
 template int seg_changeDatatype<double>(nifti_image *);
 /* *************************************************************** */
 
+
+/* *************************************************************** */
+template <class DTYPE>
+void seg_mat44_mul(mat44 *mat,
+                    DTYPE *in,
+                    DTYPE *out)
+{
+    out[0]=mat->m[0][0]*in[0] + mat->m[0][1]*in[1] + mat->m[0][2]*in[2] + mat->m[0][3];
+    out[1]=mat->m[1][0]*in[0] + mat->m[1][1]*in[1] + mat->m[1][2]*in[2] + mat->m[1][3];
+    out[2]=mat->m[2][0]*in[0] + mat->m[2][1]*in[1] + mat->m[2][2]*in[2] + mat->m[2][3];
+    return;
+}
+template void seg_mat44_mul<float>(mat44 *, float*, float*);
+template void seg_mat44_mul<double>(mat44 *, double*, double*);
+/* *************************************************************** */
+template<class SourceTYPE, class FieldTYPE>
+void Resample_NN_with_weights(  nifti_image *sourceImage,
+                                nifti_image *deformationField,
+                                nifti_image *resultImage,
+                                nifti_image *resultImageWeights,
+                                int *mask,
+                                float bgValue)
+{
+    // The resampling scheme is applied along each time
+    SourceTYPE *sourceIntensityPtr = static_cast<SourceTYPE *>(sourceImage->data);
+    SourceTYPE *resultIntensityPtr = (resultImage!=NULL)?static_cast<SourceTYPE *>(resultImage->data):NULL;
+    FieldTYPE * resultWeightsPtr = (resultImageWeights!=NULL)?static_cast<FieldTYPE *>(resultImageWeights->data):NULL;
+    FieldTYPE *deformationFieldPtrX = static_cast<FieldTYPE *>(deformationField->data);
+
+    int targetVoxelNumber = (resultImage!=NULL)?(resultImage->nx*resultImage->ny*resultImage->nz):(resultImageWeights->nx*resultImageWeights->ny*resultImageWeights->nz);
+    //int targetVoxelNumber_x = (resultImage!=NULL)?(resultImage->nx):(resultImageWeights->nx);
+    //int targetVoxelNumber_y = (resultImage!=NULL)?(resultImage->ny):(resultImageWeights->ny);
+    //int targetVoxelNumber_z = (resultImage!=NULL)?(resultImage->nz):(resultImageWeights->nz);
+
+    FieldTYPE *deformationFieldPtrY = &deformationFieldPtrX[targetVoxelNumber];
+    FieldTYPE *deformationFieldPtrZ = &deformationFieldPtrY[targetVoxelNumber];
+
+    int *maskPtr = (mask!=NULL)?&mask[0]:NULL;
+    mat44 *sourceIJKMatrix;
+    if(sourceImage->sform_code>0)
+        sourceIJKMatrix=&(sourceImage->sto_ijk);
+    else sourceIJKMatrix=&(sourceImage->qto_ijk);
+
+
+    SourceTYPE *resultIntensity = (resultIntensityPtr!=NULL)?&resultIntensityPtr[0]:NULL;
+    FieldTYPE *resultWeights = (resultWeightsPtr!=NULL)?&resultWeightsPtr[0]:NULL;
+    SourceTYPE *sourceIntensity = &sourceIntensityPtr[0];
+
+    FieldTYPE xBasis[2], yBasis[2], zBasis[2], relative;
+    int a, b, c, Y, Z, previous[3], index;
+    SourceTYPE *zPointer, *xyzPointer;
+    FieldTYPE xTempNewValue, world[3], position[3];
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+    private(index, world, position, previous, xBasis, yBasis, zBasis, relative, \
+    a, b, c, Y, Z, zPointer, xyzPointer, xTempNewValue) \
+    shared(sourceIntensity, resultIntensity,resultWeights, targetVoxelNumber, sourceVoxelNumber, \
+    deformationFieldPtrX, deformationFieldPtrY, deformationFieldPtrZ, maskPtr, \
+    sourceIJKMatrix, sourceImage, bgValue)
+#endif // _OPENMP
+    for(index=0;index<targetVoxelNumber; index++){
+        if(maskPtr==NULL || maskPtr[index]>-1){
+            world[0]=(FieldTYPE) deformationFieldPtrX[index];
+            world[1]=(FieldTYPE) deformationFieldPtrY[index];
+            world[2]=(FieldTYPE) deformationFieldPtrZ[index];
+
+            /* real -> voxel; source space */
+            seg_mat44_mul(sourceIJKMatrix, world, position);
+            if( position[0]>=0.f && position[0]<(FieldTYPE)(sourceImage->nx-1) && position[1]>=0.f && position[1]<(FieldTYPE)(sourceImage->ny-1) && position[2]>=0.f && position[2]<(FieldTYPE)(sourceImage->nz-1) ){
+                previous[0] = (int)position[0];
+                previous[1] = (int)position[1];
+                previous[2] = (int)position[2];
+                // basis values along the x axis
+                relative=position[0]-(FieldTYPE)previous[0];
+                if(relative<0) relative=0.0; // rounding error correction
+                xBasis[0]= (FieldTYPE)(1.0-relative);
+                xBasis[1]= relative;
+                // basis values along the y axis
+                relative=position[1]-(FieldTYPE)previous[1];
+                if(relative<0) relative=0.0; // rounding error correction
+                yBasis[0]= (FieldTYPE)(1.0-relative);
+                yBasis[1]= relative;
+                // basis values along the z axis
+                relative=position[2]-(FieldTYPE)previous[2];
+                if(relative<0) relative=0.0; // rounding error correction
+                zBasis[0]= (FieldTYPE)(1.0-relative);
+                zBasis[1]= relative;
+                int neighindex=0;
+                for(c=0; c<2; c++){
+                    Z= previous[2]+c;
+                    zPointer = &sourceIntensity[Z*sourceImage->nx*sourceImage->ny];
+                    for(b=0; b<2; b++){
+                        Y= previous[1]+b;
+                        xyzPointer = &zPointer[Y*sourceImage->nx+previous[0]];
+                        xTempNewValue=0.0;
+                        for(a=0; a<2; a++){
+                            if(resultIntensity!=NULL)
+                                resultIntensity[index+targetVoxelNumber*neighindex]=(SourceTYPE)(*xyzPointer);
+                            if(resultWeights!=NULL)
+                                resultWeights[index+targetVoxelNumber*neighindex]=(float)(xBasis[a]*yBasis[b]*zBasis[c]);
+                            xyzPointer++;
+                            neighindex++;
+                        }
+                    }
+                }
+            }
+            else {
+                for(int neighindex=0; neighindex<8; neighindex++){
+                    if(resultIntensity!=NULL)
+                        resultIntensity[index+targetVoxelNumber*neighindex]=bgValue;
+                    if(resultWeights!=NULL)
+                        resultWeights[index+targetVoxelNumber*neighindex]=bgValue;
+                }
+            }
+        }
+    }
+}
+
+template void Resample_NN_with_weights<unsigned char,float>(nifti_image *sourceImage,nifti_image *deformationField,nifti_image *resultImage,nifti_image *resultImageWeights,int *mask,float bgValue);
+
+
+int get_all_files_and_folders_in_dir (string dir, vector<string> &files , vector<string> &folders)
+{
+    DIR *dp;
+    struct dirent *dirp;
+    if((dp  = opendir(dir.c_str())) == NULL) {
+        cout << "Error(" << errno << ") opening " << dir << endl;
+        return errno;
+    }
+
+    while ((dirp = readdir(dp)) != NULL) {
+        if(dirp->d_name[0]!='.'){
+            if(dirp->d_type==8){
+                files.push_back(dir+string("/")+string(dirp->d_name));
+            }
+            else{
+                folders.push_back(dir+string("/")+string(dirp->d_name));
+            }
+        }
+    }
+    closedir(dp);
+    return 0;
+}
+int get_all_files_that_match_string (string dir, vector<string> &files , string string_to_match)
+{
+    DIR *dp;
+    struct dirent *dirp;
+    if((dp  = opendir(dir.c_str())) == NULL) {
+        cout << "Error(" << errno << ") opening " << dir << endl;
+        return errno;
+    }
+
+    while ((dirp = readdir(dp)) != NULL) {
+        if(dirp->d_name[0]!='.'){
+            if(dirp->d_type==8){
+                string curstring=dirp->d_name;
+                if(curstring.find(string_to_match)>0){
+                    files.push_back(dir+string("/")+string(dirp->d_name));
+                }
+            }
+            //            else{
+            //                folders.push_back(dir+string("/")+string(dirp->d_name));
+            //            }
+        }
+    }
+    closedir(dp);
+    return 0;
+}
+int get_all_files_that_match_2_strings(string dir, vector<string> &files , string string_to_match, string string_to_match2)
+{
+    DIR *dp;
+    struct dirent *dirp;
+    if((dp  = opendir(dir.c_str())) == NULL) {
+        cout << "Error(" << errno << ") opening " << dir << endl;
+        return errno;
+    }
+    while ((dirp = readdir(dp)) != NULL) {
+        if(dirp->d_name[0]!='.'){
+            if(dirp->d_type==8){
+                string curstring=dirp->d_name;
+                if((bool)(curstring.find(string_to_match)!=string::npos) & (bool)(curstring.find(string_to_match2)!=string::npos)){
+                    files.push_back(dir+string("/")+string(dirp->d_name));
+                }
+            }
+            //            else{
+            //                folders.push_back(dir+string("/")+string(dirp->d_name));
+            //            }
+        }
+    }
+    closedir(dp);
+    return 0;
+}
+int get_all_files_in_dir_without_extension(string dir, vector<string> &files)
+{
+    DIR *dp;
+    struct dirent *dirp;
+    if((dp  = opendir(dir.c_str())) == NULL) {
+        cout << "Error(" << errno << ") opening " << dir << endl;
+        return errno;
+    }
+    while ((dirp = readdir(dp)) != NULL) {
+        if(dirp->d_name[0]!='.'){
+            if(dirp->d_type==8){
+                string tmpstring=dir+string("/")+string(dirp->d_name);
+                tmpstring.erase(tmpstring.find_first_of(".",tmpstring.find_last_of("/")),tmpstring.length());
+                files.push_back(tmpstring);
+            }
+        }
+    }
+    closedir(dp);
+    return 0;
+}
+float * getHeatWij(float * DistanceMatrix,int size_matrix, float temperature){
+    float * UpdatedDistanceMatrix= new float [size_matrix*size_matrix];
+
+    for(int i=0; i<size_matrix; i++){
+        for(int j=0; j<size_matrix; j++){
+            UpdatedDistanceMatrix[i*size_matrix+j]=expf(-((float)DistanceMatrix[i*size_matrix+j])/temperature);
+        }
+    }
+    return UpdatedDistanceMatrix;
+}
+float * getNN(float * DistanceMatrix,int size_matrix,int sizeneig){
+    float * UpdatedDistanceMatrix= new float [size_matrix*size_matrix];
+    float * currcosts= new float [size_matrix];
+    int * ranking;
+    for(int i=0; i<size_matrix; i++){
+        for(int j=0; j<size_matrix; j++){
+            currcosts[j]=(float)DistanceMatrix[j+i*size_matrix];
+        }
+        ranking=quickSort_order(currcosts,size_matrix);
+        for(int j=0; j<((sizeneig+1)>size_matrix?size_matrix:(sizeneig+1)); j++){
+            UpdatedDistanceMatrix[i*size_matrix+ranking[j]]=(float)currcosts[j];
+        }
+        if((sizeneig+1)<size_matrix){
+            for(int j=(sizeneig); j<size_matrix; j++){
+                UpdatedDistanceMatrix[i*size_matrix+ranking[j]]=(float)100000.0f;
+            }
+        }
+        delete [] ranking;
+    }
+    return UpdatedDistanceMatrix;
+}

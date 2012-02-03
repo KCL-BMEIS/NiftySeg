@@ -1,12 +1,12 @@
 #include "_seg_MRF.h"
 
 
-void MRFregularization_mask(const PrecisionTYPE * Expec,
-                            const PrecisionTYPE * G,
-                            const PrecisionTYPE * H,
-                            PrecisionTYPE * MRFbeta,
-                            PrecisionTYPE * MRFprior,
-                            PrecisionTYPE * AtlasPrior,
+void MRFregularization_mask(const SegPrecisionTYPE * Expec,
+                            const SegPrecisionTYPE * G,
+                            const SegPrecisionTYPE * H,
+                            SegPrecisionTYPE * MRFbeta,
+                            SegPrecisionTYPE * MRFprior,
+                            SegPrecisionTYPE * AtlasPrior,
                             int * Long_2_Short_Indices,
                             int * Short_2_Long_Indices,
                             ImageSize * CurrSizes,
@@ -17,7 +17,7 @@ void MRFregularization_mask(const PrecisionTYPE * Expec,
     int numclass=CurrSizes->numclass;
 
     if(MRFflag){
-        PrecisionTYPE * MRFpriorPtr = (PrecisionTYPE *)MRFprior;
+        SegPrecisionTYPE * MRFpriorPtr = (SegPrecisionTYPE *)MRFprior;
         int * Long_2_Short_IndicesPtr = (int *)Long_2_Short_Indices;
         int col_size, plane_size;
         int maxiy, maxix, maxiz;
@@ -44,11 +44,11 @@ void MRFregularization_mask(const PrecisionTYPE * Expec,
 #pragma omp parallel for shared(Expec,MRFprior,Long_2_Short_IndicesPtr)
 #endif
         for (int iz=1; iz<maxiz-1; iz++) {
-            PrecisionTYPE Sum_Temp_MRF_Class_Expect;
+            SegPrecisionTYPE Sum_Temp_MRF_Class_Expect;
             register int currclass;
-            PrecisionTYPE Temp_MRF_Class_Expect[max_numbclass];
-            PrecisionTYPE Gplane[max_numbclass];
-            PrecisionTYPE Hplane[max_numbclass];
+            SegPrecisionTYPE Temp_MRF_Class_Expect[max_numbclass];
+            SegPrecisionTYPE Gplane[max_numbclass];
+            SegPrecisionTYPE Hplane[max_numbclass];
             int indexCentre, indexWest, indexEast, indexSouth, indexNorth, indexTop, indexBottom;
 
             for (int iy=1; iy<maxiy-1; iy++) {
@@ -113,12 +113,12 @@ void MRFregularization_mask(const PrecisionTYPE * Expec,
 }
 
 
-void MRFregularization(const PrecisionTYPE * Expec,
-                       const PrecisionTYPE * G,
-                       const PrecisionTYPE * H,
-                       PrecisionTYPE * MRFbeta,
-                       PrecisionTYPE * MRFprior,
-                       PrecisionTYPE * AtlasPrior,
+void MRFregularization(const SegPrecisionTYPE * Expec,
+                       const SegPrecisionTYPE * G,
+                       const SegPrecisionTYPE * H,
+                       SegPrecisionTYPE * MRFbeta,
+                       SegPrecisionTYPE * MRFprior,
+                       SegPrecisionTYPE * AtlasPrior,
                        ImageSize * CurrSizes,
                        bool MRFflag,
                        int verbose_level)
@@ -128,19 +128,19 @@ void MRFregularization(const PrecisionTYPE * Expec,
     int numclass=CurrSizes->numclass;
 
     if(MRFflag){
-        PrecisionTYPE * MRFpriorPtr = (PrecisionTYPE *)MRFprior;
+        SegPrecisionTYPE * MRFpriorPtr = (SegPrecisionTYPE *)MRFprior;
         int col_size, plane_size, indexCentre, indexWest, indexEast, indexSouth, indexNorth, indexTop, indexBottom;
         int ix, iy, iz,maxiy, maxix, maxiz, neighbourclass;
-        PrecisionTYPE Sum_Temp_MRF_Class_Expect;
+        SegPrecisionTYPE Sum_Temp_MRF_Class_Expect;
         col_size = (int)(CurrSizes->xsize);
         plane_size = (int)(CurrSizes->xsize)*(CurrSizes->ysize);
 
         maxix = (int)(CurrSizes->xsize);
         maxiy = (int)(CurrSizes->ysize);
         maxiz = (int)(CurrSizes->zsize);
-        PrecisionTYPE Gplane[max_numbclass];
-        PrecisionTYPE Hplane[max_numbclass];
-        PrecisionTYPE Temp_MRF_Class_Expect[max_numbclass];
+        SegPrecisionTYPE Gplane[max_numbclass];
+        SegPrecisionTYPE Hplane[max_numbclass];
+        SegPrecisionTYPE Temp_MRF_Class_Expect[max_numbclass];
         if(verbose_level>0){
             cout << "Optimising MRF"<<endl;
             flush(cout);
@@ -211,12 +211,12 @@ void MRFregularization(const PrecisionTYPE * Expec,
 
 
 
-void MRFregularization_mask2D(const PrecisionTYPE * Expec,
-                              const PrecisionTYPE * G,
-                              const PrecisionTYPE * H,
-                              PrecisionTYPE * MRFbeta,
-                              PrecisionTYPE * MRFprior,
-                              PrecisionTYPE * AtlasPrior,
+void MRFregularization_mask2D(const SegPrecisionTYPE * Expec,
+                              const SegPrecisionTYPE * G,
+                              const SegPrecisionTYPE * H,
+                              SegPrecisionTYPE * MRFbeta,
+                              SegPrecisionTYPE * MRFprior,
+                              SegPrecisionTYPE * AtlasPrior,
                               int * Long_2_Short_Indices,
                               int * Short_2_Long_Indices,
                               ImageSize * CurrSizes,
@@ -227,16 +227,16 @@ void MRFregularization_mask2D(const PrecisionTYPE * Expec,
     int numelmasked=CurrSizes->numelmasked;
     int numclass=CurrSizes->numclass;
     if(MRFflag){
-        PrecisionTYPE * MRFpriorPtr = (PrecisionTYPE *)MRFprior;
+        SegPrecisionTYPE * MRFpriorPtr = (SegPrecisionTYPE *)MRFprior;
         int * Long_2_Short_IndicesPtr = (int *)Long_2_Short_Indices;
         int col_size, indexCentre, indexWest, indexEast, indexSouth, indexNorth;
         int ix, iy,maxiy, maxix, neighbourclass;
-        PrecisionTYPE Sum_Temp_MRF_Class_Expect;
+        SegPrecisionTYPE Sum_Temp_MRF_Class_Expect;
         col_size = (int)(CurrSizes->xsize);
         maxix = (int)(CurrSizes->xsize);
         maxiy = (int)(CurrSizes->ysize);
-        PrecisionTYPE Gplane[max_numbclass];
-        PrecisionTYPE Temp_MRF_Class_Expect[max_numbclass];
+        SegPrecisionTYPE Gplane[max_numbclass];
+        SegPrecisionTYPE Temp_MRF_Class_Expect[max_numbclass];
         if(verbose_level>0){
             cout << "Optimising MRF"<<endl;
             flush(cout);
@@ -305,12 +305,12 @@ void MRFregularization_mask2D(const PrecisionTYPE * Expec,
 }
 
 
-void MRFregularization2D(const PrecisionTYPE * Expec,
-                         const PrecisionTYPE * G,
-                         const PrecisionTYPE * H,
-                         PrecisionTYPE * MRFbeta,
-                         PrecisionTYPE * MRFprior,
-                         PrecisionTYPE * AtlasPrior,
+void MRFregularization2D(const SegPrecisionTYPE * Expec,
+                         const SegPrecisionTYPE * G,
+                         const SegPrecisionTYPE * H,
+                         SegPrecisionTYPE * MRFbeta,
+                         SegPrecisionTYPE * MRFprior,
+                         SegPrecisionTYPE * AtlasPrior,
                          ImageSize * CurrSizes,
                          bool MRFflag,
                          int verbose_level)
@@ -319,15 +319,15 @@ void MRFregularization2D(const PrecisionTYPE * Expec,
     int numel=CurrSizes->numel;
     int numclass=CurrSizes->numclass;
     if(MRFflag){
-        PrecisionTYPE * MRFpriorPtr = (PrecisionTYPE *)MRFprior;
+        SegPrecisionTYPE * MRFpriorPtr = (SegPrecisionTYPE *)MRFprior;
         int col_size, indexCentre, indexWest, indexEast, indexSouth, indexNorth;
         int ix, iy,maxiy, maxix, neighbourclass;
-        PrecisionTYPE Sum_Temp_MRF_Class_Expect;
+        SegPrecisionTYPE Sum_Temp_MRF_Class_Expect;
         col_size = (int)(CurrSizes->xsize);
         maxix = (int)(CurrSizes->xsize);
         maxiy = (int)(CurrSizes->ysize);
-        PrecisionTYPE Gplane[max_numbclass];
-        PrecisionTYPE Temp_MRF_Class_Expect[max_numbclass];
+        SegPrecisionTYPE Gplane[max_numbclass];
+        SegPrecisionTYPE Temp_MRF_Class_Expect[max_numbclass];
         if(verbose_level>0){
             cout << "Optimising MRF"<<endl;
             flush(cout);

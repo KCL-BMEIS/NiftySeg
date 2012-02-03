@@ -23,21 +23,21 @@ nifti_image * LoAd_Segment(nifti_image * T1, nifti_image * Mask, nifti_image * P
     FLAGS * flags = new FLAGS [1]();
     flags->improv_phase=0;
     flags->out=1;
-    flags->oldloglik=(PrecisionTYPE)1.0;
-    flags->loglik=(PrecisionTYPE)2.0;
+    flags->oldloglik=(SegPrecisionTYPE)1.0;
+    flags->loglik=(SegPrecisionTYPE)2.0;
     flags->prior_relax=!((segment_param->relax_factor)>0);
     flags->do_pv_modeling=segment_param->flag_PV_model;
     flags->pv_modeling_on=0;
     flags->sg_delineation=!(segment_param->flag_SG_deli);
 
     // Creating G and H matrixes
-    PrecisionTYPE be=segment_param->MRF_strength*1.0f;
-    PrecisionTYPE ba=segment_param->MRF_strength*5.0f;
-    PrecisionTYPE ratioGH=1.0f;
+    SegPrecisionTYPE be=segment_param->MRF_strength*1.0f;
+    SegPrecisionTYPE ba=segment_param->MRF_strength*5.0f;
+    SegPrecisionTYPE ratioGH=1.0f;
 
     // Alocate more than enough space for G and H even if the PV option is active
-    PrecisionTYPE G[PV_numbclass*PV_numbclass]={0.0};
-    PrecisionTYPE H[PV_numbclass*PV_numbclass]={0.0};
+    SegPrecisionTYPE G[PV_numbclass*PV_numbclass]={0.0};
+    SegPrecisionTYPE H[PV_numbclass*PV_numbclass]={0.0};
     Create_GH_5class(G,H,ba,be,ratioGH,segment_param);
 
     // Sanity check... Normalizing Priors and removing NaN
@@ -52,20 +52,20 @@ nifti_image * LoAd_Segment(nifti_image * T1, nifti_image * Mask, nifti_image * P
 
     // if PV modeling is on, prealocate extra memory for the 2 PV classes
 
-    PrecisionTYPE * Expec = Create_cArray_from_Prior_mask(Mask,Priors,CurrSizes->numclass,segment_param->flag_PV_model);
-    PrecisionTYPE * ShortPrior = Create_cArray_from_Prior_mask(Mask,Priors,CurrSizes->numclass,segment_param->flag_PV_model);
-    PrecisionTYPE * MRF = new PrecisionTYPE[CurrSizes->numelmasked*(CurrSizes->numclass+(int)(segment_param->flag_PV_model*2))]();
+    SegPrecisionTYPE * Expec = Create_cArray_from_Prior_mask(Mask,Priors,CurrSizes->numclass,segment_param->flag_PV_model);
+    SegPrecisionTYPE * ShortPrior = Create_cArray_from_Prior_mask(Mask,Priors,CurrSizes->numclass,segment_param->flag_PV_model);
+    SegPrecisionTYPE * MRF = new SegPrecisionTYPE[CurrSizes->numelmasked*(CurrSizes->numclass+(int)(segment_param->flag_PV_model*2))]();
     for(int i=0; i<(CurrSizes->numelmasked*(CurrSizes->numclass+(int)(segment_param->flag_PV_model*2))); i++){
-        MRF[i]=(PrecisionTYPE)(1.0);
+        MRF[i]=(SegPrecisionTYPE)(1.0);
     }
-    PrecisionTYPE * BiasField = new PrecisionTYPE[CurrSizes->numelmasked]();
-    PrecisionTYPE * BiasFieldCoefs = new PrecisionTYPE[((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3)/3)]();
+    SegPrecisionTYPE * BiasField = new SegPrecisionTYPE[CurrSizes->numelmasked]();
+    SegPrecisionTYPE * BiasFieldCoefs = new SegPrecisionTYPE[((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3)/3)]();
     for(int i=0; i<CurrSizes->numelmasked; i++){
         BiasField[i]=0;
     }
-    PrecisionTYPE M [PV_numbclass]={0.0f};
-    PrecisionTYPE V [PV_numbclass]={0.0f};
-    PrecisionTYPE * MRF_Beta =NULL;
+    SegPrecisionTYPE M [PV_numbclass]={0.0f};
+    SegPrecisionTYPE V [PV_numbclass]={0.0f};
+    SegPrecisionTYPE * MRF_Beta =NULL;
 
 
     // Initialize
@@ -101,7 +101,7 @@ nifti_image * LoAd_Segment(nifti_image * T1, nifti_image * Mask, nifti_image * P
         calcM_mask_LoAd(T1,Expec,BiasField,Short_2_Long_Indices,M,V,CurrSizes,segment_param->verbose_level,flags->pv_modeling_on);
 
         // Preform Segmentation Refinement Steps or Exit
-        if((((flags->loglik-flags->oldloglik)/fabs(flags->oldloglik))<(PrecisionTYPE)(0.005) && iterchange>3) || iter>segment_param->maxIteration){
+        if((((flags->loglik-flags->oldloglik)/fabs(flags->oldloglik))<(SegPrecisionTYPE)(0.005) && iterchange>3) || iter>segment_param->maxIteration){
             switch(flags->improv_phase){
             case 0: // Activate BC
                 if(BFupdate==0 || CurrentBF<segment_param->bias_order){
@@ -146,10 +146,10 @@ nifti_image * LoAd_Segment(nifti_image * T1, nifti_image * Mask, nifti_image * P
             case 4: // Run Sulci and Gyri deliniation
                 if(flags->sg_delineation==false && flags->do_pv_modeling==true){
                     if(MRF_Beta==NULL){
-                        MRF_Beta=new PrecisionTYPE [CurrSizes->numelmasked]();
+                        MRF_Beta=new SegPrecisionTYPE [CurrSizes->numelmasked]();
                     }
 
-                    if((flags->loglik-last_SGcorrect_loglik)/fabs(last_SGcorrect_loglik)<(PrecisionTYPE)(0.05) ){
+                    if((flags->loglik-last_SGcorrect_loglik)/fabs(last_SGcorrect_loglik)<(SegPrecisionTYPE)(0.05) ){
                         flags->sg_delineation=true;
                         flags->out=false;
                     }

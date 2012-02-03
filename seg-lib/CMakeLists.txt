@@ -8,6 +8,10 @@
         LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
         ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
+    INSTALL(FILES ${NAME}.h DESTINATION include)
+    INSTALL(FILES _seg_common.h DESTINATION include)
+    INSTALL(FILES _seg_matrix.h DESTINATION include)
+
     SET(NAME _seg_MRF)
     ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} ${NAME}.h ${NAME}.cpp _seg_common.h )
     INSTALL(TARGETS ${NAME}
@@ -15,6 +19,8 @@
             LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
+    INSTALL(FILES ${NAME}.h DESTINATION include)
+
     SET(NAME _seg_BiasCorrection)
     ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} ${NAME}.h ${NAME}.cpp)
     INSTALL(TARGETS ${NAME}
@@ -22,6 +28,8 @@
             LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
+    INSTALL(FILES ${NAME}.h DESTINATION include)
+
     SET(NAME _seg_FMM)
     ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} ${NAME}.h ${NAME}.cpp)
     INSTALL(TARGETS ${NAME}
@@ -29,6 +37,8 @@
             LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
+    INSTALL(FILES ${NAME}.h DESTINATION include)
+
     SET(NAME _seg_LoAd)
     ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} ${NAME}.h ${NAME}.cpp)
     TARGET_LINK_LIBRARIES(${NAME} _seg_nifti _seg_tools _seg_FMM _seg_Topo _seg_MRF)
@@ -37,6 +47,8 @@
             LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
+    INSTALL(FILES ${NAME}.h DESTINATION include)
+
     SET(NAME _seg_EM)
     ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} ${NAME}.h ${NAME}.cpp)
     TARGET_LINK_LIBRARIES(${NAME} _seg_nifti _seg_tools _seg_FMM _seg_Topo _seg_MRF)
@@ -45,6 +57,8 @@
             LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
+    INSTALL(FILES ${NAME}.h DESTINATION include)
+
     SET(NAME _seg_LabFusion)
     ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} ${NAME}.h ${NAME}.cpp _seg_tools)
     TARGET_LINK_LIBRARIES(${NAME} _seg_nifti _seg_tools _seg_FMM _seg_Topo)
@@ -53,6 +67,7 @@
             LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
+    INSTALL(FILES ${NAME}.h DESTINATION include)
 
     SET(NAME _seg_Topo)
     ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} ${NAME}.h ${NAME}.cpp)
@@ -61,4 +76,5 @@
             LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
+   INSTALL(FILES ${NAME}.h DESTINATION include)
 

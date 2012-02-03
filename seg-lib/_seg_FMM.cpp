@@ -16,8 +16,8 @@ float * DoubleEuclideanDistance_3D(bool *LablePtr, float * speedptr,
     neighbour6[5]=CurrSizes->xsize*CurrSizes->ysize;
     float speed=1;
 
-    typedef std::multimap <PrecisionTYPE, int> MapLengthType;
-    typedef std::pair <PrecisionTYPE, int> PairType;
+    typedef std::multimap <SegPrecisionTYPE, int> MapLengthType;
+    typedef std::pair <SegPrecisionTYPE, int> PairType;
 
 
     MapLengthType MapLength;
@@ -75,7 +75,7 @@ float * DoubleEuclideanDistance_3D(bool *LablePtr, float * speedptr,
         }
     }
 
-    PrecisionTYPE oldGeoTime, newGeoTime;
+    SegPrecisionTYPE oldGeoTime, newGeoTime;
     while(MapLength.empty()==false){
         first_element=MapLength.begin();
         centre_index=first_element->second;
@@ -203,9 +203,9 @@ float * DoubleEuclideanDistance_3D(bool *LablePtr, float * speedptr,
 }
 
 void FMM(bool *Seeds,
-         PrecisionTYPE *SpeedI,
-         PrecisionTYPE *GeoTime,
-         PrecisionTYPE MaxGeoTime,
+         SegPrecisionTYPE *SpeedI,
+         SegPrecisionTYPE *GeoTime,
+         SegPrecisionTYPE MaxGeoTime,
          int * L2S,
          int * S2L,
          ImageSize * CurrSizes){
@@ -225,8 +225,8 @@ void FMM(bool *Seeds,
 
 
 
-    typedef std::multimap <PrecisionTYPE, int> MapLengthType;
-    typedef std::pair <PrecisionTYPE, int> PairType;
+    typedef std::multimap <SegPrecisionTYPE, int> MapLengthType;
+    typedef std::pair <SegPrecisionTYPE, int> PairType;
 
 
     MapLengthType MapLength;
@@ -280,7 +280,7 @@ void FMM(bool *Seeds,
         }
     }
 
-    PrecisionTYPE oldGeoTime, newGeoTime;
+    SegPrecisionTYPE oldGeoTime, newGeoTime;
     while(MapLength.empty()==false){
         first_element=MapLength.begin();
         centre_short_index=first_element->second;
@@ -327,17 +327,17 @@ void FMM(bool *Seeds,
 // ********************************** OTHER FUNCTIONS  **********************************
 // **************************************************************************************
 
-PrecisionTYPE CalcGeoTime(int index,
-                          PrecisionTYPE *GeoTime,
-                          PrecisionTYPE * SpeedI,
+SegPrecisionTYPE CalcGeoTime(int index,
+                          SegPrecisionTYPE *GeoTime,
+                          SegPrecisionTYPE * SpeedI,
                           int * neighbour,
                           int * L2S,
-                          PrecisionTYPE Max){
+                          SegPrecisionTYPE Max){
 
-    PrecisionTYPE average=0.0f;
+    SegPrecisionTYPE average=0.0f;
     int index_neighbour_short;
-    PrecisionTYPE counter=0.0f;
-    PrecisionTYPE a=0.0f, c=0.0f;
+    SegPrecisionTYPE counter=0.0f;
+    SegPrecisionTYPE a=0.0f, c=0.0f;
 
     int neighbour_index[2]={0};
     for(int i=0; i<6; i+=2){
@@ -373,16 +373,16 @@ PrecisionTYPE CalcGeoTime(int index,
 
 
 
-PrecisionTYPE CalcGeoTime_long(int index,
-                               PrecisionTYPE *GeoTime,
-                               PrecisionTYPE SpeedI,
+SegPrecisionTYPE CalcGeoTime_long(int index,
+                               SegPrecisionTYPE *GeoTime,
+                               SegPrecisionTYPE SpeedI,
                                int * neighbour,
-                               PrecisionTYPE Max){
+                               SegPrecisionTYPE Max){
 
-    PrecisionTYPE average=0.0f;
+    SegPrecisionTYPE average=0.0f;
     int neighbour_index_true;
-    PrecisionTYPE counter=0.0f;
-    PrecisionTYPE a=0.0f, c=0.0f;
+    SegPrecisionTYPE counter=0.0f;
+    SegPrecisionTYPE a=0.0f, c=0.0f;
 
     int neighbour_index[2]={0};
     for(int i=0; i<6; i+=2){
@@ -416,8 +416,8 @@ PrecisionTYPE CalcGeoTime_long(int index,
     }
 }
 
-void TransformGeoTime(PrecisionTYPE *GeoTime,
-                      PrecisionTYPE MaxGeoTime,
+void TransformGeoTime(SegPrecisionTYPE *GeoTime,
+                      SegPrecisionTYPE MaxGeoTime,
                       int * L2S,
                       int * S2L,
                       ImageSize * CurrSizes){

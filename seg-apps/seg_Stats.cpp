@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <fstream>
 using namespace std;
-#define PrecisionTYPE float
+#define SegPrecisionTYPE float
 
 
 void Usage(char *exec)
@@ -48,7 +48,7 @@ int main(int argc, char **argv)
         // **************************            ---------          *****************************
         // **************************            CALC DICE          *****************************
         // **************************            ---------          *****************************
-        if(strcmp(argv[i], "-Dice") == 0 & (i+1)<argc){
+        if(strcmp(argv[i], "-Dice") == 0 && (i+1)<argc){
             filenames[1] = argv[++i];
             nifti_image * Images[2];
             for(int i=0; i<2; i++){
@@ -103,7 +103,7 @@ int main(int argc, char **argv)
         // **************************            Test Vol          *****************************
         // **************************            ---------          *****************************
 
-        else if(strcmp(argv[i], "-Test") == 0 & (i)<argc){
+        else if(strcmp(argv[i], "-Test") == 0 && (i)<argc){
 
             time_t start,end;
             time(&start);
@@ -145,7 +145,7 @@ int main(int argc, char **argv)
         // **************************            Fuzzy Vol          *****************************
         // **************************            ---------          *****************************
 
-        else if(strcmp(argv[i], "-FuzVol") == 0 & (i)<argc){
+        else if(strcmp(argv[i], "-FuzVol") == 0 && (i)<argc){
             seg_changeDatatype<float>(Images[0]);
             float * Img1prt = static_cast<float *>(Images[0]->data);
             float calcvol=0;
@@ -159,7 +159,7 @@ int main(int argc, char **argv)
         // **************************            ---------          *****************************
         // **************************            Bin   Vol          *****************************
         // **************************            ---------          *****************************
-        else if(strcmp(argv[i], "-BinVol") == 0 & (i+1)<argc){
+        else if(strcmp(argv[i], "-BinVol") == 0 && (i+1)<argc){
             float binval=atof(argv[++i]);
             seg_changeDatatype<float>(Images[0]);
             float * Img1prt = static_cast<float *>(Images[0]->data);
@@ -174,7 +174,7 @@ int main(int argc, char **argv)
         // **************************            ---------          *****************************
         // **************************            CSV  DICE          *****************************
         // **************************            ---------          *****************************
-        else if(strcmp(argv[i], "-DiceCSV") == 0 & (i+2)<argc){
+        else if(strcmp(argv[i], "-DiceCSV") == 0 && (i+2)<argc){
             filenames[2] = argv[++i];
             filenames[1] = argv[++i];
             nifti_image * Images[2];

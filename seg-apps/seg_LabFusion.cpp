@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 using namespace std;
-#define PrecisionTYPE float
+#define SegPrecisionTYPE float
 
 
 void SmallUsage(char *exec)
@@ -274,7 +274,7 @@ int main(int argc, char **argv)
             verbose_level=(int)atoi(argv[++i]);
         }
         else if(strcmp(argv[i], "-MRF_beta") == 0 && (i+1)<argc){
-            MRF_strength=(PrecisionTYPE)atof(argv[++i]);
+            MRF_strength=(SegPrecisionTYPE)atof(argv[++i]);
             if(MRF_strength>4){
                 cout << "WARNING: MRF Beta strenght should be less than 4. Setting MRF_beta=4."<< endl;
                 MRF_strength=4;

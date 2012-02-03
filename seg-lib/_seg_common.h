@@ -1,6 +1,10 @@
 # pragma once
 
 //Global includes
+#include <sys/types.h>
+#include <dirent.h>
+#include <errno.h>
+#include <vector>
 #include <stdio.h>
 #include <new>
 #include <fstream>
@@ -14,7 +18,7 @@
 
 // NiftySeg Defines
 
-#define PrecisionTYPE float
+#define SegPrecisionTYPE float
 #define non_PV_numclass 5
 #define PV_numbclass 7
 #define max_numbclass 10
@@ -63,11 +67,11 @@ typedef struct{
 
 
 typedef struct{
-    PrecisionTYPE  relax_factor;
-    PrecisionTYPE relax_gauss_kernel;
+    SegPrecisionTYPE relax_factor;
+    SegPrecisionTYPE relax_gauss_kernel;
     int  bias_order;
     float Bias_threshold;
-    PrecisionTYPE  MRF_strength;
+    SegPrecisionTYPE  MRF_strength;
     int  maxIteration;
     int  verbose_level;
     int numb_classes;
@@ -96,8 +100,8 @@ typedef struct{
 }SEG_PARAM;
 
 typedef struct{
-    PrecisionTYPE loglik;
-    PrecisionTYPE oldloglik;
+    SegPrecisionTYPE loglik;
+    SegPrecisionTYPE oldloglik;
     int improv_phase;
     bool prior_relax;
     bool do_pv_modeling;
