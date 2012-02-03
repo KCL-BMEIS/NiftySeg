@@ -39,6 +39,7 @@ seg_EM::seg_EM(int _numb_classes, int _nu,int _nt)
     this->Short_2_Long_Indices=NULL;
     this->Long_2_Short_Indices=NULL;
     this->CurrSizes=NULL;
+    this->reg_factor=1.0f;
 
     this->maxIteration=100;
     this->verbose_level=0;
@@ -137,12 +138,14 @@ int seg_EM::SetInputImage(nifti_image *r)
     this->nx=r->nx;
     this->ny=r->ny;
     this->nz=r->nz;
+    this->nt=r->nt;
+    this->nu=r->nu;
     this->dx=r->dx;
     this->dy=r->dy;
     this->dz=r->dz;
     this->numel=r->nz*r->ny*r->nx;
     if(this->nx==1 ||this->ny==1){
-        cout<<"Error: The segmentation algorithm only takes 2D, 3D and 4D images. 2D images should be on the XY plane"<<endl;
+        cout<<"Error: The segmentation algorithm only takes 2D, 3D and 5D images. 2D images should be on the XY plane"<<endl;
         return 1;
     }
 
@@ -234,6 +237,20 @@ int seg_EM::SetVerbose(unsigned int verblevel)
     }
     else{
         this->verbose_level=verblevel;
+    }
+    return 0;
+}
+
+
+/* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
+
+int seg_EM::SetRegValue(float reg)
+{
+    if(reg>1){
+    this->reg_factor=reg;
+    }
+    else{
+    this->reg_factor=1;
     }
     return 0;
 }
@@ -340,7 +357,7 @@ int seg_EM::Create_CurrSizes()
     CurrSizes->ysize=this->ny;
     CurrSizes->zsize=this->nz;
     CurrSizes->usize=(this->nu>1)?this->nu:1;
-    CurrSizes->tsize=(this->nu>1)?this->nu:1;
+    CurrSizes->tsize=(this->nt>1)?this->nt:1;
     CurrSizes->numclass=this->numb_classes;
     CurrSizes->numelmasked=0;
     CurrSizes->numelbias=0;
@@ -371,18 +388,18 @@ int seg_EM::Maximization()
 {
     if(this->MAP_status){
         if(this->maskImage_status){
-            calcM_mask(this->inputImage,this->Expec,this->BiasField,this->Outlierness,this->Short_2_Long_Indices,M,V,this->MAP_M,this->MAP_V,CurrSizes,this->verbose_level);
+            calcM_mask(this->inputImage,this->Expec,this->BiasField,this->Outlierness,this->Short_2_Long_Indices,M,V,this->MAP_M,this->MAP_V,this->reg_factor,CurrSizes,this->verbose_level);
         }
         else{
-            calcM(this->inputImage,this->Expec,this->BiasField,this->Outlierness,M,V,this->MAP_M,this->MAP_V,CurrSizes,this->verbose_level);
+            calcM(this->inputImage,this->Expec,this->BiasField,this->Outlierness,M,V,this->MAP_M,this->MAP_V,this->reg_factor,CurrSizes,this->verbose_level);
         }
     }
     else{
         if(this->maskImage_status){
-            calcM_mask(this->inputImage,this->Expec,this->BiasField,this->Outlierness,this->Short_2_Long_Indices,M,V,NULL,NULL,CurrSizes,this->verbose_level);
+            calcM_mask(this->inputImage,this->Expec,this->BiasField,this->Outlierness,this->Short_2_Long_Indices,M,V,NULL,NULL,this->reg_factor,CurrSizes,this->verbose_level);
         }
         else{
-            calcM(this->inputImage,this->Expec,this->BiasField,this->Outlierness,M,V,NULL,NULL,CurrSizes,this->verbose_level);
+            calcM(this->inputImage,this->Expec,this->BiasField,this->Outlierness,M,V,NULL,NULL,this->reg_factor,CurrSizes,this->verbose_level);
         }
     }
     return 1;
@@ -507,7 +524,6 @@ int seg_EM::Normalize_Image_and_Priors()
 {
     if(this->maskImage_status){
         if(this->Priors_status)Normalize_NaN_Priors_mask(this->Priors,this->Mask,this->verbose_level);
-
         Normalize_Image_mask(this->inputImage,this->Mask,CurrSizes,this->verbose_level);
 
         this->Short_2_Long_Indices = Create_Short_2_Long_Matrix_from_NII(this->Mask,&(CurrSizes->numelmasked));
@@ -597,79 +613,108 @@ int seg_EM::Allocate_and_Initialize()
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 int seg_EM::Intensity_Based_Inisitalization_of_Means()
 {
-    SegPrecisionTYPE * Intensity_PTR = static_cast<SegPrecisionTYPE *>(this->inputImage->data);
-
-    bool * MaskDataPtr=NULL;
-    if(this->maskImage_status){
+    for(int ms=0; ms<this->nu; ms++){
+        SegPrecisionTYPE * Intensity_PTR = static_cast<SegPrecisionTYPE *>(this->inputImage->data);
+        bool * MaskDataPtr=NULL;
+        if(this->maskImage_status){
             MaskDataPtr = static_cast<bool *>(this->Mask->data);
-    }
-
-    int mycounter=0;
-    float meanval=0.0;
-    float variance=0.0;
-    for(unsigned int i=0; i<this->inputImage->nvox; i++){
-        if(!this->maskImage_status || MaskDataPtr[i]>0){
-            mycounter++;
-            meanval+=(Intensity_PTR[i]);
         }
-    }
-    meanval=meanval/mycounter;
-    for(unsigned int i=0; i<this->inputImage->nvox; i++){
-        if(!this->maskImage_status || MaskDataPtr[i]>0 ){
-            variance+=pow((meanval-Intensity_PTR[i]),2);
-        }
-    }
-    variance=variance/mycounter;
+        int mycounter=0;
+        float meanval=0.0;
+        float variance=0.0;
 
-    int histogram[1001];
-    for(int i=0;i<1000;i++){
-        histogram[i]=0;
-    }
-    float tmpmax=-100000000.0f;
-    float tmpmin=100000000.0f;
-
-
-
-    for(unsigned int i=0; i<this->inputImage->nvox; i++){
-        if(!this->maskImage_status || MaskDataPtr[i]){
-            if(tmpmax<(int)(Intensity_PTR[i])){
-                tmpmax=(int)(Intensity_PTR[i]);
-            }
-            if(tmpmin>(int)(Intensity_PTR[i])){
-                tmpmin=(int)(Intensity_PTR[i]);
+        for(int i=0; i<this->numel; i++){
+            if(!this->maskImage_status || MaskDataPtr[i]>0){
+                mycounter++;
+                meanval+=(Intensity_PTR[i+ms*this->numel]);
             }
         }
-    }
+        meanval=meanval/mycounter;
 
-    for(unsigned int i=0; i<this->inputImage->nvox; i++){
-        if(!this->maskImage_status || MaskDataPtr[i]>0){
-            int index4hist=(int)(1000.0*(float)(Intensity_PTR[i]-tmpmin)/(float)(tmpmax-tmpmin));
-            if((index4hist>1000) & (index4hist<0)){
-                cout<< "error"<<endl;
+        for(int i=0; i<this->numel; i++){
+            if(!this->maskImage_status || MaskDataPtr[i]>0 ){
+                variance+=pow((meanval-Intensity_PTR[i+ms*this->numel]),2);
             }
-            histogram[(int)(1000.0*(float)(Intensity_PTR[i]-tmpmin)/(float)(tmpmax-tmpmin))]++;
+        }
+        variance=variance/mycounter;
+        int histogram[1001];
+        for(int i=0;i<1000;i++){
+            histogram[i]=0;
+        }
+        float tmpmax=-1e32f;
+        float tmpmin=1e32f;
+
+
+
+        for(int i=0; i<this->numel; i++){
+            if(!this->maskImage_status || MaskDataPtr[i]>0){
+                if(tmpmax<(int)(Intensity_PTR[i+ms*this->numel])){
+                    tmpmax=(int)(Intensity_PTR[i+ms*this->numel]);
+                }
+                if(tmpmin>(int)(Intensity_PTR[i+ms*this->numel])){
+                    tmpmin=(int)(Intensity_PTR[i+ms*this->numel]);
+                }
+            }
+        }
+
+        for(int i=0; i<this->numel; i++){
+            if(!this->maskImage_status || MaskDataPtr[i]>0){
+                int index4hist=(int)(1000.0*(float)(Intensity_PTR[i+ms*this->numel]-tmpmin)/(float)(tmpmax-tmpmin));
+                if((index4hist>1000) & (index4hist<0)){
+                    cout<< "error"<<endl;
+                }
+                histogram[(int)(1000.0*(float)(Intensity_PTR[i+ms*this->numel]-tmpmin)/(float)(tmpmax-tmpmin))]++;
+            }
+        }
+
+
+        for(int clas=0; clas<this->numb_classes; clas++){
+            float tmpsum=0;
+            int tmpindex=0;
+            float percentile=((float)clas+1)/(this->numb_classes+2);
+            for(int i=999;i>0;i--){
+                tmpsum+=histogram[i];
+                tmpindex=i;
+                if((float)(tmpsum)>((1-percentile)*(float)(mycounter))){
+                    i=0;
+                }
+            }
+            M[clas*CurrSizes->usize+ms]=float(tmpindex)*(tmpmax-tmpmin)/1000.0f+(tmpmin);
+            V[clas*CurrSizes->usize*CurrSizes->usize+ms*CurrSizes->usize+ms]=variance/this->numb_classes/2;
         }
     }
 
-
-    for(int clas=0; clas<this->numb_classes; clas++){
-        float tmpsum=0;
-        int tmpindex=0;
-        float percentile=((float)clas+1)/(this->numb_classes+2);
-        for(int i=999;i>0;i--){
-            tmpsum+=histogram[i];
-            tmpindex=i;
-            if((float)(tmpsum)>((1-percentile)*(float)(mycounter))){
-                i=0;
-            }
-        }
-        M[clas]=float(tmpindex)*(tmpmax-tmpmin)/1000.0f+(tmpmin);
-        V[clas]=variance/this->numb_classes/2;
+    for (int cl=0; cl<this->numb_classes; cl++) {
         if(this->verbose_level>0){
-        cout << "M["<<clas<<"] = "<<M[clas]<<"    V["<<(int)(clas)<<"]= "<<V[clas]<<endl;
-        }
+            if(CurrSizes->usize==1){
+                cout.fill('0');
+                cout<< "M["<<(int)(cl)<<"]= "<<setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(M[cl])<<"\tV["<<(int)(cl)<<"]="<<setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(V[cl])<< endl;
+                flush(cout);
+            }
+            else{
 
+                cout<< "M["<<(int)(cl)<<"]= ";
+                for(int Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
+                    cout<< setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(M[cl*CurrSizes->usize+Multispec])<<"\t";
+                }
+                cout<< endl;
+                flush(cout);
+                cout<< "V["<<(int)(cl)<<"]= ";
+                for(int Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
+                    if(Multispec>0){
+                        cout<< "      ";
+                    }
+                    for(int Multispec2=0; Multispec2<CurrSizes->usize; Multispec2++) {
+                        cout<< setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(V[cl*CurrSizes->usize*CurrSizes->usize+Multispec*CurrSizes->usize+Multispec2])<<"\t";
+                    }
+                    cout<< endl;
+                }
+                cout<< endl;
+                flush(cout);
+            }
+        }
     }
+
     return 0;
 }
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */

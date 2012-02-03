@@ -27,6 +27,7 @@ void Usage(char *exec)
     printf("\t-bc_order <int>\t\t| Polynomial order for the bias field [off = 0, max = 5] (default = 3) \n");
     printf("\t-bc_thresh <float>\t| Bias field correction will run only if the ratio of improvement is below bc_thresh (default=0 [OFF]) \n");
     printf("\t-bc_out <filename>\t| Output the bias corrected image\n");
+    printf("\t-reg <filename>\t\t| Amount of regularization over the diagonal of the covariance matrix [above 1]\n");
     printf("\t-outlier <fl1> <fl2>\t| Outlier detection as in (Van Leemput TMI 2003). <fl1> is the Mahalanobis threshold [recommended between 3 and 7] \n");
     printf("\t\t\t\t| <fl2> is a convergence ratio below wich the outlier detection is going to be done [recommended 0.001].\n");
     printf("\t-out_outlier <filename>\t| Output outlierness image \n");
@@ -85,6 +86,7 @@ int main(int argc, char **argv)
     segment_param->flag_out_outlier=0;
     float OutliernessRatio=0.01;
     int To_do_MAP_index_argv=0;
+    float regularization_amount=1;
 
 
 
@@ -163,6 +165,9 @@ int main(int argc, char **argv)
         }
         else if(strcmp(argv[i], "-bc_thresh") == 0 && (i+1)<argc){
             segment_param->Bias_threshold=atof(argv[++i]);
+        }
+        else if(strcmp(argv[i], "-reg") == 0 && (i+1)<argc){
+            regularization_amount=atof(argv[++i]);
         }
         else if(strcmp(argv[i], "-rf") == 0 && (i+1)<argc){
             segment_param->relax_factor=atof(argv[++i]);
@@ -299,8 +304,7 @@ int main(int argc, char **argv)
 
 
 
-
-    seg_EM SEG(segment_param->numb_classes,InputImage->dim[4],1);
+    seg_EM SEG(segment_param->numb_classes,InputImage->dim[5],InputImage->dim[4]);
     SEG.SetInputImage(InputImage);
     if(segment_param->flag_mask)
         SEG.SetMaskImage(Mask);
@@ -322,6 +326,8 @@ int main(int argc, char **argv)
         SEG.Turn_Relaxation_ON(segment_param->relax_factor,segment_param->relax_gauss_kernel);
     if(segment_param->flag_MAP)
         SEG.SetMAP(segment_param->MAP_M,segment_param->MAP_V);
+    if(regularization_amount>1)
+        SEG.SetRegValue(regularization_amount);
 
     SEG.Run_EM();
 

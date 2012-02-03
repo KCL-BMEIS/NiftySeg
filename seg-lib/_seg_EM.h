@@ -32,6 +32,7 @@ protected:
     int     iter;
     int checkpoint_iter;
     float ratio;
+    float reg_factor;
     ImageSize * CurrSizes;
 
 
@@ -111,6 +112,7 @@ public:
     int SetPriorImage(nifti_image *);
     int SetFilenameOut(char *);
     int SetMAP(float *M, float* V);
+    int SetRegValue(float reg);
     int Turn_Relaxation_ON(float relax_factor,float relax_gauss_kernel);
     int Turn_MRF_ON(float MRF_strenght);
     int OutliernessON(float OutliernessThreshold, float ratio);

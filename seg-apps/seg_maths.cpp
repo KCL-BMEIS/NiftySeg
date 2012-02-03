@@ -36,7 +36,7 @@ void Usage(char *exec)
     printf("\t-tmax\t<int>\t\tMax value of all time points.\n");
     printf("\t-tmin\t\t\tMean value of all time points.\n");
     printf("\n\t* * Dimensionality increase operations: from 3-D to 4-D * *\n");
-    printf("\t-merge\t<int> <files>\tMerge <int> images and the working image in time (4-D)\n");
+    printf("\t-merge\t<int> <dim> <files>\tMerge <int> images and the working image in the <dim> dimension \n");
     printf("\n\t* * Image similarity: Local metrics * *\n");
     printf("\t-lncc\t<file> <std>\tLocal CC between current img and <int> on a kernel with <std>\n");
     printf("\t-lssd\t<file> <std>\tLocal SSD between current img and <int> on a kernel with <std>\n");
@@ -225,21 +225,21 @@ int main(int argc, char **argv)
         }
         // *********************  square_root  *************************
         else if(strcmp(argv[i], "-sqrt") == 0){
-                for(unsigned int i=0; i<InputImage->nvox; i++)
-                    bufferImages[current_buffer?0:1][i]=sqrtf(bufferImages[current_buffer][i]);
-                current_buffer=current_buffer?0:1;
+            for(unsigned int i=0; i<InputImage->nvox; i++)
+                bufferImages[current_buffer?0:1][i]=sqrtf(bufferImages[current_buffer][i]);
+            current_buffer=current_buffer?0:1;
         }
         // *********************  Exponential  *************************
         else if(strcmp(argv[i], "-exp") == 0){
-                for(unsigned int i=0; i<InputImage->nvox; i++)
-                    bufferImages[current_buffer?0:1][i]=expf(bufferImages[current_buffer][i]);
-                current_buffer=current_buffer?0:1;
+            for(unsigned int i=0; i<InputImage->nvox; i++)
+                bufferImages[current_buffer?0:1][i]=expf(bufferImages[current_buffer][i]);
+            current_buffer=current_buffer?0:1;
         }
         // *********************  reciprocal  *************************
         else if(strcmp(argv[i], "-recip") == 0){
-                for(unsigned int i=0; i<InputImage->nvox; i++)
-                    bufferImages[current_buffer?0:1][i]=1/(bufferImages[current_buffer][i]);
-                current_buffer=current_buffer?0:1;
+            for(unsigned int i=0; i<InputImage->nvox; i++)
+                bufferImages[current_buffer?0:1][i]=1/(bufferImages[current_buffer][i]);
+            current_buffer=current_buffer?0:1;
         }
         // *********************  absolute value  *************************
         else if(strcmp(argv[i], "-abs") == 0){
@@ -372,20 +372,33 @@ int main(int argc, char **argv)
         // *********************  merge time points  *************************
         else if(strcmp(argv[i], "-merge") == 0){
             string parser=argv[++i];
+            string parsertp=argv[++i];
             if(strtod(parser.c_str(),NULL) && strtod(parser.c_str(),NULL)!=0){
                 int numberofTP=(int)strtof(parser.c_str(),NULL);
-                int oldnumbTP=CurrSize->tsize;
+                int dim=(int)strtof(parsertp.c_str(),NULL);
+                int oldnumbTP=0;
+                if(dim==4){
+                    oldnumbTP=CurrSize->tsize;
+                }
+                else if(dim==5){
+                    oldnumbTP=CurrSize->usize;
+                }
                 delete [] bufferImages[current_buffer?0:1];
-                bufferImages[current_buffer?0:1]= new SegPrecisionTYPE [CurrSize->numel*(CurrSize->tsize+(int)numberofTP)];
-                for(int index=0; index<(CurrSize->numel*CurrSize->tsize); index++)
+                bufferImages[current_buffer?0:1]= new SegPrecisionTYPE [CurrSize->numel*((CurrSize->tsize*CurrSize->usize)+(int)numberofTP)];
+                for(int index=0; index<(CurrSize->numel*(CurrSize->tsize*CurrSize->usize)); index++)
                     bufferImages[current_buffer?0:1][index]=bufferImages[current_buffer][index];
                 delete [] bufferImages[current_buffer];
-                bufferImages[current_buffer]= new SegPrecisionTYPE [CurrSize->numel*(CurrSize->tsize+(int)numberofTP)];
-                for(int index=0; index<(CurrSize->numel*CurrSize->tsize); index++)
+                bufferImages[current_buffer]= new SegPrecisionTYPE [CurrSize->numel*((CurrSize->tsize*CurrSize->usize)+(int)numberofTP)];
+                for(int index=0; index<(CurrSize->numel*(CurrSize->tsize*CurrSize->usize)); index++)
                     bufferImages[current_buffer][index]=bufferImages[current_buffer?0:1][index];
                 current_buffer=current_buffer?0:1;
-                CurrSize->tsize=CurrSize->tsize+numberofTP;
-                for(int tp=oldnumbTP; tp<CurrSize->tsize;tp++){
+                if(dim==4){
+                    CurrSize->tsize=CurrSize->tsize+numberofTP;
+                }
+                else if(dim==5){
+                    CurrSize->usize=CurrSize->usize+numberofTP;
+                }
+                for(int tp=oldnumbTP; tp<(CurrSize->tsize*CurrSize->usize);tp++){
                     string parser_image_name=argv[++i];
                     if(parser_image_name.find(string(".nii"))>0 || parser_image_name.find(string(".img")) ||parser_image_name.find(string(".hdr"))>0){
                         nifti_image * NewImage=nifti_image_read(parser_image_name.c_str(),true);
@@ -647,42 +660,42 @@ int main(int argc, char **argv)
         if(datatypeoutput==NIFTI_TYPE_UINT8){
             OutputImage->data = (void *) calloc(OutputImage->nvox, sizeof(unsigned char));
             unsigned char * OutputImagePtr = static_cast<unsigned char *>(OutputImage->data);
-            for(int i=0; i<(CurrSize->numel*CurrSize->tsize); i++){OutputImagePtr[i]=(unsigned char)round(bufferImages[current_buffer][i]);}
+            for(int i=0; i<(CurrSize->numel*CurrSize->tsize*CurrSize->usize); i++){OutputImagePtr[i]=(unsigned char)round(bufferImages[current_buffer][i]);}
         }
         else if(datatypeoutput==NIFTI_TYPE_UINT16){
             OutputImage->data = (void *) calloc(OutputImage->nvox, sizeof(unsigned short));
             unsigned short * OutputImagePtr = static_cast<unsigned short *>(OutputImage->data);
-            for(int i=0; i<(CurrSize->numel*CurrSize->tsize); i++){OutputImagePtr[i]=(unsigned short)round(bufferImages[current_buffer][i]);}
+            for(int i=0; i<(CurrSize->numel*CurrSize->tsize*CurrSize->usize); i++){OutputImagePtr[i]=(unsigned short)round(bufferImages[current_buffer][i]);}
         }
         else if(datatypeoutput==NIFTI_TYPE_UINT32){
             OutputImage->data = (void *) calloc(OutputImage->nvox, sizeof(unsigned int));
             unsigned int * OutputImagePtr = static_cast<unsigned int *>(OutputImage->data);
-            for(int i=0; i<(CurrSize->numel*CurrSize->tsize); i++){OutputImagePtr[i]=(unsigned int)round(bufferImages[current_buffer][i]);}
+            for(int i=0; i<(CurrSize->numel*CurrSize->tsize*CurrSize->usize); i++){OutputImagePtr[i]=(unsigned int)round(bufferImages[current_buffer][i]);}
         }
         else if(datatypeoutput==NIFTI_TYPE_INT8){
             OutputImage->data = (void *) calloc(OutputImage->nvox, sizeof(char));
             char * OutputImagePtr = static_cast<char *>(OutputImage->data);
-            for(int i=0; i<(CurrSize->numel*CurrSize->tsize); i++){OutputImagePtr[i]=(char)round(bufferImages[current_buffer][i]);}
+            for(int i=0; i<(CurrSize->numel*CurrSize->tsize*CurrSize->usize); i++){OutputImagePtr[i]=(char)round(bufferImages[current_buffer][i]);}
         }
         else if(datatypeoutput==NIFTI_TYPE_INT16){
             OutputImage->data = (void *) calloc(OutputImage->nvox, sizeof(short));
             short * OutputImagePtr = static_cast<short *>(OutputImage->data);
-            for(int i=0; i<(CurrSize->numel*CurrSize->tsize); i++){OutputImagePtr[i]=(short)round(bufferImages[current_buffer][i]);}
+            for(int i=0; i<(CurrSize->numel*CurrSize->tsize*CurrSize->usize); i++){OutputImagePtr[i]=(short)round(bufferImages[current_buffer][i]);}
         }
         else if(datatypeoutput==NIFTI_TYPE_INT32){
             OutputImage->data = (void *) calloc(OutputImage->nvox, sizeof(int));
             int * OutputImagePtr = static_cast<int *>(OutputImage->data);
-            for(int i=0; i<(CurrSize->numel*CurrSize->tsize); i++){OutputImagePtr[i]=(int)round(bufferImages[current_buffer][i]);}
+            for(int i=0; i<(CurrSize->numel*CurrSize->tsize*CurrSize->usize); i++){OutputImagePtr[i]=(int)round(bufferImages[current_buffer][i]);}
         }
         else if(datatypeoutput==NIFTI_TYPE_FLOAT32){
             OutputImage->data = (void *) calloc(OutputImage->nvox, sizeof(float));
             float * OutputImagePtr = static_cast<float *>(OutputImage->data);
-            for(int i=0; i<(CurrSize->numel*CurrSize->tsize); i++){OutputImagePtr[i]=(float)bufferImages[current_buffer][i];}
+            for(int i=0; i<(CurrSize->numel*CurrSize->tsize*CurrSize->usize); i++){OutputImagePtr[i]=(float)bufferImages[current_buffer][i];}
         }
         else if(datatypeoutput==NIFTI_TYPE_FLOAT64){
             OutputImage->data = (void *) calloc(OutputImage->nvox, sizeof(double));
             double * OutputImagePtr = static_cast<double *>(OutputImage->data);
-            for(int i=0; i<(CurrSize->numel*CurrSize->tsize); i++){OutputImagePtr[i]=(double)round(bufferImages[current_buffer][i]);}
+            for(int i=0; i<(CurrSize->numel*CurrSize->tsize*CurrSize->usize); i++){OutputImagePtr[i]=(double)round(bufferImages[current_buffer][i]);}
         }
         nifti_image_write(OutputImage);
         nifti_image_free(OutputImage);

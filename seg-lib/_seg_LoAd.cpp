@@ -69,7 +69,7 @@ nifti_image * LoAd_Segment(nifti_image * T1, nifti_image * Mask, nifti_image * P
 
 
     // Initialize
-    calcM_mask(T1,Expec,BiasField,NULL,Short_2_Long_Indices,M, V,NULL,NULL,CurrSizes,segment_param->verbose_level);
+    calcM_mask(T1,Expec,BiasField,NULL,Short_2_Long_Indices,M, V,NULL,NULL,1.0,CurrSizes,segment_param->verbose_level);
     bool BFupdate=!(segment_param->flag_Bias);
     bool MRFupdate=!(segment_param->flag_MRF);
     int CurrentBF=segment_param->bias_order<=1?segment_param->bias_order:1;

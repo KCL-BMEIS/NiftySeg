@@ -395,46 +395,43 @@ int Normalize_Image_mask(nifti_image * input,
         seg_convert2binary(Mask,0.0f);
     }
     if(input->datatype!=NIFTI_TYPE_FLOAT32){
-       seg_changeDatatype<SegPrecisionTYPE>(input);
+        seg_changeDatatype<SegPrecisionTYPE>(input);
     }
-
     for(int udir=0; udir<CurrSizes->usize;udir++){ // Per Multispectral Image
-        for(int tdir=0; tdir<CurrSizes->tsize;tdir++){ // Per Time point Image
-            bool * brainmaskptr = static_cast<bool *> (Mask->data);
-            SegPrecisionTYPE * Inputptrtmp = static_cast<SegPrecisionTYPE *>(input->data);
-            SegPrecisionTYPE * Inputptr=&Inputptrtmp[numel*tdir+(CurrSizes->tsize)*numel*udir];
+        bool * brainmaskptr = static_cast<bool *> (Mask->data);
+        SegPrecisionTYPE * Inputptrtmp = static_cast<SegPrecisionTYPE *>(input->data);
+        SegPrecisionTYPE * Inputptr=&Inputptrtmp[numel*udir];
 
-            float tempmax=-(1e32);
-            float tempmin=1e32;
+        float tempmax=-(1e32);
+        float tempmin=1e32;
 
-            for (int i=0; i<numel; i++) {
-                if(*brainmaskptr){
-                    if (*Inputptr<tempmin) {
-                        tempmin=*Inputptr;
-                    }
-                    if (*Inputptr>tempmax) {
-                        tempmax=*Inputptr;
-                    }
+        for (int i=0; i<numel; i++) {
+            if(brainmaskptr[i]){
+                if (Inputptr[i]<tempmin) {
+                    tempmin=Inputptr[i];
                 }
-                brainmaskptr++;
-                Inputptr++;
+                if (Inputptr[i]>tempmax) {
+                    tempmax=Inputptr[i];
+                }
             }
-            CurrSizes->rescale_max[udir]=tempmax;
-            CurrSizes->rescale_min[udir]=tempmin;
-            Inputptr=&Inputptrtmp[numel*tdir+(CurrSizes->tsize)*numel*udir];
-            brainmaskptr = static_cast<bool *> (Mask->data);
-            cout << tempmax << "  "<<tempmin<< endl;
-            for (int i=0; i<numel; i++) {
+        }
+        CurrSizes->rescale_max[udir]=tempmax;
+        CurrSizes->rescale_min[udir]=tempmin;
+        if(verbose>0){
+            cout << "Normalization["<<udir<<"] = ["<<tempmin<<","<<tempmax<<"]"<<endl;
+        }
+        Inputptr=&Inputptrtmp[numel*udir];
+        brainmaskptr = static_cast<bool *> (Mask->data);
+        for (int i=0; i<numel; i++) {
+            if(brainmaskptr[i]>0){
                 //log(number_between_0_and_1 + 1)/log(2)
-                *Inputptr=logf((((*Inputptr)-tempmin)/(tempmax-tempmin))+1)/0.693147181;
-
-                brainmaskptr++;
-                Inputptr++;
+                Inputptr[i]=logf((((Inputptr[i])-tempmin)/(tempmax-tempmin))+1)/0.693147181;
+            }
+            else{
+                Inputptr[i]=0;
             }
         }
     }
-
-    
     return 1;
 }
 
@@ -451,33 +448,32 @@ int Normalize_Image(nifti_image * input,
     if(input->datatype==NIFTI_TYPE_FLOAT32){
         // if mask is not set up
         for(int udir=0; udir<CurrSizes->usize;udir++){ // Per Multispectral Image
-            for(int tdir=0; tdir<CurrSizes->tsize;tdir++){ // Per Time point Image
-                int numel=(int)(rowsize(input)*colsize(input)*depth(input));
-                SegPrecisionTYPE * Inputptrtmp = static_cast<SegPrecisionTYPE *>(input->data);
-                SegPrecisionTYPE * Inputptr=&Inputptrtmp[numel*tdir+(CurrSizes->tsize)*numel*udir];
+            int numel=(int)(rowsize(input)*colsize(input)*depth(input));
+            SegPrecisionTYPE * Inputptrtmp = static_cast<SegPrecisionTYPE *>(input->data);
+            SegPrecisionTYPE * Inputptr=&Inputptrtmp[numel*udir];
 
-                float tempmax=0;
-                float tempmin=1000000.f;
-                for (int i=0; i<numel; i++) {
-                    if (*Inputptr<tempmin) {
-                        tempmin=*Inputptr;
-                    }
-                    if (*Inputptr>tempmax) {
-                        tempmax=*Inputptr;
-                    }
-                    Inputptr++;
+            float tempmax=0;
+            float tempmin=1000000.f;
+            for (int i=0; i<numel; i++) {
+                if (*Inputptr<tempmin) {
+                    tempmin=*Inputptr;
                 }
-                CurrSizes->rescale_max[udir]=tempmax;
-                CurrSizes->rescale_min[udir]=tempmin;
-                Inputptr=&Inputptrtmp[numel*tdir+(CurrSizes->tsize)*numel*udir];
-                for (int i=0; i<numel; i++) {
-                    //log(number_between_0_and_1 + 1)/log(2)
-                    *Inputptr=logf((((*Inputptr)-tempmin)/(tempmax-tempmin))+1)/0.693147181;
-                    Inputptr++;
+                if (*Inputptr>tempmax) {
+                    tempmax=*Inputptr;
                 }
+                Inputptr++;
+            }
+            CurrSizes->rescale_max[udir]=tempmax;
+            CurrSizes->rescale_min[udir]=tempmin;
+            Inputptr=&Inputptrtmp[numel*udir];
+            for (int i=0; i<numel; i++) {
+                //log(number_between_0_and_1 + 1)/log(2)
+                *Inputptr=logf((((*Inputptr)-tempmin)/(tempmax-tempmin))+1)/0.693147181;
+                Inputptr++;
             }
         }
     }
+
     return 1;
 }
 
@@ -634,9 +630,9 @@ int *  Create_Long_2_Short_Matrix_from_Carray(bool * Mask,
 }
 
 SegPrecisionTYPE * Create_cArray_from_Prior_mask(nifti_image * Mask,
-                                              nifti_image * Priors,
-                                              int numclass,
-                                              bool PV_ON)
+                                                 nifti_image * Priors,
+                                                 int numclass,
+                                                 bool PV_ON)
 {
     register int numel=(int)(rowsize(Mask)*colsize(Mask)*depth(Mask));
     register int numel_masked=0;
@@ -664,8 +660,8 @@ SegPrecisionTYPE * Create_cArray_from_Prior_mask(nifti_image * Mask,
 }
 
 SegPrecisionTYPE * Create_cArray_from_Prior(nifti_image * Priors,
-                                         int numclass,
-                                         bool PV_ON)
+                                            int numclass,
+                                            bool PV_ON)
 {
     register int numel=(int)(rowsize(Priors)*colsize(Priors)*depth(Priors));
     int pluspv=(int)(PV_ON)*2;
@@ -681,7 +677,7 @@ SegPrecisionTYPE * Create_cArray_from_Prior(nifti_image * Priors,
 }
 
 SegPrecisionTYPE * Create_cArray_from_3D_image(nifti_image * Mask,
-                                            nifti_image * SourceImage)
+                                               nifti_image * SourceImage)
 {
     register int numel=(int)(rowsize(Mask)*colsize(Mask)*depth(Mask));
     register int numel_masked=0;
@@ -1273,6 +1269,7 @@ int calcM(nifti_image * T1,
           SegPrecisionTYPE * V,
           SegPrecisionTYPE * M_MAP,
           SegPrecisionTYPE * V_MAP,
+          SegPrecisionTYPE reg_factor,
           ImageSize * CurrSizes,
           int verbose)
 {
@@ -1396,8 +1393,22 @@ int calcM(nifti_image * T1,
 
                 V[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize]=tempsum/SumPriors+0.00001f;
                 V[cl*CurrSizes->usize*CurrSizes->usize+Multispec2+Multispec*CurrSizes->usize]=V[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize];
+                if(Multispec==Multispec2)
+                    V[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize]*=reg_factor;
+
             }
         }
+    }
+
+    for (int cl=0; cl<currentnum_class; cl++) {
+        for(int Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
+            for(int Multispec2=0; Multispec2<CurrSizes->usize; Multispec2++) {
+                V[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize]/=reg_factor;
+            }
+        }
+    }
+
+    for (int cl=0; cl<currentnum_class; cl++) {
         if(verbose>0){
             if(CurrSizes->usize==1){
                 cout.fill('0');
@@ -1418,14 +1429,13 @@ int calcM(nifti_image * T1,
                         cout<< "      ";
                     }
                     for(int Multispec2=0; Multispec2<CurrSizes->usize; Multispec2++) {
-                        cout<<setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(V[cl*CurrSizes->usize*CurrSizes->usize+Multispec*CurrSizes->usize+Multispec2])<<"\t";
+                        cout<< setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(V[cl*CurrSizes->usize*CurrSizes->usize+Multispec*CurrSizes->usize+Multispec2])<<"\t";
                     }
                     cout<< endl;
                 }
                 cout<< endl;
                 flush(cout);
             }
-
         }
     }
 
@@ -1444,6 +1454,7 @@ int calcM_mask(nifti_image * T1,
                SegPrecisionTYPE * V,
                SegPrecisionTYPE * M_MAP,
                SegPrecisionTYPE * V_MAP,
+               SegPrecisionTYPE reg_factor,
                ImageSize * CurrSizes,
                int verbose)
 {
@@ -1561,10 +1572,21 @@ int calcM_mask(nifti_image * T1,
                     if(Multispec2!=Multispec){
                         V[cl*CurrSizes->usize*CurrSizes->usize+Multispec2+Multispec*CurrSizes->usize]=V[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize];
                     }
+                    else{
+                        V[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize]*=reg_factor;
+                    }
                 }
             }
         }
 
+    }
+
+    for (int cl=0; cl<num_class; cl++) {
+        for(int Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
+            for(int Multispec2=0; Multispec2<CurrSizes->usize; Multispec2++) {
+                V[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize]/=reg_factor;
+            }
+        }
     }
 
     for (int cl=0; cl<num_class; cl++) {
@@ -1996,9 +2018,9 @@ int Gaussian_Filter_4D(SegPrecisionTYPE * LongData,
 }
 
 SegPrecisionTYPE * Gaussian_Filter_4D_inside_mask(SegPrecisionTYPE * LongData,
-                                               bool * mask,
-                                               SegPrecisionTYPE gauss_std,
-                                               ImageSize * CurrSizes){
+                                                  bool * mask,
+                                                  SegPrecisionTYPE gauss_std,
+                                                  ImageSize * CurrSizes){
 
     int kernelsize=0;
     int kernelsizemin=(int)floorf(gauss_std*3.0);
@@ -3844,8 +3866,8 @@ template int seg_changeDatatype<double>(nifti_image *);
 /* *************************************************************** */
 template <class DTYPE>
 void seg_mat44_mul(mat44 *mat,
-                    DTYPE *in,
-                    DTYPE *out)
+                   DTYPE *in,
+                   DTYPE *out)
 {
     out[0]=mat->m[0][0]*in[0] + mat->m[0][1]*in[1] + mat->m[0][2]*in[2] + mat->m[0][3];
     out[1]=mat->m[1][0]*in[0] + mat->m[1][1]*in[1] + mat->m[1][2]*in[2] + mat->m[1][3];

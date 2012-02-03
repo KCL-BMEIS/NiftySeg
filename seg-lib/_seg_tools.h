@@ -20,6 +20,7 @@ int calcM_mask(nifti_image * T1,
                SegPrecisionTYPE * V,
                SegPrecisionTYPE * M_MAP,
                SegPrecisionTYPE * V_MAP,
+               SegPrecisionTYPE reg_factor,
                ImageSize * CurrSizes,
                int verbose);
 
@@ -41,6 +42,7 @@ int calcM(nifti_image * T1,
           SegPrecisionTYPE * V,
           SegPrecisionTYPE * M_MAP,
           SegPrecisionTYPE * V_MAP,
+          SegPrecisionTYPE reg_factor,
           ImageSize * CurrSizes,
           int verbose);
 
