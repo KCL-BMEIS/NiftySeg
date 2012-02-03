@@ -30,7 +30,7 @@ OPTION(BUILD_SHARED "Build the libraries as shared." OFF)
 OPTION(USE_OPENMP "To use openMP for multi-CPU processing" OFF)
 OPTION(INSTALL_NIFTYREG "To download and install NiftyReg. Internet connection is required." OFF)
 OPTION(INSTALL_PRIORS "Install prior images. Turn this off if you are really short on disk space" ON)
-SET(INSTALL_PRIORS_DIRECTORY ${CMAKE_INSTALL_PREFIX}/priors CACHE PATH "Folder in which to install the prior images.")
+
 #-----------------------------------------------------------------------------
 IF(BUILD_SHARED)
   SET(LIBRARY_TYPE SHARED)
@@ -50,7 +50,8 @@ ENDIF(BUILD_SHARED)
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/seg-lib)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/nifti)
-
+SET(INSTALL_PRIORS_DIRECTORY ${CMAKE_INSTALL_PREFIX}/priors)
+MARK_AS_ADVANCED(INSTALL_PRIORS_DIRECTORY)
 #-----------------------------------------------------------------------------
 
 SUBDIRS(zlib)
