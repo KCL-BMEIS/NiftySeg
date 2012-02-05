@@ -39,7 +39,7 @@ seg_EM::seg_EM(int _numb_classes, int _nu,int _nt)
   this->Short_2_Long_Indices=NULL;
   this->Long_2_Short_Indices=NULL;
   this->CurrSizes=NULL;
-  this->reg_factor=1.0f;
+  this->reg_factor=1.1f;
 
   this->maxIteration=100;
   this->verbose_level=0;
@@ -370,15 +370,6 @@ int seg_EM::OutliernessON(float in_OutliernessThreshold, float ratio){
   this->OutliernessFlag=true;
   this->OutliernessThreshold=in_OutliernessThreshold;
   this->Outlierness_ratio=ratio;
-  return 0;
-}
-
-/* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-int seg_EM::UpdateOutlierness()
-{
-
-
-
   return 0;
 }
 

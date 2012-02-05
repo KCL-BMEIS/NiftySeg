@@ -809,15 +809,14 @@ int calcE_mask(nifti_image * T1,
             }
 
           if(OutliernessFlag){
-              Expec[i+Expec_offset[cl]]=IterPrior[i+Expec_offset[cl]]*Outlierness[i+Expec_offset[cl]] * expf(mahal) * inv_sqrt_V_2pi[cl];
               Outlierness[i+Expec_offset[cl]]=(expf(mahal))/(expf(mahal)+expf(-0.5*(OutliernessThreshold*OutliernessThreshold)));
+              Expec[i+Expec_offset[cl]]=IterPrior[i+Expec_offset[cl]]*Outlierness[i+Expec_offset[cl]] * expf(mahal) * inv_sqrt_V_2pi[cl];
             }
           else{
               Expec[i+Expec_offset[cl]]=IterPrior[i+Expec_offset[cl]] * expf(mahal) * inv_sqrt_V_2pi[cl];
             }
           SumExpec+=Expec[i+Expec_offset[cl]];
         }
-
 
       if (SumExpec<=0.0 || SumExpec!=SumExpec){
           for (int cl=0; cl<num_class; cl++) {
