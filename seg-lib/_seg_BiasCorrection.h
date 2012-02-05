@@ -15,7 +15,7 @@
 using namespace std;
 
 inline SegPrecisionTYPE pow_int(const SegPrecisionTYPE x,
-                             int exp);
+                                int exp);
 
 void get_xyz_pow_int(SegPrecisionTYPE xpos,
                      SegPrecisionTYPE ypos,

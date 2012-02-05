@@ -194,9 +194,9 @@ int Gaussian_Filter_4D(SegPrecisionTYPE * LongData,
 
 
 SegPrecisionTYPE * Gaussian_Filter_4D_inside_mask(SegPrecisionTYPE * LongData,
-                                               bool * mask,
-                                               SegPrecisionTYPE gauss_std,
-                                               ImageSize * CurrSizes);
+                                                  bool * mask,
+                                                  SegPrecisionTYPE gauss_std,
+                                                  ImageSize * CurrSizes);
 
 int Create_diagonal_GH_Nclass(SegPrecisionTYPE * G,
                               SegPrecisionTYPE * H,
@@ -227,16 +227,16 @@ int * Create_Short_2_Long_Matrix_from_NII(nifti_image * Mask,
                                           int * shortsize);
 
 SegPrecisionTYPE * Create_cArray_from_Prior_mask( nifti_image * Mask,
-                                               nifti_image * Priors,
-                                               int numclass,
-                                               bool PV_ON);
+                                                  nifti_image * Priors,
+                                                  int numclass,
+                                                  bool PV_ON);
 
 SegPrecisionTYPE * Create_cArray_from_Prior(nifti_image * Priors,
-                                         int numclass,
-                                         bool PV_ON);
+                                            int numclass,
+                                            bool PV_ON);
 
 SegPrecisionTYPE * Create_cArray_from_3D_image(nifti_image * Mask,
-                                            nifti_image * SourceImage);
+                                               nifti_image * SourceImage);
 
 int * Create_Short_2_Long_Matrix_from_Carray(bool * Mask,
                                              int * shortsize,

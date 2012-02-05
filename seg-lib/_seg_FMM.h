@@ -12,20 +12,20 @@ void FMM(bool *Seeds,
          ImageSize * CurrSizes);
 
 float * DoubleEuclideanDistance_3D(bool *Lable, float * speedptr,
-         ImageSize * CurrSizes);
+                                   ImageSize * CurrSizes);
 
 SegPrecisionTYPE CalcGeoTime(int index,
-                          SegPrecisionTYPE *GeoTime,
-                          SegPrecisionTYPE * SpeedI,
-                          int * neighbour,
-                          int * Short_2_Long_Indices,
-                          SegPrecisionTYPE Max);
+                             SegPrecisionTYPE *GeoTime,
+                             SegPrecisionTYPE * SpeedI,
+                             int * neighbour,
+                             int * Short_2_Long_Indices,
+                             SegPrecisionTYPE Max);
 
 SegPrecisionTYPE CalcGeoTime_long(int index,
-                          SegPrecisionTYPE *GeoTime,
-                          SegPrecisionTYPE SpeedI,
-                          int * neighbour,
-                          SegPrecisionTYPE Max);
+                                  SegPrecisionTYPE *GeoTime,
+                                  SegPrecisionTYPE SpeedI,
+                                  int * neighbour,
+                                  SegPrecisionTYPE Max);
 
 void TransformGeoTime(SegPrecisionTYPE *GeoTime,
                       SegPrecisionTYPE MaxGeoTime,
