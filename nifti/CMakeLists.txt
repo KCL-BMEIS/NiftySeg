@@ -1,7 +1,7 @@
 #-----------------------------------------------------------------------------
 ADD_DEFINITIONS(-DHAVE_ZLIB)
 SET(NAME _seg_nifti)
-ADD_LIBRARY(${NAME} nifti1.h nifti1_io.c nifti1_io.h znzlib.c znzlib.h)
+ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} nifti1.h nifti1_io.c nifti1_io.h znzlib.c znzlib.h)
 TARGET_LINK_LIBRARIES(${NAME} z)
 INSTALL(TARGETS ${NAME}
 	RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin

@@ -3809,6 +3809,9 @@ int seg_changeDatatype1(nifti_image *image)
   if(sizeof(NewTYPE)==sizeof(unsigned char)){
       for(unsigned int i=0; i<image->nvox; i++) dataPtr[i] = (unsigned char)(round(initialValue[i]));
     }
+  else if(sizeof(NewTYPE)==sizeof(int)){
+      for(unsigned int i=0; i<image->nvox; i++) dataPtr[i] = (int)(round(initialValue[i]));
+    }
   else{
       for(unsigned int i=0; i<image->nvox; i++) dataPtr[i] = (NewTYPE)(initialValue[i]);
     }
@@ -3977,6 +3980,8 @@ void Resample_NN_with_weights(  nifti_image *sourceImage,
             }
         }
     }
+
+  return;
 }
 
 template void Resample_NN_with_weights<unsigned char,float>(nifti_image *sourceImage,nifti_image *deformationField,nifti_image *resultImage,nifti_image *resultImageWeights,int *mask,float bgValue);
