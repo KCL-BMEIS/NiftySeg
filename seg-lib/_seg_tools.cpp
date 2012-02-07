@@ -3915,12 +3915,12 @@ void Resample_NN_with_weights(  nifti_image *sourceImage,
   FieldTYPE xBasis[2], yBasis[2], zBasis[2], relative;
   int a, b, c, Y, Z, previous[3], index;
   SourceTYPE *zPointer, *xyzPointer;
-  FieldTYPE xTempNewValue, world[3], position[3];
+  FieldTYPE world[3], position[3];
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   private(index, world, position, previous, xBasis, yBasis, zBasis, relative, \
-  a, b, c, Y, Z, zPointer, xyzPointer, xTempNewValue) \
-  shared(sourceIntensity, resultIntensity,resultWeights, targetVoxelNumber, sourceVoxelNumber, \
+  a, b, c, Y, Z, zPointer, xyzPointer) \
+  shared(sourceIntensity, resultIntensity,resultWeights, targetVoxelNumber, \
   deformationFieldPtrX, deformationFieldPtrY, deformationFieldPtrZ, maskPtr, \
   sourceIJKMatrix, sourceImage, bgValue)
 #endif // _OPENMP
@@ -3958,7 +3958,6 @@ void Resample_NN_with_weights(  nifti_image *sourceImage,
                   for(b=0; b<2; b++){
                       Y= previous[1]+b;
                       xyzPointer = &zPointer[Y*sourceImage->nx+previous[0]];
-                      xTempNewValue=0.0;
                       for(a=0; a<2; a++){
                           if(resultIntensity!=NULL)
                             resultIntensity[index+targetVoxelNumber*neighindex]=(SourceTYPE)(*xyzPointer);
