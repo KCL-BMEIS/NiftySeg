@@ -3973,9 +3973,9 @@ void Resample_NN_with_weights(  nifti_image *sourceImage,
           else {
               for(int neighindex=0; neighindex<8; neighindex++){
                   if(resultIntensity!=NULL)
-                    resultIntensity[index+targetVoxelNumber*neighindex]=bgValue;
+                    resultIntensity[index+targetVoxelNumber*neighindex]=(SourceTYPE)(round(bgValue));
                   if(resultWeights!=NULL)
-                    resultWeights[index+targetVoxelNumber*neighindex]=bgValue;
+                    resultWeights[index+targetVoxelNumber*neighindex]=(SourceTYPE)(round(bgValue));
                 }
             }
         }
