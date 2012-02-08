@@ -236,13 +236,19 @@ int main(int argc, char **argv)
       fprintf(stderr,"* Error when reading the T1 image: %s\n",segment_param->filename_T1);
       return 1;
     }
-  seg_changeDatatype<SegPrecisionTYPE>(InputImage);
+  if(InputImage->datatype!=NIFTI_TYPE_FLOAT32)
+    seg_changeDatatype<SegPrecisionTYPE>(InputImage);
+
+  InputImage->dim[4]=InputImage->nt=(InputImage->nt<1)?1:InputImage->nt;
+  InputImage->dim[5]=InputImage->nu=(InputImage->nu<1)?1:InputImage->nu;
+  nifti_update_dims_from_array(InputImage);
 
 
   nifti_image * Mask=NULL;
   if(segment_param->flag_mask){
       Mask = nifti_image_read(segment_param->filename_mask,true);
-      seg_changeDatatype<SegPrecisionTYPE>(Mask);
+      if(Mask->datatype!=NIFTI_TYPE_FLOAT32)
+        seg_changeDatatype<SegPrecisionTYPE>(Mask);
 
       if(Mask == NULL){
           fprintf(stderr,"* Error when reading the mask image: %s\n",segment_param->filename_mask);
@@ -252,6 +258,9 @@ int main(int argc, char **argv)
           fprintf(stderr,"* Error: Mask image not the same size as input\n");
           return 1;
         }
+      Mask->dim[4]=Mask->nt=(Mask->nt<1)?1:Mask->nt;
+      Mask->dim[5]=Mask->nu=(Mask->nu<1)?1:Mask->nu;
+      nifti_update_dims_from_array(Mask);
     }
 
   nifti_image ** Priors_temp=new nifti_image * [segment_param->numb_classes];

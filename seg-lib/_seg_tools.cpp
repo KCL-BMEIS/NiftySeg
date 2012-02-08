@@ -4021,13 +4021,10 @@ int get_all_files_that_match_string (string dir, vector<string> &files , string 
       if(dirp->d_name[0]!='.'){
           if(dirp->d_type==8){
               string curstring=dirp->d_name;
-              if(curstring.find(string_to_match)>0){
+              if(curstring.find(string_to_match)>=0){
                   files.push_back(dir+string("/")+string(dirp->d_name));
                 }
             }
-          //            else{
-          //                folders.push_back(dir+string("/")+string(dirp->d_name));
-          //            }
         }
     }
   closedir(dp);

@@ -546,6 +546,7 @@ int seg_EM::Normalize_Image_and_Priors()
 int seg_EM::Allocate_and_Initialize()
 {
 
+
   if(this->Priors_status){
       if(this->maskImage_status){
           this->Expec = Create_cArray_from_Prior_mask(this->Mask,this->Priors,CurrSizes->numclass,this->PV_model_status);
@@ -604,6 +605,7 @@ int seg_EM::Allocate_and_Initialize()
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 int seg_EM::Intensity_Based_Inisitalization_of_Means()
 {
+  cout << "HEHEHE - "<<this->nu<<endl;
   for(int ms=0; ms<this->nu; ms++){
       SegPrecisionTYPE * Intensity_PTR = static_cast<SegPrecisionTYPE *>(this->inputImage->data);
       bool * MaskDataPtr=NULL;
@@ -650,7 +652,8 @@ int seg_EM::Intensity_Based_Inisitalization_of_Means()
 
       for(int i=0; i<this->numel; i++){
           if(!this->maskImage_status || MaskDataPtr[i]>0){
-              int index4hist=(int)(1000.0*(float)(Intensity_PTR[i+ms*this->numel]-tmpmin)/(float)(tmpmax-tmpmin));
+
+              int index4hist=(int)(1000.0f*(float)(Intensity_PTR[i+ms*this->numel]-tmpmin)/(float)(tmpmax-tmpmin));
               if((index4hist>1000) & (index4hist<0)){
                   cout<< "error"<<endl;
                 }
@@ -662,11 +665,11 @@ int seg_EM::Intensity_Based_Inisitalization_of_Means()
       for(int clas=0; clas<this->numb_classes; clas++){
           float tmpsum=0;
           int tmpindex=0;
-          float percentile=((float)clas+1)/(this->numb_classes+2);
+          float percentile=((float)clas+1)/(this->numb_classes+1);
           for(int i=999;i>0;i--){
               tmpsum+=histogram[i];
               tmpindex=i;
-              if((float)(tmpsum)>((1-percentile)*(float)(mycounter))){
+              if((float)(tmpsum)>((1.0f-percentile)*(float)(mycounter))){
                   i=0;
                 }
             }
@@ -674,6 +677,7 @@ int seg_EM::Intensity_Based_Inisitalization_of_Means()
           V[clas*CurrSizes->usize*CurrSizes->usize+ms*CurrSizes->usize+ms]=variance/this->numb_classes/2;
         }
     }
+
 
   for (int cl=0; cl<this->numb_classes; cl++) {
       if(this->verbose_level>0){
