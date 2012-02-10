@@ -111,7 +111,7 @@ int main(int argc, char **argv)
             }
           else{
               nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
-              if(InputImage->datatype!=NIFTI_TYPE_FLOAT32){
+              if(NewImage->datatype!=NIFTI_TYPE_FLOAT32){
                   seg_changeDatatype<float>(NewImage);
                 }
               float * NewImagePtr = static_cast<float *>(NewImage->data);
