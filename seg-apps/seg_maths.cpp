@@ -111,12 +111,12 @@ int main(int argc, char **argv)
             }
           else{
               nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
-              if(InputImage->datatype!=DT_FLOAT32){
-                  seg_changeDatatype<SegPrecisionTYPE>(NewImage);
+              if(InputImage->datatype!=NIFTI_TYPE_FLOAT32){
+                  seg_changeDatatype<float>(NewImage);
                 }
-              SegPrecisionTYPE * NewImagePtr = static_cast<SegPrecisionTYPE *>(NewImage->data);
+              float * NewImagePtr = static_cast<float *>(NewImage->data);
               if(NewImage->nx==InputImage->nx&&NewImage->ny==InputImage->ny&&NewImage->nz==InputImage->nz&&NewImage->nt==InputImage->nt&&NewImage->nu==InputImage->nu&&NewImage->nv==InputImage->nv&&NewImage->nw==InputImage->nw){
-                  for(unsigned int i=0; i<InputImage->nvox; i++)
+                  for(unsigned int i=0; i<NewImage->nvox; i++)
                     bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]*NewImagePtr[i];
 
                   current_buffer=current_buffer?0:1;
