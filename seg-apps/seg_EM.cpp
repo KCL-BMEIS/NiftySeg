@@ -114,7 +114,7 @@ int main(int argc, char **argv)
       else if(strcmp(argv[i], "-priors") == 0 && (i+1)<argc){
           segment_param->numb_classes=atoi(argv[++i]);
           if(segment_param->numb_classes<2){
-              cout<<"Number of classes has to be bigger than 0";
+              cout<<"Number of classes has to be bigger than 1";
               return 0;
             }
           if((i+segment_param->numb_classes)<argc){
@@ -124,7 +124,7 @@ int main(int argc, char **argv)
                 }
             }
           else{
-              fprintf(stderr,"Err:\tParameter -priors in incomplete\n");
+              fprintf(stderr,"Err:\tParameter -priors are incomplete\n");
               Usage(argv[0]);
               return 1;
             }
@@ -284,8 +284,8 @@ int main(int argc, char **argv)
 
       Priors=nifti_copy_nim_info(InputImage);
       Priors->dim[0]=4;
-      Priors->dim[4]=segment_param->numb_classes;
-      Priors->datatype=DT_FLOAT32;
+      Priors->nt=Priors->dim[4]=segment_param->numb_classes;
+      Priors->datatype=NIFTI_TYPE_FLOAT32;
       Priors->cal_max=1;
 
       nifti_update_dims_from_array(Priors);

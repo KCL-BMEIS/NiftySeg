@@ -251,6 +251,7 @@ int seg_EM::SetRegValue(float reg)
     }
   else{
       this->reg_factor=1;
+      cout << "Non valid regularization value. Will assume -reg 1."<<endl;
     }
   return 0;
 }

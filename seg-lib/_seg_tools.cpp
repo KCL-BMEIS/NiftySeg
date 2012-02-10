@@ -280,7 +280,7 @@ int Normalize_NaN_Priors(nifti_image * Priors,
     }
 
   if(verbose>0){
-      cout<<"good="<<good<<"\t ups="<<ups<<"\n";
+      cout<<"Priors: "<< good<<" good voxels and "<<ups<<" bad voxels" << endl;
       flush(cout);
     }
 
@@ -324,8 +324,8 @@ int Normalize_NaN_Priors_mask(nifti_image * Priors,
           bool * brainmaskptr = static_cast<bool *> (Mask->data);
 
           for (int i=0; i<numel; i++) {
-              float tempsum=0;
               if(brainmaskptr[i]){
+                  float tempsum=0;
                   for (int j=0; j<Priors->nt; j++) {
                       int tempind=i+numel*j;
                       if( priorsptr[tempind]<0.0 || priorsptr[tempind]!=priorsptr[tempind] || priorsptr[tempind]>1000 ){
@@ -343,9 +343,8 @@ int Normalize_NaN_Priors_mask(nifti_image * Priors,
                   else{
                       for (int j=0; j<Priors->nt; j++) {
                           int tempind=i+numel*j;
-                          priorsptr[tempind]=0.2f;
+                          priorsptr[tempind]=1.0f/(Priors->nt);
                         }
-                      //brainmaskptr[i]=0.0;
                       ups++;
 
                     }
@@ -371,7 +370,7 @@ int Normalize_NaN_Priors_mask(nifti_image * Priors,
     }
 
   if(verbose>0){
-      cout<<"Priors: "<< ups<<" bad voxels" << endl;
+      cout<<"Priors: "<< good<<" good voxels and "<<ups<<" bad voxels" << endl;
       flush(cout);
     }
 
@@ -3809,8 +3808,8 @@ int seg_changeDatatype1(nifti_image *image)
   if(sizeof(NewTYPE)==sizeof(unsigned char)){
       for(unsigned int i=0; i<image->nvox; i++) dataPtr[i] = (unsigned char)(round(initialValue[i]));
     }
-  else if(sizeof(NewTYPE)==sizeof(int)){
-      for(unsigned int i=0; i<image->nvox; i++) dataPtr[i] = (int)(round(initialValue[i]));
+  else if(sizeof(NewTYPE)==sizeof(float)){
+      for(unsigned int i=0; i<image->nvox; i++) dataPtr[i] = (float)(round(initialValue[i]));
     }
   else{
       for(unsigned int i=0; i<image->nvox; i++) dataPtr[i] = (NewTYPE)(initialValue[i]);
