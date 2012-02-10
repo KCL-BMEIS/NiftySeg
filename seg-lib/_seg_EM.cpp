@@ -246,7 +246,7 @@ int seg_EM::SetVerbose(unsigned int verblevel)
 
 int seg_EM::SetRegValue(float reg)
 {
-  if(reg>1){
+  if(reg>0){
       this->reg_factor=reg;
     }
   else{

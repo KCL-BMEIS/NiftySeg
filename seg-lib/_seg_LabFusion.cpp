@@ -1032,7 +1032,7 @@ int seg_LabFusion::SBA_Estimate()
 {
 
   classifier_datatype * inputCLASSIFIERptr = static_cast<classifier_datatype *>(this->inputCLASSIFIER->data);
-  LabFusion_datatype eps=0.1;
+  //LabFusion_datatype eps=0.1;
   bool * CurrLableImage=new bool [this->numel];
   if(CurrLableImage == NULL){
       fprintf(stderr,"* Error when alocating CurrLableImage: Not enough memory\n");
@@ -1058,7 +1058,7 @@ int seg_LabFusion::SBA_Estimate()
                       lnccexists=true;
                     }
                 }
-              speedfunc[i]=((LabFusion_datatype)(1-lnccexists)+eps);
+              speedfunc[i]=((LabFusion_datatype)(lnccexists)+0.1);
             }
           for(int currclass=0; currclass<this->NUMBER_OF_CLASSES;currclass++){
               if(this->verbose_level>0){
@@ -1088,7 +1088,6 @@ int seg_LabFusion::SBA_Estimate()
                   for(int i=0;i<(this->CurrSizes->numel);i++){
                       CurrLableImage[i]=(inputCLASSIFIERptr[i+this->CurrSizes->numel*classifier]==currclass);
                     }
-
                   geotime=DoubleEuclideanDistance_3D(CurrLableImage,NULL,CurrSizes);
 
                   for(int i=0;i<(this->CurrSizes->numel);i++){
@@ -1108,7 +1107,7 @@ int seg_LabFusion::SBA_Estimate()
               for(int i=0;i<(this->CurrSizes->numel);i++){
                   CurrLableImage[i]=(inputCLASSIFIERptr[i+this->CurrSizes->numel*classifier]==currclass);
                 }
-              geotime=DoubleEuclideanDistance_3D(CurrLableImage,NULL,CurrSizes);
+              geotime=DoubleEuclideanDistance_3D(CurrLableImage,speedfunc,CurrSizes);
 
               for(int i=0;i<(this->CurrSizes->numel);i++){
                   this->W[i+currclass*this->numel]+=geotime[i];

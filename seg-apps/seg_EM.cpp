@@ -335,7 +335,7 @@ int main(int argc, char **argv)
     SEG.Turn_Relaxation_ON(segment_param->relax_factor,segment_param->relax_gauss_kernel);
   if(segment_param->flag_MAP)
     SEG.SetMAP(segment_param->MAP_M,segment_param->MAP_V);
-  if(regularization_amount>1)
+  if(regularization_amount>0)
     SEG.SetRegValue(regularization_amount);
 
   SEG.Run_EM();
