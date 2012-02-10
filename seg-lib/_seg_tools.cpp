@@ -3808,9 +3808,6 @@ int seg_changeDatatype1(nifti_image *image)
   if(sizeof(NewTYPE)==sizeof(unsigned char)){
       for(unsigned int i=0; i<image->nvox; i++) dataPtr[i] = (unsigned char)(round(initialValue[i]));
     }
-  else if(sizeof(NewTYPE)==sizeof(float)){
-      for(unsigned int i=0; i<image->nvox; i++) dataPtr[i] = (float)(round(initialValue[i]));
-    }
   else{
       for(unsigned int i=0; i<image->nvox; i++) dataPtr[i] = (NewTYPE)(initialValue[i]);
     }
