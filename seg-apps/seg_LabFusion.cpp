@@ -60,6 +60,9 @@ void Usage(char *exec)
   printf("  \t\t\t\t| Size of the kernel (k), number of local classifiers to use (n),\n");
   printf("  \t\t\t\t| Original image to segment (3D Image), registered templates (4D Image).\n");
   printf("  \t\t\t\t| LNCC is only available for STAPLE and MV.\n\n");
+  printf("  \t\t\t\t| LNCC is only available for STAPLE and MV.\n\n");
+  //printf("  -LM <n> <metric> \t| Any voxelwise local metric (higher metric value is more similar):\n");
+  //printf("  \t\t\t\t| number of local classifiers to use (n), similarity <metric> as a 4D Image.\n");
 
   printf("  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n\n");
   return;
@@ -101,6 +104,7 @@ int main(int argc, char **argv)
   int LabFusType=10;
   bool LNCCflag=0;
   bool ML_LNCCflag=0;
+  bool LMflag=0;
   bool GNCCflag=0;
   bool ROINCCflag=0;
   bool UNCERTAINflag=0;
@@ -214,6 +218,17 @@ int main(int argc, char **argv)
               filename_BaseImage= argv[++i];
               filename_LNCC = argv[++i];
               LNCCflag=1;
+            }
+          else{
+              fprintf(stderr,"* Error: Type of ranking not allowed in STEPS\n");
+              return 1;
+            }
+        }
+      else if(strcmp(argv[i], "-LM") == 0 && (i+4)<argc){
+          if(!UNCERTAINflag){
+              Numb_Neigh = atoi(argv[++i]);
+              filename_LNCC = argv[++i];
+              LMflag=1;
             }
           else{
               fprintf(stderr,"* Error: Type of ranking not allowed in STEPS\n");
@@ -392,6 +407,28 @@ int main(int argc, char **argv)
         }
     }
 
+  nifti_image * METRIC=NULL;
+  if(LMflag){
+      // READING Metric image
+
+      if(verbose_level>1)cout << "Read LNCC";
+      METRIC=nifti_image_read(filename_LNCC,1);
+      if(verbose_level>1){cout << " - done"<<endl;flush(cout);}
+      if(METRIC == NULL){
+          fprintf(stderr,"* Error when reading the metric image: %s\n",filename_LNCC);
+          return 1;
+        }
+      if(verbose_level>1)cout << "seg_changeDatatype METRIC";
+      if(METRIC->datatype!=NIFTI_TYPE_FLOAT32)
+          seg_changeDatatype<float>(METRIC);
+      if(verbose_level>1)
+        cout << " - done"<<endl;flush(cout);
+      if(METRIC->nt!=CLASSIFIER->nt){
+          cout << "Number of lables in the -in image is different from the number of images in the 4d metric image.";
+          return 1;
+        }
+
+    }
   //
 
   nifti_image * GNCC=NULL;
@@ -520,6 +557,10 @@ int main(int argc, char **argv)
         }
       LabFusion.SetROINCC(ROINCC,BaseImage,Numb_Neigh,DilSize);
       nifti_image_free(ROINCC);
+    }
+  if(LMflag){
+      LabFusion.SetLMETRIC(METRIC,Numb_Neigh);
+      nifti_image_free(METRIC);
     }
 
 

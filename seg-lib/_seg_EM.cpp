@@ -606,7 +606,7 @@ int seg_EM::Allocate_and_Initialize()
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 int seg_EM::Intensity_Based_Inisitalization_of_Means()
 {
-  cout << "HEHEHE - "<<this->nu<<endl;
+
   for(int ms=0; ms<this->nu; ms++){
       SegPrecisionTYPE * Intensity_PTR = static_cast<SegPrecisionTYPE *>(this->inputImage->data);
       bool * MaskDataPtr=NULL;

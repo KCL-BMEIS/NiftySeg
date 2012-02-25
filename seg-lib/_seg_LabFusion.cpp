@@ -237,6 +237,62 @@ int seg_LabFusion::SetLNCC(nifti_image * _LNCC,nifti_image * BaseImage,LabFusion
   return 0;
 }
 
+
+
+/* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
+
+int seg_LabFusion::SetLMETRIC(nifti_image * _InMetric,int Numb_Neigh)
+{
+  if((Numb_Neigh<_InMetric->nt) & (Numb_Neigh>0)){
+      this->Numb_Neigh=(int)Numb_Neigh;
+    }
+  else{
+      this->Numb_Neigh=_InMetric->nt;
+    }
+
+  if(this->nx!=_InMetric->nx || this->ny!=_InMetric->ny || this->nz!=_InMetric->nz){
+      fprintf(stderr,"* The image size of the images do not match");
+      exit(1);
+    }
+
+
+  if(_InMetric->nt==this->numb_classif){
+      if(_InMetric->datatype==DT_FLOAT){
+          this->LNCC=new char [Numb_Neigh*this->nx*this->ny*this->nz];
+          if(this->LNCC == NULL){
+              fprintf(stderr,"* Error when alocating this->LNCC in function SetLMETRIC");
+              exit(-1);
+            }
+
+          LabFusion_datatype * InputMetricPtr = static_cast<LabFusion_datatype *>(_InMetric->data);
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  shared(LNCC,BaseImage,LNCCptr,CurrSizes,numberordered,LNCC_ordered)
+#endif
+          for(int i=0; i<this->nx*this->ny*this->nz;i++){
+              LabFusion_datatype * LNCCvalue_tmp = new LabFusion_datatype [_InMetric->nt];
+              for(int currlable=0;currlable<_InMetric->nt; currlable++){
+                  LNCCvalue_tmp[currlable]=InputMetricPtr[i+currlable*this->nx*this->ny*this->nz];
+                }
+              int * ordertmp=quickSort_order(&LNCCvalue_tmp[0],_InMetric->nt);
+              for(int lable_order=0;lable_order<Numb_Neigh;lable_order++){
+                  this->LNCC[i+lable_order*this->nx*this->ny*this->nz]=(char)ordertmp[_InMetric->nt-lable_order-1];
+                }
+              delete [] ordertmp;
+            }
+          if (this->verbose_level>0){
+              cout << "Finished sorting Metric"<< endl;
+              flush(cout);
+            }
+        }
+      else{
+          cout << "Metric is not float"<< endl;
+        }
+    }
+  return 0;
+}
+
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 int seg_LabFusion::SetMLLNCC(nifti_image * _LNCC,nifti_image * BaseImage,LabFusion_datatype distance,int levels,int Numb_Neigh)
 {

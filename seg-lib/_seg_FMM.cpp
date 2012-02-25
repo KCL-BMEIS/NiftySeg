@@ -5,7 +5,7 @@ float * DoubleEuclideanDistance_3D(bool *LablePtr, float * speedptr,
 
   int i, NumElements, centre_index;
   NumElements=CurrSizes->xsize*CurrSizes->ysize*CurrSizes->zsize;
-  int MaxGeoTime=40;
+  int MaxGeoTime=100;
   i=0;
   int neighbour6[6]={0};
   neighbour6[0]=-1;
@@ -29,6 +29,8 @@ float * DoubleEuclideanDistance_3D(bool *LablePtr, float * speedptr,
   float *GeoTime= (float *) calloc(NumElements, sizeof(float));
 
   for(centre_index=0;centre_index<NumElements;centre_index++){
+      if(speedptr[centre_index]<=0.000001)
+        speedptr[centre_index]=speedptr[centre_index]+0.000001;
       if(LablePtr[centre_index]>0.5){
           Labels[centre_index]=0;
           GeoTime[centre_index]=0;
@@ -160,7 +162,7 @@ float * DoubleEuclideanDistance_3D(bool *LablePtr, float * speedptr,
                   if(index_neighbour>=0){
                       if (Labels[index_neighbour]>0 && !Border[index_neighbour]){
                           oldGeoTime=GeoTime2[index_neighbour];
-                          if(speedptr!=NULL)speed=speedptr[index_neighbour]+0.01;
+                          if(speedptr!=NULL)speed=speedptr[index_neighbour];
                           newGeoTime=CalcGeoTime_long(index_neighbour, GeoTime2, speed, neighbour6, MaxGeoTime);
                           if(newGeoTime<oldGeoTime && newGeoTime<MaxGeoTime){
                               GeoTime2[index_neighbour]=newGeoTime;
@@ -388,7 +390,7 @@ SegPrecisionTYPE CalcGeoTime_long(int index,
   for(int i=0; i<6; i+=2){
       neighbour_index[0]=index+neighbour[i];
       neighbour_index[1]=index+neighbour[i+1];
-      if((GeoTime[neighbour_index[0]]<Max || GeoTime[neighbour_index[1]]<Max)){
+      if(((GeoTime[neighbour_index[0]]<Max &&GeoTime[neighbour_index[0]]>0) || (GeoTime[neighbour_index[1]]<Max &&GeoTime[neighbour_index[1]]>0))){
           neighbour_index_true=(GeoTime[neighbour_index[0]]<GeoTime[neighbour_index[1]])?neighbour_index[0]:neighbour_index[1];
           average+=GeoTime[neighbour_index_true];
           counter+=1.0f;
@@ -400,14 +402,14 @@ SegPrecisionTYPE CalcGeoTime_long(int index,
   for(int i=0; i<6; i+=2){
       neighbour_index[0]=index+neighbour[i];
       neighbour_index[1]=index+neighbour[i+1];
-      if((GeoTime[neighbour_index[0]]<Max || GeoTime[neighbour_index[1]]<Max)){
+      if(((GeoTime[neighbour_index[0]]<Max &&GeoTime[neighbour_index[0]]>0) || (GeoTime[neighbour_index[1]]<Max &&GeoTime[neighbour_index[1]]>0))){
           a+=1.0f;
           neighbour_index_true=(GeoTime[neighbour_index[0]]<GeoTime[neighbour_index[1]])?neighbour_index[0]:neighbour_index[1];
           c += powf(GeoTime[neighbour_index_true]-average,2);
         }
     }
 
-  c -= 0.0001+SpeedI;
+  c -= SpeedI;
   if((-4.0f*a*c)>0){
       return sqrtf(-4.0f*a*c)/(2.0f*a)+average;
     }

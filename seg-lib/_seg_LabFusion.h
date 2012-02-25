@@ -80,6 +80,7 @@ public:
   int SetinputCLASSIFIER(nifti_image * LABELS, bool UNCERTAINflag);
   int SetMLLNCC(nifti_image * LNCC,nifti_image * BaseImage,float distance,int levels, int Numb_Neigh);
   int SetLNCC(nifti_image * LNCC,nifti_image * BaseImage,float distance,int Numb_Neigh);
+  int SetLMETRIC(nifti_image * _METRIC,int Numb_Neigh);
   int SetGNCC(nifti_image * _GNCC,nifti_image * BaseImage,int Numb_Neigh);
   int SetROINCC(nifti_image * _ROINCC,nifti_image * BaseImage,int Numb_Neigh, int DilSize);
   int SetProp(float prior);
