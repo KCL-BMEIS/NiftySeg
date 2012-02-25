@@ -89,7 +89,7 @@ int main(int argc, char **argv)
   SegPrecisionTYPE ** bufferImages = new SegPrecisionTYPE * [2];
   bufferImages[0] = new SegPrecisionTYPE [InputImage->nvox];
   bufferImages[1] = new SegPrecisionTYPE [InputImage->nvox];
-  for(unsigned int i=0; i<InputImage->nvox; i++){
+  for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++){
       bufferImages[0][i]=InputImagePtr[i];
     }
   int current_buffer=0;
@@ -108,7 +108,7 @@ int main(int argc, char **argv)
           string parser=argv[++i];
           if((strtod(parser.c_str(),NULL)!=0 || (parser.length()==1 && parser.find("0")>=0))){
               double multfactor=strtod(parser.c_str(),NULL);
-              for(unsigned int i=0; i<InputImage->nvox; i++)
+              for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
                 bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]*multfactor;
               current_buffer=current_buffer?0:1;
             }
@@ -118,8 +118,8 @@ int main(int argc, char **argv)
                   seg_changeDatatype<SegPrecisionTYPE>(NewImage);
                 }
               SegPrecisionTYPE * NewImagePtr = static_cast<SegPrecisionTYPE *>(NewImage->data);
-              if(NewImage->nx==InputImage->nx&&NewImage->ny==InputImage->ny&&NewImage->nz==InputImage->nz&&NewImage->nt==InputImage->nt&&NewImage->nu==InputImage->nu&&NewImage->nv==InputImage->nv&&NewImage->nw==InputImage->nw){
-                  for(unsigned int i=0; i<InputImage->nvox; i++)
+              if(NewImage->nx==CurrSize->xsize&&NewImage->ny==CurrSize->ysize&&NewImage->nz==CurrSize->zsize&&NewImage->nt==CurrSize->tsize&&NewImage->nu==CurrSize->tsize){
+                  for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
                     bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]*NewImagePtr[i];
                   current_buffer=current_buffer?0:1;
                 }
@@ -135,7 +135,7 @@ int main(int argc, char **argv)
           string parser=argv[++i];
           if((strtod(parser.c_str(),NULL)!=0 || (parser.length()==1 && parser.find("0")>=0))){
               double addfactor=strtod(parser.c_str(),NULL);
-              for(unsigned int i=0; i<InputImage->nvox; i++)
+              for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
                 bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]+addfactor;
               current_buffer=current_buffer?0:1;
             }
@@ -145,8 +145,8 @@ int main(int argc, char **argv)
                   seg_changeDatatype<SegPrecisionTYPE>(NewImage);
                 }
               SegPrecisionTYPE * NewImagePtr = static_cast<SegPrecisionTYPE *>(NewImage->data);
-              if(NewImage->nx==InputImage->nx&&NewImage->ny==InputImage->ny&&NewImage->nz==InputImage->nz&&NewImage->nt==InputImage->nt&&NewImage->nu==InputImage->nu&&NewImage->nv==InputImage->nv&&NewImage->nw==InputImage->nw){
-                  for(unsigned int i=0; i<InputImage->nvox; i++)
+              if(NewImage->nx==CurrSize->xsize&&NewImage->ny==CurrSize->ysize&&NewImage->nz==CurrSize->zsize&&NewImage->nt==CurrSize->tsize&&NewImage->nu==CurrSize->tsize){
+                  for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
                     bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]+NewImagePtr[i];
                   current_buffer=current_buffer?0:1;
                 }
@@ -162,7 +162,7 @@ int main(int argc, char **argv)
           string parser=argv[++i];
           if((strtod(parser.c_str(),NULL)!=0 || (parser.length()==1 && parser.find("0")>=0))){
               double factor=strtod(parser.c_str(),NULL);
-              for(unsigned int i=0; i<InputImage->nvox; i++)
+              for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
                 bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]-factor;
               current_buffer=current_buffer?0:1;
             }
@@ -172,8 +172,8 @@ int main(int argc, char **argv)
                   seg_changeDatatype<SegPrecisionTYPE>(NewImage);
                 }
               SegPrecisionTYPE * NewImagePtr = static_cast<SegPrecisionTYPE *>(NewImage->data);
-              if(NewImage->nx==InputImage->nx&&NewImage->ny==InputImage->ny&&NewImage->nz==InputImage->nz&&NewImage->nt==InputImage->nt&&NewImage->nu==InputImage->nu&&NewImage->nv==InputImage->nv&&NewImage->nw==InputImage->nw){
-                  for(unsigned int i=0; i<InputImage->nvox; i++)
+              if(NewImage->nx==CurrSize->xsize&&NewImage->ny==CurrSize->ysize&&NewImage->nz==CurrSize->zsize&&NewImage->nt==CurrSize->tsize&&NewImage->nu==CurrSize->tsize){
+                  for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
                     bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]-NewImagePtr[i];
                   current_buffer=current_buffer?0:1;
                 }
@@ -189,7 +189,7 @@ int main(int argc, char **argv)
           string parser=argv[++i];
           if((strtod(parser.c_str(),NULL)!=0 || (parser.length()==1 && parser.find("0")>=0))){
               double factor=strtod(parser.c_str(),NULL);
-              for(unsigned int i=0; i<InputImage->nvox; i++)
+              for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
                 bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]/factor;
               current_buffer=current_buffer?0:1;
             }
@@ -199,8 +199,8 @@ int main(int argc, char **argv)
                   seg_changeDatatype<SegPrecisionTYPE>(NewImage);
                 }
               SegPrecisionTYPE * NewImagePtr = static_cast<SegPrecisionTYPE *>(NewImage->data);
-              if(NewImage->nx==InputImage->nx&&NewImage->ny==InputImage->ny&&NewImage->nz==InputImage->nz&&NewImage->nt==InputImage->nt&&NewImage->nu==InputImage->nu&&NewImage->nv==InputImage->nv&&NewImage->nw==InputImage->nw){
-                  for(unsigned int i=0; i<InputImage->nvox; i++)
+              if(NewImage->nx==CurrSize->xsize&&NewImage->ny==CurrSize->ysize&&NewImage->nz==CurrSize->zsize&&NewImage->nt==CurrSize->tsize&&NewImage->nu==CurrSize->tsize){
+                  for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
                     bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]/NewImagePtr[i];
                   current_buffer=current_buffer?0:1;
                 }
@@ -216,7 +216,7 @@ int main(int argc, char **argv)
           string parser=argv[++i];
           if((strtod(parser.c_str(),NULL)!=0 || (parser.length()==1 && parser.find("0")>=0))){
               float factor=strtof(parser.c_str(),NULL);
-              for(unsigned int i=0; i<InputImage->nvox; i++)
+              for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
                 bufferImages[current_buffer?0:1][i]=powf(bufferImages[current_buffer][i],factor);
               current_buffer=current_buffer?0:1;
             }
@@ -227,32 +227,32 @@ int main(int argc, char **argv)
         }
       // *********************  square_root  *************************
       else if(strcmp(argv[i], "-sqrt") == 0){
-          for(unsigned int i=0; i<InputImage->nvox; i++)
+          for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
             bufferImages[current_buffer?0:1][i]=sqrtf(bufferImages[current_buffer][i]);
           current_buffer=current_buffer?0:1;
         }
       // *********************  Exponential  *************************
       else if(strcmp(argv[i], "-exp") == 0){
-          for(unsigned int i=0; i<InputImage->nvox; i++)
+          for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
             bufferImages[current_buffer?0:1][i]=expf(bufferImages[current_buffer][i]);
           current_buffer=current_buffer?0:1;
         }
       // *********************  reciprocal  *************************
       else if(strcmp(argv[i], "-recip") == 0){
-          for(unsigned int i=0; i<InputImage->nvox; i++)
+          for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
             bufferImages[current_buffer?0:1][i]=1/(bufferImages[current_buffer][i]);
           current_buffer=current_buffer?0:1;
         }
       // *********************  absolute value  *************************
       else if(strcmp(argv[i], "-abs") == 0){
-          for(unsigned int i=0; i<InputImage->nvox; i++)
+          for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
             bufferImages[current_buffer?0:1][i]=fabs(bufferImages[current_buffer][i]);
           current_buffer=current_buffer?0:1;
 
         }
       // *********************  bin value  *************************
       else if(strcmp(argv[i], "-bin") == 0){
-          for(unsigned int i=0; i<InputImage->nvox; i++)
+          for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
             bufferImages[current_buffer?0:1][i]=(bufferImages[current_buffer][i]>0?1.0f:0.0f);
           current_buffer=current_buffer?0:1;
         }
@@ -261,7 +261,7 @@ int main(int argc, char **argv)
           string parser=argv[++i];
           if((strtod(parser.c_str(),NULL)!=0 || (parser.length()==1 && parser.find("0")>=0))){
               double factor=strtod(parser.c_str(),NULL);
-              for(unsigned int i=0; i<InputImage->nvox; i++)
+              for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
                 bufferImages[current_buffer?0:1][i]=(bufferImages[current_buffer][i]>factor)?bufferImages[current_buffer][i]:0;
               current_buffer=current_buffer?0:1;
             }
@@ -275,7 +275,7 @@ int main(int argc, char **argv)
           string parser=argv[++i];
           if((strtod(parser.c_str(),NULL)!=0 || (parser.length()==1 && parser.find("0")>=0))){
               double factor=strtod(parser.c_str(),NULL);
-              for(unsigned int i=0; i<InputImage->nvox; i++)
+              for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
                 bufferImages[current_buffer?0:1][i]=(bufferImages[current_buffer][i]<factor)?bufferImages[current_buffer][i]:0;
               current_buffer=current_buffer?0:1;
             }
@@ -290,7 +290,7 @@ int main(int argc, char **argv)
           if((strtod(parser.c_str(),NULL)>0)){
               double factor=strtod(parser.c_str(),NULL);
               Dillate(bufferImages[current_buffer],(int)round(factor),CurrSize);
-              for(unsigned int i=0; i<InputImage->nvox; i++)
+              for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
                 bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i];
               current_buffer=current_buffer?0:1;
             }
@@ -305,7 +305,7 @@ int main(int argc, char **argv)
           if((strtod(parser.c_str(),NULL)>0 )){
               double factor=strtod(parser.c_str(),NULL);
               Erosion(bufferImages[current_buffer],(int)round(factor),CurrSize);
-              for(unsigned int i=0; i<InputImage->nvox; i++)
+              for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
                 bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i];
               current_buffer=current_buffer?0:1;
             }
@@ -319,13 +319,13 @@ int main(int argc, char **argv)
 
           bool * Lable= new bool [CurrSize->numel];
           float * Speed= new float [CurrSize->numel];
-          for(unsigned int i=0; i<InputImage->nvox; i++){
+          for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++){
               Lable[i]=bufferImages[current_buffer][i];
               Speed[i]=1.0f;
             }
           float * Distance = DoubleEuclideanDistance_3D(Lable,Speed,CurrSize);
 
-          for(unsigned int i=0; i<InputImage->nvox; i++)
+          for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
             bufferImages[current_buffer?0:1][i]=Distance[i];
           current_buffer=current_buffer?0:1;
           delete [] Distance;
@@ -345,13 +345,13 @@ int main(int argc, char **argv)
                 }
               bool * Lable= new bool [CurrSize->numel];
               float * Speed= new float [CurrSize->numel];
-              for(unsigned int i=0; i<InputImage->nvox; i++){
+              for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++){
                   Lable[i]=bufferImages[current_buffer][i];
                   Speed[i]=strtod(parser.c_str(),NULL);
                 }
               float * Distance = DoubleEuclideanDistance_3D(Lable,Speed,CurrSize);
 
-              for(unsigned int i=0; i<InputImage->nvox; i++)
+              for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
                 bufferImages[current_buffer?0:1][i]=Distance[i];
               current_buffer=current_buffer?0:1;
               delete [] Distance;
@@ -366,11 +366,11 @@ int main(int argc, char **argv)
               SegPrecisionTYPE * SpeedPtr = static_cast<SegPrecisionTYPE *>(Speed->data);
 
               bool * Lable= new bool [CurrSize->numel];
-              for(unsigned int i=0; i<InputImage->nvox; i++)
+              for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
                   Lable[i]=bufferImages[current_buffer][i];
 
               float * Distance = DoubleEuclideanDistance_3D(Lable,SpeedPtr,CurrSize);
-              for(unsigned int i=0; i<InputImage->nvox; i++)
+              for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
                 bufferImages[current_buffer?0:1][i]=Distance[i];
               current_buffer=current_buffer?0:1;
 
@@ -387,7 +387,7 @@ int main(int argc, char **argv)
               float factor=strtof(parser.c_str(),NULL);
 
               Gaussian_Filter_4D(&bufferImages[current_buffer][0], factor, CurrSize);
-              for(unsigned int i=0; i<InputImage->nvox; i++)
+              for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
                 bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i];
 
               current_buffer=current_buffer?0:1;
