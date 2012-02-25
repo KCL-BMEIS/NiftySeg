@@ -540,6 +540,10 @@ int main(int argc, char **argv)
           if(NewImage->datatype!=DT_FLOAT32){
               seg_changeDatatype<SegPrecisionTYPE>(NewImage);
             }
+          if(NewImage->nu<1)
+            NewImage->dim[5]=1;
+          if(NewImage->nt<1)
+            NewImage->dim[4]=1;
           nifti_update_dims_from_array(NewImage);
           SegPrecisionTYPE * NewImagePtr = static_cast<SegPrecisionTYPE *>(NewImage->data);
           if(NewImage->nx==CurrSize->xsize&&NewImage->ny==CurrSize->ysize&&NewImage->nz==CurrSize->ysize&&NewImage->nt==CurrSize->usize&&NewImage->nu==CurrSize->usize){
