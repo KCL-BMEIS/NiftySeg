@@ -426,6 +426,7 @@ int main(int argc, char **argv)
           if((strtod(parser.c_str(),NULL)!=0 || (parser.length()==1 && parser.find("0")>=0 && parser.find("0")>=0) )&& strtod(parser.c_str(),NULL)<CurrSize->tsize ){
               float factor=strtof(parser.c_str(),NULL);
               InputImage->dim[4]=InputImage->nt=CurrSize->tsize=1;
+              InputImage->dim[0]=3;
               for(int i=0; i<CurrSize->numel; i++)
                 bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i+(int)round(factor)*CurrSize->numel];
 
