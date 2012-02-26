@@ -40,6 +40,7 @@ void Usage(char *exec)
   printf("\t-tmin\t\t\tMean value of all time points.\n");
   printf("\n\t* * Dimensionality increase operations: from 3-D to 4-D * *\n");
   printf("\t-merge\t<int> <dim> <files>\tMerge <int> images and the working image in the <dim> dimension \n");
+  printf("\t-splitlab\t\t\tSplit the integer labels into multiple timepoints\n");
   printf("\n\t* * Image similarity: Local metrics * *\n");
   printf("\t-lncc\t<file> <std>\tLocal CC between current img and <int> on a kernel with <std>\n");
   printf("\t-lssd\t<file> <std>\tLocal SSD between current img and <int> on a kernel with <std>\n");
@@ -367,7 +368,7 @@ int main(int argc, char **argv)
 
               bool * Lable= new bool [CurrSize->numel];
               for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
-                  Lable[i]=bufferImages[current_buffer][i];
+                Lable[i]=bufferImages[current_buffer][i];
 
               float * Distance = DoubleEuclideanDistance_3D(Lable,SpeedPtr,CurrSize);
               for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++)
@@ -434,6 +435,39 @@ int main(int argc, char **argv)
             }
           else{
               cout << "ERROR: "<< parser << " is not an integer"<<endl;
+              i=argc;
+            }
+        }
+
+      // *********************  Split Lables  *************************
+      else if(strcmp(argv[i], "-splitlab") == 0){
+          int maxlab=0;
+          for(int index=0; index<(CurrSize->numel*(CurrSize->tsize*CurrSize->usize)); index++)
+            maxlab=(round(bufferImages[current_buffer][index])>maxlab)?round(bufferImages[current_buffer][index]):maxlab;
+          maxlab=maxlab+1;
+          if(maxlab>0 && CurrSize->tsize<=1&& CurrSize->usize<=1){
+              CurrSize->tsize=maxlab;
+              CurrSize->usize=1;
+
+              delete [] bufferImages[current_buffer?0:1];
+              bufferImages[current_buffer?0:1]= new SegPrecisionTYPE [CurrSize->numel*maxlab];
+              for(int index=0; index<(CurrSize->numel*maxlab); index++)
+                bufferImages[current_buffer?0:1][index]=0.0f;
+              for(int index=0; index<(CurrSize->numel); index++)
+                bufferImages[current_buffer?0:1][index+(int)round(bufferImages[current_buffer][index])*CurrSize->numel]=1.0f;
+              delete [] bufferImages[current_buffer];
+              bufferImages[current_buffer]= new SegPrecisionTYPE [CurrSize->numel*maxlab];
+              for(int index=0; index<(CurrSize->numel*maxlab); index++)
+                bufferImages[current_buffer][index]=0;
+              current_buffer=current_buffer?0:1;
+            }
+          else{
+              if(CurrSize->tsize<=1&& CurrSize->usize<=1){
+                  cout << "ERROR: Working image is not 3D"<<endl;
+                }
+              else{
+              cout << "ERROR: Found only "<< maxlab << " labels"<<endl;
+                }
               i=argc;
             }
         }
@@ -608,7 +642,7 @@ int main(int argc, char **argv)
                   Gaussian_Filter_4D(bufferImages[current_buffer?0:1],strtod(parserstd.c_str(),NULL),CurrSize);
                   for(int index=0; index<InputImage->nx*InputImage->ny*InputImage->nz;index++){
                       bufferImages[current_buffer?0:1][index]=bufferImages[current_buffer?0:1][index]*bufferImages[current_buffer?0:1][index];
-                   }
+                    }
 
                   current_buffer=current_buffer?0:1;
                   delete [] NewImageMean;
