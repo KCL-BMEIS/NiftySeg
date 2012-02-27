@@ -444,7 +444,7 @@ int main(int argc, char **argv)
       else if(strcmp(argv[i], "-splitlab") == 0){
           int maxlab=0;
           for(int index=0; index<(CurrSize->numel*(CurrSize->tsize*CurrSize->usize)); index++)
-            maxlab=(round(bufferImages[current_buffer][index])>maxlab)?round(bufferImages[current_buffer][index]):maxlab;
+            maxlab=(round(bufferImages[current_buffer][index])>maxlab)?(int)round(bufferImages[current_buffer][index]):maxlab;
           maxlab=maxlab+1;
           if(maxlab>0 && CurrSize->tsize<=1&& CurrSize->usize<=1){
               CurrSize->tsize=maxlab;
@@ -531,7 +531,7 @@ int main(int argc, char **argv)
             }
         }
       // *********************  Get max TP  *************************
-      else if(strcmp(argv[i], "-tmax") == 0){
+      else if(strcmp(argv[i], "-tpmax") == 0){
           for(int i=0; i<CurrSize->numel; i++){
               float tmax=(float)-1.0e32;
               for(int tp=0; tp<CurrSize->tsize; tp++){
