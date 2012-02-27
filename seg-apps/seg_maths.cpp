@@ -35,8 +35,9 @@ void Usage(char *exec)
   printf("\t-geo <float/file>\t\tGeodesic distance according to the speed function <float/file>\n");
   printf("\n\t* * Dimensionality reduction operations: from 4-D to 3-D * *\n");
   printf("\t-tp\t<int>\t\tExtract time point <int>\n");
-  printf("\t-tmean\t<int>\t\tMean value of all time points.\n");
-  printf("\t-tmax\t<int>\t\tMax value of all time points.\n");
+  printf("\t-tpmax\t\t\tGet the time point with the highest value (binarise 4D probabilities)\n");
+  printf("\t-tmean\t\t\tMean value of all time points.\n");
+  printf("\t-tmax\t\t\tMax value of all time points.\n");
   printf("\t-tmin\t\t\tMean value of all time points.\n");
   printf("\n\t* * Dimensionality increase operations: from 3-D to 4-D * *\n");
   printf("\t-merge\t<int> <dim> <files>\tMerge <int> images and the working image in the <dim> dimension \n");
@@ -538,6 +539,22 @@ int main(int argc, char **argv)
                     tmax=bufferImages[current_buffer][i+(int)(tp)*CurrSize->numel];
                 }
               bufferImages[current_buffer?0:1][i]=tmax;
+            }
+          CurrSize->tsize=1;
+          current_buffer=current_buffer?0:1;
+        }
+      // *********************  Get TP with maxval  *************************
+      else if(strcmp(argv[i], "-tmax") == 0){
+          for(int i=0; i<CurrSize->numel; i++){
+              float tmax=(float)-1.0e32;
+              int tmaxindex=0;
+              for(int tp=0; tp<CurrSize->tsize; tp++){
+                  if(tmax<bufferImages[current_buffer][i+(int)(tp)*CurrSize->numel]){
+                    tmax=bufferImages[current_buffer][i+(int)(tp)*CurrSize->numel];
+                    tmaxindex=tp;
+                    }
+                }
+              bufferImages[current_buffer?0:1][i]=(float)tmaxindex;
             }
           CurrSize->tsize=1;
           current_buffer=current_buffer?0:1;
