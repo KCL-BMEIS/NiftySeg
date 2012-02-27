@@ -531,7 +531,7 @@ int main(int argc, char **argv)
             }
         }
       // *********************  Get max TP  *************************
-      else if(strcmp(argv[i], "-tpmax") == 0){
+      else if(strcmp(argv[i], "-tmax") == 0){
           for(int i=0; i<CurrSize->numel; i++){
               float tmax=(float)-1.0e32;
               for(int tp=0; tp<CurrSize->tsize; tp++){
@@ -544,7 +544,7 @@ int main(int argc, char **argv)
           current_buffer=current_buffer?0:1;
         }
       // *********************  Get TP with maxval  *************************
-      else if(strcmp(argv[i], "-tmax") == 0){
+      else if(strcmp(argv[i], "-tpmax") == 0){
           for(int i=0; i<CurrSize->numel; i++){
               float tmax=(float)-1.0e32;
               int tmaxindex=0;
