@@ -86,6 +86,7 @@ int main(int argc, char **argv)
   CurrSize->zsize=InputImage->nz;
   CurrSize->usize=(InputImage->nu>1)?InputImage->nu:1;
   CurrSize->tsize=(InputImage->nt>1)?InputImage->nt:1;
+
   int datatypeoutput=NIFTI_TYPE_FLOAT32;
 
   SegPrecisionTYPE ** bufferImages = new SegPrecisionTYPE * [2];
@@ -557,6 +558,7 @@ int main(int argc, char **argv)
               bufferImages[current_buffer?0:1][i]=(float)tmaxindex;
             }
           CurrSize->tsize=1;
+          InputImage->cal_max=CurrSize->tsize;
           current_buffer=current_buffer?0:1;
         }
       // *********************  Get mean TP  *************************
