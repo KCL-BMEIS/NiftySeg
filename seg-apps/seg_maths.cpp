@@ -91,7 +91,7 @@ int main(int argc, char **argv)
   SegPrecisionTYPE ** bufferImages = new SegPrecisionTYPE * [2];
   bufferImages[0] = new SegPrecisionTYPE [InputImage->nvox];
   bufferImages[1] = new SegPrecisionTYPE [InputImage->nvox];
-  for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->tsize); i++){
+  for(long i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++){
       bufferImages[0][i]=InputImagePtr[i];
     }
   int current_buffer=0;
@@ -547,11 +547,11 @@ int main(int argc, char **argv)
       else if(strcmp(argv[i], "-tpmax") == 0){
           for(int i=0; i<CurrSize->numel; i++){
               float tmax=(float)-1.0e32;
-              int tmaxindex=0;
+              float tmaxindex=-1;
               for(int tp=0; tp<CurrSize->tsize; tp++){
-                  if(tmax<bufferImages[current_buffer][i+(int)(tp)*CurrSize->numel]){
+                  if(bufferImages[current_buffer][i+(int)(tp)*CurrSize->numel]>tmax){
                     tmax=bufferImages[current_buffer][i+(int)(tp)*CurrSize->numel];
-                    tmaxindex=tp;
+                    tmaxindex=(float)tp;
                     }
                 }
               bufferImages[current_buffer?0:1][i]=(float)tmaxindex;
