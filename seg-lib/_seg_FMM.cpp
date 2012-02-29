@@ -29,8 +29,10 @@ float * DoubleEuclideanDistance_3D(bool *LablePtr, float * speedptr,
   float *GeoTime= (float *) calloc(NumElements, sizeof(float));
 
   for(centre_index=0;centre_index<NumElements;centre_index++){
-      if(speedptr[centre_index]<=0.000001)
-        speedptr[centre_index]=speedptr[centre_index]+0.000001;
+      if(speedptr!=NULL){
+          if(speedptr[centre_index]<=0.000001)
+            speedptr[centre_index]=speedptr[centre_index]+0.000001;
+        }
       if(LablePtr[centre_index]>0.5){
           Labels[centre_index]=0;
           GeoTime[centre_index]=0;
