@@ -1163,7 +1163,7 @@ int seg_LabFusion::SBA_Estimate()
               for(int i=0;i<(this->CurrSizes->numel);i++){
                   CurrLableImage[i]=(inputCLASSIFIERptr[i+this->CurrSizes->numel*classifier]==currclass);
                 }
-              geotime=DoubleEuclideanDistance_3D(CurrLableImage,speedfunc,CurrSizes);
+              geotime=DoubleEuclideanDistance_3D(CurrLableImage,NULL,CurrSizes);
 
               for(int i=0;i<(this->CurrSizes->numel);i++){
                   this->W[i+currclass*this->numel]+=geotime[i];

@@ -559,6 +559,7 @@ int main(int argc, char **argv)
             }
           CurrSize->tsize=1;
           InputImage->cal_max=CurrSize->tsize;
+
           current_buffer=current_buffer?0:1;
         }
       // *********************  Get mean TP  *************************
