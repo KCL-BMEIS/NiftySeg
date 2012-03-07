@@ -241,6 +241,19 @@ int main(int argc, char **argv)
 
   InputImage->dim[4]=InputImage->nt=(InputImage->nt<1)?1:InputImage->nt;
   InputImage->dim[5]=InputImage->nu=(InputImage->nu<1)?1:InputImage->nu;
+  if(InputImage->nu>1){
+      InputImage->dim[5]=InputImage->nu;
+      InputImage->dim[4]=1;
+    }
+  else if(InputImage->nt>1){
+      InputImage->dim[5]=InputImage->nt;
+      InputImage->dim[4]=1;
+    }
+  else if(InputImage->nt>1){
+      InputImage->dim[5]=1;
+      InputImage->dim[4]=1;
+    }
+  InputImage->dim[0]=5;
   nifti_update_dims_from_array(InputImage);
 
 

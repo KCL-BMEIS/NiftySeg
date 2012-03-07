@@ -2947,6 +2947,45 @@ int quickSort(int *arr, int elements) {
     }
   return 1;}
 
+
+int quickSort(float *arr, int elements) {
+
+  float  piv;
+  int beg[300], end[300], i=0, L, R, swap ;
+
+  beg[0]=0; end[0]=elements;
+  cout << elements<<endl;
+
+  while (i>=0) {
+      L=beg[i]; R=end[i]-1;
+      if (L<R) {
+          piv=arr[L];
+          cout <<"part1= "<< L << "," <<arr[L] << " ... " <<R << "," <<arr[R]<<endl;
+          while (L<R) {
+              while (arr[R]>=piv && L<R) R--; if (L<R) arr[L++]=arr[R];
+              while (arr[L]<=piv && L<R) L++; if (L<R) arr[R--]=arr[L];
+            }
+          cout <<"part2= "<< L << "," <<arr[L] << " ... " <<R << "," <<arr[R]<<endl;
+          arr[L]=piv; beg[i+1]=L+1; end[i+1]=end[i]; end[i++]=L;
+          cout <<i<<endl;
+          if (end[i]-beg[i]>end[i-1]-beg[i-1]) {
+              swap=beg[i];
+              beg[i]=beg[i-1];
+              beg[i-1]=swap;
+              swap=end[i];
+              end[i]=end[i-1];
+              end[i-1]=swap;
+            }
+          cout <<i<<endl;
+        }
+      else {
+          i--;
+        }
+    }
+  return 1;
+}
+
+
 int * quickSort_order(int *arr, int elements) {
 
   int  piv,piv_index, beg[300], end[300], i=0, L, R, swap ;
@@ -2997,14 +3036,19 @@ int * quickSort_order(float *arr, int elements) {
   float  piv;
   int piv_index, beg[300], end[300], i=0, L, R, swap ;
   int * order = new int [elements];
-
   for(int index=0;index<elements; index++){
       order[index]=index;
     }
   beg[0]=0; end[0]=elements;
+  int step=0;
   while (i>=0) {
       L=beg[i]; R=end[i]-1;
       if (L<R) {
+          step++;
+          if(step==100){
+              cout << "R , L = "<<R<<" , "<<L<<" -> "<<arr[L]<<" , "<<arr[R]<<endl;
+              step=0;
+            }
           piv=arr[L];
           piv_index=order[L];
           while (L<R) {
@@ -3039,6 +3083,51 @@ int * quickSort_order(float *arr, int elements) {
     }
   return order;
 }
+
+
+
+
+void MaxHeapify(float * a,int i,int n)
+{
+    int l,r,lr;
+    float t;
+    l=2*i+1;
+    r=2*i+2;
+    if((l<=n)&&(a[l]>a[i]))lr=l;
+    else lr=i;
+    if((r<=n)&&(a[r]>a[lr]))lr=r;
+    if(lr!=i)
+    {
+        t=a[i];
+        a[i]=a[lr];
+        a[lr]=t;
+        MaxHeapify(a,lr,n);
+    }
+}
+
+void BuildMaxHeap(float * a,int n)
+{
+    int i;
+    for(i=(n/2);i>=0;i--)
+    MaxHeapify(a,i,n);
+}
+
+void HeapSort(float * a,int n)
+{
+    int i;
+    float t;
+    BuildMaxHeap(a,n);
+    for(i=n;i>0;i--)
+    {
+        t=a[0];
+        a[0]=a[i];
+        a[i]=t;
+        n--;
+        MaxHeapify(a,0,n);
+    }
+}
+
+
 
 nifti_image * Get_Bias_Corrected(float * BiasField,
                                  nifti_image * T1,

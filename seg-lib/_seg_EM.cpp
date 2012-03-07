@@ -13,8 +13,8 @@ seg_EM::seg_EM(int _numb_classes, int _nu,int _nt)
   this->nx=1;
   this->ny=0;
   this->nz=0;
-  this->nu=_nu;
-  this->nt=_nt;
+  this->nu=_nu*_nt;
+  this->nt=1;
   this->dx=0;
   this->dy=0;
   this->dz=0;

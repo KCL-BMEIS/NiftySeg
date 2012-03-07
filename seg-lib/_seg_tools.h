@@ -312,9 +312,12 @@ nifti_image * Copy_single_image_to_Result(double * Mask,
                                           char * filename);
 
 int quickSort(int *arr, int elements);
+int quickSort(float *arr, int elements);
 
 int * quickSort_order(int *arr, int elements);
 int * quickSort_order(float *arr, int elements);
+
+void HeapSort(float * a,int n);
 
 nifti_image * Get_Bias_Corrected(float * BiasField,
                                  nifti_image * T1,
