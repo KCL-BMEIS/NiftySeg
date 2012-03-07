@@ -241,7 +241,7 @@ int seg_LabFusion::SetLNCC(nifti_image * _LNCC,nifti_image * BaseImage,LabFusion
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 
-int seg_LabFusion::SetLMETRIC(nifti_image * _InMetric,int Numb_Neigh)
+/*int seg_LabFusion::SetLMETRIC(nifti_image * _InMetric,int Numb_Neigh)
 {
   if((Numb_Neigh<_InMetric->nt) & (Numb_Neigh>0)){
       this->Numb_Neigh=(int)Numb_Neigh;
@@ -292,6 +292,7 @@ int seg_LabFusion::SetLMETRIC(nifti_image * _InMetric,int Numb_Neigh)
     }
   return 0;
 }
+*/
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 int seg_LabFusion::SetMLLNCC(nifti_image * _LNCC,nifti_image * BaseImage,LabFusion_datatype distance,int levels,int Numb_Neigh)
