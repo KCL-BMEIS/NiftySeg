@@ -72,7 +72,7 @@ int main(int argc, char **argv)
   char * filename_in=argv[1];
   nifti_image * InputImage=nifti_image_read(filename_in,true);
   if(InputImage == NULL){
-      fprintf(stderr,"* Error when reading the input Segmentation image\n");
+      fprintf(stderr,"* Error when reading the input image\n");
       return 1;
     }
   if(InputImage->datatype!=NIFTI_TYPE_FLOAT32){
@@ -489,12 +489,12 @@ int main(int argc, char **argv)
                   oldnumbTP=CurrSize->usize;
                 }
               delete [] bufferImages[current_buffer?0:1];
-              bufferImages[current_buffer?0:1]= new SegPrecisionTYPE [CurrSize->numel*((CurrSize->tsize*CurrSize->usize)+(int)numberofTP)];
-              for(int index=0; index<(CurrSize->numel*(CurrSize->tsize*CurrSize->usize)); index++)
+              bufferImages[current_buffer?0:1]= new SegPrecisionTYPE [CurrSize->numel*(oldnumbTP+(int)numberofTP)];
+              for(int index=0; index<(CurrSize->numel*oldnumbTP); index++)
                 bufferImages[current_buffer?0:1][index]=bufferImages[current_buffer][index];
               delete [] bufferImages[current_buffer];
-              bufferImages[current_buffer]= new SegPrecisionTYPE [CurrSize->numel*((CurrSize->tsize*CurrSize->usize)+(int)numberofTP)];
-              for(int index=0; index<(CurrSize->numel*(CurrSize->tsize*CurrSize->usize)); index++)
+              bufferImages[current_buffer]= new SegPrecisionTYPE [CurrSize->numel*(oldnumbTP+(int)numberofTP)];
+              for(int index=0; index<(CurrSize->numel*oldnumbTP); index++)
                 bufferImages[current_buffer][index]=bufferImages[current_buffer?0:1][index];
               current_buffer=current_buffer?0:1;
               if(dim==4){
@@ -505,7 +505,7 @@ int main(int argc, char **argv)
                   CurrSize->tsize=1;
                   CurrSize->usize=CurrSize->usize+numberofTP;
                 }
-              for(int tp=oldnumbTP; tp<(CurrSize->tsize*CurrSize->usize);tp++){
+              for(int tp=0; tp<numberofTP;tp++){
                   string parser_image_name=argv[++i];
                   if(parser_image_name.find(string(".nii"))>0 || parser_image_name.find(string(".img")) ||parser_image_name.find(string(".hdr"))>0){
                       nifti_image * NewImage=nifti_image_read(parser_image_name.c_str(),true);
@@ -513,13 +513,13 @@ int main(int argc, char **argv)
                           cout<< "ERROR: When reading the image"<<parser_image_name<<endl;
                           return 1;
                         }
-                      if(NewImage->nx==InputImage->nx&&NewImage->ny==InputImage->ny&&NewImage->nz==InputImage->nz&&NewImage->nt==1){
+                      if(NewImage->nx==InputImage->nx&&NewImage->ny==InputImage->ny&&NewImage->nz==InputImage->nz){
                           if(NewImage->datatype!=DT_FLOAT32){
                               seg_changeDatatype<SegPrecisionTYPE>(NewImage);
                             }
                           SegPrecisionTYPE * NewImagePtr = static_cast<SegPrecisionTYPE *>(NewImage->data);
                           for(int index=0; index<CurrSize->numel; index++)
-                            bufferImages[current_buffer?0:1][index+tp*CurrSize->numel]=NewImagePtr[index];
+                            bufferImages[current_buffer?0:1][index+(oldnumbTP+tp)*CurrSize->numel]=NewImagePtr[index];
                         }
                       else{
                           cout<< "ERROR: Image "<<parser_image_name<<" is not single time point or [nx,ny,nz] do not match"<<endl;

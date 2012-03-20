@@ -410,7 +410,6 @@ int main(int argc, char **argv)
 //  nifti_image * METRIC=NULL;
 //  if(LMflag){
 //      // READING Metric image
-
 //      if(verbose_level>1)cout << "Read LNCC";
 //      METRIC=nifti_image_read(filename_LNCC,1);
 //      if(verbose_level>1){cout << " - done"<<endl;flush(cout);}

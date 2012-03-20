@@ -60,7 +60,7 @@ csf_prior=${pathatlas}/ECSF_prior.nii.gz
 deep_grey_prior=${pathatlas}/DGM_prior.nii.gz
 internal_csf_prior=${pathatlas}/ICSF_prior.nii.gz
 
-seg_maths ${mask} -bin -dil 3 -ero 3 -fill -dill ${name}__mask_filled.nii
+seg_maths ${mask} -bin -dil 3 -ero 3 -fill -dil 1 ${name}__mask_filled.nii
 
 if [ ! -f ${name}__affine.mat ]; then
   echo Starting reg_aladin
