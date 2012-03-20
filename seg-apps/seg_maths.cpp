@@ -499,11 +499,11 @@ int main(int argc, char **argv)
               current_buffer=current_buffer?0:1;
               if(dim==4){
                   CurrSize->usize=1;
-                  CurrSize->tsize=CurrSize->tsize+numberofTP;
+                  CurrSize->tsize=oldnumbTP+numberofTP;
                 }
               else if(dim==5){
                   CurrSize->tsize=1;
-                  CurrSize->usize=CurrSize->usize+numberofTP;
+                  CurrSize->usize=oldnumbTP+numberofTP;
                 }
               for(int tp=0; tp<numberofTP;tp++){
                   string parser_image_name=argv[++i];
@@ -794,7 +794,12 @@ int main(int argc, char **argv)
       OutputImage->dim[5]=OutputImage->nu=CurrSize->usize;
       OutputImage->dim[6]=OutputImage->nv=1;
       OutputImage->dim[7]=OutputImage->nw=1;
-      OutputImage->dim[0]=(int)(OutputImage->dim[1]>=1)+(int)(OutputImage->dim[2]>=1)+(int)(OutputImage->dim[3]>=1)+(int)(OutputImage->dim[4]>=1)+(int)(OutputImage->dim[5]>=1)+(int)(OutputImage->dim[6]>=1)+(int)(OutputImage->dim[7]>=1);
+      OutputImage->dim[0]=3;
+      OutputImage->dim[0]=(OutputImage->dim[4]>1?4:OutputImage->dim[0]);
+      OutputImage->dim[0]=(OutputImage->dim[5]>1?5:OutputImage->dim[0]);
+      OutputImage->dim[0]=(OutputImage->dim[6]>1?6:OutputImage->dim[0]);
+      OutputImage->dim[0]=(OutputImage->dim[7]>1?7:OutputImage->dim[0]);
+
       nifti_update_dims_from_array(OutputImage);
       nifti_datatype_sizes(OutputImage->datatype,&OutputImage->nbyper,&OutputImage->swapsize);
       if(datatypeoutput==NIFTI_TYPE_UINT8){
