@@ -48,8 +48,9 @@ void Usage(char *exec)
   //printf("\t-lmi\t<file> <std>\tLocal MI between current img and <int> on a kernel with <std>\n");
   printf("\n\t* * Image header operations * *\n");
   printf("\t-hdr_copy <file> \tCopy header from working image to <file> and save in <output>.\n");
-  printf("\n\t* * Datatype output * *\n");
+  printf("\n\t* * Output * *\n");
   printf("\t-odt <datatype> \tSet output <datatype> (char, short, int, uchar, ushort, uint, float, double).\n");
+  printf("\t-v\t\tVerbose.\n");
   printf("\n\n* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
   return;
 }
@@ -87,6 +88,7 @@ int main(int argc, char **argv)
   CurrSize->usize=(InputImage->nu>1)?InputImage->nu:1;
   CurrSize->tsize=(InputImage->nt>1)?InputImage->nt:1;
 
+  bool verbose=0;
   int datatypeoutput=NIFTI_TYPE_FLOAT32;
 
   SegPrecisionTYPE ** bufferImages = new SegPrecisionTYPE * [2];
@@ -469,7 +471,7 @@ int main(int argc, char **argv)
                   cout << "ERROR: Working image is not 3D"<<endl;
                 }
               else{
-              cout << "ERROR: Found only "<< maxlab << " labels"<<endl;
+                  cout << "ERROR: Found only "<< maxlab << " labels"<<endl;
                 }
               i=argc;
             }
@@ -554,8 +556,8 @@ int main(int argc, char **argv)
               float tmaxindex=-1;
               for(int tp=0; tp<CurrSize->tsize; tp++){
                   if(bufferImages[current_buffer][i+(int)(tp)*CurrSize->numel]>tmax){
-                    tmax=bufferImages[current_buffer][i+(int)(tp)*CurrSize->numel];
-                    tmaxindex=(float)tp;
+                      tmax=bufferImages[current_buffer][i+(int)(tp)*CurrSize->numel];
+                      tmaxindex=(float)tp;
                     }
                 }
               bufferImages[current_buffer?0:1][i]=(float)tmaxindex;
@@ -745,6 +747,9 @@ int main(int argc, char **argv)
           nifti_image_free(NewImage);
         }
       // *********************  output data type  *************************
+      else if(strcmp(argv[i], "-v") == 0){
+          verbose=1;
+        }
       else if(strcmp(argv[i], "-odt") == 0){
           string parser=argv[++i];
           if(parser.find("uchar")>=0){
@@ -790,6 +795,9 @@ int main(int argc, char **argv)
       nifti_image * OutputImage = nifti_copy_nim_info(InputImage);
       OutputImage->datatype=datatypeoutput;
       nifti_set_filenames(OutputImage,filename_out,0,0);
+      OutputImage->dim[1]=CurrSize->xsize;
+      OutputImage->dim[2]=CurrSize->ysize;
+      OutputImage->dim[3]=CurrSize->zsize;
       OutputImage->dim[4]=OutputImage->nt=CurrSize->tsize;
       OutputImage->dim[5]=OutputImage->nu=CurrSize->usize;
       OutputImage->dim[6]=OutputImage->nv=1;
@@ -800,6 +808,17 @@ int main(int argc, char **argv)
       OutputImage->dim[0]=(OutputImage->dim[6]>1?6:OutputImage->dim[0]);
       OutputImage->dim[0]=(OutputImage->dim[7]>1?7:OutputImage->dim[0]);
 
+      if(verbose){
+          cout << "Output Dim = [ ";
+          for(int i=0; i<8; i++){
+              cout<<(float)OutputImage->dim[i];
+              if(i<7){
+                  cout<<" , ";
+                }
+            }
+          cout<<" ] "<<endl;
+          flush(cout);
+        }
       nifti_update_dims_from_array(OutputImage);
       nifti_datatype_sizes(OutputImage->datatype,&OutputImage->nbyper,&OutputImage->swapsize);
       if(datatypeoutput==NIFTI_TYPE_UINT8){
