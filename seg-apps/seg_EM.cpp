@@ -17,7 +17,7 @@ void Usage(char *exec)
   printf("\t\t\t\t| 4D images are segmented as if they were multimodal.\n\n");
   printf("  \t\t- Select one of the following (mutually exclusive) -\n\n");
   printf("\t-priors <n> <fnames>\t| The number of priors (n>0) and their filenames. Priors should be registerd to the input image\n");
-  printf("\t\t\t\t| Priors are mandatory for now. Won't be in the next release.\n");
+  printf("\t-priors4D <fname>\t| 4D image with the piors stacked in the 4th dimension. Priors should be registerd to the input image\n");
   printf("\t-nopriors <n>\t\t| The number of classes (n>0) \n\n");
   printf("  * * * * * * * * * * * * * * * * General Options * * * * * * * * * * * * * * * * *\n\n");
   printf("\t-mask <filename>\t| Filename of the brain-mask of the input image\n");
@@ -79,7 +79,7 @@ int main(int argc, char **argv)
   segment_param->bias_order=3;
   segment_param->MRF_strength=0.25f;
   segment_param->Bias_threshold=0;
-  segment_param->numb_classes=0;
+  segment_param->numb_classes=1;
   segment_param->aprox=false;
   segment_param->flag_Outlierness=0;
   segment_param->OutliernessThreshold=0;
@@ -87,6 +87,7 @@ int main(int argc, char **argv)
   float OutliernessRatio=0.01;
   int To_do_MAP_index_argv=0;
   float regularization_amount=1;
+  bool priors4D=false;
 
 
 
@@ -129,6 +130,19 @@ int main(int argc, char **argv)
               return 1;
             }
           segment_param->flag_manual_priors=1;
+        }
+      else if(strcmp(argv[i], "-priors4D") == 0 && (i+1)<argc){
+          segment_param->filename_priors= (char **) calloc(1,sizeof(char *));
+          segment_param->filename_priors[0]=argv[++i];
+          segment_param->flag_manual_priors=1;
+          nifti_image * tmpread = nifti_image_read(segment_param->filename_priors[0],false);
+          segment_param->numb_classes=tmpread->nt;
+          if(segment_param->numb_classes<2){
+              cout<<"Number of classes has to be bigger than 1";
+              return 0;
+            }
+          nifti_image_free(tmpread);
+          priors4D=true;
         }
       else if(strcmp(argv[i], "-nopriors") == 0 && (i+1)<argc){
           segment_param->flag_manual_priors=0;
@@ -281,36 +295,52 @@ int main(int argc, char **argv)
 
   if(segment_param->flag_manual_priors){
 
-      for(int i=0; i<segment_param->numb_classes; i++){
-          Priors_temp[i] = nifti_image_read(segment_param->filename_priors[i],true);
-
-          if(Priors_temp[i] == NULL){
+      if(priors4D){
+          int i=0;
+          Priors = nifti_image_read(segment_param->filename_priors[i],true);
+          if(Priors == NULL){
               fprintf(stderr,"* Error when reading the Prior image: %s\n",segment_param->filename_priors[i]);
               return 1;
             }
-          if( (Priors_temp[i]->nx != InputImage->nx) || (Priors_temp[i]->ny != InputImage->ny) || (Priors_temp[i]->nz != InputImage->nz) ){
+          if( (Priors->nx != InputImage->nx) || (Priors->ny != InputImage->ny) || (Priors->nz != InputImage->nz) ){
               fprintf(stderr,"* Error: Prior image ( %s ) not the same size as input\n",segment_param->filename_priors[i]);
               return 1;
             }
-          seg_changeDatatype<SegPrecisionTYPE>(Priors_temp[i]);
+          seg_changeDatatype<SegPrecisionTYPE>(Priors);
+
         }
+      else{
 
-      Priors=nifti_copy_nim_info(InputImage);
-      Priors->dim[0]=4;
-      Priors->nt=Priors->dim[4]=segment_param->numb_classes;
-      Priors->datatype=NIFTI_TYPE_FLOAT32;
-      Priors->cal_max=1;
+          for(int i=0; i<segment_param->numb_classes; i++){
+              Priors_temp[i] = nifti_image_read(segment_param->filename_priors[i],true);
 
-      nifti_update_dims_from_array(Priors);
-      nifti_datatype_sizes(Priors->datatype,&Priors->nbyper,&Priors->swapsize);
-      Priors->data = (void *) calloc(Priors->nvox, sizeof(SegPrecisionTYPE));
+              if(Priors_temp[i] == NULL){
+                  fprintf(stderr,"* Error when reading the Prior image: %s\n",segment_param->filename_priors[i]);
+                  return 1;
+                }
+              if( (Priors_temp[i]->nx != InputImage->nx) || (Priors_temp[i]->ny != InputImage->ny) || (Priors_temp[i]->nz != InputImage->nz) ){
+                  fprintf(stderr,"* Error: Prior image ( %s ) not the same size as input\n",segment_param->filename_priors[i]);
+                  return 1;
+                }
+              seg_changeDatatype<SegPrecisionTYPE>(Priors_temp[i]);
+            }
 
-      Merge_Priors(Priors,Priors_temp,segment_param);
-      for(int i=0;i<segment_param->numb_classes;i++){
-          nifti_image_free(Priors_temp[i]);
-          Priors_temp[i]=NULL;
+          Priors=nifti_copy_nim_info(InputImage);
+          Priors->dim[0]=4;
+          Priors->nt=Priors->dim[4]=segment_param->numb_classes;
+          Priors->datatype=NIFTI_TYPE_FLOAT32;
+          Priors->cal_max=1;
+
+          nifti_update_dims_from_array(Priors);
+          nifti_datatype_sizes(Priors->datatype,&Priors->nbyper,&Priors->swapsize);
+          Priors->data = (void *) calloc(Priors->nvox, sizeof(SegPrecisionTYPE));
+
+          Merge_Priors(Priors,Priors_temp,segment_param);
+          for(int i=0;i<segment_param->numb_classes;i++){
+              nifti_image_free(Priors_temp[i]);
+              Priors_temp[i]=NULL;
+            }
         }
-      delete [] Priors_temp;
     }
   else{
       if(segment_param->numb_classes<2){
@@ -324,6 +354,7 @@ int main(int argc, char **argv)
 
     }
 
+  delete [] Priors_temp;
 
 
   seg_EM SEG(segment_param->numb_classes,InputImage->dim[5],InputImage->dim[4]);

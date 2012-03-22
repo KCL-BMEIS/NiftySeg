@@ -92,8 +92,8 @@ int main(int argc, char **argv)
   int datatypeoutput=NIFTI_TYPE_FLOAT32;
 
   SegPrecisionTYPE ** bufferImages = new SegPrecisionTYPE * [2];
-  bufferImages[0] = new SegPrecisionTYPE [InputImage->nvox];
-  bufferImages[1] = new SegPrecisionTYPE [InputImage->nvox];
+  bufferImages[0] = new SegPrecisionTYPE [CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize];
+  bufferImages[1] = new SegPrecisionTYPE [CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize];
   for(long i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++){
       bufferImages[0][i]=InputImagePtr[i];
     }
