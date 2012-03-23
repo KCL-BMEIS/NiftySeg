@@ -90,7 +90,7 @@ int main(int argc, char **argv)
               fprintf(stderr, "This image can not be read: %s\n", filenames[oldnumbimg]);
               return 0;
             }
-          if(Images[oldnumbimg]->nvox==Images[0]->nvox){
+          if(Images[oldnumbimg]->nvox!=Images[0]->nvox){
               cout<<"ERROR: The mask is not the same size as the image <in>."<<endl;
               return 0;
             }
