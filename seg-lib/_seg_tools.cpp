@@ -3576,7 +3576,7 @@ char * seg_norm4MLLNCC(nifti_image * BaseImage, nifti_image * LNCC,float distanc
         }
 
 
-      float distance_level=distance*pow(2,(curlevel-1));
+      float distance_level=distance*pow(2.0,(curlevel-1));
       int numbordered_level=(curlevel*numberordered)<=LNCC->nt?(curlevel*numberordered):LNCC->nt;
 
 
@@ -3618,9 +3618,9 @@ char * seg_norm4MLLNCC(nifti_image * BaseImage, nifti_image * LNCC,float distanc
         }
       int currlable=0;
 
-#ifdef _OPENMP
-#pragma omp parallel for shared(BaseImageptr, BaseSTD, BaseMean, LNCC,BaseImage,stderr, verbose,cout,LNCCptr,CurrSizes,distance_level)
-#endif
+//#ifdef _OPENMP
+//#pragma omp parallel for shared(BaseImageptr, BaseSTD, BaseMean, LNCC,BaseImage,stderr, verbose,cout,LNCCptr,CurrSizes,distance_level)
+//#endif
 
       for(currlable=0;currlable<LNCC->nt; currlable++){
           LabFusion_datatype * bufferMean=new LabFusion_datatype [BaseImage->nx*BaseImage->ny*BaseImage->nz];

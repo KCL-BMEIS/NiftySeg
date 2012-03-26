@@ -2,7 +2,39 @@
 
 //Global includes
 #include <sys/types.h>
+
+
+#ifndef _WINDOWS
 #include <dirent.h>
+#endif
+
+#if defined(_WIN32) && !defined(__CYGWIN__)
+#include <dirent_win.h>
+#include <float.h>
+#include <time.h>
+#ifndef M_PI
+#define M_PI (3.14159265358979323846)
+#endif
+
+template<typename T> inline bool isinf(T value) { return std::numeric_limits<T>::has_infinity && value == std::numeric_limits<T>::infinity(); }
+#ifndef isnan(_X)
+#define isnan(_X) _isnan(_X)
+#endif
+
+#ifndef round(_x)
+#define round(_x) floor(_x + 0.5)
+#endif
+
+inline int fabs(int _x) { return (int)fabs((float)(_x)); }
+
+#ifndef strtof(_s, _t)
+#define strtof(_s, _t) (float) strtod(_s, _t)
+#endif
+
+#endif
+
+
+
 #include <errno.h>
 #include <vector>
 #include <stdio.h>
@@ -52,62 +84,62 @@ using namespace std;
 
 
 typedef struct{
-  int xsize;
-  int ysize;
-  int zsize;
-  int usize;
-  int tsize;
-  int numclass;
-  int numel;
-  int numelmasked;
-  int numelbias;
-  float rescale_max[MaxMultispectalSize];
-  float rescale_min[MaxMultispectalSize];
+    int xsize;
+    int ysize;
+    int zsize;
+    int usize;
+    int tsize;
+    int numclass;
+    int numel;
+    int numelmasked;
+    int numelbias;
+    float rescale_max[MaxMultispectalSize];
+    float rescale_min[MaxMultispectalSize];
 }ImageSize;
 
 
 typedef struct{
-  SegPrecisionTYPE relax_factor;
-  SegPrecisionTYPE relax_gauss_kernel;
-  int  bias_order;
-  float Bias_threshold;
-  SegPrecisionTYPE  MRF_strength;
-  int  maxIteration;
-  int  verbose_level;
-  int numb_classes;
-  bool flag_T1;
-  bool flag_mask;
-  bool flag_MRF;
-  bool flag_out;
-  bool flag_Bias;
-  bool flag_PV_model;
-  bool flag_SG_deli;
-  bool flag_bc_out;
-  bool flag_manual_priors;
-  bool flag_Outlierness;
-  char * filename_out_outlier;
-  bool flag_out_outlier;
-  float OutliernessThreshold;
-  float * MAP_M;
-  float * MAP_V;
-  bool flag_MAP;
-  bool aprox;
-  char * filename_T1;
-  char * filename_out;
-  char * filename_bias;
-  char * filename_mask;
-  char ** filename_priors;
+    SegPrecisionTYPE relax_factor;
+    SegPrecisionTYPE relax_gauss_kernel;
+    int  bias_order;
+    float Bias_threshold;
+    SegPrecisionTYPE  MRF_strength;
+    int  maxIteration;
+    int  verbose_level;
+    int numb_classes;
+    bool flag_T1;
+    bool flag_mask;
+    bool flag_MRF;
+    bool flag_out;
+    bool flag_Bias;
+    bool flag_PV_model;
+    bool flag_SG_deli;
+    bool flag_bc_out;
+    bool flag_manual_priors;
+    bool flag_Outlierness;
+    char * filename_out_outlier;
+    bool flag_out_outlier;
+    float OutliernessThreshold;
+    float * MAP_M;
+    float * MAP_V;
+    bool flag_MAP;
+    bool aprox;
+    char * filename_T1;
+    char * filename_out;
+    char * filename_bias;
+    char * filename_mask;
+    char ** filename_priors;
 }SEG_PARAM;
 
 typedef struct{
-  SegPrecisionTYPE loglik;
-  SegPrecisionTYPE oldloglik;
-  int improv_phase;
-  bool prior_relax;
-  bool do_pv_modeling;
-  bool pv_modeling_on;
-  bool sg_delineation;
-  bool out;
+    SegPrecisionTYPE loglik;
+    SegPrecisionTYPE oldloglik;
+    int improv_phase;
+    bool prior_relax;
+    bool do_pv_modeling;
+    bool pv_modeling_on;
+    bool sg_delineation;
+    bool out;
 }FLAGS;
 
 
