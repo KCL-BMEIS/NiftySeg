@@ -3362,8 +3362,6 @@ float seg_norm3GNCC(nifti_image * BaseImage,nifti_image * Template,nifti_image *
   // CALC MEAN AND STD OF THE BASE
   if (verbose>0){
       cout << "Calculating NCC"<<endl;
-      cout << "Local Mean and STD of the base image"<<endl;
-      flush(cout);
     }
 
 
@@ -3382,12 +3380,15 @@ float seg_norm3GNCC(nifti_image * BaseImage,nifti_image * Template,nifti_image *
     }
   if(usemask){BaseSTD=sqrtf(BaseSTD/Maskcount);}
   else{BaseSTD=sqrtf(BaseSTD/(BaseImage->nx*BaseImage->ny*BaseImage->nz));}
-  // Calc Mean
-  // CALC NCC FOR EACH
+
   if (verbose>0){
-      cout << "Local Mean and STD of the Template images"<<endl;
+      cout << "Local Mean and STD of the base image = "<<BaseMean << "( " << BaseSTD<< " )"<<endl;
       flush(cout);
     }
+
+  // Calc Mean
+  // CALC NCC FOR EACH
+
 
   LabFusion_datatype NCCval=0;
 
@@ -3404,8 +3405,13 @@ float seg_norm3GNCC(nifti_image * BaseImage,nifti_image * Template,nifti_image *
       if(usemask){bufferSTD+=(Maskptr[i])?((Templateptr[i]-bufferMean)*(Templateptr[i]-bufferMean)):0;}
       else{bufferSTD+=(Templateptr[i]-bufferMean)*(Templateptr[i]-bufferMean);}
     }
-  if(usemask){BaseSTD=sqrtf(bufferSTD/Maskcount);}
-  else{BaseSTD=sqrtf(bufferSTD/(BaseImage->nx*BaseImage->ny*BaseImage->nz));}
+  if(usemask){bufferSTD=sqrtf(bufferSTD/Maskcount);}
+  else{bufferSTD=sqrtf(bufferSTD/(BaseImage->nx*BaseImage->ny*BaseImage->nz));}
+
+  if (verbose>0){
+      cout << "Local Mean and STD of the Template image = "<<bufferMean << "( " << bufferSTD<< " )"<<endl;
+      flush(cout);
+    }
 
   NCCval=0;
   for(int i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
