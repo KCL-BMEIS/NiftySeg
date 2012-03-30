@@ -47,6 +47,8 @@ inline int fabs(int _x) { return (int)fabs((float)(_x)); }
 #include <iostream>
 #include <iomanip>
 #include "nifti1_io.h"
+#include <new>
+#include <exception>
 
 // NiftySeg Defines
 
