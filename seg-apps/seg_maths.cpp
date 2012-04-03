@@ -50,6 +50,7 @@ void Usage(char *exec)
   printf("\t-hdr_copy <file> \tCopy header from working image to <file> and save in <output>.\n");
   printf("\n\t* * Output * *\n");
   printf("\t-odt <datatype> \tSet output <datatype> (char, short, int, uchar, ushort, uint, float, double).\n");
+  printf("\t-range\t\t\tReset the image range to the min max\n");
   printf("\t-v\t\tVerbose.\n");
   printf("\n\n* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
   return;
@@ -140,8 +141,8 @@ int main(int argc, char **argv)
                   }
                 else{
                     cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
-                         <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<") New image = ( "
-                        <<NewImage->nx<<","<<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<")"<<endl;
+                         <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" ) New image = ( "
+                        <<NewImage->nx<<","<<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<" )"<<endl;
                     i=argc;
                   }
                 nifti_image_free(NewImage);
@@ -171,8 +172,8 @@ int main(int argc, char **argv)
                   }
                 else{
                     cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
-                         <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<")  New image = ( "<<NewImage->nx<<","
-                        <<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<")"<<endl;
+                         <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" )  New image = ( "<<NewImage->nx<<","
+                        <<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<" )"<<endl;
                     i=argc;
                   }
                 nifti_image_free(NewImage);
@@ -202,8 +203,8 @@ int main(int argc, char **argv)
                   }
                 else{
                     cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
-                         <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<")  New image = ( "<<NewImage->nx<<","
-                        <<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<")"<<endl;
+                         <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" )  New image = ( "<<NewImage->nx<<","
+                        <<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<" )"<<endl;
                     i=argc;
                   }
                 nifti_image_free(NewImage);
@@ -233,8 +234,8 @@ int main(int argc, char **argv)
                   }
                 else{
                     cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
-                         <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<")  New image = ( "<<NewImage->nx<<","
-                        <<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<")"<<endl;
+                         <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" )  New image = ( "<<NewImage->nx<<","
+                        <<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<" )"<<endl;
                     i=argc;
                   }
                 nifti_image_free(NewImage);
@@ -448,7 +449,17 @@ int main(int argc, char **argv)
                 i=argc;
               }
           }
-
+        // *********************  Range  *************************
+        else if(strcmp(argv[i], "-range") == 0){
+            float min=1e32;
+            float max=-1e32;
+            for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++){
+              max=bufferImages[current_buffer][i]>max?bufferImages[current_buffer][i]:max;
+              min=bufferImages[current_buffer][i]<min?bufferImages[current_buffer][i]:min;
+              }
+            InputImage->cal_max=max;
+            InputImage->cal_min=min;
+          }
         // *********************  Extract time point  *************************
         else if(strcmp(argv[i], "-tp") == 0){
             string parser=argv[++i];
@@ -639,8 +650,8 @@ int main(int argc, char **argv)
               }
             else{
                 cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
-                     <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<")  New image = ( "<<NewImage->nx<<","
-                    <<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<")"<<endl;
+                     <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" )  New image = ( "<<NewImage->nx<<","
+                    <<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<" )"<<endl;
                 i=argc;
               }
             nifti_image_free(NewImage);
@@ -707,8 +718,8 @@ int main(int argc, char **argv)
                   }
                 else{
                     cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
-                         <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<")  New image = ( "<<NewImage->nx<<","
-                        <<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<")"<<endl;
+                         <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" )  New image = ( "<<NewImage->nx<<","
+                        <<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<" )"<<endl;
                     i=argc;
                   }
               }
@@ -771,8 +782,8 @@ int main(int argc, char **argv)
                   }
                 else{
                     cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
-                         <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<")  New image = ( "<<NewImage->nx<<","
-                        <<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<")"<<endl;
+                         <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" )  New image = ( "<<NewImage->nx<<","
+                        <<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<" )"<<endl;
                     i=argc;
                   }
               }
