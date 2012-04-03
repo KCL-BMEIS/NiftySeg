@@ -137,7 +137,9 @@ int main(int argc, char **argv)
                     current_buffer=current_buffer?0:1;
                   }
                 else{
-                    cout << "ERROR: Image "<< parser << " is the wrong size"<<endl;
+                    cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<','
+                         <<CurrSize->ysize<<','<<CurrSize->ysize<<','<<CurrSize->tsize<<','<<CurrSize->usize<<")  New image = ( "<<NewImage->nx<<','
+                        <<NewImage->ny<<','<<NewImage->nz<<','<<NewImage->nt<<','<<NewImage->nu<<")"<<endl;
                     i=argc;
                   }
                 nifti_image_free(NewImage);
@@ -164,7 +166,9 @@ int main(int argc, char **argv)
                     current_buffer=current_buffer?0:1;
                   }
                 else{
-                    cout << "ERROR: Image "<< parser << " is the wrong size"<<endl;
+                    cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<','
+                         <<CurrSize->ysize<<','<<CurrSize->ysize<<','<<CurrSize->tsize<<','<<CurrSize->usize<<")  New image = ( "<<NewImage->nx<<','
+                        <<NewImage->ny<<','<<NewImage->nz<<','<<NewImage->nt<<','<<NewImage->nu<<")"<<endl;
                     i=argc;
                   }
                 nifti_image_free(NewImage);
@@ -191,7 +195,9 @@ int main(int argc, char **argv)
                     current_buffer=current_buffer?0:1;
                   }
                 else{
-                    cout << "ERROR: Image "<< parser << " is the wrong size"<<endl;
+                    cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<','
+                         <<CurrSize->ysize<<','<<CurrSize->ysize<<','<<CurrSize->tsize<<','<<CurrSize->usize<<")  New image = ( "<<NewImage->nx<<','
+                        <<NewImage->ny<<','<<NewImage->nz<<','<<NewImage->nt<<','<<NewImage->nu<<")"<<endl;
                     i=argc;
                   }
                 nifti_image_free(NewImage);
@@ -218,7 +224,9 @@ int main(int argc, char **argv)
                     current_buffer=current_buffer?0:1;
                   }
                 else{
-                    cout << "ERROR: Image "<< parser << " is the wrong size"<<endl;
+                    cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<','
+                         <<CurrSize->ysize<<','<<CurrSize->ysize<<','<<CurrSize->tsize<<','<<CurrSize->usize<<")  New image = ( "<<NewImage->nx<<','
+                        <<NewImage->ny<<','<<NewImage->nz<<','<<NewImage->nt<<','<<NewImage->nu<<")"<<endl;
                     i=argc;
                   }
                 nifti_image_free(NewImage);
@@ -620,7 +628,9 @@ int main(int argc, char **argv)
                 current_buffer=current_buffer?0:1;
               }
             else{
-                cout << "ERROR: Image "<< parser << " is the wrong size"<<endl;
+                cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<','
+                     <<CurrSize->ysize<<','<<CurrSize->ysize<<','<<CurrSize->tsize<<','<<CurrSize->usize<<")  New image = ( "<<NewImage->nx<<','
+                    <<NewImage->ny<<','<<NewImage->nz<<','<<NewImage->nt<<','<<NewImage->nu<<")"<<endl;
                 i=argc;
               }
             nifti_image_free(NewImage);
@@ -684,7 +694,9 @@ int main(int argc, char **argv)
                     delete [] InputImageStd;
                   }
                 else{
-                    cout << "ERROR: Image "<< parser << " is the wrong size"<<endl;
+                    cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<','
+                         <<CurrSize->ysize<<','<<CurrSize->ysize<<','<<CurrSize->tsize<<','<<CurrSize->usize<<")  New image = ( "<<NewImage->nx<<','
+                        <<NewImage->ny<<','<<NewImage->nz<<','<<NewImage->nt<<','<<NewImage->nu<<")"<<endl;
                     i=argc;
                   }
               }
@@ -744,7 +756,9 @@ int main(int argc, char **argv)
                     delete [] InputImageStd;
                   }
                 else{
-                    cout << "ERROR: Image "<< parser << " is the wrong size"<<endl;
+                    cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<','
+                         <<CurrSize->ysize<<','<<CurrSize->ysize<<','<<CurrSize->tsize<<','<<CurrSize->usize<<")  New image = ( "<<NewImage->nx<<','
+                        <<NewImage->ny<<','<<NewImage->nz<<','<<NewImage->nt<<','<<NewImage->nu<<")"<<endl;
                     i=argc;
                   }
               }
