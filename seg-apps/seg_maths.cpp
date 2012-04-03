@@ -127,6 +127,8 @@ int main(int argc, char **argv)
               }
             else{
                 nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
+                NewImage->nu=(NewImage->nu>1)?NewImage->nu:1;
+                NewImage->nt=(NewImage->nt>1)?NewImage->nt:1;
                 if(NewImage->datatype!=DT_FLOAT32){
                     seg_changeDatatype<SegPrecisionTYPE>(NewImage);
                   }
@@ -156,6 +158,8 @@ int main(int argc, char **argv)
               }
             else{
                 nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
+                NewImage->nu=(NewImage->nu>1)?NewImage->nu:1;
+                NewImage->nt=(NewImage->nt>1)?NewImage->nt:1;
                 if(NewImage->datatype!=DT_FLOAT32){
                     seg_changeDatatype<SegPrecisionTYPE>(NewImage);
                   }
@@ -185,6 +189,8 @@ int main(int argc, char **argv)
               }
             else{
                 nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
+                NewImage->nu=(NewImage->nu>1)?NewImage->nu:1;
+                NewImage->nt=(NewImage->nt>1)?NewImage->nt:1;
                 if(NewImage->datatype!=DT_FLOAT32){
                     seg_changeDatatype<SegPrecisionTYPE>(NewImage);
                   }
@@ -214,6 +220,8 @@ int main(int argc, char **argv)
               }
             else{
                 nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
+                NewImage->nu=(NewImage->nu>1)?NewImage->nu:1;
+                NewImage->nt=(NewImage->nt>1)?NewImage->nt:1;
                 if(NewImage->datatype!=DT_FLOAT32){
                     seg_changeDatatype<SegPrecisionTYPE>(NewImage);
                   }
@@ -616,6 +624,8 @@ int main(int argc, char **argv)
             if(NewImage->datatype!=DT_FLOAT32){
                 seg_changeDatatype<SegPrecisionTYPE>(NewImage);
               }
+            NewImage->nu=(NewImage->nu>1)?NewImage->nu:1;
+            NewImage->nt=(NewImage->nt>1)?NewImage->nt:1;
             if(NewImage->nu<1)
               NewImage->dim[5]=1;
             if(NewImage->nt<1)
@@ -640,6 +650,8 @@ int main(int argc, char **argv)
         else if(strcmp(argv[i], "-lssd") == 0){
             string parser=argv[++i];
             nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
+            NewImage->nu=(NewImage->nu>1)?NewImage->nu:1;
+            NewImage->nt=(NewImage->nt>1)?NewImage->nt:1;
             if(NewImage->datatype!=DT_FLOAT32){
                 seg_changeDatatype<SegPrecisionTYPE>(NewImage);
               }
@@ -705,6 +717,8 @@ int main(int argc, char **argv)
         else if(strcmp(argv[i], "-lncc") == 0){
             string parser=argv[++i];
             nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
+            NewImage->nu=(NewImage->nu>1)?NewImage->nu:1;
+            NewImage->nt=(NewImage->nt>1)?NewImage->nt:1;
             if(NewImage->datatype!=DT_FLOAT32){
                 seg_changeDatatype<float>(NewImage);
               }
