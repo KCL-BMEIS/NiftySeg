@@ -244,7 +244,7 @@ int main(int argc, char **argv)
         // *********************  POWER  *************************
         else if(strcmp(argv[i], "-pow") == 0){
             string parser=argv[++i];
-            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")<=0 ||parser.find(".img")<=0 ||parser.find(".hdr")<=0 )) || (parser.length()==1 && parser.find("0")>=0))){
+            if(((strtod(parser.c_str(),NULL)!=0) || (parser.length()==1 && parser.find("0")>=0))){
                 float factor=strtof(parser.c_str(),NULL);
                 for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                   bufferImages[current_buffer?0:1][i]=powf(bufferImages[current_buffer][i],factor);
@@ -289,7 +289,7 @@ int main(int argc, char **argv)
         // *********************  THRESHOLD below  *************************
         else if(strcmp(argv[i], "-thr") == 0){
             string parser=argv[++i];
-            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")<=0 ||parser.find(".img")<=0 ||parser.find(".hdr")<=0 )) || (parser.length()==1 && parser.find("0")>=0))){
+            if(((strtod(parser.c_str(),NULL)!=0 ) || (parser.length()==1 && parser.find("0")>=0))){
                 double factor=strtod(parser.c_str(),NULL);
                 for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                   bufferImages[current_buffer?0:1][i]=(bufferImages[current_buffer][i]>factor)?bufferImages[current_buffer][i]:0;
@@ -303,7 +303,7 @@ int main(int argc, char **argv)
         // *********************  THRESHOLD ABOVE  *************************
         else if(strcmp(argv[i], "-uthr") == 0){
             string parser=argv[++i];
-            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")<=0 ||parser.find(".img")<=0 ||parser.find(".hdr")<=0 )) || (parser.length()==1 && parser.find("0")>=0))){
+            if(((strtod(parser.c_str(),NULL)!=0) || (parser.length()==1 && parser.find("0")>=0))){
                 double factor=strtod(parser.c_str(),NULL);
                 for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                   bufferImages[current_buffer?0:1][i]=(bufferImages[current_buffer][i]<factor)?bufferImages[current_buffer][i]:0;
@@ -413,7 +413,7 @@ int main(int argc, char **argv)
         // *********************  GAUSSIAN SMOTHING *************************
         else if(strcmp(argv[i], "-smo") == 0){
             string parser=argv[++i];
-            if((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")<=0 ||parser.find(".img")<=0 ||parser.find(".hdr")<=0 ))){
+            if((strtod(parser.c_str(),NULL)!=0 )){
                 float factor=strtof(parser.c_str(),NULL);
 
                 Gaussian_Filter_4D(&bufferImages[current_buffer][0], factor, CurrSize);
@@ -463,7 +463,7 @@ int main(int argc, char **argv)
         // *********************  Extract time point  *************************
         else if(strcmp(argv[i], "-tp") == 0){
             string parser=argv[++i];
-            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")<=0 ||parser.find(".img")<=0 ||parser.find(".hdr")<=0 )) || (parser.length()==1 && parser.find("0")>=0 && parser.find("0")>=0) )&& strtod(parser.c_str(),NULL)<=CurrSize->tsize ){
+            if(((strtod(parser.c_str(),NULL)!=0) || (parser.length()==1 && parser.find("0")>=0 && parser.find("0")>=0) )&& strtod(parser.c_str(),NULL)<=CurrSize->tsize ){
                 float factor=strtof(parser.c_str(),NULL);
                 InputImage->dim[4]=InputImage->nt=CurrSize->tsize=1;
                 InputImage->dim[0]=3;
@@ -515,7 +515,7 @@ int main(int argc, char **argv)
         else if(strcmp(argv[i], "-merge") == 0){
             string parser=argv[++i];
             string parsertp=argv[++i];
-            if(strtod(parser.c_str(),NULL) && (strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")<=0 ||parser.find(".img")<=0 ||parser.find(".hdr")<=0 ))){
+            if(strtod(parser.c_str(),NULL) && (strtod(parser.c_str(),NULL)!=0 )){
                 int numberofTP=(int)strtof(parser.c_str(),NULL);
                 int dim=(int)strtof(parsertp.c_str(),NULL);
                 int oldnumbTP=0;
