@@ -3,15 +3,11 @@
 //Global includes
 #include <sys/types.h>
 
-
-#ifndef _WINDOWS
-#include <dirent.h>
-#endif
-
-#if defined(_WIN32) && !defined(__CYGWIN__)
+#if (defined(_WIN32) || defined(_WINDOWS)) && !defined(__CYGWIN__)
 #include <dirent_win.h>
 #include <float.h>
 #include <time.h>
+
 #ifndef M_PI
 #define M_PI (3.14159265358979323846)
 #endif
@@ -31,6 +27,8 @@ inline int fabs(int _x) { return (int)fabs((float)(_x)); }
 #define strtof(_s, _t) (float) strtod(_s, _t)
 #endif
 
+#else  //IF NOT ON WINDOWS
+#include <dirent.h>
 #endif
 
 

@@ -3790,7 +3790,7 @@ char * seg_norm4LNCC(nifti_image * BaseImage, nifti_image * LNCC,float distance,
     }
 
 #ifdef _OPENMP
-#pragma omp parallel for shared(BaseImageptr, BaseSTD, BaseMean, LNCC,BaseImage,stderr, verbose,cout,LNCCptr,CurrSizes,distance)
+#pragma omp parallel for shared(BaseImageptr, BaseSTD, BaseMean, LNCC, BaseImage, verbose, cout, LNCCptr, CurrSizes, distance)
 #endif
 
   for(int currlable=0;currlable<LNCC->nt; currlable++){

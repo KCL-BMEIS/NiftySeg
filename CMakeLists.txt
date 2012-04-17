@@ -18,7 +18,12 @@ ENDIF("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" MAT
 if(COMMAND cmake_policy)
       cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
-add_definitions(-Wall -pedantic)
+
+IF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")	
+	add_definitions(/W1)
+ELSE (${CMAKE_SYSTEM_NAME} MATCHES "Windows")	
+	add_definitions(-Wall -pedantic)
+ENDIF()	
 
 #-----------------------------------------------------------------------------
 SET(ZLIB "z")
@@ -37,10 +42,6 @@ IF(BUILD_SHARED)
 ELSE(BUILD_SHARED)
   SET(LIBRARY_TYPE STATIC)
 ENDIF(BUILD_SHARED)
-
-IF(USE_OPENMP)
-SET(CMAKE_CXX_FLAGS -fopenmp)
-ENDIF(USE_OPENMP)
 
 IF(BUILD_SHARED)
     SET(LIBRARY_TYPE SHARED)
@@ -74,8 +75,25 @@ IF(INSTALL_PRIORS)
 ENDIF(INSTALL_PRIORS)
 
 IF(USE_OPENMP)
-    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+    IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        IF(CMAKE_SYSTEM_VERSION VERSION_GREATER 11.0 OR CMAKE_SYSTEM_VERSION VERSION_EQUAL 11.0.0)
+            MESSAGE("OpenMP appears to be broken using Mac OS Lion")
+            MESSAGE(FATAL_ERROR "Please turn USE_OPENMP OFF")
+        ENDIF()
+    ENDIF()
+	
+    EXECUTE_PROCESS(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+
+    IF(GCC_VERSION VERSION_GREATER 4.2 OR GCC_VERSION VERSION_EQUAL 4.2)
+        SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+	ENDIF()	
+	
+	IF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")	
+		SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /openmp")
+        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /openmp")
+    ENDIF()
+
 ENDIF(USE_OPENMP)
 
 #-----------------------------------------------------------------------------
