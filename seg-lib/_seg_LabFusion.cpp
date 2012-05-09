@@ -1268,7 +1268,7 @@ int seg_LabFusion::MV_Estimate()
               this->W[i]=tmpmaxindex;
             }
           else{
-              this->W[i]=tmpW[1]/(float)this->Numb_Neigh;
+              this->W[i]=tmpW[1]/(float)this->CurrSizes->numclass;
             }
         }
     }
