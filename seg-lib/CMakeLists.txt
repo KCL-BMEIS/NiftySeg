@@ -8,9 +8,7 @@
         LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
         ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
-    INSTALL(FILES ${NAME}.h DESTINATION include)
-    INSTALL(FILES _seg_common.h DESTINATION include)
-    INSTALL(FILES _seg_matrix.h DESTINATION include)
+    INSTALL(FILES ${NAME}.h _seg_matrix.h DESTINATION include)
 
     SET(NAME _seg_MRF)
     ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} ${NAME}.h ${NAME}.cpp _seg_common.h )
@@ -19,7 +17,7 @@
             LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
-    INSTALL(FILES ${NAME}.h DESTINATION include)
+    INSTALL(FILES ${NAME}.h _seg_common.h DESTINATION include)
 
     SET(NAME _seg_BiasCorrection)
     ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} ${NAME}.h ${NAME}.cpp)
@@ -76,5 +74,6 @@
             LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
-   INSTALL(FILES ${NAME}.h DESTINATION include)
+    INSTALL(FILES ${NAME}.h DESTINATION include)
+
 

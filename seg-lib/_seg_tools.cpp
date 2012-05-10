@@ -1846,6 +1846,10 @@ int Gaussian_Filter_Short_4D(SegPrecisionTYPE * ShortData,
   else{
       kernelsize=kernelsizemin+1;}
 
+  if(kernelsize<3){
+      kernelsize=3;
+    }
+
   int kernelshift=(int)floorf(kernelsize/2);
   SegPrecisionTYPE GaussKernel [100]= {0};
 
@@ -1934,11 +1938,19 @@ int Gaussian_Filter_4D(SegPrecisionTYPE * LongData,
       kernelsize=kernelsizemin;}
   else{
       kernelsize=kernelsizemin+1;}
+  if(kernelsize<3){
+      kernelsize=3;
+    }
 
   int kernelshift=(int)floorf(kernelsize/2);
 
-  SegPrecisionTYPE GaussKernel [200]= {0};
+  SegPrecisionTYPE GaussKernel [500]= {0};
 
+  if(kernelsize>500){
+      cout << "ERROR: Std is to large for Gaussian filter"<<endl;
+      flush(cout);
+      exit(9);
+    }
   for(int i=0; i<kernelsize; i++){
       GaussKernel[i]=expf((float)(-0.5*powf((i-kernelshift)/gauss_std, 2)))/(sqrtf(2*3.14159265*powf(gauss_std, 2)));
     }
@@ -3089,41 +3101,41 @@ int * quickSort_order(float *arr, int elements) {
 
 void MaxHeapify(float * a,int i,int n)
 {
-    int l,r,lr;
-    float t;
-    l=2*i+1;
-    r=2*i+2;
-    if((l<=n)&&(a[l]>a[i]))lr=l;
-    else lr=i;
-    if((r<=n)&&(a[r]>a[lr]))lr=r;
-    if(lr!=i)
+  int l,r,lr;
+  float t;
+  l=2*i+1;
+  r=2*i+2;
+  if((l<=n)&&(a[l]>a[i]))lr=l;
+  else lr=i;
+  if((r<=n)&&(a[r]>a[lr]))lr=r;
+  if(lr!=i)
     {
-        t=a[i];
-        a[i]=a[lr];
-        a[lr]=t;
-        MaxHeapify(a,lr,n);
+      t=a[i];
+      a[i]=a[lr];
+      a[lr]=t;
+      MaxHeapify(a,lr,n);
     }
 }
 
 void BuildMaxHeap(float * a,int n)
 {
-    int i;
-    for(i=(n/2);i>=0;i--)
+  int i;
+  for(i=(n/2);i>=0;i--)
     MaxHeapify(a,i,n);
 }
 
 void HeapSort(float * a,int n)
 {
-    int i;
-    float t;
-    BuildMaxHeap(a,n);
-    for(i=n;i>0;i--)
+  int i;
+  float t;
+  BuildMaxHeap(a,n);
+  for(i=n;i>0;i--)
     {
-        t=a[0];
-        a[0]=a[i];
-        a[i]=t;
-        n--;
-        MaxHeapify(a,0,n);
+      t=a[0];
+      a[0]=a[i];
+      a[i]=t;
+      n--;
+      MaxHeapify(a,0,n);
     }
 }
 
@@ -3624,9 +3636,9 @@ char * seg_norm4MLLNCC(nifti_image * BaseImage, nifti_image * LNCC,float distanc
         }
       int currlable=0;
 
-//#ifdef _OPENMP
-//#pragma omp parallel for shared(BaseImageptr, BaseSTD, BaseMean, LNCC,BaseImage,stderr, verbose,cout,LNCCptr,CurrSizes,distance_level)
-//#endif
+      //#ifdef _OPENMP
+      //#pragma omp parallel for shared(BaseImageptr, BaseSTD, BaseMean, LNCC,BaseImage,stderr, verbose,cout,LNCCptr,CurrSizes,distance_level)
+      //#endif
 
       for(currlable=0;currlable<LNCC->nt; currlable++){
           LabFusion_datatype * bufferMean=new LabFusion_datatype [BaseImage->nx*BaseImage->ny*BaseImage->nz];
@@ -4043,22 +4055,45 @@ void Resample_NN_with_weights(  nifti_image *sourceImage,
               zBasis[0]= (FieldTYPE)(1.0-relative);
               zBasis[1]= relative;
               int neighindex=0;
-              for(c=0; c<2; c++){
-                  Z= previous[2]+c;
-                  zPointer = &sourceIntensity[Z*sourceImage->nx*sourceImage->ny];
-                  for(b=0; b<2; b++){
-                      Y= previous[1]+b;
-                      xyzPointer = &zPointer[Y*sourceImage->nx+previous[0]];
-                      for(a=0; a<2; a++){
-                          if(resultIntensity!=NULL)
-                            resultIntensity[index+targetVoxelNumber*neighindex]=(SourceTYPE)(*xyzPointer);
-                          if(resultWeights!=NULL)
-                            resultWeights[index+targetVoxelNumber*neighindex]=(float)(xBasis[a]*yBasis[b]*zBasis[c]);
-                          xyzPointer++;
-                          neighindex++;
+              float resultWeightsSum=0;
+              if(resultIntensity!=NULL && resultWeights!=NULL){
+                  for(c=0; c<2; c++){
+                      Z= previous[2]+c;
+                      zPointer = &sourceIntensity[Z*sourceImage->nx*sourceImage->ny];
+                      for(b=0; b<2; b++){
+                          Y= previous[1]+b;
+                          xyzPointer = &zPointer[Y*sourceImage->nx+previous[0]];
+                          for(a=0; a<2; a++){
+                              if((SourceTYPE)(*xyzPointer)==(SourceTYPE)(*xyzPointer)){
+
+                                  resultIntensity[index+targetVoxelNumber*neighindex]=(SourceTYPE)(*xyzPointer);
+                                  resultWeights[index+targetVoxelNumber*neighindex]=(float)(xBasis[a]*yBasis[b]*zBasis[c]);
+                                  resultWeightsSum+=resultWeights[index+targetVoxelNumber*neighindex];
+                                }
+                              xyzPointer++;
+                              neighindex++;
+                            }
                         }
                     }
                 }
+              if(resultIntensity!=NULL && resultWeights!=NULL && resultWeightsSum<0.99f && resultWeightsSum>0.0f){
+                  for(c=0; c<2; c++){
+                      Z= previous[2]+c;
+                      zPointer = &sourceIntensity[Z*sourceImage->nx*sourceImage->ny];
+                      for(b=0; b<2; b++){
+                          Y= previous[1]+b;
+                          xyzPointer = &zPointer[Y*sourceImage->nx+previous[0]];
+                          for(a=0; a<2; a++){
+                              if(resultWeights!=NULL){
+                                  resultWeights[index+targetVoxelNumber*neighindex]=(float)(xBasis[a]*yBasis[b]*zBasis[c])/resultWeightsSum;
+                                  xyzPointer++;
+                                  neighindex++;
+                                }
+                            }
+                        }
+                    }
+                }
+
             }
           else {
               for(int neighindex=0; neighindex<8; neighindex++){
@@ -4075,6 +4110,141 @@ void Resample_NN_with_weights(  nifti_image *sourceImage,
 }
 
 template void Resample_NN_with_weights<unsigned char,float>(nifti_image *sourceImage,nifti_image *deformationField,nifti_image *resultImage,nifti_image *resultImageWeights,int *mask,float bgValue);
+
+
+/* *************************************************************** */
+template<class SourceTYPE, class FieldTYPE>
+void TrilinearResampleSourceImage_for_GIF(  nifti_image *sourceImage,
+                                            nifti_image *deformationField,
+                                            nifti_image *resultImage,
+                                            int *mask,
+                                            FieldTYPE bgValue)
+{
+  // The resampling scheme is applied along each time
+  SourceTYPE *sourceIntensityPtr = static_cast<SourceTYPE *>(sourceImage->data);
+  SourceTYPE *resultIntensityPtr = static_cast<SourceTYPE *>(resultImage->data);
+  FieldTYPE *deformationFieldPtrX = static_cast<FieldTYPE *>(deformationField->data);
+  int targetVoxelNumber = resultImage->nx*resultImage->ny*resultImage->nz;
+  int sourceVoxelNumber = sourceImage->nx*sourceImage->ny*sourceImage->nz;
+  FieldTYPE *deformationFieldPtrY = &deformationFieldPtrX[targetVoxelNumber];
+  FieldTYPE *deformationFieldPtrZ = &deformationFieldPtrY[targetVoxelNumber];
+
+  int *maskPtr = &mask[0];
+  mat44 *sourceIJKMatrix;
+  if(sourceImage->sform_code>0)
+    sourceIJKMatrix=&(sourceImage->sto_ijk);
+  else sourceIJKMatrix=&(sourceImage->qto_ijk);
+
+  for(int t=0; t<resultImage->nt;t++){
+#ifndef NDEBUG
+      printf("[NiftyReg DEBUG] 3D linear resampling of volume number %i\n",t);
+#endif
+
+      SourceTYPE *resultIntensity = &resultIntensityPtr[t*targetVoxelNumber];
+      SourceTYPE *sourceIntensity = &sourceIntensityPtr[t*sourceVoxelNumber];
+
+      FieldTYPE xBasis[2], yBasis[2], zBasis[2], relative;
+      int a, b, c, Y, Z, previous[3], index;
+      SourceTYPE *zPointer, *xyzPointer;
+      FieldTYPE xTempNewValue, yTempNewValue, xTempNewBasis, yTempNewBasis, intensity, basis, world[3], position[3];
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  private(index, intensity, world, position, previous, xBasis, yBasis, zBasis, relative, \
+  a, b, c, Y, Z, zPointer, xyzPointer, xTempNewValue, yTempNewValue) \
+  shared(sourceIntensity, resultIntensity, targetVoxelNumber, sourceVoxelNumber, \
+  deformationFieldPtrX, deformationFieldPtrY, deformationFieldPtrZ, maskPtr, \
+  sourceIJKMatrix, sourceImage, bgValue)
+#endif // _OPENMP
+      for(index=0;index<targetVoxelNumber; index++){
+
+          intensity=0.0;
+          basis=0.0;
+
+          if(maskPtr[index]>-1){
+
+              world[0]=(FieldTYPE) deformationFieldPtrX[index];
+              world[1]=(FieldTYPE) deformationFieldPtrY[index];
+              world[2]=(FieldTYPE) deformationFieldPtrZ[index];
+
+              /* real -> voxel; source space */
+              reg_mat44_mul(sourceIJKMatrix, world, position);
+
+              if( position[0]>=0.f && position[0]<(FieldTYPE)(sourceImage->nx-1) &&
+                  position[1]>=0.f && position[1]<(FieldTYPE)(sourceImage->ny-1) &&
+                  position[2]>=0.f && position[2]<(FieldTYPE)(sourceImage->nz-1) ){
+
+                  previous[0] = (int)position[0];
+                  previous[1] = (int)position[1];
+                  previous[2] = (int)position[2];
+                  // basis values along the x axis
+                  relative=position[0]-(FieldTYPE)previous[0];
+                  if(relative<0) relative=0.0; // rounding error correction
+                  xBasis[0]= (FieldTYPE)(1.0-relative);
+                  xBasis[1]= relative;
+                  // basis values along the y axis
+                  relative=position[1]-(FieldTYPE)previous[1];
+                  if(relative<0) relative=0.0; // rounding error correction
+                  yBasis[0]= (FieldTYPE)(1.0-relative);
+                  yBasis[1]= relative;
+                  // basis values along the z axis
+                  relative=position[2]-(FieldTYPE)previous[2];
+                  if(relative<0) relative=0.0; // rounding error correction
+                  zBasis[0]= (FieldTYPE)(1.0-relative);
+                  zBasis[1]= relative;
+
+                  for(c=0; c<2; c++){
+                      Z= previous[2]+c;
+                      zPointer = &sourceIntensity[Z*sourceImage->nx*sourceImage->ny];
+                      yTempNewValue=0.0;
+                      yTempNewBasis=0.0;
+                      for(b=0; b<2; b++){
+                          Y= previous[1]+b;
+                          xyzPointer = &zPointer[Y*sourceImage->nx+previous[0]];
+                          xTempNewValue=0.0;
+                          xTempNewBasis=0.0;
+                          for(a=0; a<2; a++){
+                              if((FieldTYPE)*xyzPointer>=0){
+                                  xTempNewValue +=  (FieldTYPE)*xyzPointer * xBasis[a];
+                                  xTempNewBasis += xBasis[a];
+                                }
+                              xyzPointer++;
+                            }
+                          yTempNewValue += (xTempNewValue * yBasis[b]);
+                          yTempNewBasis += xTempNewBasis;
+                        }
+                      intensity += yTempNewValue * zBasis[c];
+                      basis += yTempNewBasis;
+                    }
+
+                  if(basis<0.99 && basis>0)
+                      intensity/=basis;
+                }
+              else intensity = -1.0f;
+            }
+
+          switch(sourceImage->datatype){
+            case NIFTI_TYPE_FLOAT32:
+              resultIntensity[index]=(SourceTYPE)intensity;
+              break;
+            case NIFTI_TYPE_FLOAT64:
+              resultIntensity[index]=(SourceTYPE)intensity;
+              break;
+            case NIFTI_TYPE_UINT8:
+              resultIntensity[index]=(SourceTYPE)(intensity>0?round(intensity):0);
+              break;
+            case NIFTI_TYPE_UINT16:
+              resultIntensity[index]=(SourceTYPE)(intensity>0?round(intensity):0);
+              break;
+            case NIFTI_TYPE_UINT32:
+              resultIntensity[index]=(SourceTYPE)(intensity>0?round(intensity):0);
+              break;
+            default:
+              resultIntensity[index]=(SourceTYPE)round(intensity);
+              break;
+            }
+        }
+    }
+}
 
 
 int get_all_files_and_folders_in_dir (string dir, vector<string> &files , vector<string> &folders)

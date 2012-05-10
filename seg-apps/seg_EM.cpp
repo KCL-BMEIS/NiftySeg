@@ -23,7 +23,7 @@ void Usage(char *exec)
   printf("\t-mask <filename>\t| Filename of the brain-mask of the input image\n");
   printf("\t-max_iter <int>\t\t| Maximum number of iterations (default = 100)\n");
   printf("\t-v <int>\t\t| Verbose level [0 = off, 1 = on, 2 = debug] (default = 0)\n");
-  printf("\t-mrf_beta <float>\t| MRF prior strength [off = 0, max = 1] (default = 0.25) \n");
+  printf("\t-mrf_beta <float>\t| MRF prior strength [off = 0, max = 1] (default = 0.4) \n");
   printf("\t-bc_order <int>\t\t| Polynomial order for the bias field [off = 0, max = 5] (default = 3) \n");
   printf("\t-bc_thresh <float>\t| Bias field correction will run only if the ratio of improvement is below bc_thresh (default=0 [OFF]) \n");
   printf("\t-bc_out <filename>\t| Output the bias corrected image\n");
@@ -86,7 +86,7 @@ int main(int argc, char **argv)
     segment_param->verbose_level=0;
     segment_param->flag_manual_priors=0;
     segment_param->bias_order=3;
-    segment_param->MRF_strength=0.25f;
+    segment_param->MRF_strength=0.4f;
     segment_param->Bias_threshold=0;
     segment_param->numb_classes=1;
     segment_param->aprox=false;

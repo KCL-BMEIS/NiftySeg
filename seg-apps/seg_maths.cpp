@@ -415,7 +415,6 @@ int main(int argc, char **argv)
             string parser=argv[++i];
             if((strtod(parser.c_str(),NULL)!=0 )){
                 float factor=strtof(parser.c_str(),NULL);
-
                 Gaussian_Filter_4D(&bufferImages[current_buffer][0], factor, CurrSize);
                 for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                   bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i];
