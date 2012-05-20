@@ -3052,15 +3052,9 @@ int * quickSort_order(float *arr, int elements) {
       order[index]=index;
     }
   beg[0]=0; end[0]=elements;
-  int step=0;
   while (i>=0) {
       L=beg[i]; R=end[i]-1;
       if (L<R) {
-          step++;
-          if(step==100){
-              cout << "R , L = "<<R<<" , "<<L<<" -> "<<arr[L]<<" , "<<arr[R]<<endl;
-              step=0;
-            }
           piv=arr[L];
           piv_index=order[L];
           while (L<R) {
