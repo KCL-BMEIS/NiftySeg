@@ -14,7 +14,7 @@ void BiasCorrection(SegPrecisionTYPE * BiasField,
                     int biasOrder,
                     ImageSize * CurrSizes,
                     bool flag_Bias,
-                    int verbose_level) {
+                    int verbose_level){
 
   if(verbose_level>0){
       cout << "Optimising the Bias Field with order " << biasOrder<< endl;
@@ -99,8 +99,6 @@ if(CurrSizes->numelbias==0){
 else{
 samplecount=CurrSizes->numelbias;
 }
-
-
 
 // CALC MATRIX A
 
@@ -191,8 +189,311 @@ for (int iz=0; iz<maxiz; iz+=reduxfactor) {
                   (*Aptr)+=(*Basisptr2)*(current_Tempvar)*(*Basisptr1);
                 }
             }
-          //#endif
           tempvarindex++;
+        }
+    }
+}
+
+
+matrix <double> RealA(UsedBasisFunctions,UsedBasisFunctions);
+
+for(int j2=0; j2<UsedBasisFunctions; j2++){
+  for(int i2=j2; i2<UsedBasisFunctions; i2++){
+      RealA.setvalue(i2,j2,(double)(A[i2+j2*UsedBasisFunctions]));
+      RealA.setvalue(j2,i2,(double)(A[i2+j2*UsedBasisFunctions]));
+    }
+}
+
+matrix <double> RealA_inv(UsedBasisFunctions);
+RealA_inv.copymatrix(RealA);
+RealA_inv.invert();
+
+if(verbose_level>1){
+  matrix <double> RealA_test(UsedBasisFunctions);
+  RealA_test.settoproduct(RealA,RealA_inv);
+  RealA_test.comparetoidentity();
+}
+
+// CALC MATRIX B
+
+//Precompute WR (Van Leemput 1999 eq 7)
+SegPrecisionTYPE Wi;
+SegPrecisionTYPE Wij;
+SegPrecisionTYPE Yest;
+SegPrecisionTYPE Ysum;
+tempvarindex=0;
+for (int iz=0; iz<maxiz; iz+=reduxfactor) {
+  for (int iy=0; iy<maxiy; iy+=reduxfactor) {
+      for (int ix=0; ix<maxix; ix+=reduxfactor) {
+          linearindexes=(iz)*(CurrSizes->xsize)*(CurrSizes->ysize)+(iy)*(CurrSizes->xsize)+ix;
+
+          Wi=0;
+          Wij=0;
+          Yest=0;
+          Ysum=0;
+          for(int j=0; j<nrOfClasses; j++){
+              SegPrecisionTYPE tmpexpec = (SegPrecisionTYPE)Expec[linearindexes+TotalLength*j];
+              Wij=tmpexpec*(invV[j]);
+              Wi+=Wij;
+              Yest+=Wij*(currM[j]);
+              Ysum+=Wij;
+            }
+          Tempvar[tempvarindex]=Wi*(sampledData[linearindexes]-(Yest/Ysum));
+          tempvarindex++;
+
+        }
+    }
+}
+
+for(int i2=0; i2<UsedBasisFunctions; i2++){
+  tempvarindex=0;
+  B[i2]=0;
+  for (int iz=0; iz<maxiz; iz+=reduxfactor) {
+      for (int iy=0; iy<maxiy; iy+=reduxfactor) {
+          for (int ix=0; ix<maxix; ix+=reduxfactor) {
+              linearindexes=(iz)*(CurrSizes->xsize)*(CurrSizes->ysize)+(iy)*(CurrSizes->xsize)+ix;
+              B[i2]+=pow_int((((SegPrecisionTYPE)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x),PowerOrder[0+i2*3])*
+                  pow_int((((SegPrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y),PowerOrder[1+i2*3])*
+                  pow_int((((SegPrecisionTYPE)iz-not_point_five_times_dims_z)*inv_not_point_five_times_dims_z),PowerOrder[2+i2*3])*
+                  Tempvar[tempvarindex];
+              if(B[i2]!=B[i2]){
+                  B[i2]=1;
+                }
+              tempvarindex++;
+            }
+        }
+    }
+}
+
+matrix <double> RealB(UsedBasisFunctions,1);
+
+for(int i2=0; i2<UsedBasisFunctions; i2++){
+  RealB.setvalue(i2,0,(double)(B[i2]));
+}
+
+matrix <double> RealC(UsedBasisFunctions,1);
+
+RealC.settoproduct(RealA_inv,RealB);
+if(verbose_level>1){
+  cout << "C= " << endl;
+  RealC.dumpmatrix();
+}
+
+double cvalue=0.0f;
+bool success;
+for(int i2=0; i2<UsedBasisFunctions; i2++){
+  RealC.getvalue(i2,0,cvalue,success);
+  C[i2]=(SegPrecisionTYPE)(cvalue);
+}
+
+
+
+for (int iz=0; iz<maxiz; iz++) {
+  for (int iy=0; iy<maxiy; iy++) {
+      for (int ix=0; ix<maxix; ix++) {
+          SegPrecisionTYPE tmpbiasfield=0.0f;
+          SegPrecisionTYPE currxpower[maxallowedpowerorder];
+          SegPrecisionTYPE currypower[maxallowedpowerorder];
+          SegPrecisionTYPE currzpower[maxallowedpowerorder];
+          linearindexes=(iz)*(CurrSizes->xsize)*(CurrSizes->ysize)+(iy)*(CurrSizes->xsize)+ix;
+          tmpbiasfield=0.0f;
+          xpos=(((SegPrecisionTYPE)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x);
+          ypos=(((SegPrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y);
+          zpos=(((SegPrecisionTYPE)iz-not_point_five_times_dims_z)*inv_not_point_five_times_dims_z);
+          get_xyz_pow_int(xpos, ypos, zpos, currxpower, currypower, currzpower, biasOrder);
+          ind=0;
+          for(int order=0; order<=biasOrder; order++){
+              for(int xorder=0; xorder<=order; xorder++){
+                  for(int yorder=0; yorder<=(order-xorder); yorder++){
+                      int zorder=order-yorder-xorder;
+                      tmpbiasfield-=C[ind]*currxpower[xorder]*currypower[yorder]*currzpower[zorder];
+                      ind++;
+                    }
+                }
+            }
+          BiasField[linearindexes+multispec*CurrSizes->numel]=tmpbiasfield;
+        }
+    }
+}
+
+for( int i=0; i<UsedBasisFunctions; i++){
+  BiasFieldCoefs[i+multispec*UsedBasisFunctions]=C[i];
+}
+
+delete [] Basis;
+delete [] Tempvar;
+}
+
+
+}
+
+
+void BiasCorrection_SPARCS(float * BiasField,
+                           float * BiasFieldCoefs,
+                           float * T1,
+                           float * Expec,
+                           bool * Mask,
+                           float * M,
+                           float * V,
+                           int biasOrder,
+                           int nrOfClasses,
+                           int xyzsize[3],
+                           int verbose_level) {
+
+  if(verbose_level>0){
+      cout << "Optimising the Bias Field with order " << biasOrder<< endl;
+      flush(cout);
+    }
+  int reduxfactor=redux_factor_for_bias;
+  int TotalLength = xyzsize[0]*xyzsize[1]*xyzsize[2];
+  int UsedBasisFunctions=(int)((biasOrder+1) * (biasOrder+2)/2 *(biasOrder+3)/3);
+  // Precompute Powers depending on the current BiasOrder
+  int PowerOrder [((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3))]={0};
+int ind=0;
+for(int order=0; order<=biasOrder; order++){
+  for(int xorder=0; xorder<=order; xorder++){
+      for(int yorder=0; yorder<=(order-xorder); yorder++){
+          int zorder=order-yorder-xorder;
+          PowerOrder[ind] =xorder;
+          PowerOrder[ind+1] =yorder;
+          PowerOrder[ind+2] =zorder;
+          ind += 3;
+        }
+    }
+}
+float invV[max_numbclass];
+float currM[max_numbclass];
+
+SegPrecisionTYPE * sampledData = &T1[0];
+// Precompute the M and V  inverses
+
+for(int i=0; i<nrOfClasses; i++){
+  invV[i]=1.0f/V[i];
+  currM[i]=M[i];
+}
+
+
+
+SegPrecisionTYPE A [((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3)/3)*((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3)/3)]={0.0f};
+SegPrecisionTYPE B [((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3)/3)]={0.0f};
+SegPrecisionTYPE C [((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3)/3)]={0.0f};
+
+// Precompute sizes
+int col_size = (int)(xyzsize[0]);
+int plane_size = (int)(xyzsize[1])*(xyzsize[2]);
+int maxix = (int)(xyzsize[0]);
+int maxiy = (int)(xyzsize[1]);
+int maxiz = (int)(xyzsize[2]);
+int Dims3d[3]={0};
+Dims3d[0]=maxix;
+Dims3d[1]=maxiy;
+Dims3d[2]=maxiz;
+
+// Precompute number of samples as it was never computed
+int samplecount=0;
+int linearindexes=0;
+int currindex=0;
+bool * Maskptr=&Mask[0];
+
+  for (int iz=0; iz<maxiz; iz+=reduxfactor) {
+      for (int iy=0; iy<maxiy; iy+=reduxfactor) {
+          for (int ix=0; ix<maxix; ix+=reduxfactor) {
+              if(*Maskptr){
+                  samplecount++;
+                }
+              Maskptr++;
+            }
+        }
+    }
+  if(verbose_level>0){
+      cout << "Samplecount = " << samplecount<<"\n";
+      flush(cout);
+    }
+
+
+// CALC MATRIX A
+
+// Calc W (Van Leemput 1999 eq 7)
+
+SegPrecisionTYPE * Tempvar= new SegPrecisionTYPE [samplecount] ();
+SegPrecisionTYPE Tempvar_tmp=0;
+currindex=0;
+int tempvarindex=0;
+Maskptr=&Mask[0];
+for (int iz=0; iz<maxiz; iz+=reduxfactor) {
+  for (int iy=0; iy<maxiy; iy+=reduxfactor) {
+      for (int ix=0; ix<maxix; ix+=reduxfactor) {
+          currindex=iz*plane_size+iy*col_size+ix;
+          if(*Maskptr){
+              Tempvar_tmp=0;
+              for(int j=0; j<nrOfClasses; j++){
+                  Tempvar_tmp+=Expec[currindex+TotalLength*j]*invV[j];
+                }
+              Tempvar[tempvarindex]=Tempvar_tmp;
+              tempvarindex++;
+            }
+          Maskptr++;
+        }
+    }
+}
+
+// Precompute shifts
+SegPrecisionTYPE not_point_five_times_dims_x=(0.5f*(SegPrecisionTYPE)Dims3d[0]);
+SegPrecisionTYPE not_point_five_times_dims_y=(0.5f*(SegPrecisionTYPE)Dims3d[1]);
+SegPrecisionTYPE not_point_five_times_dims_z=(0.5f*(SegPrecisionTYPE)Dims3d[2]);
+
+SegPrecisionTYPE inv_not_point_five_times_dims_x=1.0f/(0.5f*(SegPrecisionTYPE)Dims3d[0]);
+SegPrecisionTYPE inv_not_point_five_times_dims_y=1.0f/(0.5f*(SegPrecisionTYPE)Dims3d[1]);
+SegPrecisionTYPE inv_not_point_five_times_dims_z=1.0f/(0.5f*(SegPrecisionTYPE)Dims3d[2]);
+
+
+
+SegPrecisionTYPE * Basis= new SegPrecisionTYPE[UsedBasisFunctions]();
+SegPrecisionTYPE xpos=0.0f;
+SegPrecisionTYPE ypos=0.0f;
+SegPrecisionTYPE zpos=0.0f;
+int x_bias_index_shift=0;
+int y_bias_index_shift=1;
+int z_bias_index_shift=2;
+SegPrecisionTYPE current_Tempvar=0.0f;
+
+// Calc A'WA (Van Leemput 1999 eq 7)
+tempvarindex=0;
+SegPrecisionTYPE * Basisptr1= (SegPrecisionTYPE *) Basis;
+SegPrecisionTYPE * Basisptr2= (SegPrecisionTYPE *) Basis;
+SegPrecisionTYPE * Aptr= (SegPrecisionTYPE *) A;
+//#ifdef _OPENMP
+//#pragma omp parallel
+//#endif
+Maskptr=&Mask[0];
+for (int iz=0; iz<maxiz; iz+=reduxfactor) {
+  for (int iy=0; iy<maxiy; iy+=reduxfactor) {
+      for (int ix=0; ix<maxix; ix+=reduxfactor) {
+          linearindexes=(iz)*(xyzsize[0])*(xyzsize[1])+(iy)*(xyzsize[0])+ix;
+          if(*Maskptr){
+              current_Tempvar=Tempvar[tempvarindex];
+              xpos=(((SegPrecisionTYPE)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x);
+              ypos=(((SegPrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y);
+              zpos=(((SegPrecisionTYPE)iz-not_point_five_times_dims_z)*inv_not_point_five_times_dims_z);
+              x_bias_index_shift=0;
+              y_bias_index_shift=1;
+              z_bias_index_shift=2;
+              Basisptr1= (SegPrecisionTYPE *) Basis;
+              for(int j2=0; j2<UsedBasisFunctions; j2++,x_bias_index_shift+=3,y_bias_index_shift+=3,z_bias_index_shift+=3, Basisptr1++){
+                  *Basisptr1=(pow_int(xpos,PowerOrder[x_bias_index_shift])*pow_int(ypos,PowerOrder[y_bias_index_shift])*pow_int(zpos,PowerOrder[z_bias_index_shift]));
+                }
+              Basisptr1= (SegPrecisionTYPE *) Basis;
+              Aptr= (SegPrecisionTYPE *) A;
+              for(int j2=0; j2<UsedBasisFunctions; j2++, Basisptr1++){
+                  Basisptr2= &Basis[j2];
+                  Aptr= &A[j2+j2*UsedBasisFunctions];
+                  for(int i2=j2; i2<UsedBasisFunctions; i2++, Aptr++, Basisptr2++){
+                      (*Aptr)+=(*Basisptr2)*(current_Tempvar)*(*Basisptr1);
+                    }
+                }
+              tempvarindex++;
+            }
+          Maskptr++;
         }
     }
 }
@@ -237,25 +538,27 @@ SegPrecisionTYPE Wij;
 SegPrecisionTYPE Yest;
 SegPrecisionTYPE Ysum;
 tempvarindex=0;
+Maskptr=&Mask[0];
 for (int iz=0; iz<maxiz; iz+=reduxfactor) {
   for (int iy=0; iy<maxiy; iy+=reduxfactor) {
       for (int ix=0; ix<maxix; ix+=reduxfactor) {
-          linearindexes=(iz)*(CurrSizes->xsize)*(CurrSizes->ysize)+(iy)*(CurrSizes->xsize)+ix;
-
-          Wi=0;
-          Wij=0;
-          Yest=0;
-          Ysum=0;
-          for(int j=0; j<nrOfClasses; j++){
-              SegPrecisionTYPE tmpexpec = (SegPrecisionTYPE)Expec[linearindexes+TotalLength*j];
-              Wij=tmpexpec*(invV[j]);
-              Wi+=Wij;
-              Yest+=Wij*(currM[j]);
-              Ysum+=Wij;
+          linearindexes=(iz)*(xyzsize[0])*(xyzsize[1])+(iy)*(xyzsize[0])+ix;
+          if(*Maskptr){
+              Wi=0;
+              Wij=0;
+              Yest=0;
+              Ysum=0;
+              for(int j=0; j<nrOfClasses; j++){
+                  SegPrecisionTYPE tmpexpec = (SegPrecisionTYPE)Expec[linearindexes+TotalLength*j];
+                  Wij=tmpexpec*(invV[j]);
+                  Wi+=Wij;
+                  Yest+=Wij*(currM[j]);
+                  Ysum+=Wij;
+                }
+              Tempvar[tempvarindex]=Wi*(sampledData[linearindexes]-(Yest/Ysum));
+              tempvarindex++;
             }
-          Tempvar[tempvarindex]=Wi*(sampledData[linearindexes]-(Yest/Ysum));
-          tempvarindex++;
-
+          Maskptr++;
         }
     }
 }
@@ -263,21 +566,25 @@ for (int iz=0; iz<maxiz; iz+=reduxfactor) {
 //#ifdef _OPENMP
 //#pragma omp parallel
 //#endif
+Maskptr=&Mask[0];
 for(int i2=0; i2<UsedBasisFunctions; i2++){
   tempvarindex=0;
   B[i2]=0;
   for (int iz=0; iz<maxiz; iz+=reduxfactor) {
       for (int iy=0; iy<maxiy; iy+=reduxfactor) {
           for (int ix=0; ix<maxix; ix+=reduxfactor) {
-              linearindexes=(iz)*(CurrSizes->xsize)*(CurrSizes->ysize)+(iy)*(CurrSizes->xsize)+ix;
-              B[i2]+=pow_int((((SegPrecisionTYPE)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x),PowerOrder[0+i2*3])*
-                  pow_int((((SegPrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y),PowerOrder[1+i2*3])*
-                  pow_int((((SegPrecisionTYPE)iz-not_point_five_times_dims_z)*inv_not_point_five_times_dims_z),PowerOrder[2+i2*3])*
-                  Tempvar[tempvarindex];
-              if(B[i2]!=B[i2]){
-                  B[i2]=1;
+              if(*Maskptr){
+                  linearindexes=(iz)*(xyzsize[0])*(xyzsize[1])+(iy)*(xyzsize[0])+ix;
+                  B[i2]+=pow_int((((SegPrecisionTYPE)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x),PowerOrder[0+i2*3])*
+                      pow_int((((SegPrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y),PowerOrder[1+i2*3])*
+                      pow_int((((SegPrecisionTYPE)iz-not_point_five_times_dims_z)*inv_not_point_five_times_dims_z),PowerOrder[2+i2*3])*
+                      Tempvar[tempvarindex];
+                  if(B[i2]!=B[i2]){
+                      B[i2]=1;
+                    }
+                  tempvarindex++;
                 }
-              tempvarindex++;
+              Maskptr++;
             }
         }
     }
@@ -304,52 +611,48 @@ for(int i2=0; i2<UsedBasisFunctions; i2++){
   C[i2]=(SegPrecisionTYPE)(cvalue);
 }
 
-
-
-//#ifdef _OPENMP
-//#pragma omp parallel
-//#endif
+Maskptr=&Mask[0];
 for (int iz=0; iz<maxiz; iz++) {
   for (int iy=0; iy<maxiy; iy++) {
       for (int ix=0; ix<maxix; ix++) {
-          SegPrecisionTYPE tmpbiasfield=0.0f;
-          SegPrecisionTYPE currxpower[maxallowedpowerorder];
-          SegPrecisionTYPE currypower[maxallowedpowerorder];
-          SegPrecisionTYPE currzpower[maxallowedpowerorder];
-          linearindexes=(iz)*(CurrSizes->xsize)*(CurrSizes->ysize)+(iy)*(CurrSizes->xsize)+ix;
-          tmpbiasfield=0.0f;
-          xpos=(((SegPrecisionTYPE)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x);
-          ypos=(((SegPrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y);
-          zpos=(((SegPrecisionTYPE)iz-not_point_five_times_dims_z)*inv_not_point_five_times_dims_z);
-          get_xyz_pow_int(xpos, ypos, zpos, currxpower, currypower, currzpower, biasOrder);
-          ind=0;
-          for(int order=0; order<=biasOrder; order++){
-              for(int xorder=0; xorder<=order; xorder++){
-                  for(int yorder=0; yorder<=(order-xorder); yorder++){
-                      int zorder=order-yorder-xorder;
-                      tmpbiasfield-=C[ind]*currxpower[xorder]*currypower[yorder]*currzpower[zorder];
-                      ind++;
+          linearindexes=(iz)*(xyzsize[0])*(xyzsize[1])+(iy)*(xyzsize[0])+ix;
+          if(*Maskptr){
+              SegPrecisionTYPE tmpbiasfield=0.0f;
+              SegPrecisionTYPE currxpower[maxallowedpowerorder];
+              SegPrecisionTYPE currypower[maxallowedpowerorder];
+              SegPrecisionTYPE currzpower[maxallowedpowerorder];
+              tmpbiasfield=0.0f;
+              xpos=(((SegPrecisionTYPE)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x);
+              ypos=(((SegPrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y);
+              zpos=(((SegPrecisionTYPE)iz-not_point_five_times_dims_z)*inv_not_point_five_times_dims_z);
+              get_xyz_pow_int(xpos, ypos, zpos, currxpower, currypower, currzpower, biasOrder);
+              ind=0;
+              for(int order=0; order<=biasOrder; order++){
+                  for(int xorder=0; xorder<=order; xorder++){
+                      for(int yorder=0; yorder<=(order-xorder); yorder++){
+                          int zorder=order-yorder-xorder;
+                          tmpbiasfield-=C[ind]*currxpower[xorder]*currypower[yorder]*currzpower[zorder];
+                          ind++;
+                        }
                     }
                 }
+              BiasField[linearindexes]=tmpbiasfield;
+
             }
-          BiasField[linearindexes+multispec*CurrSizes->numel]=tmpbiasfield;
+          else{
+              BiasField[linearindexes]=1;
+            }
+          Maskptr++;
         }
     }
 }
 
 for( int i=0; i<UsedBasisFunctions; i++){
-  BiasFieldCoefs[i+multispec*UsedBasisFunctions]=C[i];
+  BiasFieldCoefs[i]=C[i];
 }
-
 delete [] Basis;
 delete [] Tempvar;
 }
-
-
-}
-
-
-
 
 
 void BiasCorrection_mask(SegPrecisionTYPE * BiasField,

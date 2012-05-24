@@ -17,6 +17,18 @@ using namespace std;
 inline SegPrecisionTYPE pow_int(const SegPrecisionTYPE x,
                                 int exp);
 
+void BiasCorrection_SPARCS(float * BiasField,
+                           float * BiasFieldCoefs,
+                           float * T1,
+                           float * Expec,
+                           bool * Mask,
+                           float * M,
+                           float * V,
+                           int biasOrder,
+                           int nrOfClasses,
+                           int xyzsize[3],
+                           int verbose_level);
+
 void get_xyz_pow_int(SegPrecisionTYPE xpos,
                      SegPrecisionTYPE ypos,
                      SegPrecisionTYPE zpos,
