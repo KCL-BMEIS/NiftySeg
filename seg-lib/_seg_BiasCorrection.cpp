@@ -329,22 +329,18 @@ delete [] Tempvar;
 
 
 void BiasCorrection_SPARCS(float * BiasField,
-                           float * BiasFieldCoefs,
                            float * T1,
                            float * Expec,
-                           bool * Mask,
+                           float * Mask,
                            float * M,
                            float * V,
                            int biasOrder,
                            int nrOfClasses,
-                           int xyzsize[3],
-                           int verbose_level) {
+                           int aceletation_factor,
+                           int xyzsize[3]) {
 
-  if(verbose_level>0){
-      cout << "Optimising the Bias Field with order " << biasOrder<< endl;
-      flush(cout);
-    }
-  int reduxfactor=redux_factor_for_bias;
+
+  //int reduxfactor=redux_factor_for_bias;
   int TotalLength = xyzsize[0]*xyzsize[1]*xyzsize[2];
   int UsedBasisFunctions=(int)((biasOrder+1) * (biasOrder+2)/2 *(biasOrder+3)/3);
   // Precompute Powers depending on the current BiasOrder
@@ -361,10 +357,11 @@ for(int order=0; order<=biasOrder; order++){
         }
     }
 }
+
 float invV[max_numbclass];
 float currM[max_numbclass];
 
-SegPrecisionTYPE * sampledData = &T1[0];
+float * sampledData = &T1[0];
 // Precompute the M and V  inverses
 
 for(int i=0; i<nrOfClasses; i++){
@@ -374,13 +371,11 @@ for(int i=0; i<nrOfClasses; i++){
 
 
 
-SegPrecisionTYPE A [((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3)/3)*((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3)/3)]={0.0f};
-SegPrecisionTYPE B [((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3)/3)]={0.0f};
-SegPrecisionTYPE C [((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3)/3)]={0.0f};
+float A [((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3)/3)*((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3)/3)]={0.0f};
+float B [((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3)/3)]={0.0f};
+float C [((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3)/3)]={0.0f};
 
 // Precompute sizes
-int col_size = (int)(xyzsize[0]);
-int plane_size = (int)(xyzsize[1])*(xyzsize[2]);
 int maxix = (int)(xyzsize[0]);
 int maxiy = (int)(xyzsize[1]);
 int maxiz = (int)(xyzsize[2]);
@@ -393,38 +388,32 @@ Dims3d[2]=maxiz;
 int samplecount=0;
 int linearindexes=0;
 int currindex=0;
-bool * Maskptr=&Mask[0];
-
-  for (int iz=0; iz<maxiz; iz+=reduxfactor) {
-      for (int iy=0; iy<maxiy; iy+=reduxfactor) {
-          for (int ix=0; ix<maxix; ix+=reduxfactor) {
-              if(*Maskptr){
-                  samplecount++;
-                }
-              Maskptr++;
+for (int iz=0; iz<maxiz; iz+=aceletation_factor) {
+  for (int iy=0; iy<maxiy; iy+=aceletation_factor) {
+      for (int ix=0; ix<maxix; ix+=aceletation_factor) {
+          currindex=(iz)*(xyzsize[0])*(xyzsize[1])+(iy)*(xyzsize[0])+ix;
+          if((Mask[linearindexes])>0){
+              samplecount++;
             }
         }
     }
-  if(verbose_level>0){
-      cout << "Samplecount = " << samplecount<<"\n";
-      flush(cout);
-    }
+}
+
 
 
 // CALC MATRIX A
 
 // Calc W (Van Leemput 1999 eq 7)
 
-SegPrecisionTYPE * Tempvar= new SegPrecisionTYPE [samplecount] ();
-SegPrecisionTYPE Tempvar_tmp=0;
+float * Tempvar= new float [samplecount] ();
+float Tempvar_tmp=0;
 currindex=0;
 int tempvarindex=0;
-Maskptr=&Mask[0];
-for (int iz=0; iz<maxiz; iz+=reduxfactor) {
-  for (int iy=0; iy<maxiy; iy+=reduxfactor) {
-      for (int ix=0; ix<maxix; ix+=reduxfactor) {
-          currindex=iz*plane_size+iy*col_size+ix;
-          if(*Maskptr){
+for (int iz=0; iz<maxiz; iz+=aceletation_factor) {
+  for (int iy=0; iy<maxiy; iy+=aceletation_factor) {
+      for (int ix=0; ix<maxix; ix+=aceletation_factor) {
+          currindex=(iz)*(xyzsize[0])*(xyzsize[1])+(iy)*(xyzsize[0])+ix;
+          if((Mask[linearindexes])>0){
               Tempvar_tmp=0;
               for(int j=0; j<nrOfClasses; j++){
                   Tempvar_tmp+=Expec[currindex+TotalLength*j]*invV[j];
@@ -432,58 +421,49 @@ for (int iz=0; iz<maxiz; iz+=reduxfactor) {
               Tempvar[tempvarindex]=Tempvar_tmp;
               tempvarindex++;
             }
-          Maskptr++;
         }
     }
 }
 
 // Precompute shifts
-SegPrecisionTYPE not_point_five_times_dims_x=(0.5f*(SegPrecisionTYPE)Dims3d[0]);
-SegPrecisionTYPE not_point_five_times_dims_y=(0.5f*(SegPrecisionTYPE)Dims3d[1]);
-SegPrecisionTYPE not_point_five_times_dims_z=(0.5f*(SegPrecisionTYPE)Dims3d[2]);
-
-SegPrecisionTYPE inv_not_point_five_times_dims_x=1.0f/(0.5f*(SegPrecisionTYPE)Dims3d[0]);
-SegPrecisionTYPE inv_not_point_five_times_dims_y=1.0f/(0.5f*(SegPrecisionTYPE)Dims3d[1]);
-SegPrecisionTYPE inv_not_point_five_times_dims_z=1.0f/(0.5f*(SegPrecisionTYPE)Dims3d[2]);
-
-
-
-SegPrecisionTYPE * Basis= new SegPrecisionTYPE[UsedBasisFunctions]();
-SegPrecisionTYPE xpos=0.0f;
-SegPrecisionTYPE ypos=0.0f;
-SegPrecisionTYPE zpos=0.0f;
+float not_point_five_times_dims_x=(0.5f*(float)Dims3d[0]);
+float not_point_five_times_dims_y=(0.5f*(float)Dims3d[1]);
+float not_point_five_times_dims_z=(0.5f*(float)Dims3d[2]);
+float inv_not_point_five_times_dims_x=1.0f/(0.5f*(float)Dims3d[0]);
+float inv_not_point_five_times_dims_y=1.0f/(0.5f*(float)Dims3d[1]);
+float inv_not_point_five_times_dims_z=1.0f/(0.5f*(float)Dims3d[2]);
+float * Basis= new float[UsedBasisFunctions]();
+float xpos=0.0f;
+float ypos=0.0f;
+float zpos=0.0f;
 int x_bias_index_shift=0;
 int y_bias_index_shift=1;
 int z_bias_index_shift=2;
-SegPrecisionTYPE current_Tempvar=0.0f;
+float current_Tempvar=0.0f;
 
 // Calc A'WA (Van Leemput 1999 eq 7)
 tempvarindex=0;
-SegPrecisionTYPE * Basisptr1= (SegPrecisionTYPE *) Basis;
-SegPrecisionTYPE * Basisptr2= (SegPrecisionTYPE *) Basis;
-SegPrecisionTYPE * Aptr= (SegPrecisionTYPE *) A;
-//#ifdef _OPENMP
-//#pragma omp parallel
-//#endif
-Maskptr=&Mask[0];
-for (int iz=0; iz<maxiz; iz+=reduxfactor) {
-  for (int iy=0; iy<maxiy; iy+=reduxfactor) {
-      for (int ix=0; ix<maxix; ix+=reduxfactor) {
+float * Basisptr1= (float *) Basis;
+float * Basisptr2= (float *) Basis;
+float * Aptr= (float *) A;
+for (int iz=0; iz<maxiz; iz+=aceletation_factor) {
+  for (int iy=0; iy<maxiy; iy+=aceletation_factor) {
+      for (int ix=0; ix<maxix; ix+=aceletation_factor) {
           linearindexes=(iz)*(xyzsize[0])*(xyzsize[1])+(iy)*(xyzsize[0])+ix;
-          if(*Maskptr){
+          if((Mask[linearindexes])>0){
               current_Tempvar=Tempvar[tempvarindex];
-              xpos=(((SegPrecisionTYPE)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x);
-              ypos=(((SegPrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y);
-              zpos=(((SegPrecisionTYPE)iz-not_point_five_times_dims_z)*inv_not_point_five_times_dims_z);
+              xpos=(((float)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x);
+              ypos=(((float)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y);
+              zpos=(((float)iz-not_point_five_times_dims_z)*inv_not_point_five_times_dims_z);
               x_bias_index_shift=0;
               y_bias_index_shift=1;
               z_bias_index_shift=2;
-              Basisptr1= (SegPrecisionTYPE *) Basis;
+              Basisptr1= (float *) Basis;
               for(int j2=0; j2<UsedBasisFunctions; j2++,x_bias_index_shift+=3,y_bias_index_shift+=3,z_bias_index_shift+=3, Basisptr1++){
                   *Basisptr1=(pow_int(xpos,PowerOrder[x_bias_index_shift])*pow_int(ypos,PowerOrder[y_bias_index_shift])*pow_int(zpos,PowerOrder[z_bias_index_shift]));
                 }
-              Basisptr1= (SegPrecisionTYPE *) Basis;
-              Aptr= (SegPrecisionTYPE *) A;
+              Basisptr1= (float *) Basis;
+              Aptr= (float *) A;
               for(int j2=0; j2<UsedBasisFunctions; j2++, Basisptr1++){
                   Basisptr2= &Basis[j2];
                   Aptr= &A[j2+j2*UsedBasisFunctions];
@@ -493,20 +473,9 @@ for (int iz=0; iz<maxiz; iz+=reduxfactor) {
                 }
               tempvarindex++;
             }
-          Maskptr++;
         }
     }
 }
-
-//#ifdef _OPENMP
-//        for(int j=0; j<omp_get_max_threads(); j++){
-//            Aptr=&Athread[j*((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3)/3)*((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3)/3)];
-//            for(int j2=0; j2<UsedBasisFunctions*UsedBasisFunctions; j2++){
-//                A[j2]=Aptr[j2];
-//            }
-//        }
-//#endif
-
 
 matrix <double> RealA(UsedBasisFunctions,UsedBasisFunctions);
 
@@ -520,36 +489,24 @@ for(int j2=0; j2<UsedBasisFunctions; j2++){
 matrix <double> RealA_inv(UsedBasisFunctions);
 RealA_inv.copymatrix(RealA);
 RealA_inv.invert();
-
-if(verbose_level>1){
-  matrix <double> RealA_test(UsedBasisFunctions);
-  RealA_test.settoproduct(RealA,RealA_inv);
-  RealA_test.comparetoidentity();
-  //RealA.dumpmatrix();
-}
-
-
-
 // CALC MATRIX B
-
 //Precompute WR (Van Leemput 1999 eq 7)
-SegPrecisionTYPE Wi;
-SegPrecisionTYPE Wij;
-SegPrecisionTYPE Yest;
-SegPrecisionTYPE Ysum;
+float Wi;
+float Wij;
+float Yest;
+float Ysum;
 tempvarindex=0;
-Maskptr=&Mask[0];
-for (int iz=0; iz<maxiz; iz+=reduxfactor) {
-  for (int iy=0; iy<maxiy; iy+=reduxfactor) {
-      for (int ix=0; ix<maxix; ix+=reduxfactor) {
+for (int iz=0; iz<maxiz; iz+=aceletation_factor) {
+  for (int iy=0; iy<maxiy; iy+=aceletation_factor) {
+      for (int ix=0; ix<maxix; ix+=aceletation_factor) {
           linearindexes=(iz)*(xyzsize[0])*(xyzsize[1])+(iy)*(xyzsize[0])+ix;
-          if(*Maskptr){
+          if((Mask[linearindexes])>0){
               Wi=0;
               Wij=0;
               Yest=0;
               Ysum=0;
               for(int j=0; j<nrOfClasses; j++){
-                  SegPrecisionTYPE tmpexpec = (SegPrecisionTYPE)Expec[linearindexes+TotalLength*j];
+                  float tmpexpec = (float)Expec[linearindexes+TotalLength*j];
                   Wij=tmpexpec*(invV[j]);
                   Wi+=Wij;
                   Yest+=Wij*(currM[j]);
@@ -558,33 +515,28 @@ for (int iz=0; iz<maxiz; iz+=reduxfactor) {
               Tempvar[tempvarindex]=Wi*(sampledData[linearindexes]-(Yest/Ysum));
               tempvarindex++;
             }
-          Maskptr++;
         }
     }
 }
 
-//#ifdef _OPENMP
-//#pragma omp parallel
-//#endif
-Maskptr=&Mask[0];
+
 for(int i2=0; i2<UsedBasisFunctions; i2++){
   tempvarindex=0;
   B[i2]=0;
-  for (int iz=0; iz<maxiz; iz+=reduxfactor) {
-      for (int iy=0; iy<maxiy; iy+=reduxfactor) {
-          for (int ix=0; ix<maxix; ix+=reduxfactor) {
-              if(*Maskptr){
+  for (int iz=0; iz<maxiz; iz+=aceletation_factor) {
+      for (int iy=0; iy<maxiy; iy+=aceletation_factor) {
+          for (int ix=0; ix<maxix; ix+=aceletation_factor) {
+              if((Mask[linearindexes])>0){
                   linearindexes=(iz)*(xyzsize[0])*(xyzsize[1])+(iy)*(xyzsize[0])+ix;
-                  B[i2]+=pow_int((((SegPrecisionTYPE)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x),PowerOrder[0+i2*3])*
-                      pow_int((((SegPrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y),PowerOrder[1+i2*3])*
-                      pow_int((((SegPrecisionTYPE)iz-not_point_five_times_dims_z)*inv_not_point_five_times_dims_z),PowerOrder[2+i2*3])*
+                  B[i2]+=pow_int((((float)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x),PowerOrder[0+i2*3])*
+                      pow_int((((float)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y),PowerOrder[1+i2*3])*
+                      pow_int((((float)iz-not_point_five_times_dims_z)*inv_not_point_five_times_dims_z),PowerOrder[2+i2*3])*
                       Tempvar[tempvarindex];
                   if(B[i2]!=B[i2]){
                       B[i2]=1;
                     }
                   tempvarindex++;
                 }
-              Maskptr++;
             }
         }
     }
@@ -599,32 +551,28 @@ for(int i2=0; i2<UsedBasisFunctions; i2++){
 matrix <double> RealC(UsedBasisFunctions,1);
 
 RealC.settoproduct(RealA_inv,RealB);
-if(verbose_level>1){
-  cout << "C= " << endl;
-  RealC.dumpmatrix();
-}
 
 double cvalue=0.0f;
 bool success;
 for(int i2=0; i2<UsedBasisFunctions; i2++){
   RealC.getvalue(i2,0,cvalue,success);
-  C[i2]=(SegPrecisionTYPE)(cvalue);
+  C[i2]=(float)(cvalue);
 }
 
-Maskptr=&Mask[0];
+
 for (int iz=0; iz<maxiz; iz++) {
   for (int iy=0; iy<maxiy; iy++) {
       for (int ix=0; ix<maxix; ix++) {
           linearindexes=(iz)*(xyzsize[0])*(xyzsize[1])+(iy)*(xyzsize[0])+ix;
-          if(*Maskptr){
-              SegPrecisionTYPE tmpbiasfield=0.0f;
-              SegPrecisionTYPE currxpower[maxallowedpowerorder];
-              SegPrecisionTYPE currypower[maxallowedpowerorder];
-              SegPrecisionTYPE currzpower[maxallowedpowerorder];
+          if((Mask[linearindexes])>0){
+              float tmpbiasfield=0.0f;
+              float currxpower[maxallowedpowerorder];
+              float currypower[maxallowedpowerorder];
+              float currzpower[maxallowedpowerorder];
               tmpbiasfield=0.0f;
-              xpos=(((SegPrecisionTYPE)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x);
-              ypos=(((SegPrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y);
-              zpos=(((SegPrecisionTYPE)iz-not_point_five_times_dims_z)*inv_not_point_five_times_dims_z);
+              xpos=(((float)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x);
+              ypos=(((float)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y);
+              zpos=(((float)iz-not_point_five_times_dims_z)*inv_not_point_five_times_dims_z);
               get_xyz_pow_int(xpos, ypos, zpos, currxpower, currypower, currzpower, biasOrder);
               ind=0;
               for(int order=0; order<=biasOrder; order++){
@@ -642,14 +590,10 @@ for (int iz=0; iz<maxiz; iz++) {
           else{
               BiasField[linearindexes]=1;
             }
-          Maskptr++;
         }
     }
 }
 
-for( int i=0; i<UsedBasisFunctions; i++){
-  BiasFieldCoefs[i]=C[i];
-}
 delete [] Basis;
 delete [] Tempvar;
 }

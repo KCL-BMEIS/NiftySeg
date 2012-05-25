@@ -65,7 +65,7 @@ int main(int argc, char **argv)
 
     set_new_handler(no_memory);
 
-    if (argc < 1)
+    if (argc <=1)
       {
         Usage(argv[0]);
         return 0;
@@ -242,16 +242,19 @@ int main(int argc, char **argv)
           }
       }
 
-    if(segment_param->flag_out==0){
-        fprintf(stderr,"Err:\tThe output image name has to be defined.\n");
-        return 1;
-      }
-
     if(!segment_param->flag_T1){
         fprintf(stderr,"Err:\tThe T1 image name has to be defined.\n");
         Usage(argv[0]);
         return 1;
       }
+
+    if(segment_param->flag_out==0){
+        fprintf(stderr,"Err:\tThe output image name has to be defined.\n");
+        Usage(argv[0]);
+        return 1;
+      }
+
+
 
     // READING T1
     nifti_image * InputImage=nifti_image_read(segment_param->filename_T1,true);
