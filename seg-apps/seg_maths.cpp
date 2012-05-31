@@ -120,7 +120,7 @@ int main(int argc, char **argv)
         // *********************  MUTIPLY  *************************
         else if(strcmp(argv[i], "-mul") == 0){
             string parser=argv[++i];
-            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")<=0 ||parser.find(".img")<=0 ||parser.find(".hdr")<=0 )) || (parser.length()==1 && parser.find("0")>=0))){
+            if(   (strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))    ||     (parser.length()==1 && parser.find("0")>=0)   ){
                 double multfactor=strtod(parser.c_str(),NULL);
                 for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                   bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]*multfactor;
@@ -151,7 +151,7 @@ int main(int argc, char **argv)
         // *********************  ADD  *************************
         else if(strcmp(argv[i], "-add") == 0){
             string parser=argv[++i];
-            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")<=0 ||parser.find(".img")<=0 ||parser.find(".hdr")<=0 )) || (parser.length()==1 && parser.find("0")>=0))){
+            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))|| (parser.length()==1 && parser.find("0")>=0))){
                 double addfactor=strtod(parser.c_str(),NULL);
                 for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                   bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]+addfactor;
@@ -182,7 +182,7 @@ int main(int argc, char **argv)
         // *********************  SUBTRACT  *************************
         else if(strcmp(argv[i], "-sub") == 0){
             string parser=argv[++i];
-            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")<=0 ||parser.find(".img")<=0 ||parser.find(".hdr")<=0 )) || (parser.length()==1 && parser.find("0")>=0))){
+            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))|| (parser.length()==1 && parser.find("0")>=0))){
                 double factor=strtod(parser.c_str(),NULL);
                 for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                   bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]-factor;
@@ -213,7 +213,7 @@ int main(int argc, char **argv)
         // *********************  DIV  *************************
         else if(strcmp(argv[i], "-div") == 0){
             string parser=argv[++i];
-            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")<=0 ||parser.find(".img")<=0 ||parser.find(".hdr")<=0 )) || (parser.length()==1 && parser.find("0")>=0))){
+            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))|| (parser.length()==1 && parser.find("0")>=0))){
                 double factor=strtod(parser.c_str(),NULL);
                 for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                   bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]/factor;
@@ -368,7 +368,7 @@ int main(int argc, char **argv)
 
 
             string parser=argv[++i];
-            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")<=0 ||parser.find(".img")<=0 ||parser.find(".hdr")<=0 )) || (parser.length()==1 && parser.find("0")>=0))){
+            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))|| (parser.length()==1 && parser.find("0")>=0))){
                 if(strtod(parser.c_str(),NULL)<=0){
                     cout<< "ERROR: -geo speed should be larger than zero"<<endl;
                     return 1;

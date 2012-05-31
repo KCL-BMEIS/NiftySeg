@@ -342,6 +342,7 @@ void BiasCorrection_SPARCS(float * BiasField,
 
   //int aceletation_factor=redux_factor_for_bias;
   int TotalLength = xyzsize[0]*xyzsize[1]*xyzsize[2];
+    //mexPrintf("TotalLength=%i\n",TotalLength);
   int UsedBasisFunctions=(int)((biasOrder+1) * (biasOrder+2)/2 *(biasOrder+3)/3);
   // Precompute Powers depending on the current BiasOrder
   int PowerOrder [((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3))]={0};
@@ -366,6 +367,7 @@ void BiasCorrection_SPARCS(float * BiasField,
 
   for(int i=0; i<nrOfClasses; i++){
     invV[i]=1.0f/V[i];
+
     currM[i]=M[i];
   }
 
@@ -385,7 +387,7 @@ void BiasCorrection_SPARCS(float * BiasField,
   // Precompute number of samples as it was never computed
   int samplecount=0;
   int linearindexes=0;
-  int currindex=0;
+
   for (int iz=0; iz<maxiz; iz+=aceletation_factor) {
     for (int iy=0; iy<maxiy; iy+=aceletation_factor) {
         for (int ix=0; ix<maxix; ix+=aceletation_factor) {
@@ -398,14 +400,12 @@ void BiasCorrection_SPARCS(float * BiasField,
   }
 
 
-
   // CALC MATRIX A
 
   // Calc W (Van Leemput 1999 eq 7)
 
   float * Tempvar= new float [samplecount] ();
   float Tempvar_tmp=0;
-  currindex=0;
   int tempvarindex=0;
   for (int iz=0; iz<maxiz; iz+=aceletation_factor) {
     for (int iy=0; iy<maxiy; iy+=aceletation_factor) {
@@ -414,7 +414,7 @@ void BiasCorrection_SPARCS(float * BiasField,
             if((Mask[linearindexes])>0){
                 Tempvar_tmp=0;
                 for(int j=0; j<nrOfClasses; j++){
-                    Tempvar_tmp+=Expec[currindex+TotalLength*j]*invV[j];
+                    Tempvar_tmp+=Expec[linearindexes+TotalLength*j]*invV[j];
                   }
                 Tempvar[tempvarindex]=Tempvar_tmp;
                 tempvarindex++;
@@ -487,6 +487,8 @@ void BiasCorrection_SPARCS(float * BiasField,
   matrix <double> RealA_inv(UsedBasisFunctions);
   RealA_inv.copymatrix(RealA);
   RealA_inv.invert();
+
+
   // CALC MATRIX B
   //Precompute WR (Van Leemput 1999 eq 7)
   float Wi;
@@ -494,6 +496,7 @@ void BiasCorrection_SPARCS(float * BiasField,
   float Yest;
   float Ysum;
   tempvarindex=0;
+
   for (int iz=0; iz<maxiz; iz+=aceletation_factor) {
     for (int iy=0; iy<maxiy; iy+=aceletation_factor) {
         for (int ix=0; ix<maxix; ix+=aceletation_factor) {
@@ -524,6 +527,7 @@ void BiasCorrection_SPARCS(float * BiasField,
     for (int iz=0; iz<maxiz; iz+=aceletation_factor) {
         for (int iy=0; iy<maxiy; iy+=aceletation_factor) {
             for (int ix=0; ix<maxix; ix+=aceletation_factor) {
+                    linearindexes=(iz)*(xyzsize[0])*(xyzsize[1])+(iy)*(xyzsize[0])+ix;
                 if((Mask[linearindexes])>0){
                     linearindexes=(iz)*(xyzsize[0])*(xyzsize[1])+(iy)*(xyzsize[0])+ix;
                     B[i2]+=pow_int((((float)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x),PowerOrder[0+i2*3])*
@@ -557,6 +561,14 @@ void BiasCorrection_SPARCS(float * BiasField,
     C[i2]=(float)(cvalue);
   }
 
+  for(int j2=0; j2<UsedBasisFunctions; j2++){
+    for(int i2=0; i2<UsedBasisFunctions; i2++){
+            double cvalue=0.0f;
+            bool success;
+            RealB.getvalue(i2,j2,cvalue,success);
+
+      }
+  }
 
   for (int iz=0; iz<maxiz; iz++) {
     for (int iy=0; iy<maxiy; iy++) {
