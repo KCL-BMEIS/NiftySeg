@@ -150,7 +150,7 @@ int main(int argc, char **argv)
               }
             else{
                 fprintf(stderr,"* Error: Multiple fusion algorithms selected");
-                return 1;
+                flush(cout); return 1;
               }
           }
         else if(strcmp(argv[i], "-MLSTEPS") == 0&& (i+4)<argc){
@@ -167,7 +167,7 @@ int main(int argc, char **argv)
               }
             else{
                 fprintf(stderr,"* Error: Multiple fusion algorithms selected");
-                return 1;
+                flush(cout); return 1;
               }
           }
         else if(strcmp(argv[i], "-unc") == 0){
@@ -180,7 +180,7 @@ int main(int argc, char **argv)
               }
             else{
                 fprintf(stderr,"* Error: Multiple fusion algorithms selected");
-                return 1;
+                flush(cout); return 1;
               }
           }
         else if(strcmp(argv[i], "-MV") == 0){
@@ -190,7 +190,7 @@ int main(int argc, char **argv)
               }
             else{
                 fprintf(stderr,"* Error: Multiple fusion algorithms selected\n");
-                return 1;
+                flush(cout); return 1;
               }
 
           }
@@ -201,7 +201,7 @@ int main(int argc, char **argv)
               }
             else{
                 fprintf(stderr,"* Error: Multiple fusion algorithms selected\n");
-                return 1;
+                flush(cout); return 1;
               }
 
           }
@@ -213,7 +213,7 @@ int main(int argc, char **argv)
               }
             else{
                 fprintf(stderr,"* Error: Type of ranking not allowed in STEPS\n");
-                return 1;
+                flush(cout); return 1;
               }
           }
 
@@ -227,7 +227,7 @@ int main(int argc, char **argv)
               }
             else{
                 fprintf(stderr,"* Error: Type of ranking not allowed in STEPS\n");
-                return 1;
+                flush(cout); return 1;
               }
           }
         //      else if(strcmp(argv[i], "-LM") == 0 && (i+4)<argc){
@@ -238,7 +238,7 @@ int main(int argc, char **argv)
         //            }
         //          else{
         //              fprintf(stderr,"* Error: Type of ranking not allowed in STEPS\n");
-        //              return 1;
+        //              flush(cout); return 1;
         //            }
         //        }
         else if(strcmp(argv[i], "-GNCC") == 0 && (i+3)<argc){
@@ -250,7 +250,7 @@ int main(int argc, char **argv)
               }
             else{
                 fprintf(stderr,"* Error: Type of ranking not allowed in STEPS\n");
-                return 1;
+                flush(cout); return 1;
               }
           }
         else if(strcmp(argv[i], "-ROINCC") == 0 && (i+4)<argc){
@@ -263,7 +263,7 @@ int main(int argc, char **argv)
               }
             else{
                 fprintf(stderr,"* Error: Type of ranking not allowed in STEPS\n");
-                return 1;
+                flush(cout); return 1;
               }
 
           }
@@ -314,7 +314,7 @@ int main(int argc, char **argv)
             printf("Err:\tParameter %s unknown or incomplete\n\n",argv[i]);
             flush(cout);
             SmallUsage(argv[0]);
-            return 1;
+            flush(cout); return 1;
           }
       }
 
@@ -322,7 +322,7 @@ int main(int argc, char **argv)
     nifti_image * CLASSIFIER=nifti_image_read(filename_LABELS,1);
     if(CLASSIFIER == NULL){
         fprintf(stderr,"* Error when reading the Label image: %s\n",filename_LABELS);
-        return 1;
+        flush(cout); return 1;
       }
 
     classifier_datatype MaxLab=0;
@@ -379,7 +379,7 @@ int main(int argc, char **argv)
         if(verbose_level>1){cout << " - done"<<endl;flush(cout);}
         if(LNCC == NULL){
             fprintf(stderr,"* Error when reading the LNCC image: %s\n",filename_LNCC);
-            return 1;
+            flush(cout); return 1;
           }
 
 
@@ -389,7 +389,7 @@ int main(int argc, char **argv)
         if(verbose_level>1){cout << " - done"<<endl;flush(cout);}
         if(BaseImage == NULL){
             fprintf(stderr,"* Error when reading the BaseImage image: %s\n",filename_BaseImage);
-            return 1;
+            flush(cout); return 1;
           }
 
 
@@ -405,13 +405,13 @@ int main(int argc, char **argv)
         if(!UNCERTAINflag){
             if(LNCC->nt!=CLASSIFIER->nt){
                 cout << "Number of lables in the -in image is different from the number of registered templates in -STEPS.";
-                return 1;
+                flush(cout); return 1;
               }
           }
         else{
             if(LNCC->nt!=CLASSIFIER->nt){
                 cout << "Number of lables in the -in image is different from the number of registered templates in -LNCC.";
-                return 1;
+                flush(cout); return 1;
               }
           }
       }
@@ -424,7 +424,7 @@ int main(int argc, char **argv)
     //      if(verbose_level>1){cout << " - done"<<endl;flush(cout);}
     //      if(METRIC == NULL){
     //          fprintf(stderr,"* Error when reading the metric image: %s\n",filename_LNCC);
-    //          return 1;
+    //          flush(cout); return 1;
     //        }
     //      if(verbose_level>1)cout << "seg_changeDatatype METRIC";
     //      if(METRIC->datatype!=NIFTI_TYPE_FLOAT32)
@@ -433,7 +433,7 @@ int main(int argc, char **argv)
     //        cout << " - done"<<endl;flush(cout);
     //      if(METRIC->nt!=CLASSIFIER->nt){
     //          cout << "Number of lables in the -in image is different from the number of images in the 4d metric image.";
-    //          return 1;
+    //          flush(cout); return 1;
     //        }
 
     //    }
@@ -445,7 +445,7 @@ int main(int argc, char **argv)
         GNCC=nifti_image_read(filename_GNCC,true);
         if(GNCC == NULL){
             fprintf(stderr,"* Error when reading the GNCC image: %s\n",filename_GNCC);
-            return 1;
+            flush(cout); return 1;
           }
         if(verbose_level>1){
             cout << "Read GNCC done"<<endl;
@@ -454,7 +454,7 @@ int main(int argc, char **argv)
         BaseImage=nifti_image_read(filename_BaseImage,true);
         if(BaseImage == NULL){
             fprintf(stderr,"* Error when reading the BaseImage image: %s\n",filename_BaseImage);
-            return 1;
+            flush(cout); return 1;
           }
         if(verbose_level>1){
             cout << "Read BaseImage done"<<endl;
@@ -475,7 +475,7 @@ int main(int argc, char **argv)
           }
         if(GNCC->nt!=CLASSIFIER->nt){
             cout << "Number of lables in the -in image is different from the number of registered templates in -GNCC.";
-            return 1;
+            flush(cout); return 1;
           }
       }
     nifti_image * ROINCC=NULL;
@@ -484,18 +484,18 @@ int main(int argc, char **argv)
         ROINCC=nifti_image_read(filename_ROINCC,true);
         if(ROINCC == NULL){
             fprintf(stderr,"* Error when reading the ROINCC image: %s\n",filename_ROINCC);
-            return 1;
+            flush(cout); return 1;
           }
         BaseImage=nifti_image_read(filename_BaseImage,true);
         if(BaseImage == NULL){
             fprintf(stderr,"* Error when reading the BaseImage image: %s\n",filename_BaseImage);
-            return 1;
+            flush(cout); return 1;
           }
         seg_changeDatatype<float>(BaseImage);
         seg_changeDatatype<float>(ROINCC);
         if(ROINCC->nt!=CLASSIFIER->nt){
             cout << "Number of lables in the -in image is different from the number of registered templates in -ROINCC.";
-            return 1;
+            flush(cout); return 1;
           }
       }
 

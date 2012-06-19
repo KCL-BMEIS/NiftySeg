@@ -1548,7 +1548,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
     }
 
   if(this->verbose_level>1){
-      cout<< "Allocating num_true";
+      cout<< "Allocating this->num_true";
       flush(cout);
     }
   int * num_true=new int [this->NUMBER_OF_CLASSES+1];
@@ -1563,7 +1563,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
 
 
   if(this->verbose_level>1){
-      cout<< "Calc Initial W - numel=" <<this->numel<<" - Numb_Neigh=" <<this->Numb_Neigh<<" - Numb Classes=" <<this->NUMBER_OF_CLASSES<<endl;
+      cout<< "Calc Initial this->W";
       flush(cout);
     }
   classifier_datatype * inputCLASSIFIERptr = static_cast<classifier_datatype *>(this->inputCLASSIFIER->data);
@@ -1664,17 +1664,39 @@ nifti_image * seg_LabFusion::GetResult_probability()
   nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
   Result->cal_max=(this->NUMBER_OF_CLASSES-1);
 
+  if(TYPE_OF_FUSION==1 || TYPE_OF_FUSION==3){
 
 
 
-
-  Result->dim[0]=4;
-  Result->dim[4]=this->NUMBER_OF_CLASSES;
-  nifti_update_dims_from_array(Result);
-  Result->data = (void *)W;
-  if(this->verbose_level>0){
-      cout << "Saving Probabilistic Fused Label. One label per time point and all labels will be projected down in value."<<endl;
+      Result->dim[0]=4;
+      Result->dim[4]=this->NUMBER_OF_CLASSES;
+      nifti_update_dims_from_array(Result);
+      Result->data = (void *)W;
+      if(this->verbose_level>0){
+          cout << "Saving Probabilistic Fused Label. One label per time point and all labels will be projected down in value."<<endl;
+        }
     }
+  else{
+      Result->dim[0]=4;
+      Result->dim[4]=1;
+      nifti_update_dims_from_array(Result);
+
+      if(this->NUMBER_OF_CLASSES>2){
+          for(int i=0;i<(this->numel);i++){
+              W[i]=this->LableCorrespondences_small_to_big[(int)W[i]];
+            }
+        }
+      else{
+          for(int i=0;i<(this->numel);i++){
+              W[i]=this->LableCorrespondences_small_to_big[(int)(W[i]>0.5)];
+            }
+        }
+      Result->data = (void *)W;
+      if(this->verbose_level>0){
+          cout << "Saving Integer Fused Label instead of Probabilistic. Probabilistic output is not available for MV"<<endl;
+        }
+    }
+
   this->W=NULL;
 
   return Result;
