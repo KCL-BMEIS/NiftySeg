@@ -345,26 +345,29 @@ int main(int argc, char **argv)
     if(verbose_level>0){
         cout << "Merging "<<(int)MaxLab<<" different labels from "<<CLASSIFIER->nt<<" classifiers";
         if(LabFusType==0){
-            if(ML_LNCCflag==1){
+            if(ML_LNCCflag==0){
                 cout<<" using STEPS";
               }
             else{
                 cout<<" using Multi Level STEPS";
               }
-            if(LabFusType==1)cout<<" using STAPLE";
-            if(LabFusType==2)cout<<" using MV";
-            if(LabFusType==3)cout<<" using SBA";
-            if(LabFusType!=0){
-                if(LNCCflag)cout<<" ranked by LNCC" <<endl;
-                if(GNCCflag)cout<<" ranked by GNCC" <<endl;
-                if(ROINCCflag)cout<<" ranked by ROINCC" <<endl;
-              }
-            else{
-
-                cout << endl;
-              }
-            flush(cout);
           }
+        if(LabFusType==1)cout<<" using STAPLE";
+        if(LabFusType==2)cout<<" using MV";
+        if(LabFusType==3)cout<<" using SBA";
+        if(LabFusType!=0){
+            if(LNCCflag)cout<<" ranked by LNCC";
+            if(GNCCflag)cout<<" ranked by GNCC";
+            if(ROINCCflag)cout<<" ranked by ROINCC";
+          }
+        flush(cout);
+        cout << endl;
+        flush(cout);
+        float Number_Atlases=(float)CLASSIFIER->nt;
+        float Number_Labels=(float)MaxLab;
+        float tempImgSize=CLASSIFIER->nx*CLASSIFIER->ny*CLASSIFIER->nz;
+        cout <<"Will require aproximately "<<setprecision (3) << (float)(1.1*(((Number_Labels+4*(Number_Atlases*2+1+1+(MRF_strength>0?Number_Labels:0.0f)))*tempImgSize) + 4*(Number_Labels*Number_Labels*(Number_Atlases+1))))/powf(1024.0f,3) <<"Gb of memory"<<endl<<endl;
+        flush(cout);
       }
     nifti_image * LNCC=NULL;
     nifti_image * BaseImage=NULL;
@@ -582,7 +585,7 @@ int main(int argc, char **argv)
         if(PropUpdate>0.0f){LabFusion.Turn_Prop_Update_ON();}
         if(tmpP>0 && tmpQ>0 && tmpP<1 && tmpQ<1){LabFusion.SetPQ(tmpP,tmpQ);}
         LabFusion.SetMaximalIterationNumber(maxIteration);
-        LabFusion.Run_STAPLE();
+        LabFusion.Run_STAPLE_or_STEPS();
       }
     else if(LabFusType == 2){
         LabFusion.Run_MV();
@@ -592,8 +595,18 @@ int main(int argc, char **argv)
 
       }
 
-    nifti_image * Result = LabFusion.GetResult(ProbOutput);
-    nifti_image_write(Result);
+    if(ProbOutput==0){
+        nifti_image * Result = LabFusion.GetResult_label();
+        nifti_image_write(Result);
+        nifti_image_free(Result);
+      }
+    else{
+        nifti_image * Result = LabFusion.GetResult_probability();
+        nifti_image_write(Result);
+        nifti_image_free(Result);
+      }
+
+
 
 
 
@@ -603,7 +616,7 @@ int main(int argc, char **argv)
         cout << "Finished in "<<difftime(end,start)<<"sec"<< endl;
       }
 
-    nifti_image_free(Result);
+
     nifti_image_free(CLASSIFIER);
   }
 

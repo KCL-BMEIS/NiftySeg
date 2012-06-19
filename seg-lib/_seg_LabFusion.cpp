@@ -5,6 +5,7 @@
 
 seg_LabFusion::seg_LabFusion(int _numb_classif, int numbclasses, int _Numb_Neigh)
 {
+  TYPE_OF_FUSION=0;
   NUMBER_OF_CLASSES=numbclasses;
   inputCLASSIFIER = NULL; // pointer to external
   inputImage_status=0;
@@ -1644,11 +1645,10 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
 }
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 
-nifti_image * seg_LabFusion::GetResult(int ProbOutput)
+nifti_image * seg_LabFusion::GetResult_probability()
 {
   nifti_image * Result = nifti_copy_nim_info(this->inputCLASSIFIER);
-  Result->dim[0]=4;
-  Result->dim[4]=1;
+
   Result->cal_min=10.0e30;
   Result->cal_max=-10.0e30;
   Result->datatype=DT_FLOAT;
@@ -1661,35 +1661,51 @@ nifti_image * seg_LabFusion::GetResult(int ProbOutput)
     }
 
   nifti_set_filenames(Result,(char*)this->FilenameOut.c_str(),0,0);
-
-  nifti_update_dims_from_array(Result);
-
   nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
   Result->cal_max=(this->NUMBER_OF_CLASSES-1);
 
-  Result->data = (void *) calloc(Result->nvox, sizeof(float));
-
-  float * Resultdata = static_cast<float *>(Result->data);
 
 
-  if((ProbOutput==1) && (this->NUMBER_OF_CLASSES==2)){
-      if(this->verbose_level>0){
-          cout << "Saving Probabilistic Fused Label"<<endl;
-        }
-      for(unsigned int i=0; i<Result->nvox; i++){
-          Resultdata[i]=(float)(W[i+this->numel]);
 
-          if(Result->cal_min>(float)(W[i+this->numel]))
-            Result->cal_min=(float)(W[i+this->numel]);
-          if(Result->cal_max<(float)(W[i+this->numel]))
-            Result->cal_max=(float)(W[i+this->numel]);
-        }
 
+  Result->dim[0]=4;
+  Result->dim[4]=this->NUMBER_OF_CLASSES;
+  nifti_update_dims_from_array(Result);
+  Result->data = (void *)W;
+  if(this->verbose_level>0){
+      cout << "Saving Probabilistic Fused Label. One label per time point and all labels will be projected down in value."<<endl;
     }
-  else if(ProbOutput==0 || (ProbOutput==3 && (this->NUMBER_OF_CLASSES>2))){
-      if(this->verbose_level>0){
-          cout << "Saving Integer Fused Label"<<endl;
-        }
+  this->W=NULL;
+
+  return Result;
+}
+
+nifti_image * seg_LabFusion::GetResult_label()
+{
+  nifti_image * Result = nifti_copy_nim_info(this->inputCLASSIFIER);
+  Result->cal_min=0;
+  Result->cal_max=this->LableCorrespondences_small_to_big[this->NUMBER_OF_CLASSES];
+  Result->datatype=DT_FLOAT;
+  if(this->FilenameOut.empty()){
+      this->FilenameOut.assign("LabFusion.nii.gz");
+    }
+
+  nifti_set_filenames(Result,(char*)this->FilenameOut.c_str(),0,0);
+  nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
+  Result->cal_max=(this->NUMBER_OF_CLASSES-1);
+
+
+  if(this->verbose_level>0){
+      cout << "Saving Integer Fused Label"<<endl;
+    }
+
+  Result->data = (void *) calloc(Result->nvox, sizeof(float));
+  Result->dim[0]=4;
+  Result->dim[4]=1;
+  nifti_update_dims_from_array(Result);
+  float * Resultdata = static_cast<float *>(Result->data);
+  //cout << "TYPE_OF_FUSION = "<<TYPE_OF_FUSION<<endl;
+  if(TYPE_OF_FUSION==1 || TYPE_OF_FUSION==3){
       for(int i=0;i<(this->numel);i++){
           LabFusion_datatype wmax=-1;
           int wmaxindex=0;
@@ -1701,35 +1717,29 @@ nifti_image * seg_LabFusion::GetResult(int ProbOutput)
             }
           Resultdata[i]=this->LableCorrespondences_small_to_big[wmaxindex];
 
-          if(Result->cal_min>this->LableCorrespondences_small_to_big[wmaxindex])
-            Result->cal_min=this->LableCorrespondences_small_to_big[wmaxindex];
-          if(Result->cal_max<this->LableCorrespondences_small_to_big[wmaxindex])
-            Result->cal_max=this->LableCorrespondences_small_to_big[wmaxindex];
+
         }
+    }
+  else if(TYPE_OF_FUSION==2){
+      for(int i=0;i<(this->numel);i++){
+          Resultdata[i]= this->LableCorrespondences_small_to_big[(int)W[i]];
+        }
+
     }
   else{
-      if(this->verbose_level>0){
-          cout << "Saving Fuzzy Fused Label"<<endl;
-        }
-      for(unsigned int i=0; i<Result->nvox; i++){
-          Resultdata[i]=(float)(W[i]);
-
-          if(Result->cal_min>(float)(W[i+this->numel]))
-            Result->cal_min=(float)(W[i+this->numel]);
-          if(Result->cal_max<(float)(W[i+this->numel]))
-            Result->cal_max=(float)(W[i+this->numel]);
-        }
+      cout << "ERROR: Variable TYPE_OF_FUSION is not set. Cannot save."<<endl;
     }
+
+
 
   return Result;
 }
-
-
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 int  seg_LabFusion::Run_MV()
 {
 
+  TYPE_OF_FUSION=2;
   if((int)(this->verbose_level)>(int)(0)){
       cout << "Majority Vote: Verbose level " << this->verbose_level << endl;
       if(this->NCC_status ){
@@ -1753,7 +1763,7 @@ int  seg_LabFusion::Run_MV()
 
 int  seg_LabFusion::Run_SBA()
 {
-
+  TYPE_OF_FUSION=3;
   if((int)(this->verbose_level)>(int)(0)){
       cout << "SBA: Verbose level " << this->verbose_level << endl;
       if(this->NCC_status ){
@@ -1774,9 +1784,10 @@ int  seg_LabFusion::Run_SBA()
   return 0;
 }
 
-int  seg_LabFusion::Run_STAPLE()
+int  seg_LabFusion::Run_STAPLE_or_STEPS()
 {
 
+  this->TYPE_OF_FUSION=1;
   if((int)(this->verbose_level)>(int)(0)){
       cout << "STAPLE: Verbose level " << this->verbose_level << endl;
       if(this->NCC_status ){

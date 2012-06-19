@@ -340,9 +340,13 @@ void BiasCorrection_SPARCS(float * BiasField,
                            int xyzsize[3]) {
 
 
+  if(aceletation_factor<1){
+      cout<<"ERROR: The acceleration factor has to be above or equal to 1"<<endl;
+      flush(cout);
+      return;
+    }
   //int aceletation_factor=redux_factor_for_bias;
   int TotalLength = xyzsize[0]*xyzsize[1]*xyzsize[2];
-    //mexPrintf("TotalLength=%i\n",TotalLength);
   int UsedBasisFunctions=(int)((biasOrder+1) * (biasOrder+2)/2 *(biasOrder+3)/3);
   // Precompute Powers depending on the current BiasOrder
   int PowerOrder [((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2*(maxallowedpowerorder+3))]={0};

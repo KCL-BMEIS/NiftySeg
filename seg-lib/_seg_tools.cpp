@@ -2757,6 +2757,8 @@ nifti_image * Copy_Expec_to_Result_mask(SegPrecisionTYPE * Expec,
   Result->dim[0]=4;
   Result->dim[4]=CurrSizes->numclass;
   Result->dim[5]=1;
+  Result->scl_inter=0;
+  Result->scl_slope=1;
   Result->datatype=DT_FLOAT32;
   Result->cal_max=1;
   nifti_set_filenames(Result,filename,0,0);
@@ -2795,6 +2797,8 @@ nifti_image * Copy_Expec_to_Result(SegPrecisionTYPE * Expec,
   Result->dim[4]=CurrSizes->numclass;
   Result->datatype=DT_FLOAT32;
   Result->cal_max=1;
+  Result->scl_inter=0;
+  Result->scl_slope=1;
   nifti_set_filenames(Result,filename,0,0);
   nifti_update_dims_from_array(Result);
   nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
@@ -3145,6 +3149,8 @@ nifti_image * Get_Bias_Corrected(float * BiasField,
   BiasCorrected->dim[4]=CurrSizes->usize;
   BiasCorrected->datatype=DT_FLOAT32;
   BiasCorrected->cal_max=(CurrSizes->rescale_max[0]);
+  BiasCorrected->scl_inter=0;
+  BiasCorrected->scl_slope=1;
 
   nifti_set_filenames(BiasCorrected,filename,0,0);
   nifti_update_dims_from_array(BiasCorrected);
@@ -3188,6 +3194,8 @@ nifti_image * Get_Bias_Corrected_mask(float * BiasFieldCoefs,
   BiasCorrected->dim[4]=CurrSizes->usize;
   BiasCorrected->datatype=DT_FLOAT32;
   BiasCorrected->cal_max=(CurrSizes->rescale_max[0]);
+  BiasCorrected->scl_inter=0;
+  BiasCorrected->scl_slope=1;
 
   nifti_set_filenames(BiasCorrected,filename,0,0);
   nifti_update_dims_from_array(BiasCorrected);

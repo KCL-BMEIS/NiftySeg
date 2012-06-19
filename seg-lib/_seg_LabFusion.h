@@ -26,6 +26,7 @@ protected:
   int     iter;
   ImageSize * CurrSizes;
 
+  int TYPE_OF_FUSION; // 1 - STEPS/STAPLE ; 2 - MV ; 3 - SBA
   int NUMBER_OF_CLASSES;
   float Thresh_IMG_value;
   bool Thresh_IMG_DO;
@@ -96,10 +97,11 @@ public:
 
   int CheckParameters_EM();
   int Initisalise_EM();
-  int Run_STAPLE();
+  int Run_STAPLE_or_STEPS();
   int Run_MV();
   int Run_SBA();
-  nifti_image *GetResult(int ProbOutput);
+  nifti_image *GetResult_label();
+  nifti_image *GetResult_probability();
 };
 
 
