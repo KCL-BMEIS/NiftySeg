@@ -366,7 +366,20 @@ int main(int argc, char **argv)
         float Number_Atlases=(float)CLASSIFIER->nt;
         float Number_Labels=(float)MaxLab;
         float tempImgSize=CLASSIFIER->nx*CLASSIFIER->ny*CLASSIFIER->nz;
-        cout <<"Will require aproximately "<<setprecision (3) << (float)(1.1*(((Number_Labels+4*(Number_Atlases*2+1+1+(MRF_strength>0?Number_Labels:0.0f)))*tempImgSize) + 4*(Number_Labels*Number_Labels*(Number_Atlases+1))))/powf(1024.0f,3) <<"Gb of memory"<<endl<<endl;
+
+        float sizeLabelImage=Number_Atlases*tempImgSize;
+        float sizeTargetImage=(LNCCflag==false && GNCCflag==false &&ROINCCflag==false)?0:(tempImgSize*4);
+        float sizeAtlasImage=(LNCCflag==false && GNCCflag==false &&ROINCCflag==false)?0:(tempImgSize*Number_Atlases*4);
+        float sizeLNCC=(LNCCflag==true)?(tempImgSize*((float)Numb_Neigh)*4):0;
+        float sizeProbabilities=(LabFusType==2)?(tempImgSize):(Number_Labels*tempImgSize*4);
+        float sizeMRF=(MRF_strength==0)?0:(Number_Labels*tempImgSize*4);
+
+        float sizeConfMatrix=Number_Labels*Number_Labels*Number_Atlases*4;
+        float sizeMrfMatrix=Number_Labels*Number_Atlases*4;
+        float sizeresult_Image=(ProbOutput==0)?(tempImgSize*4):0;
+        float sizeSum=sizeLabelImage + sizeLNCC+ sizeTargetImage + sizeAtlasImage + sizeProbabilities + sizeMRF + sizeConfMatrix + sizeMrfMatrix +sizeresult_Image;
+
+        cout <<"Will require aproximately "<<setprecision (3) << (float)(1.1*(sizeSum))/powf(1024.0f,3) <<"Gb of memory"<<endl<<endl;
         flush(cout);
       }
     nifti_image * LNCC=NULL;
