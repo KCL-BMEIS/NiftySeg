@@ -1522,12 +1522,12 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
 
 
   if(this->verbose_level>1){
-      cout<< "Allocating this->W";
+      cout<< "Allocating this->W ( "<<(float)(((float)this->numel*(float)this->NUMBER_OF_CLASSES)/1024.0f/1024.0f/1024.0f) << " Gb )";
       flush(cout);
     }
   this->W=new LabFusion_datatype [this->numel*this->NUMBER_OF_CLASSES];
   if(this->W == NULL){
-      fprintf(stderr,"* Error when alocating this->W: Not enough memory\n");
+      fprintf(stderr,"\n* Error when alocating this->W: Not enough memory\n");
       exit(1);
     }
   if(this->verbose_level>1){
@@ -1553,7 +1553,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
     }
   int * num_true=new int [this->NUMBER_OF_CLASSES+1];
   if(num_true == NULL){
-      fprintf(stderr,"* Error when alocating num_true: Not enough memory\n");
+      fprintf(stderr,"\n* Error when alocating num_true: Not enough memory\n");
       exit(1);
     }
   if(this->verbose_level>1){

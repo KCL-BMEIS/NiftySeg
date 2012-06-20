@@ -26,7 +26,7 @@ void Usage(char *exec)
   printf("  -STEPS <k> <n> <i> <t> \t| STEPS algorithm\n");
   printf("  \t\t\t\t| Size of the kernel (k), number of local labels to use (n),\n");
   printf("  \t\t\t\t| Original image to segment (3D Image), registered templates (4D Image).\n");
-  printf("  -MLSTEPS <k> <l> <n> <i> <t>\t| Multi-level STEPS algorithm\n");
+  printf("  -MLSTEPS <k> <l> <n> <i> <t>\t| Multi-level STEPS algorithm (Beta testing. Do not use!)\n");
   printf("  \t\t\t\t| Size of the kernel (k), number of levels (l) and local labels to use (n),\n");
   printf("  \t\t\t\t| Original image to segment (3D Image), registered templates (4D Image).\n");
   printf("  -STAPLE \t\t\t| STAPLE algorithm\n");
