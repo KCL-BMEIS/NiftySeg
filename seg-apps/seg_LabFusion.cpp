@@ -391,7 +391,7 @@ int main(int argc, char **argv)
         float tempImgSize=CLASSIFIER->nx*CLASSIFIER->ny*CLASSIFIER->nz;
 
 
-        int maskcount=tempImgSize;
+        int maskcount=(int)tempImgSize;
         if(UseMask){
             maskcount=0;
             bool * inputMaskPtr=static_cast<bool *>(Mask->data);

@@ -1638,9 +1638,6 @@ nifti_image * seg_LabFusion::GetResult_label()
   else{
       cout << "ERROR: Variable TYPE_OF_FUSION is not set. Cannot save."<<endl;
     }
-  /*for(int i=0;i<(this->numel);i++){
-      Resultdata[i]=this->uncertain_index_img[i];
-    }*/
 
   return Result;
 }
