@@ -6,7 +6,7 @@
 seg_LabFusion::seg_LabFusion(int _numb_classif, int numbclasses, int _Numb_Neigh)
 {
   TYPE_OF_FUSION=0;
-  NUMBER_OF_CLASSES=numbclasses;
+  NumberOfLabels=numbclasses;
   inputCLASSIFIER = NULL; // pointer to external
   inputImage_status=0;
   verbose_level=0;
@@ -56,7 +56,9 @@ seg_LabFusion::seg_LabFusion(int _numb_classif, int numbclasses, int _Numb_Neigh
     }
 
   this->W=NULL;
-  this->uncertainarea=NULL;
+  this->FinalSeg=NULL;
+  this->maskAndUncertainIndeces=NULL;
+  this->sizeAfterMaskingAndUncertainty=0;
   this->uncertainflag=false;
   this->dilunc=0;
   this->Prop=new LabFusion_datatype [numbclasses];
@@ -118,8 +120,10 @@ seg_LabFusion::~seg_LabFusion()
     delete [] this->ConfusionMatrix;
   if(this->MRF_matrix!=NULL)
     delete [] this->MRF_matrix;
-  if(this->uncertainarea!=NULL)
-    delete [] this->uncertainarea;
+  if(this->maskAndUncertainIndeces!=NULL)
+    delete [] this->maskAndUncertainIndeces;
+  if(this->FinalSeg!=NULL)
+    delete [] this->FinalSeg;
 
   this->W=NULL;
   this->MRF=NULL;
@@ -129,11 +133,29 @@ seg_LabFusion::~seg_LabFusion()
   this->CurrSizes=NULL;
   this->ConfusionMatrix=NULL;
   this->MRF_matrix=NULL;
-  this->uncertainarea=NULL;
+  this->FinalSeg=NULL;
+  this->maskAndUncertainIndeces=NULL;
 
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
+
+int seg_LabFusion::SetMask(nifti_image *Mask)
+{
+
+  bool * inputMaskPtr=static_cast<bool *>(Mask->data);
+  this->sizeAfterMaskingAndUncertainty=0;
+  for(int i=0;i<(this->numel);i++){
+      if(inputMaskPtr[i]>0){
+          this->maskAndUncertainIndeces[i]=this->sizeAfterMaskingAndUncertainty;
+          this->sizeAfterMaskingAndUncertainty++;
+        }
+      else{
+          this->maskAndUncertainIndeces[i]=-1;
+        }
+    }
+  return 0;
+}
 
 int seg_LabFusion::SetinputCLASSIFIER(nifti_image *r,bool UNCERTAINflag)
 {
@@ -186,15 +208,16 @@ int seg_LabFusion::SetinputCLASSIFIER(nifti_image *r,bool UNCERTAINflag)
       CLASSIFIERptr[i]=LableCorrespondences_big_to_small[CLASSIFIERptr[i]];
     }
 
-  this->uncertainarea=new bool [this->numel];
-  if(uncertainarea == NULL){
-      fprintf(stderr,"* Error when alocating uncertainarea: Not enough memory\n");
+
+  this->maskAndUncertainIndeces=new int [this->numel];
+  if(maskAndUncertainIndeces == NULL){
+      fprintf(stderr,"* Error when alocating mask_and_uncertain_indexes: Not enough memory\n");
       exit(1);
     }
 
-
+  this->sizeAfterMaskingAndUncertainty=this->numel;
   for(int i=0;i<(this->numel);i++){
-      this->uncertainarea[i]=true;
+      this->maskAndUncertainIndeces[i]=i;
     }
   delete [] NumberOfDifferentClassesHistogram;
 
@@ -502,7 +525,7 @@ int seg_LabFusion::Create_CurrSizes()
 int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
 {
 
-  LabFusion_datatype *tmpW=new LabFusion_datatype [this->NUMBER_OF_CLASSES];
+  LabFusion_datatype *tmpW=new LabFusion_datatype [this->NumberOfLabels];
   if(tmpW == NULL){
       fprintf(stderr,"* Error when alocating tmpW: Not enough memory\n");
       exit(1);
@@ -518,13 +541,13 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
 
   for(int classifier=0; classifier<this->CurrSizes->numclass;classifier++)nccexists_once[classifier]=false;
 
-  LabFusion_datatype * ConfusionMatrix2=new LabFusion_datatype [this->numb_classif*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES];
+  LabFusion_datatype * ConfusionMatrix2=new LabFusion_datatype [this->numb_classif*this->NumberOfLabels*this->NumberOfLabels];
   if(ConfusionMatrix2 == NULL){
       fprintf(stderr,"* Error when alocating ConfusionMatrix2: Not enough memory\n");
       exit(1);
     }
 
-  for(int i=0; i<(this->CurrSizes->numclass*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES);i++){
+  for(int i=0; i<(this->CurrSizes->numclass*this->NumberOfLabels*this->NumberOfLabels);i++){
       ConfusionMatrix2[i]=0;
     }
 
@@ -540,14 +563,13 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
   this->loglik=0;
   for(int classifier=0; classifier<this->CurrSizes->numclass;classifier++)nccexists_once[classifier]=false;
 
-
   for(int i=0;i<(this->numel);i++){
-      if(this->uncertainarea[i]){
+      if(this->maskAndUncertainIndeces[i]>=0){
           if(this->MRF_status){
               // **************************
               //   Expectation with MRF
               // **************************
-              for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
+              for(int currclass=0; currclass<this->NumberOfLabels; currclass++){
                   tmpW[currclass]=1;
                 }
 
@@ -555,8 +577,8 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                   for(int classifier=0; classifier<this->Numb_Neigh;classifier++){
                       int LNCCvalue=(int)(this->LNCC[i+classifier*this->CurrSizes->numel]);
                       if(LNCCvalue>=0 && LNCCvalue<this->CurrSizes->numclass){
-                          for(int currclass=0; currclass<this->NUMBER_OF_CLASSES;currclass++){
-                              tmpW[currclass]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputCLASSIFIERptr[i+LNCCvalue*this->CurrSizes->numel]+currclass*this->NUMBER_OF_CLASSES+LNCCvalue*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]));
+                          for(int currclass=0; currclass<this->NumberOfLabels;currclass++){
+                              tmpW[currclass]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputCLASSIFIERptr[i+LNCCvalue*this->CurrSizes->numel]+currclass*this->NumberOfLabels+LNCCvalue*this->NumberOfLabels*this->NumberOfLabels]));
                             }
                         }
                     }
@@ -565,23 +587,23 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                   for(int classifier=0; classifier<this->Numb_Neigh;classifier++){
                       int NCCvalue=(int)(this->NCC[classifier]);
                       if(NCCvalue>=0 && NCCvalue<this->CurrSizes->numclass){
-                          for(int currclass=0; currclass<this->NUMBER_OF_CLASSES;currclass++){
-                              tmpW[currclass]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputCLASSIFIERptr[i+NCCvalue*this->CurrSizes->numel]+currclass*this->NUMBER_OF_CLASSES+NCCvalue*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]));
+                          for(int currclass=0; currclass<this->NumberOfLabels;currclass++){
+                              tmpW[currclass]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputCLASSIFIERptr[i+NCCvalue*this->CurrSizes->numel]+currclass*this->NumberOfLabels+NCCvalue*this->NumberOfLabels*this->NumberOfLabels]));
                             }
                         }
                     }
                 }
               else{
                   for(int classifier=0; classifier<this->CurrSizes->numclass;classifier++){
-                      for(int currclass=0; currclass<this->NUMBER_OF_CLASSES;currclass++){
-                          tmpW[currclass]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputCLASSIFIERptr[i+classifier*this->CurrSizes->numel]+currclass*this->NUMBER_OF_CLASSES+classifier*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]));
+                      for(int currclass=0; currclass<this->NumberOfLabels;currclass++){
+                          tmpW[currclass]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputCLASSIFIERptr[i+classifier*this->CurrSizes->numel]+currclass*this->NumberOfLabels+classifier*this->NumberOfLabels*this->NumberOfLabels]));
                         }
                     }
                 }
 
               LabFusion_datatype sumW=0;
-              for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
-                  tmpW[currclass]=((LabFusion_datatype)this->Prop[currclass])*tmpW[currclass]*this->MRF[i+currclass*this->numel];
+              for(int currclass=0; currclass<this->NumberOfLabels; currclass++){
+                  tmpW[currclass]=((LabFusion_datatype)this->Prop[currclass])*tmpW[currclass]*this->MRF[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty];
                   sumW+=tmpW[currclass];
                 }
 
@@ -589,26 +611,27 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                   if(verbose_level>1)cout << "Normalize by zero at voxel - "<<i<<endl;
                 }
               else{
-                  for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
-                      W[i+currclass*this->numel]=tmpW[currclass]/sumW;
+                  for(int currclass=0; currclass<this->NumberOfLabels; currclass++){
+                      W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty]=tmpW[currclass]/sumW;
                     }
                 }
-              for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
-                  if(this->W[i+currclass*this->numel]<0){
-                      this->W[i+currclass*this->numel]=0;
+              for(int currclass=0; currclass<this->NumberOfLabels; currclass++){
+                  if(this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty]<0){
+                      this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty]=0;
                     }
-                  if(this->W[i+currclass*this->numel]>1){
-                      this->W[i+currclass*this->numel]=1;
+                  if(this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty]>1){
+                      this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty]=1;
                     }
-                  this->loglik+=W[i+currclass*this->numel];
+                  //this->loglik+=W[this->mask_and_uncertain_indexes[i]+currclass*this->size_after_masking_and_uncertainty];
                 }
+              this->loglik+=sumW;
             }
 
           else{
               // **************************
               //  Expectation without MRF
               // **************************
-              for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
+              for(int currclass=0; currclass<this->NumberOfLabels; currclass++){
                   tmpW[currclass]=1;
                 }
 
@@ -616,8 +639,8 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                   for(int classifier=0; classifier<this->Numb_Neigh;classifier++){
                       int LNCCvalue=(int)(this->LNCC[i+classifier*this->CurrSizes->numel]);
                       if(LNCCvalue>=0 && LNCCvalue<this->CurrSizes->numclass){
-                          for(int currclass=0; currclass<this->NUMBER_OF_CLASSES;currclass++){
-                              tmpW[currclass]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputCLASSIFIERptr[i+LNCCvalue*this->CurrSizes->numel]+currclass*this->NUMBER_OF_CLASSES+LNCCvalue*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]));
+                          for(int currclass=0; currclass<this->NumberOfLabels;currclass++){
+                              tmpW[currclass]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputCLASSIFIERptr[i+LNCCvalue*this->CurrSizes->numel]+currclass*this->NumberOfLabels+LNCCvalue*this->NumberOfLabels*this->NumberOfLabels]));
                             }
                         }
                     }
@@ -626,21 +649,21 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                   for(int classifier=0; classifier<this->Numb_Neigh;classifier++){
                       int NCCvalue=(int)(this->NCC[classifier]);
                       if(NCCvalue>=0 && NCCvalue<this->CurrSizes->numclass){
-                          for(int currclass=0; currclass<this->NUMBER_OF_CLASSES;currclass++){
-                              tmpW[currclass]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputCLASSIFIERptr[i+NCCvalue*this->CurrSizes->numel]+currclass*this->NUMBER_OF_CLASSES+NCCvalue*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]));
+                          for(int currclass=0; currclass<this->NumberOfLabels;currclass++){
+                              tmpW[currclass]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputCLASSIFIERptr[i+NCCvalue*this->CurrSizes->numel]+currclass*this->NumberOfLabels+NCCvalue*this->NumberOfLabels*this->NumberOfLabels]));
                             }
                         }
                     }
                 }
               else{
                   for(int classifier=0; classifier<this->CurrSizes->numclass;classifier++){
-                      for(int currclass=0; currclass<this->NUMBER_OF_CLASSES;currclass++){
-                          tmpW[currclass]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputCLASSIFIERptr[i+classifier*this->CurrSizes->numel]+currclass*this->NUMBER_OF_CLASSES+classifier*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]));
+                      for(int currclass=0; currclass<this->NumberOfLabels;currclass++){
+                          tmpW[currclass]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputCLASSIFIERptr[i+classifier*this->CurrSizes->numel]+currclass*this->NumberOfLabels+classifier*this->NumberOfLabels*this->NumberOfLabels]));
                         }
                     }
                 }
               LabFusion_datatype sumW=0;
-              for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
+              for(int currclass=0; currclass<this->NumberOfLabels; currclass++){
                   tmpW[currclass]=((LabFusion_datatype)this->Prop[currclass])*tmpW[currclass];
                   sumW+=tmpW[currclass];
                 }
@@ -649,22 +672,23 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                   if(verbose_level>1)cout << "Normalize by zero at voxel - "<<i<<endl;
                 }
               else{
-                  for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
-                      W[i+currclass*this->numel]=tmpW[currclass]/sumW;
+                  for(int currclass=0; currclass<this->NumberOfLabels; currclass++){
+                      W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty]=tmpW[currclass]/sumW;
                     }
                 }
 
 
 
-              for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
-                  if(this->W[i+currclass*this->numel]<0){
-                      this->W[i+currclass*this->numel]=0;
+              for(int currclass=0; currclass<this->NumberOfLabels; currclass++){
+                  if(this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty]<0){
+                      this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty]=0;
                     }
-                  if(this->W[i+currclass*this->numel]>1){
-                      this->W[i+currclass*this->numel]=1;
+                  if(this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty]>1){
+                      this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty]=1;
                     }
-                  this->loglik+=W[i+currclass*this->numel];
+                  //this->loglik+=W[uncertainindex+currclass*this->size_after_masking_and_uncertainty];
                 }
+              this->loglik+=sumW;
             }
 
           // **************************
@@ -684,12 +708,12 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                     }
 
                   if(lnccexists){
-                      for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
+                      for(int currclass=0; currclass<this->NumberOfLabels; currclass++){
 
                           ConfusionMatrix2[(int)inputCLASSIFIERptr[i+this->CurrSizes->numel*classifier]
-                              +currclass*this->NUMBER_OF_CLASSES+classifier*
-                              this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]+=
-                              W[i+currclass*this->numel];
+                              +currclass*this->NumberOfLabels+classifier*
+                              this->NumberOfLabels*this->NumberOfLabels]+=
+                              W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty];
                         }
                     }
                 }
@@ -706,22 +730,22 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                     }
 
                   if(nccexists){
-                      for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
+                      for(int currclass=0; currclass<this->NumberOfLabels; currclass++){
 
                           ConfusionMatrix2[(int)inputCLASSIFIERptr[i+this->CurrSizes->numel*classifier]
-                              +currclass*this->NUMBER_OF_CLASSES+classifier*
-                              this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]+=W[i+currclass*this->numel];
+                              +currclass*this->NumberOfLabels+classifier*
+                              this->NumberOfLabels*this->NumberOfLabels]+=W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty];
                         }
                     }
                 }
             }
           else{
               for(int classifier=0; classifier<this->CurrSizes->numclass;classifier++){
-                  for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
+                  for(int currclass=0; currclass<this->NumberOfLabels; currclass++){
 
                       ConfusionMatrix2[(int)inputCLASSIFIERptr[i+this->CurrSizes->numel*classifier]
-                          +currclass*this->NUMBER_OF_CLASSES+classifier*
-                          this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]+=W[i+currclass*this->numel];
+                          +currclass*this->NumberOfLabels+classifier*
+                          this->NumberOfLabels*this->NumberOfLabels]+=W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty];
                     }
                 }
             }
@@ -732,29 +756,29 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
   // Normalize Confusion Matrix
   // **************************
   for(int classifier=0; classifier<this->CurrSizes->numclass;classifier++){
-      for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
+      for(int currclass=0; currclass<this->NumberOfLabels; currclass++){
           double sumConf=0;
-          for(int currclass2=0; currclass2<this->NUMBER_OF_CLASSES; currclass2++){
-              sumConf+=ConfusionMatrix2[currclass2+currclass*this->NUMBER_OF_CLASSES+classifier*
-                  this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES];
+          for(int currclass2=0; currclass2<this->NumberOfLabels; currclass2++){
+              sumConf+=ConfusionMatrix2[currclass2+currclass*this->NumberOfLabels+classifier*
+                  this->NumberOfLabels*this->NumberOfLabels];
             }
 
           if(sumConf<=0){
               if(verbose_level>1){
                   cout << "NOMALISE BY ZERO - "<<classifier<<" , "<< currclass<<endl;
                 }
-              for(int currclass2=0; currclass2<this->NUMBER_OF_CLASSES; currclass2++){
-                  ConfusionMatrix2[currclass2+currclass*this->NUMBER_OF_CLASSES+classifier*
-                      this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]=ConfusionMatrix[currclass2+currclass*this->NUMBER_OF_CLASSES+classifier*
-                      this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES];
+              for(int currclass2=0; currclass2<this->NumberOfLabels; currclass2++){
+                  ConfusionMatrix2[currclass2+currclass*this->NumberOfLabels+classifier*
+                      this->NumberOfLabels*this->NumberOfLabels]=ConfusionMatrix[currclass2+currclass*this->NumberOfLabels+classifier*
+                      this->NumberOfLabels*this->NumberOfLabels];
                 }
             }
           else{
-              for(int currclass2=0; currclass2<this->NUMBER_OF_CLASSES; currclass2++){
-                  ConfusionMatrix2[currclass2+currclass*this->NUMBER_OF_CLASSES+classifier*
-                      this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]=
-                      ConfusionMatrix2[currclass2+currclass*this->NUMBER_OF_CLASSES+classifier*
-                      this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]/sumConf;
+              for(int currclass2=0; currclass2<this->NumberOfLabels; currclass2++){
+                  ConfusionMatrix2[currclass2+currclass*this->NumberOfLabels+classifier*
+                      this->NumberOfLabels*this->NumberOfLabels]=
+                      ConfusionMatrix2[currclass2+currclass*this->NumberOfLabels+classifier*
+                      this->NumberOfLabels*this->NumberOfLabels]/sumConf;
                 }
             }
         }
@@ -763,9 +787,9 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
           if(this->NCC_status){
               if(nccexists_once[classifier]){
                   cout <<endl<< "["<<classifier+1<<"]=";
-                  for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
-                      for(int currclass2=0; currclass2<this->NUMBER_OF_CLASSES; currclass2++){
-                          cout <<"\t"<< setprecision(4)<<((ConfusionMatrix2[currclass2+currclass*this->NUMBER_OF_CLASSES+classifier*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]<0.0001)?0:ConfusionMatrix2[currclass2+currclass*this->NUMBER_OF_CLASSES+classifier*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]);
+                  for(int currclass=0; currclass<this->NumberOfLabels; currclass++){
+                      for(int currclass2=0; currclass2<this->NumberOfLabels; currclass2++){
+                          cout <<"\t"<< setprecision(4)<<((ConfusionMatrix2[currclass2+currclass*this->NumberOfLabels+classifier*this->NumberOfLabels*this->NumberOfLabels]<0.0001)?0:ConfusionMatrix2[currclass2+currclass*this->NumberOfLabels+classifier*this->NumberOfLabels*this->NumberOfLabels]);
                         }
                       cout << endl;
                     }
@@ -774,9 +798,9 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
           else if(this->LNCC_status){
               if(nccexists_once[classifier]){
                   cout <<endl<< "["<<classifier+1<<"]=";
-                  for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
-                      for(int currclass2=0; currclass2<this->NUMBER_OF_CLASSES; currclass2++){
-                          cout <<"\t"<< setprecision(4)<<((ConfusionMatrix2[currclass2+currclass*this->NUMBER_OF_CLASSES+classifier*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]<0.0001)?0:ConfusionMatrix2[currclass2+currclass*this->NUMBER_OF_CLASSES+classifier*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]);
+                  for(int currclass=0; currclass<this->NumberOfLabels; currclass++){
+                      for(int currclass2=0; currclass2<this->NumberOfLabels; currclass2++){
+                          cout <<"\t"<< setprecision(4)<<((ConfusionMatrix2[currclass2+currclass*this->NumberOfLabels+classifier*this->NumberOfLabels*this->NumberOfLabels]<0.0001)?0:ConfusionMatrix2[currclass2+currclass*this->NumberOfLabels+classifier*this->NumberOfLabels*this->NumberOfLabels]);
                         }
                       cout << endl;
                     }
@@ -785,11 +809,11 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
           else{
               cout <<endl<< "[ "<<classifier+1<<" ]  =  ";
               cout << endl;
-              for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
+              for(int currclass=0; currclass<this->NumberOfLabels; currclass++){
                   cout << "["<<classifier+1<<"]=";
-                  for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
-                      for(int currclass2=0; currclass2<this->NUMBER_OF_CLASSES; currclass2++){
-                          cout <<"\t"<< setprecision(4)<<((ConfusionMatrix2[currclass2+currclass*this->NUMBER_OF_CLASSES+classifier*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]<0.0001)?0:ConfusionMatrix2[currclass2+currclass*this->NUMBER_OF_CLASSES+classifier*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]);
+                  for(int currclass=0; currclass<this->NumberOfLabels; currclass++){
+                      for(int currclass2=0; currclass2<this->NumberOfLabels; currclass2++){
+                          cout <<"\t"<< setprecision(4)<<((ConfusionMatrix2[currclass2+currclass*this->NumberOfLabels+classifier*this->NumberOfLabels*this->NumberOfLabels]<0.0001)?0:ConfusionMatrix2[currclass2+currclass*this->NumberOfLabels+classifier*this->NumberOfLabels*this->NumberOfLabels]);
                         }
                       cout << endl;
                     }
@@ -798,9 +822,10 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
         }
     }
 
-  for(int i=0; i<(this->numb_classif*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES);i++){
+  for(int i=0; i<(this->numb_classif*this->NumberOfLabels*this->NumberOfLabels);i++){
       ConfusionMatrix[i]=ConfusionMatrix2[i];
     }
+
 
 
   delete [] tmpW;
@@ -809,282 +834,6 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
   return 1;
 }
 
-int seg_LabFusion::STAPLE_STEPS_Multiclass_Maximization()
-{
-
-  // Get pointers to classifiers
-  classifier_datatype * inputCLASSIFIERptr = static_cast<classifier_datatype *>(this->inputCLASSIFIER->data);
-
-
-  bool * nccexists_once= new bool [this->CurrSizes->numclass];
-  if(nccexists_once == NULL){
-      fprintf(stderr,"* Error when alocating nccexists_once: Not enough memory\n");
-      exit(1);
-    }
-
-  for(int classifier=0; classifier<this->CurrSizes->numclass;classifier++)nccexists_once[classifier]=false;
-
-  for(int i=0; i<(this->CurrSizes->numclass*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES);i++){
-      this->ConfusionMatrix[i]=0;
-    }
-
-  if(this->verbose_level>0){
-      cout << "[lab]  =  P \t\tQ"<< endl;
-      flush(cout);
-    }
-  for(int i=0;i<(this->CurrSizes->numel);i++){
-
-
-      // MAXIMIZATION
-
-      if(this->uncertainarea[i]){
-          if(this->LNCC_status){
-
-              for(int classifier=0; classifier<this->CurrSizes->numclass;classifier++){
-                  nccexists_once[classifier]=false;
-                  bool lnccexists=false;
-                  for(classifier_datatype lnccindex=0;lnccindex<this->Numb_Neigh;lnccindex++){
-                      if(classifier==(this->LNCC[i+lnccindex*this->CurrSizes->numel])){
-                          lnccexists=true;
-                          nccexists_once[classifier]=true;
-                          lnccindex=this->Numb_Neigh;
-                        }
-                    }
-
-                  if(lnccexists){
-                      for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
-
-                          ConfusionMatrix[(int)inputCLASSIFIERptr[i+this->CurrSizes->numel*classifier]
-                              +currclass*this->NUMBER_OF_CLASSES+classifier*
-                              this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]+=
-                              W[i+currclass*this->numel];
-                        }
-                    }
-                }
-            }
-          else if(this->NCC_status){
-              bool nccexists=false;
-
-
-              for(int classifier=0; classifier<this->CurrSizes->numclass;classifier++){
-                  for(int nccindex=0;nccindex<this->Numb_Neigh;nccindex++){
-                      if(classifier==(this->NCC[nccindex])){
-                          nccexists=true;
-                          nccindex=this->Numb_Neigh;
-                          nccexists_once[classifier]=true;
-                        }
-                    }
-
-                  if(nccexists){
-                      for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
-
-                          ConfusionMatrix[(int)inputCLASSIFIERptr[i+this->CurrSizes->numel*classifier]
-                              +currclass*this->NUMBER_OF_CLASSES+classifier*
-                              this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]+=
-                              W[i+currclass*this->numel];
-                        }
-                    }
-                }
-            }
-          else{
-              for(int classifier=0; classifier<this->CurrSizes->numclass;classifier++){
-                  for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
-
-                      ConfusionMatrix[(int)inputCLASSIFIERptr[i+this->CurrSizes->numel*classifier]
-                          +currclass*this->NUMBER_OF_CLASSES+classifier*
-                          this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]+=
-                          W[i+currclass*this->numel];
-                    }
-                }
-            }
-        }
-    }
-
-  for(int classifier=0; classifier<this->CurrSizes->numclass;classifier++){
-      for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
-          double sumW=0;
-          for(int currclass2=0; currclass2<this->NUMBER_OF_CLASSES; currclass2++){
-              sumW+=ConfusionMatrix[currclass2+currclass*this->NUMBER_OF_CLASSES+classifier*
-                  this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES];
-            }
-          for(int currclass2=0; currclass2<this->NUMBER_OF_CLASSES; currclass2++){
-              ConfusionMatrix[currclass2+currclass*this->NUMBER_OF_CLASSES+classifier*
-                  this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]=
-                  ConfusionMatrix[currclass2+currclass*this->NUMBER_OF_CLASSES+classifier*
-                  this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]/sumW;
-            }
-        }
-
-      if(this->verbose_level>0){
-          if(this->NCC_status){
-              if(nccexists_once[classifier]){
-                  cout << "[ "<<classifier+1<<" ]  =  "<<endl;
-                  for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
-                      for(int currclass2=0; currclass2<this->NUMBER_OF_CLASSES; currclass2++){
-                          cout <<  setprecision(4)<<ConfusionMatrix[currclass2+currclass*this->NUMBER_OF_CLASSES+classifier*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES] << "\t";
-                        }
-                      cout << endl;
-                    }
-                }
-            }
-          else if(this->LNCC_status){
-              if(nccexists_once[classifier]){
-                  cout << "[ "<<classifier+1<<" ]  =  "<<endl;
-                  for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
-                      for(int currclass2=0; currclass2<this->NUMBER_OF_CLASSES; currclass2++){
-                          cout <<  setprecision(4)<<ConfusionMatrix[currclass2+currclass*this->NUMBER_OF_CLASSES+classifier*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES] << "\t";
-                        }
-                      cout << endl;
-                    }
-                }
-            }
-          else{
-              cout << "[ "<<classifier+1<<" ]  =  "<<endl;
-              for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
-                  for(int currclass2=0; currclass2<this->NUMBER_OF_CLASSES; currclass2++){
-                      cout <<  setprecision(4)<<ConfusionMatrix[currclass2+currclass*this->NUMBER_OF_CLASSES+classifier*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES] << "\t";
-                    }
-                  cout << endl;
-                }
-            }
-        }
-
-    }
-
-  return 1;
-}
-
-/* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-
-int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation()
-{
-
-  LabFusion_datatype *tmpW=new LabFusion_datatype [this->NUMBER_OF_CLASSES];
-  if(tmpW == NULL){
-      fprintf(stderr,"* Error when alocating tmpW: Not enough memory\n");
-      exit(1);
-    }
-  classifier_datatype * inputCLASSIFIERptr = static_cast<classifier_datatype *>(this->inputCLASSIFIER->data);
-
-
-  this->loglik=0;
-  if(this->MRF_status){
-      for(int i=0;i<(this->CurrSizes->numel);i++){
-
-          for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
-              tmpW[currclass]=1;
-            }
-
-          if(this->uncertainarea[i]){
-              if(this->LNCC_status){
-                  for(int classifier=0; classifier<this->Numb_Neigh;classifier++){
-                      int LNCCvalue=(int)(this->LNCC[i+classifier*this->CurrSizes->numel]);
-                      if(LNCCvalue>=0 && LNCCvalue<this->CurrSizes->numclass){
-                          for(int currclass=0; currclass<this->NUMBER_OF_CLASSES;currclass++){
-                              tmpW[currclass]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputCLASSIFIERptr[i+LNCCvalue*this->CurrSizes->numel]+currclass*this->NUMBER_OF_CLASSES+LNCCvalue*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]));
-                            }
-                        }
-                    }
-                }
-              else if(this->NCC_status){
-                  for(int classifier=0; classifier<this->Numb_Neigh;classifier++){
-                      int NCCvalue=(int)(this->NCC[classifier]);
-                      if(NCCvalue>=0 && NCCvalue<this->CurrSizes->numclass){
-                          for(int currclass=0; currclass<this->NUMBER_OF_CLASSES;currclass++){
-                              tmpW[currclass]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputCLASSIFIERptr[i+NCCvalue*this->CurrSizes->numel]+currclass*this->NUMBER_OF_CLASSES+NCCvalue*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]));
-                            }
-                        }
-                    }
-                }
-              else{
-                  for(int classifier=0; classifier<this->CurrSizes->numclass;classifier++){
-                      for(int currclass=0; currclass<this->NUMBER_OF_CLASSES;currclass++){
-                          tmpW[currclass]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputCLASSIFIERptr[i+classifier*this->CurrSizes->numel]+currclass*this->NUMBER_OF_CLASSES+classifier*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]));
-                        }
-                    }
-                }
-              LabFusion_datatype sumW=0;
-              for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
-                  W[i+currclass*this->numel]=((LabFusion_datatype)this->Prop[currclass])*tmpW[currclass]*this->MRF[i+currclass*this->numel];
-                  sumW+=W[i+currclass*this->numel];
-                }
-              for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
-                  W[i+currclass*this->numel]=W[i+currclass*this->numel]/sumW;
-                }
-
-              for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
-                  if(this->W[i+currclass*this->numel]<0){
-                      this->W[i+currclass*this->numel]=0;
-                    }
-                  if(this->W[i+currclass*this->numel]>1){
-                      this->W[i+currclass*this->numel]=1;
-                    }
-                  this->loglik+=W[i+currclass*this->numel];
-                }
-            }
-        }
-
-
-    }
-  else{
-      for(int i=0;i<(this->CurrSizes->numel);i++){
-
-          for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
-              tmpW[currclass]=1;
-            }
-
-          if(this->uncertainarea[i]){
-              if(this->LNCC_status){
-                  for(int classifier=0; classifier<this->Numb_Neigh;classifier++){
-                      int LNCCvalue=(int)(this->LNCC[i+classifier*this->CurrSizes->numel]);
-                      if(LNCCvalue>=0 && LNCCvalue<this->CurrSizes->numclass){
-                          for(int currclass=0; currclass<this->NUMBER_OF_CLASSES;currclass++){
-                              tmpW[currclass]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputCLASSIFIERptr[i+LNCCvalue*this->CurrSizes->numel]+currclass*this->NUMBER_OF_CLASSES+LNCCvalue*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]));
-                            }
-                        }
-                    }
-                }
-              else if(this->NCC_status){
-                  for(int classifier=0; classifier<this->Numb_Neigh;classifier++){
-                      int NCCvalue=(int)(this->NCC[classifier]);
-                      if(NCCvalue>=0 && NCCvalue<this->CurrSizes->numclass){
-                          for(int currclass=0; currclass<this->NUMBER_OF_CLASSES;currclass++){
-                              tmpW[currclass]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputCLASSIFIERptr[i+NCCvalue*this->CurrSizes->numel]+currclass*this->NUMBER_OF_CLASSES+NCCvalue*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]));
-                            }
-                        }
-                    }
-                }
-              else{
-                  for(int classifier=0; classifier<this->CurrSizes->numclass;classifier++){
-                      for(int currclass=0; currclass<this->NUMBER_OF_CLASSES;currclass++){
-                          tmpW[currclass]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputCLASSIFIERptr[i+classifier*this->CurrSizes->numel]+currclass*this->NUMBER_OF_CLASSES+classifier*this->NUMBER_OF_CLASSES*this->NUMBER_OF_CLASSES]));
-                        }
-                    }
-                }
-              LabFusion_datatype sumW=0;
-              for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
-                  W[i+currclass*this->numel]=((LabFusion_datatype)this->Prop[currclass])*tmpW[currclass];
-                  sumW+=W[i+currclass*this->numel];
-                }
-              for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
-                  W[i+currclass*this->numel]=W[i+currclass*this->numel]/sumW;
-                }
-
-              for(int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
-                  if(this->W[i+currclass*this->numel]<0){
-                      this->W[i+currclass*this->numel]=0;
-                    }
-                  if(this->W[i+currclass*this->numel]>1){
-                      this->W[i+currclass*this->numel]=1;
-                    }
-                  this->loglik+=W[i+currclass*this->numel];
-                }
-            }
-        }
-    }
-  delete [] tmpW;
-  return 1;
-}
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 int seg_LabFusion::SBA_Estimate()
 {
@@ -1118,7 +867,7 @@ int seg_LabFusion::SBA_Estimate()
                 }
               speedfunc[i]=((LabFusion_datatype)(lnccexists)+0.1);
             }
-          for(int currclass=0; currclass<this->NUMBER_OF_CLASSES;currclass++){
+          for(int currclass=0; currclass<this->NumberOfLabels;currclass++){
               if(this->verbose_level>0){
                   cout<<"Classifier "<<classifier+1<<" - Lable "<<currclass<<endl;
                   flush(cout);
@@ -1138,7 +887,7 @@ int seg_LabFusion::SBA_Estimate()
       else if(this->NCC_status){
           int NCCvalue=(int)(this->NCC[classifier]);
           if(NCCvalue>=0 && NCCvalue<this->CurrSizes->numclass){
-              for(int currclass=0; currclass<this->NUMBER_OF_CLASSES;currclass++){
+              for(int currclass=0; currclass<this->NumberOfLabels;currclass++){
                   if(this->verbose_level>0){
                       cout<<"Classifier "<<classifier+1<<" - Lable "<<currclass<<endl;
                       flush(cout);
@@ -1157,7 +906,7 @@ int seg_LabFusion::SBA_Estimate()
 
         }
       else{
-          for( int currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++ ){
+          for( int currclass=0; currclass<this->NumberOfLabels; currclass++ ){
               if(this->verbose_level>0){
                   cout<<"Classifier "<<classifier+1<<" - Lable "<<currclass<<endl;
                   flush(cout);
@@ -1186,7 +935,7 @@ int seg_LabFusion::SBA_Estimate()
 int seg_LabFusion::MV_Estimate()
 {
 
-  LabFusion_datatype * tmpW=new LabFusion_datatype [this->NUMBER_OF_CLASSES];
+  LabFusion_datatype * tmpW=new LabFusion_datatype [this->NumberOfLabels];
   if(tmpW == NULL){
       fprintf(stderr,"* Error when alocating tmpW: Not enough memory\n");
       exit(1);
@@ -1197,7 +946,7 @@ int seg_LabFusion::MV_Estimate()
   this->loglik=0;
   for(int i=0;i<(this->CurrSizes->numel);i++){
       if(this->LNCC_status){
-          for(int currclass=0; currclass<(this->NUMBER_OF_CLASSES);currclass++){
+          for(int currclass=0; currclass<(this->NumberOfLabels);currclass++){
               tmpW[currclass]=0.0f;
             }
           for(int classifier=0; classifier<this->Numb_Neigh;classifier++){
@@ -1210,8 +959,8 @@ int seg_LabFusion::MV_Estimate()
           LabFusion_datatype tmpmaxval=-1;
           LabFusion_datatype tmpmaxindex=-1;
 
-          if(this->NUMBER_OF_CLASSES>2){
-              for(int currclass=0; currclass<(this->NUMBER_OF_CLASSES);currclass++){
+          if(this->NumberOfLabels>2){
+              for(int currclass=0; currclass<(this->NumberOfLabels);currclass++){
                   if(tmpmaxval<tmpW[currclass]){
                       tmpmaxval=tmpW[currclass];
                       tmpmaxindex=currclass;
@@ -1225,7 +974,7 @@ int seg_LabFusion::MV_Estimate()
 
         }
       else if(this->NCC_status){
-          for(int currclass=0; currclass<(this->NUMBER_OF_CLASSES);currclass++){
+          for(int currclass=0; currclass<(this->NumberOfLabels);currclass++){
               tmpW[currclass]=0.0f;
             }
           for(int classifier=0; classifier<this->Numb_Neigh;classifier++){
@@ -1236,8 +985,8 @@ int seg_LabFusion::MV_Estimate()
             }
           LabFusion_datatype tmpmaxval=0;
           LabFusion_datatype tmpmaxindex=0;
-          if(this->NUMBER_OF_CLASSES>2){
-              for(int currclass=0; currclass<(this->NUMBER_OF_CLASSES);currclass++){
+          if(this->NumberOfLabels>2){
+              for(int currclass=0; currclass<(this->NumberOfLabels);currclass++){
                   if(tmpmaxval<tmpW[currclass]){
                       tmpmaxval=tmpW[currclass];
                       tmpmaxindex=currclass;
@@ -1250,7 +999,7 @@ int seg_LabFusion::MV_Estimate()
             }
         }
       else{
-          for(int currclass=0; currclass<(this->NUMBER_OF_CLASSES);currclass++){
+          for(int currclass=0; currclass<(this->NumberOfLabels);currclass++){
               tmpW[currclass]=0.0f;
             }
           for(int classifier=0; classifier<this->CurrSizes->numclass;classifier++){
@@ -1259,8 +1008,8 @@ int seg_LabFusion::MV_Estimate()
             }
           LabFusion_datatype tmpmaxval=-1;
           LabFusion_datatype tmpmaxindex=-1;
-          if(this->NUMBER_OF_CLASSES>2){
-              for(int currclass=0; currclass<(this->NUMBER_OF_CLASSES);currclass++){
+          if(this->NumberOfLabels>2){
+              for(int currclass=0; currclass<(this->NumberOfLabels);currclass++){
                   if(tmpmaxval<tmpW[currclass]){
                       tmpmaxval=tmpW[currclass];
                       tmpmaxindex=currclass;
@@ -1285,7 +1034,7 @@ int seg_LabFusion::UpdateMRF()
 {
 
   if(this->MRF_status){
-      for(int i=0;i<(this->numel*this->NUMBER_OF_CLASSES);i++){
+      for(int i=0;i<(this->sizeAfterMaskingAndUncertainty*this->NumberOfLabels);i++){
           MRF[i]=0;
         }
 
@@ -1294,6 +1043,7 @@ int seg_LabFusion::UpdateMRF()
           flush(cout);
         }
       int col_size, plane_size,indexCentre, indexWest, indexEast, indexSouth, indexNorth, indexTop, indexBottom;
+      int indexWestSmall, indexEastSmall, indexSouthSmall, indexNorthSmall, indexTopSmall, indexBottomSmall;
       int ix, iy, iz,maxiy, maxix, maxiz, neighbourclass;
       SegPrecisionTYPE Sum_Temp_MRF_Class_Expect;
       col_size = (int)(CurrSizes->xsize);
@@ -1316,52 +1066,65 @@ int seg_LabFusion::UpdateMRF()
 
 
       indexCentre=0;
+      int index_within_mask=0;
       for (iz=0; iz<maxiz; iz++) {
           for (iy=0; iy<maxiy; iy++) {
               for (ix=0; ix<maxix; ix++) {
+                  if(this->maskAndUncertainIndeces[indexCentre]>=0){
 
-                  indexWest=(indexCentre-col_size)>=0?(indexCentre-col_size):-1;
-                  indexEast=(indexCentre+col_size)<this->numel?(indexCentre+col_size):-1;
-                  indexNorth=(indexCentre-1)>=0?(indexCentre-1):-1;
-                  indexSouth=(indexCentre+1)<this->numel?(indexCentre+1):-1;
-                  indexBottom=(indexCentre-plane_size)>=0?(indexCentre-plane_size):-1;
-                  indexTop=(indexCentre+plane_size)<this->numel?(indexCentre+plane_size):-1;
+                      indexWest=(indexCentre-col_size)>=0?(indexCentre-col_size):-1;
+                      indexEast=(indexCentre+col_size)<this->numel?(indexCentre+col_size):-1;
+                      indexNorth=(indexCentre-1)>=0?(indexCentre-1):-1;
+                      indexSouth=(indexCentre+1)<this->numel?(indexCentre+1):-1;
+                      indexBottom=(indexCentre-plane_size)>=0?(indexCentre-plane_size):-1;
+                      indexTop=(indexCentre+plane_size)<this->numel?(indexCentre+plane_size):-1;
 
-                  for (currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
 
-                      Clique[currclass] = W[indexCentre];
-                      Clique[currclass]+=((indexWest>=0)?W[indexWest]:0);
-                      Clique[currclass]+=((indexEast>=0)?W[indexEast]:0);
-                      Clique[currclass]+=((indexNorth>=0)?W[indexNorth]:0);
-                      Clique[currclass]+=((indexSouth>=0)?W[indexSouth]:0);
-                      Clique[currclass]+=((indexTop>=0)?W[indexTop]:0);
-                      Clique[currclass]+=((indexBottom>=0)?W[indexBottom]:0);
+                      indexWestSmall=this->maskAndUncertainIndeces[indexWest];
+                      indexEastSmall=this->maskAndUncertainIndeces[indexEast];
+                      indexNorthSmall=this->maskAndUncertainIndeces[indexNorth];
+                      indexSouthSmall=this->maskAndUncertainIndeces[indexSouth];
+                      indexBottomSmall=this->maskAndUncertainIndeces[indexBottom];
+                      indexTopSmall=this->maskAndUncertainIndeces[indexTop];
 
-                      if(currclass<this->NUMBER_OF_CLASSES){
-                          indexWest+=(indexWest>=0)?this->numel:0;
-                          indexEast+=(indexEast>=0)?this->numel:0;
-                          indexNorth+=(indexNorth>=0)?this->numel:0;
-                          indexSouth+=(indexSouth>=0)?this->numel:0;
-                          indexTop+=(indexTop>=0)?this->numel:0;
-                          indexBottom+=(indexBottom>=0)?this->numel:0;
+
+                      for (currclass=0; currclass<this->NumberOfLabels; currclass++){
+
+                          Clique[currclass] = W[index_within_mask];
+
+                          Clique[currclass]+=((indexWestSmall>=0)?W[indexWestSmall]:(this->FinalSeg[indexWest]==currclass?1.0f:0.0f));
+                          Clique[currclass]+=((indexEastSmall>=0)?W[indexEastSmall]:(this->FinalSeg[indexEast]==currclass?1.0f:0.0f));
+                          Clique[currclass]+=((indexNorthSmall>=0)?W[indexNorthSmall]:(this->FinalSeg[indexNorth]==currclass?1.0f:0.0f));
+                          Clique[currclass]+=((indexSouthSmall>=0)?W[indexSouthSmall]:(this->FinalSeg[indexSouth]==currclass?1.0f:0.0f));
+                          Clique[currclass]+=((indexTopSmall>=0)?W[indexTopSmall]:(this->FinalSeg[indexTop]==currclass?1.0f:0.0f));
+                          Clique[currclass]+=((indexBottomSmall>=0)?W[indexBottomSmall]:(this->FinalSeg[indexBottom]==currclass?1.0f:0.0f));
+
+                          if(currclass<this->NumberOfLabels){
+                              indexWestSmall+=(indexWestSmall>=0)?this->sizeAfterMaskingAndUncertainty:0;
+                              indexEastSmall+=(indexEastSmall>=0)?this->sizeAfterMaskingAndUncertainty:0;
+                              indexNorthSmall+=(indexNorthSmall>=0)?this->sizeAfterMaskingAndUncertainty:0;
+                              indexSouthSmall+=(indexSouthSmall>=0)?this->sizeAfterMaskingAndUncertainty:0;
+                              indexTopSmall+=(indexTopSmall>=0)?this->sizeAfterMaskingAndUncertainty:0;
+                              indexBottomSmall+=(indexBottomSmall>=0)?this->sizeAfterMaskingAndUncertainty:0;
+                            }
                         }
-                    }
-                  Sum_Temp_MRF_Class_Expect = 0;
-                  for (currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++){
-                      Temp_MRF_Class_Expect[currclass]=0;
-                      for (neighbourclass=0; neighbourclass<this->NUMBER_OF_CLASSES; neighbourclass++){
-                          Temp_MRF_Class_Expect[currclass]-=this->MRF_matrix[currclass+(this->NUMBER_OF_CLASSES)*neighbourclass]*Clique[neighbourclass];
+                      Sum_Temp_MRF_Class_Expect = 0;
+                      for (currclass=0; currclass<this->NumberOfLabels; currclass++){
+                          Temp_MRF_Class_Expect[currclass]=0;
+                          for (neighbourclass=0; neighbourclass<this->NumberOfLabels; neighbourclass++){
+                              Temp_MRF_Class_Expect[currclass]-=this->MRF_matrix[currclass+(this->NumberOfLabels)*neighbourclass]*Clique[neighbourclass];
+                            }
+
+                          Temp_MRF_Class_Expect[currclass] = exp(this->MRF_strength*Temp_MRF_Class_Expect[currclass]);
+                          Sum_Temp_MRF_Class_Expect += Temp_MRF_Class_Expect[currclass];
                         }
+                      for (currclass=0; currclass<this->NumberOfLabels; currclass++) {
 
-                      Temp_MRF_Class_Expect[currclass] = exp(this->MRF_strength*Temp_MRF_Class_Expect[currclass]);
-                      Sum_Temp_MRF_Class_Expect += Temp_MRF_Class_Expect[currclass];
+                          MRF[index_within_mask+currclass*this->sizeAfterMaskingAndUncertainty]=(Temp_MRF_Class_Expect[currclass]/Sum_Temp_MRF_Class_Expect);
+
+                        }
+                      index_within_mask++;
                     }
-                  for (currclass=0; currclass<this->NUMBER_OF_CLASSES; currclass++) {
-
-                      MRF[indexCentre+currclass*this->numel]=(Temp_MRF_Class_Expect[currclass]/Sum_Temp_MRF_Class_Expect);
-
-                    }
-
                   indexCentre++;
                 }
             }
@@ -1385,18 +1148,18 @@ int seg_LabFusion::EstimateInitialDensity()
 
 
   int tempsum=0;
-  for(int currclass=0;currclass<this->NUMBER_OF_CLASSES;currclass++){
+  for(int currclass=0;currclass<this->NumberOfLabels;currclass++){
       this->Prop[currclass]=0;
     }
   for( int i=0; i<this->numel; i++){
-      if(this->uncertainarea[i]){
+      if(this->maskAndUncertainIndeces[i]>=0){
           tempsum+=1;
           for(int classifier=0; classifier<this->numb_classif; classifier++){
               this->Prop[inputCLASSIFIERptr[i+this->numel*classifier]]+=1.0;
             }
         }
     }
-  for(int currclass=0;currclass<this->NUMBER_OF_CLASSES;currclass++){
+  for(int currclass=0;currclass<this->NumberOfLabels;currclass++){
       this->Prop[currclass]=this->Prop[currclass]/(LabFusion_datatype)(tempsum*this->numb_classif);
     }
 
@@ -1404,7 +1167,7 @@ int seg_LabFusion::EstimateInitialDensity()
   if(this->verbose_level>0){
       cout << "Estimating initial proportion"<<endl;
       if(this->verbose_level>1){
-          for(int currclass=0;currclass<this->NUMBER_OF_CLASSES;currclass++){
+          for(int currclass=0;currclass<this->NumberOfLabels;currclass++){
               cout<<"\tlabel["<<currclass<<"] - "<<this->Prop[currclass]<<endl;
             }
         }
@@ -1434,17 +1197,19 @@ int seg_LabFusion::UpdateDensity()
   if(this->PropUpdate){
 
       LabFusion_datatype tempsum=0;
-      for(int currclass=0;currclass<this->NUMBER_OF_CLASSES;currclass++){
+      int uncertainindex=0;
+      for(int currclass=0;currclass<this->NumberOfLabels;currclass++){
           LabFusion_datatype tempprop=0;
           for( int i=0; i<this->numel; i++){
-              if(this->uncertainarea[i]){
-                  tempprop+=this->W[i+currclass*this->numel];
-                  tempsum+=this->W[i+currclass*this->numel];
+              if(this->maskAndUncertainIndeces[i]){
+                  tempprop+=this->W[uncertainindex+currclass*this->sizeAfterMaskingAndUncertainty];
+                  tempsum+=this->W[uncertainindex+currclass*this->sizeAfterMaskingAndUncertainty];
+                  uncertainindex++;
                 }
             }
           this->Prop[currclass]=tempprop;
         }
-      for(int currclass=0;currclass<this->NUMBER_OF_CLASSES;currclass++){
+      for(int currclass=0;currclass<this->NumberOfLabels;currclass++){
           this->Prop[currclass]=this->Prop[currclass]/(LabFusion_datatype)(tempsum);
         }
 
@@ -1453,7 +1218,7 @@ int seg_LabFusion::UpdateDensity()
           cout << "Estimating proportion"<<endl;
         }
       if(this->verbose_level>0){
-          for(int currclass=0;currclass<this->NUMBER_OF_CLASSES;currclass++){
+          for(int currclass=0;currclass<this->NumberOfLabels;currclass++){
               if(this->verbose_level>1){
                   cout<<"\t"<<this->Prop[currclass]<<endl;
                 }
@@ -1501,13 +1266,13 @@ int seg_LabFusion::Allocate_Stuff_SBA()
 {
 
 
-  this->W=new LabFusion_datatype [this->numel*this->NUMBER_OF_CLASSES];
+  this->W=new LabFusion_datatype [this->numel*this->NumberOfLabels];
   if(W == NULL){
       fprintf(stderr,"* Error when alocating W: Not enough memory\n");
       exit(1);
     }
 
-  for(int i=0;i<(this->numel*this->NUMBER_OF_CLASSES);i++){
+  for(int i=0;i<(this->numel*this->NumberOfLabels);i++){
       this->W[i]=0;
     }
 
@@ -1519,13 +1284,77 @@ int seg_LabFusion::Allocate_Stuff_SBA()
 
 int seg_LabFusion::Allocate_Stuff_STAPLE()
 {
-
-
   if(this->verbose_level>1){
-      cout<< "Allocating this->W ( "<<(float)(((float)this->numel*(float)this->NUMBER_OF_CLASSES)/1024.0f/1024.0f/1024.0f) << " Gb )";
+      cout<< "Allocating this->num_true";
       flush(cout);
     }
-  this->W=new LabFusion_datatype [this->numel*this->NUMBER_OF_CLASSES];
+
+
+
+  this->FinalSeg = new LabFusion_datatype [this->numel];
+  if(this->FinalSeg == NULL){
+      fprintf(stderr,"\n* Error when alocating FinalSeg: Not enough memory\n");
+      exit(1);
+    }
+
+
+  classifier_datatype * inputCLASSIFIERptr = static_cast<classifier_datatype *>(this->inputCLASSIFIER->data);
+
+  if(this->uncertainflag){
+      int * num_true=new int [this->NumberOfLabels+1];
+      if(num_true == NULL){
+          fprintf(stderr,"\n* Error when alocating num_true: Not enough memory\n");
+          exit(1);
+        }
+      int current_size_after_masking_and_uncertainty=0;
+      for(int i=0;i<(this->numel);i++){
+          if(this->maskAndUncertainIndeces[i]>=0){
+              for(int currClass=0; currClass<this->NumberOfLabels;currClass++){
+                  num_true[currClass]=0;
+                }
+              for(int currClassifier=0; currClassifier<this->Numb_Neigh;currClassifier++){
+                  if(this->LNCC_status){
+                      num_true[(int)(inputCLASSIFIERptr[i+(int)LNCC[i+currClassifier*(this->numel)]*(this->numel)])]++;
+                    }
+                  else if(this->NCC_status){
+                      num_true[(int)(inputCLASSIFIERptr[i+(int)NCC[currClassifier]*(this->numel)])]++;
+                    }
+                  else{
+                      num_true[(int)(inputCLASSIFIERptr[i+(int)currClassifier*(this->numel)])]++;
+                    }
+                }
+              bool is_uncertain=true;
+              for(int currClass=0; currClass<this->NumberOfLabels;currClass++){
+                  if(num_true[currClass]>=(this->Numb_Neigh)){
+                      is_uncertain=false;
+                    }
+                }
+
+              if(is_uncertain){
+                  this->maskAndUncertainIndeces[i]=current_size_after_masking_and_uncertainty;
+                  current_size_after_masking_and_uncertainty++;
+                }
+              else{
+                  this->maskAndUncertainIndeces[i]=-1;
+                }
+            }
+        }
+      this->sizeAfterMaskingAndUncertainty=current_size_after_masking_and_uncertainty;
+      delete [] num_true;
+    }
+
+
+  cout <<this->sizeAfterMaskingAndUncertainty<<endl;
+  if(this->verbose_level>0){
+      cout<<"Percentage of 'Uncertain Area' over 'Total Area' = "<<(float)this->sizeAfterMaskingAndUncertainty/(float)this->numel*100.0f<<"%" <<endl;
+    }
+
+  if(this->verbose_level>1){
+      cout<< "Allocating this->W ( "<<(float)(((float)this->sizeAfterMaskingAndUncertainty*(float)this->NumberOfLabels)/1024.0f/1024.0f/1024.0f) << " Gb )";
+      flush(cout);
+    }
+
+  this->W=new LabFusion_datatype [this->sizeAfterMaskingAndUncertainty*this->NumberOfLabels];
   if(this->W == NULL){
       fprintf(stderr,"\n* Error when alocating this->W: Not enough memory\n");
       exit(1);
@@ -1539,23 +1368,15 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
       cout<< "Initializing this->W";
       flush(cout);
     }
-  for(int i=0;i<(this->numel*this->NUMBER_OF_CLASSES);i++){
-      this->W[i]=1/this->NUMBER_OF_CLASSES;
+  for(int i=0;i<(this->sizeAfterMaskingAndUncertainty*this->NumberOfLabels);i++){
+      this->W[i]=1.0f/(float)(this->NumberOfLabels);
     }
   if(this->verbose_level>1){
       cout<< " - Done"<<endl;
       flush(cout);
     }
 
-  if(this->verbose_level>1){
-      cout<< "Allocating this->num_true";
-      flush(cout);
-    }
-  int * num_true=new int [this->NUMBER_OF_CLASSES+1];
-  if(num_true == NULL){
-      fprintf(stderr,"\n* Error when alocating num_true: Not enough memory\n");
-      exit(1);
-    }
+
   if(this->verbose_level>1){
       cout<< " - Done"<<endl;
       flush(cout);
@@ -1566,34 +1387,72 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
       cout<< "Calc Initial this->W";
       flush(cout);
     }
-  classifier_datatype * inputCLASSIFIERptr = static_cast<classifier_datatype *>(this->inputCLASSIFIER->data);
-  for(int i=0;i<(this->numel);i++){
-      for(int currClass=0; currClass<this->NUMBER_OF_CLASSES;currClass++){
-          num_true[currClass]=0;
-        }
 
-      for(int currClassifier=0; currClassifier<this->Numb_Neigh;currClassifier++){
-          if(this->LNCC_status){
-              num_true[(int)(inputCLASSIFIERptr[i+(int)LNCC[i+currClassifier*(this->numel)]*(this->numel)])]++;
+
+  int * num_true=new int [this->NumberOfLabels+1];
+  if(num_true == NULL){
+      fprintf(stderr,"\n* Error when alocating num_true: Not enough memory\n");
+      exit(1);
+    }
+  for(int i=0;i<(this->numel);i++){
+
+      // If it is uncertain area
+      if(this->maskAndUncertainIndeces[i]>=0){
+          for(int currLabel=0; currLabel<this->NumberOfLabels;currLabel++){
+              num_true[currLabel]=0;
             }
-          else if(this->NCC_status){
-              num_true[(int)(inputCLASSIFIERptr[i+(int)NCC[currClassifier]*(this->numel)])]++;
-            }
-          else{
-              num_true[(int)(inputCLASSIFIERptr[i+(int)currClassifier*(this->numel)])]++;
-            }
-        }
-      this->uncertainarea[i]=true ;
-      for(int currClass=0; currClass<this->NUMBER_OF_CLASSES;currClass++){
-          if(this->uncertainflag){
-              if(num_true[currClass]>=(this->Numb_Neigh)){
-                  this->uncertainarea[i]=false;
+          for(int currClassifier=0; currClassifier<this->Numb_Neigh;currClassifier++){
+              if(this->LNCC_status){
+                  num_true[(int)(inputCLASSIFIERptr[i+(int)LNCC[i+currClassifier*(this->numel)]*(this->numel)])]++;
+                }
+              else if(this->NCC_status){
+                  num_true[(int)(inputCLASSIFIERptr[i+(int)NCC[currClassifier]*(this->numel)])]++;
+                }
+              else{
+                  num_true[(int)(inputCLASSIFIERptr[i+(int)currClassifier*(this->numel)])]++;
                 }
             }
-          this->W[i+currClass*(this->numel)]=num_true[currClass]/this->Numb_Neigh;
-        }
 
+          int classCertain=0;
+          for(int currLabel=0; currLabel<this->NumberOfLabels;currLabel++){
+              if(num_true[currLabel]>=(this->Numb_Neigh)){
+                  classCertain=currLabel;
+                }
+            }
+
+          for(int currLabel=0; currLabel<this->NumberOfLabels;currLabel++){
+              this->W[this->maskAndUncertainIndeces[i]+currLabel*(this->sizeAfterMaskingAndUncertainty)]=(float)(num_true[currLabel]/this->Numb_Neigh);
+            }
+        }
+      // If it is not uncertain area
+      else{
+          for(int currLabel=0; currLabel<this->NumberOfLabels;currLabel++){
+              num_true[currLabel]=0;
+            }
+          for(int currClassifier=0; currClassifier<this->Numb_Neigh;currClassifier++){
+              if(this->LNCC_status){
+                  num_true[(int)(inputCLASSIFIERptr[i+(int)LNCC[i+currClassifier*(this->numel)]*(this->numel)])]++;
+                }
+              else if(this->NCC_status){
+                  num_true[(int)(inputCLASSIFIERptr[i+(int)NCC[currClassifier]*(this->numel)])]++;
+                }
+              else{
+                  num_true[(int)(inputCLASSIFIERptr[i+(int)currClassifier*(this->numel)])]++;
+                }
+            }
+          int maxClass=0;
+          int maxCount=0;
+          for(int currLabel=0; currLabel<this->NumberOfLabels;currLabel++){
+              if(num_true[currLabel]>maxCount){
+                  maxClass=currLabel;
+                  maxCount=num_true[currLabel];
+                }
+            }
+          this->FinalSeg[i]=(float)maxClass;
+        }
     }
+  delete [] num_true;
+
   if(this->verbose_level>1){
       cout<< " - Done"<<endl;
       flush(cout);
@@ -1604,7 +1463,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
   dim_array[1]=(int)inputCLASSIFIER->ny;
   dim_array[2]=(int)inputCLASSIFIER->nz;
 
-
+  /*
   if(this->verbose_level>1){
       cout<< "Dilating uncertainarea";
       flush(cout);
@@ -1620,20 +1479,21 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
       cout<< " - Done"<<endl;
       flush(cout);
     }
-  delete [] num_true;
+    */
+
 
   if(this->verbose_level>1){
       cout<< "Allocating MRF";
       flush(cout);
     }
   if(this->MRF_status){
-      this->MRF=new LabFusion_datatype [this->numel*this->NUMBER_OF_CLASSES];
+      this->MRF=new LabFusion_datatype [this->sizeAfterMaskingAndUncertainty*this->NumberOfLabels];
       if(MRF == NULL){
           fprintf(stderr,"* The variable MRF was not allocated: OUT OF MEMORY!");
           exit(1);
         }
-      for(int i=0; i<(this->numel*this->NUMBER_OF_CLASSES); i++)
-        this->MRF[i]=1.0f/this->NUMBER_OF_CLASSES;
+      for(int i=0; i<(this->sizeAfterMaskingAndUncertainty*this->NumberOfLabels); i++)
+        this->MRF[i]=1.0f/this->NumberOfLabels;
     }
   if(this->verbose_level>1){
       cout<< " - Done"<<endl;
@@ -1654,7 +1514,7 @@ nifti_image * seg_LabFusion::GetResult_probability()
   Result->datatype=DT_FLOAT;
 
   Result->cal_min=0;
-  Result->cal_max=this->LableCorrespondences_small_to_big[this->NUMBER_OF_CLASSES];
+  Result->cal_max=this->LableCorrespondences_small_to_big[this->NumberOfLabels];
 
   if(this->FilenameOut.empty()){
       this->FilenameOut.assign("LabFusion.nii.gz");
@@ -1662,14 +1522,14 @@ nifti_image * seg_LabFusion::GetResult_probability()
 
   nifti_set_filenames(Result,(char*)this->FilenameOut.c_str(),0,0);
   nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
-  Result->cal_max=(this->NUMBER_OF_CLASSES-1);
+  Result->cal_max=(this->NumberOfLabels-1);
 
   if(TYPE_OF_FUSION==1 || TYPE_OF_FUSION==3){
 
 
 
       Result->dim[0]=4;
-      Result->dim[4]=this->NUMBER_OF_CLASSES;
+      Result->dim[4]=this->NumberOfLabels;
       nifti_update_dims_from_array(Result);
       Result->data = (void *)W;
       if(this->verbose_level>0){
@@ -1681,7 +1541,7 @@ nifti_image * seg_LabFusion::GetResult_probability()
       Result->dim[4]=1;
       nifti_update_dims_from_array(Result);
 
-      if(this->NUMBER_OF_CLASSES>2){
+      if(this->NumberOfLabels>2){
           for(int i=0;i<(this->numel);i++){
               W[i]=this->LableCorrespondences_small_to_big[(int)W[i]];
             }
@@ -1706,7 +1566,7 @@ nifti_image * seg_LabFusion::GetResult_label()
 {
   nifti_image * Result = nifti_copy_nim_info(this->inputCLASSIFIER);
   Result->cal_min=0;
-  Result->cal_max=this->LableCorrespondences_small_to_big[this->NUMBER_OF_CLASSES];
+  Result->cal_max=this->LableCorrespondences_small_to_big[this->NumberOfLabels];
   Result->datatype=DT_FLOAT;
   if(this->FilenameOut.empty()){
       this->FilenameOut.assign("LabFusion.nii.gz");
@@ -1714,24 +1574,31 @@ nifti_image * seg_LabFusion::GetResult_label()
 
   nifti_set_filenames(Result,(char*)this->FilenameOut.c_str(),0,0);
   nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
-  Result->cal_max=(this->NUMBER_OF_CLASSES-1);
+  Result->cal_max=(this->NumberOfLabels-1);
 
 
   if(this->verbose_level>0){
       cout << "Saving Integer Fused Label"<<endl;
     }
 
-  Result->data = (void *) calloc(Result->nvox, sizeof(float));
+  if(TYPE_OF_FUSION==1){
+      Result->data = this->FinalSeg;
+      this->FinalSeg=NULL;
+    }
+  else{
+      Result->data = (void *) calloc(Result->nvox, sizeof(float));
+    }
   Result->dim[0]=4;
   Result->dim[4]=1;
   nifti_update_dims_from_array(Result);
   float * Resultdata = static_cast<float *>(Result->data);
   //cout << "TYPE_OF_FUSION = "<<TYPE_OF_FUSION<<endl;
-  if(TYPE_OF_FUSION==1 || TYPE_OF_FUSION==3){
+
+  if(TYPE_OF_FUSION==3){
       for(int i=0;i<(this->numel);i++){
           LabFusion_datatype wmax=-1;
           int wmaxindex=0;
-          for(int currclass=0; currclass<this->NUMBER_OF_CLASSES;currclass++){
+          for(int currclass=0; currclass<this->NumberOfLabels;currclass++){
               if(wmax<=W[i+currclass*this->numel]){
                   wmax=W[i+currclass*this->numel];
                   wmaxindex=currclass;
@@ -1748,11 +1615,32 @@ nifti_image * seg_LabFusion::GetResult_label()
         }
 
     }
+  else if( TYPE_OF_FUSION==1){
+      int uncertainindex=0;
+      for(int i=0;i<(this->numel);i++){
+          if(this->maskAndUncertainIndeces[i]>=0){
+              LabFusion_datatype wmax=-1;
+              int wmaxindex=0;
+              for(int currclass=0; currclass<this->NumberOfLabels;currclass++){
+                  if(wmax<=W[uncertainindex+currclass*this->sizeAfterMaskingAndUncertainty]){
+                      wmax=W[uncertainindex+currclass*this->sizeAfterMaskingAndUncertainty];
+                      wmaxindex=currclass;
+                    }
+                }
+              Resultdata[i]=this->LableCorrespondences_small_to_big[wmaxindex];
+              uncertainindex++;
+            }
+          else{
+              Resultdata[i]=this->LableCorrespondences_small_to_big[(int)Resultdata[i]];
+            }
+        }
+    }
   else{
       cout << "ERROR: Variable TYPE_OF_FUSION is not set. Cannot save."<<endl;
     }
-
-
+  /*for(int i=0;i<(this->numel);i++){
+      Resultdata[i]=this->uncertain_index_img[i];
+    }*/
 
   return Result;
 }
@@ -1826,14 +1714,15 @@ int  seg_LabFusion::Run_STAPLE_or_STEPS()
         }
     }
 
+
+
+  Allocate_Stuff_STAPLE();
+
   if(!(this->Fixed_Prop_status)){
       //UpdateDensity();
       EstimateInitialDensity();
 
     }
-
-  Allocate_Stuff_STAPLE();
-
   //**************
   // EM Algorithm
   //**************

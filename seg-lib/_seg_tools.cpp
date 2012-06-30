@@ -1723,14 +1723,14 @@ int printloglik(int iter,
                 SegPrecisionTYPE oldloglik){
   if(iter>0){
       if ((loglik-oldloglik)/fabsf(oldloglik)>0 && (loglik-oldloglik)/fabsf(oldloglik)<100){
-          cout<< "Loglik = " << loglik << " : Ratio = " << (loglik-oldloglik)/fabsf(oldloglik) << endl;
+          cout<< "Loglik = " << setprecision(7)<<loglik << " : Ratio = " << (loglik-oldloglik)/fabsf(oldloglik) << endl;
         }
       else{
-          cout<< "Loglik = " << loglik << endl;
+          cout<< "Loglik = " << setprecision(7)<<loglik << endl;
         }
     }
   else {
-      cout<< "Initial Loglik = " << loglik << endl;
+      cout<< "Initial Loglik = " << setprecision(7) << loglik << endl;
     }
   return 1;
 }
@@ -3044,6 +3044,7 @@ int * quickSort_order(int *arr, int elements) {
           i--;
         }
     }
+  delete [] order;
   return order;}
 
 

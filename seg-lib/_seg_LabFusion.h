@@ -27,7 +27,7 @@ protected:
   ImageSize * CurrSizes;
 
   int TYPE_OF_FUSION; // 1 - STEPS/STAPLE ; 2 - MV ; 3 - SBA
-  int NUMBER_OF_CLASSES;
+  int NumberOfLabels;
   float Thresh_IMG_value;
   bool Thresh_IMG_DO;
   // SegParameters
@@ -35,8 +35,10 @@ protected:
   int LableCorrespondences_small_to_big[5000];
   LabFusion_datatype * ConfusionMatrix;
   LabFusion_datatype * W;
-  LabFusion_datatype *  Prop;
-  bool*  uncertainarea;
+  LabFusion_datatype * FinalSeg;
+  LabFusion_datatype * Prop;
+  int * maskAndUncertainIndeces;
+  int  sizeAfterMaskingAndUncertainty;
   bool    uncertainflag;
   int dilunc;
   bool    Fixed_Prop_status;
@@ -90,6 +92,8 @@ public:
   int SetImgThresh(float Thresh_IMG_value);
   int SetFilenameOut(char *);
   int SetPQ(float tmpP,float tmpQ);
+  int SetMask(nifti_image * Mask);
+
   int Turn_MRF_ON(float MRF_strenght);
   int Turn_Prop_Update_ON();
   int SetMaximalIterationNumber(unsigned int numberiter);

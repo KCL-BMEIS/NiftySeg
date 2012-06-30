@@ -37,12 +37,12 @@ void Usage(char *exec)
   printf("  -v <int>\t\t\t| Verbose level [0 = off, 1 = on, 2 = debug] (default = 0)\n");
   printf("  -unc \t\t\t| Only consider non-consensus voxels to calculate statistics\n");
   printf("  -out <filename>\t\t| Filename of the integer segmented image (default=LabFusion.nii.gz)\n");
-  printf("  -outProb \t\t\t| Probabilistic/Fuzzy segmented image (only for 1 label)\n\n");
+  //printf("  -outProb \t\t\t| Probabilistic/Fuzzy segmented image (only for 1 label)\n\n");
 
   printf("  * * * * * * * * * * * * * * STAPLE and STEPS options * * * * * * * * * * * * * *\n\n");
   printf("  -prop <proportion> \t\t| Proportion of the classifier (automatically estimated by default)\n");
   printf("  -prop_update \t\t\t| Update label proportions at each iteration.\n");
-  printf("  -dil_unc <int> \t\t\t| Dilate uncertainty region by <int>.\n");
+  //printf("  -dil_unc <int> \t\t\t| Dilate uncertainty region by <int>.\n");
   printf("  -setPQ <P> <Q> \t\t| Value of P and Q [ 0 < (P,Q) < 1 ] (default = 0.99 0.99) \n");
   printf("  -MRF_beta <float>\t\t| MRF prior strength [ 0 < beta < 5 ] \n");
   printf("  -max_iter <int>\t\t| Maximum number of iterations (default = 50)\n");
@@ -72,6 +72,7 @@ void no_memory () {
   cout << "Failed to allocate memory!\n";
   exit (1);
 }
+
 int main(int argc, char **argv)
 {
   try
@@ -114,6 +115,8 @@ int main(int argc, char **argv)
     bool GNCCflag=0;
     bool ROINCCflag=0;
     bool UNCERTAINflag=0;
+    bool UseMask=0;
+    char * filename_Mask=NULL;
     int ProbOutput=0;
     char * filename_LNCC=NULL;
     char * filename_GNCC=NULL;
@@ -172,6 +175,10 @@ int main(int argc, char **argv)
           }
         else if(strcmp(argv[i], "-unc") == 0){
             UNCERTAINflag = true;
+          }
+        else if(strcmp(argv[i], "-mask") == 0){
+            UseMask = true;
+            filename_Mask=argv[++i];
           }
         else if(strcmp(argv[i], "-STAPLE") == 0){
             if(LabFusType==10){
@@ -270,12 +277,12 @@ int main(int argc, char **argv)
         else if(strcmp(argv[i], "-out") == 0){
             filename_OUT = argv[++i];
           }
-        else if(strcmp(argv[i], "-outProb") == 0){
+        /*else if(strcmp(argv[i], "-outProb") == 0){
             ProbOutput=1;
-          }
-        else if(strcmp(argv[i], "-dil_unc") == 0){
+          }*/
+        /*else if(strcmp(argv[i], "-dil_unc") == 0){
             dilunc = atoi(argv[++i]);
-          }
+          }*/
         else if(strcmp(argv[i], "-conv") == 0){
             conv = atof(argv[++i]);
           }
@@ -324,9 +331,9 @@ int main(int argc, char **argv)
         fprintf(stderr,"* Error when reading the Label image: %s\n",filename_LABELS);
         flush(cout); return 1;
       }
-
     classifier_datatype MaxLab=0;
     seg_changeDatatype<classifier_datatype>(CLASSIFIER);
+
 
     classifier_datatype * CLASSIFIERptr = static_cast<classifier_datatype *>(CLASSIFIER->data);
 
@@ -342,6 +349,22 @@ int main(int argc, char **argv)
       }
     delete [] NumberOfDifferentClassesHistogram;
 
+
+
+    nifti_image * Mask=NULL;
+    if(UseMask){
+        Mask=nifti_image_read(filename_Mask,1);
+        if(Mask == NULL){
+            fprintf(stderr,"* Error when reading the Label image: %s\n",filename_Mask);
+            flush(cout); return 1;
+          }
+        seg_convert2binary(Mask,0);
+      }
+
+
+    // *****************************
+    //   CALCULATING REQUIRED SIZE
+    // *****************************
     if(verbose_level>0){
         cout << "Merging "<<(int)MaxLab<<" different labels from "<<CLASSIFIER->nt<<" classifiers";
         if(LabFusType==0){
@@ -367,11 +390,22 @@ int main(int argc, char **argv)
         float Number_Labels=(float)MaxLab;
         float tempImgSize=CLASSIFIER->nx*CLASSIFIER->ny*CLASSIFIER->nz;
 
+
+        int maskcount=tempImgSize;
+        if(UseMask){
+            maskcount=0;
+            bool * inputMaskPtr=static_cast<bool *>(Mask->data);
+            for(int i=0;i<tempImgSize;i++){
+                maskcount+=(inputMaskPtr[i]>0)?1:0;
+              }
+          }
+
+
         float sizeLabelImage=Number_Atlases*tempImgSize;
         float sizeTargetImage=(LNCCflag==false && GNCCflag==false &&ROINCCflag==false)?0:(tempImgSize*4);
         float sizeAtlasImage=(LNCCflag==false && GNCCflag==false &&ROINCCflag==false)?0:(tempImgSize*Number_Atlases*4);
-        float sizeLNCC=(LNCCflag==true)?(tempImgSize*((float)Numb_Neigh)*4):0;
-        float sizeProbabilities=(LabFusType==2)?(tempImgSize):(Number_Labels*tempImgSize*4);
+        float sizeLNCC=(LNCCflag==true)?(tempImgSize*((float)Numb_Neigh+3.0f)*4):0;
+        float sizeProbabilities=(LabFusType==2)?(tempImgSize):((tempImgSize+Number_Labels*maskcount)*4);
         float sizeMRF=(MRF_strength==0)?0:(Number_Labels*tempImgSize*4);
 
         float sizeConfMatrix=Number_Labels*Number_Labels*Number_Atlases*4;
@@ -543,6 +577,11 @@ int main(int argc, char **argv)
         cout << " - Done"<<endl;
         flush(cout);
       }
+
+    if(UseMask){
+        LabFusion.SetMask(Mask);
+      }
+    nifti_image_free(Mask);
 
     if(LNCCflag){
         if(ML_LNCCflag){
