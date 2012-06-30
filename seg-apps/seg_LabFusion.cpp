@@ -97,7 +97,7 @@ int main(int argc, char **argv)
     bool PropUpdate=false;
     float tmpP=0;
     float tmpQ=0;
-    float conv=0.000001;
+    float conv=0.00001;
     int dilunc=0;
 
     float LNCC_kernel=3;
@@ -413,7 +413,10 @@ int main(int argc, char **argv)
         float sizeresult_Image=(ProbOutput==0)?(tempImgSize*4):0;
         float sizeSum=sizeLabelImage + sizeLNCC+ sizeTargetImage + sizeAtlasImage + sizeProbabilities + sizeMRF + sizeConfMatrix + sizeMrfMatrix +sizeresult_Image;
 
-        cout <<"Will require aproximately "<<setprecision (3) << (float)(1.1*(sizeSum))/powf(1024.0f,3) <<"Gb of memory"<<endl<<endl;
+        cout <<"Will require less than "<<setprecision (3) << (float)(1.1*(sizeSum))/powf(1024.0f,3) <<"Gb of memory"<<endl;
+        if(LabFusType==0){
+            cout<<"Possibly much less, depending on how uncertain your labels are"<<endl<<endl;
+          }
         flush(cout);
       }
     nifti_image * LNCC=NULL;

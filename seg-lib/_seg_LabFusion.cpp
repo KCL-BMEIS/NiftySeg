@@ -1344,9 +1344,8 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
     }
 
 
-  cout <<this->sizeAfterMaskingAndUncertainty<<endl;
-  if(this->verbose_level>0){
-      cout<<"Percentage of 'Uncertain Area' over 'Total Area' = "<<(float)this->sizeAfterMaskingAndUncertainty/(float)this->numel*100.0f<<"%" <<endl;
+  if(this->verbose_level>0 & this->uncertainflag){
+      cout<<"Percentage of 'Active Area' = "<<(float)this->sizeAfterMaskingAndUncertainty/(float)this->numel*100.0f<<"%" <<endl;
     }
 
   if(this->verbose_level>1){
