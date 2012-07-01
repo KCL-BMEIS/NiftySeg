@@ -38,6 +38,7 @@ void Usage(char *exec)
   printf("\t  -B \t\t| Bounding box of all nonzero voxels [ xmin xsize ymin ysize zmin zsize ]\n");
   printf("\n\tLabel attribute operations (datatype: char or uchar)\n");
   printf("\t  -d <in2>\t| Calculate the Dice score between all classes in <in> and <in2>\n");
+  printf("\t  -di <float> <in2>\t| Same as above but ingnoring areas with Dice above <float> for the Mean\n");
   printf("\t  -D <csv> <in2>| Calculate the Dice score between all classes in <in> and <in2>. Save to <csv> file\n");
   printf("\t\n");
   return;
@@ -182,6 +183,58 @@ int main(int argc, char **argv)
                 float curval=(float)2.0*(float)CountINTERSECT[curtclass]/((float)CountIMG1[curtclass]+(float)CountIMG2[curtclass]);
                 cout<< "Label["<<curtclass<<"] = "<< curval<<endl;
                 if(curval==curval){
+                    meanDice+=(float)2.0*(float)CountINTERSECT[curtclass]/((float)CountIMG1[curtclass]+(float)CountIMG2[curtclass]);
+                    meanDiceCount++;
+                  }
+
+              }
+            if(maxclass>1){
+                cout<< "Mean Dice = "<< meanDice/meanDiceCount<<"\n"<<endl;
+                flush(cout);
+              }
+          }
+        // **************************            ---------          *****************************
+        // **************************            CALC DICE          *****************************
+        // **************************            ---------          *****************************
+        else if(strcmp(argv[i], "-di") == 0 && (i+1)<argc){
+            int oldnumbimg=numbimg;
+            numbimg=numbimg+1;
+            float tmpthresh = atof(argv[++i]);
+            filenames[oldnumbimg] = argv[++i];
+            if(Images[0]->datatype!=NIFTI_TYPE_UINT8){
+                seg_changeDatatype<unsigned char>(Images[0]);
+              }
+            for(int j=oldnumbimg; j<numbimg; j++){
+                Images[j]=nifti_image_read(filenames[j],true);
+                if(Images[j]==NULL){
+                    fprintf(stderr, "This image can not be read: %s\n", filenames[j]);
+                    return 0;
+                  }
+                if(Images[j]->datatype!=NIFTI_TYPE_UINT8){
+                    seg_changeDatatype<unsigned char>(Images[j]);
+                  }
+              }
+            int  CountIMG1[1000]={0};
+            unsigned char * Img1prt = static_cast<unsigned char *>(Images[0]->data);
+            int  CountIMG2[1000]={0};
+            unsigned char * Img2prt = static_cast<unsigned char *>(Images[oldnumbimg]->data);
+            int  CountINTERSECT[1000]={0};
+            int maxclass=0;
+            for(unsigned int index=0; index<Images[0]->nvox; index++){
+                CountIMG1[(int)(Img1prt[index])]++;
+                maxclass=(int)(Img1prt[index])>maxclass?(int)(Img1prt[index]):maxclass;
+                CountIMG2[(int)(Img2prt[index])]++;
+                maxclass=(int)(Img2prt[index])>maxclass?(int)(Img2prt[index]):maxclass;
+                if((int)(Img1prt[index])==(int)(Img2prt[index])){
+                    CountINTERSECT[(int)(Img1prt[index])]++;
+                  }
+              }
+            float meanDice=0;
+            int meanDiceCount=0;
+            for(int curtclass=1; curtclass<=maxclass; curtclass++){
+                float curval=(float)2.0*(float)CountINTERSECT[curtclass]/((float)CountIMG1[curtclass]+(float)CountIMG2[curtclass]);
+                cout<< "Label["<<curtclass<<"] = "<< curval<<endl;
+                if(curval==curval && curval>tmpthresh){
                     meanDice+=(float)2.0*(float)CountINTERSECT[curtclass]/((float)CountIMG1[curtclass]+(float)CountIMG2[curtclass]);
                     meanDiceCount++;
                   }
