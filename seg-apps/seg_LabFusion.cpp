@@ -37,6 +37,7 @@ void Usage(char *exec)
   printf("  -v <int>\t\t\t| Verbose level [0 = off, 1 = on, 2 = debug] (default = 0)\n");
   printf("  -unc \t\t\t| Only consider non-consensus voxels to calculate statistics\n");
   printf("  -out <filename>\t\t| Filename of the integer segmented image (default=LabFusion.nii.gz)\n");
+  printf("  -mask <filename>\t\t| Filename of the ROI for label fusion (greatly reduces memory requirements)\n");
   //printf("  -outProb \t\t\t| Probabilistic/Fuzzy segmented image (only for 1 label)\n\n");
 
   printf("  * * * * * * * * * * * * * * STAPLE and STEPS options * * * * * * * * * * * * * *\n\n");

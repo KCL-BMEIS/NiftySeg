@@ -4303,10 +4303,10 @@ int get_all_files_that_match_2_strings(string dir, vector<string> &files , strin
       return errno;
     }
   while ((dirp = readdir(dp)) != NULL) {
-      if(dirp->d_name[0]!='.'){
-          if(dirp->d_type==8){
-              string curstring=dirp->d_name;
-              if((bool)(curstring.find(string_to_match)!=string::npos) & (bool)(curstring.find(string_to_match2)!=string::npos)){
+	string curstring=dirp->d_name;
+      if(dirp->d_name[0]!='.' ||  curstring.size()>2){
+          if(dirp->d_type==8 || dirp->d_type==0){
+              if((bool)(curstring.find(string_to_match)!=string::npos) && (bool)(curstring.find(string_to_match2)!=string::npos)){
                   files.push_back(dir+string("/")+string(dirp->d_name));
                 }
             }
