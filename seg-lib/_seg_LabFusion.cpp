@@ -1344,7 +1344,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
     }
 
 
-  if(this->verbose_level>0 & this->uncertainflag){
+  if(this->verbose_level>0 && this->uncertainflag){
       cout<<"Percentage of 'Active Area' = "<<(float)this->sizeAfterMaskingAndUncertainty/(float)this->numel*100.0f<<"%" <<endl;
     }
 
@@ -1412,12 +1412,6 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
                 }
             }
 
-          int classCertain=0;
-          for(int currLabel=0; currLabel<this->NumberOfLabels;currLabel++){
-              if(num_true[currLabel]>=(this->Numb_Neigh)){
-                  classCertain=currLabel;
-                }
-            }
 
           for(int currLabel=0; currLabel<this->NumberOfLabels;currLabel++){
               this->W[this->maskAndUncertainIndeces[i]+currLabel*(this->sizeAfterMaskingAndUncertainty)]=(float)(num_true[currLabel]/this->Numb_Neigh);
