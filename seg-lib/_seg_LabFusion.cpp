@@ -609,6 +609,9 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
 
               if(sumW<=0){
                   if(verbose_level>1)cout << "Normalize by zero at voxel - "<<i<<endl;
+//                  for(int currclass=0; currclass<this->NumberOfLabels; currclass++){
+//                      W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty]=1/this->NumberOfLabels;
+//                    }
                 }
               else{
                   for(int currclass=0; currclass<this->NumberOfLabels; currclass++){
@@ -1207,10 +1210,10 @@ int seg_LabFusion::UpdateDensity()
                   uncertainindex++;
                 }
             }
-          this->Prop[currclass]=tempprop;
+          this->Prop[currclass]=tempprop+0.0000001;
         }
       for(int currclass=0;currclass<this->NumberOfLabels;currclass++){
-          this->Prop[currclass]=this->Prop[currclass]/(LabFusion_datatype)(tempsum);
+          this->Prop[currclass]=(this->Prop[currclass])/(LabFusion_datatype)(tempsum);
         }
 
 
