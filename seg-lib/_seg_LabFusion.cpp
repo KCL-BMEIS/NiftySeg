@@ -1121,6 +1121,9 @@ int seg_LabFusion::UpdateMRF()
                           Temp_MRF_Class_Expect[currclass] = exp(this->MRF_strength*Temp_MRF_Class_Expect[currclass]);
                           Sum_Temp_MRF_Class_Expect += Temp_MRF_Class_Expect[currclass];
                         }
+                      if(Sum_Temp_MRF_Class_Expect<=0){
+                          Sum_Temp_MRF_Class_Expect=0.0001;
+                      }
                       for (currclass=0; currclass<this->NumberOfLabels; currclass++) {
 
                           MRF[index_within_mask+currclass*this->sizeAfterMaskingAndUncertainty]=(Temp_MRF_Class_Expect[currclass]/Sum_Temp_MRF_Class_Expect);
@@ -1220,7 +1223,7 @@ int seg_LabFusion::UpdateDensity()
       if(this->verbose_level>0){
           cout << "Estimating proportion"<<endl;
         }
-      if(this->verbose_level>0){
+      if(this->verbose_level>1){
           for(int currclass=0;currclass<this->NumberOfLabels;currclass++){
               if(this->verbose_level>1){
                   cout<<"\t"<<this->Prop[currclass]<<endl;
