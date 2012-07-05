@@ -1204,13 +1204,11 @@ int seg_LabFusion::UpdateDensity()
 
       LabFusion_datatype tempsum=0;
       for(int currclass=0;currclass<this->NumberOfLabels;currclass++){
-          int uncertainindex=0;
           LabFusion_datatype tempprop=0;
           for( int i=0; i<this->numel; i++){
               if(this->maskAndUncertainIndeces[i]){
-                  tempprop+=this->W[uncertainindex+currclass*this->sizeAfterMaskingAndUncertainty];
-                  tempsum+=this->W[uncertainindex+currclass*this->sizeAfterMaskingAndUncertainty];
-                  uncertainindex++;
+                  tempprop+=this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty];
+                  tempsum+=this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty];
                 }
             }
           this->Prop[currclass]=tempprop+0.0000001;
