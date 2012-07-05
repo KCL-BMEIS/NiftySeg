@@ -1200,8 +1200,8 @@ int seg_LabFusion::UpdateDensity()
   if(this->PropUpdate){
 
       LabFusion_datatype tempsum=0;
-      int uncertainindex=0;
       for(int currclass=0;currclass<this->NumberOfLabels;currclass++){
+          int uncertainindex=0;
           LabFusion_datatype tempprop=0;
           for( int i=0; i<this->numel; i++){
               if(this->maskAndUncertainIndeces[i]){
