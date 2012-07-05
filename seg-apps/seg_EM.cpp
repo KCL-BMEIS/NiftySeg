@@ -397,7 +397,7 @@ int main(int argc, char **argv)
     SEG.Run_EM();
 
     if(segment_param->verbose_level>0){
-        cout << "Saving Segmentation"<<endl;
+        cout << "Saving Segmentation "<<endl;
       }
     nifti_image * Result = SEG.GetResult();
     nifti_image_write(Result);
