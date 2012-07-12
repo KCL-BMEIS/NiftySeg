@@ -39,7 +39,7 @@ void Usage(char *exec)
   printf("\n\tLabel attribute operations (datatype: char or uchar)\n");
   printf("\t  -d <in2>\t| Calculate the Dice score between all classes in <in> and <in2>\n");
   printf("\t  -di <float> <in2>\t| Same as above but ingnoring areas with Dice above <float> for the Mean\n");
-  printf("\t  -D <csv> <in2>| Calculate the Dice score between all classes in <in> and <in2>. Save to <csv> file\n");
+  printf("\t  -D <in2> <csv>| Calculate the Dice score between all classes in <in> and <in2>. Save to <csv> file\n");
   printf("\t\n");
   return;
 }
@@ -259,7 +259,7 @@ int main(int argc, char **argv)
                 seg_changeDatatype<unsigned char>(Images[0]);
               }
 
-
+            cout<<filenames[oldnumbimg]<<' '<<filenames[oldnumbimg+1]<<endl;
             Images[oldnumbimg]=nifti_image_read(filenames[oldnumbimg+1],true);
             if(Images[oldnumbimg]==NULL){
                 fprintf(stderr, "This image can not be read: %s\n", filenames[oldnumbimg]);
@@ -287,7 +287,7 @@ int main(int argc, char **argv)
                   }
               }
             ofstream myfile;
-            myfile.open(filenames[2]);
+            myfile.open(filenames[oldnumbimg]);
 
             flush(cout);
             for(int curtclass=1; curtclass<=maxclass; curtclass++){
