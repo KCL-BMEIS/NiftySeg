@@ -65,8 +65,8 @@ seg_LabFusion::seg_LabFusion(int _numb_classif, int numbclasses, int _Numb_Neigh
   this->Fixed_Prop_status=false;
   this->PropUpdate=false;
   this->numb_classif=_numb_classif;
-  this->loglik=1;
-  this->oldloglik=0;
+  this->tracePQ=1;
+  this->oldTracePQ=0;
   this->maxIteration=100;
   this->LNCC=NULL;
   this->NCC=NULL;
@@ -560,7 +560,7 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
       flush(cout);
     }
 
-  this->loglik=0;
+  this->tracePQ=0;
   for(int classifier=0; classifier<this->CurrSizes->numclass;classifier++)nccexists_once[classifier]=false;
 
   for(int i=0;i<(this->numel);i++){
@@ -627,7 +627,7 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                     }
                   //this->loglik+=W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty];
                 }
-              this->loglik+=sumW;
+              //this->loglik+=sumW;
             }
 
           else{
@@ -689,7 +689,7 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                   if(this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty]>1){
                       this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty]=1;
                     }
-                  this->loglik+=W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty];
+                  //this->loglik+=W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty];
                 }
               //this->loglik+=sumW;
             }
@@ -758,6 +758,7 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
   // **************************
   // Normalize Confusion Matrix
   // **************************
+  this->tracePQ=0;
   for(int classifier=0; classifier<this->CurrSizes->numclass;classifier++){
       for(int currclass=0; currclass<this->NumberOfLabels; currclass++){
           double sumConf=0;
@@ -782,6 +783,8 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                       this->NumberOfLabels*this->NumberOfLabels]=
                       ConfusionMatrix2[currclass2+currclass*this->NumberOfLabels+classifier*
                       this->NumberOfLabels*this->NumberOfLabels]/sumConf;
+                  this->tracePQ+=(currclass2==currclass)?ConfusionMatrix2[currclass2+currclass*this->NumberOfLabels+classifier*
+                      this->NumberOfLabels*this->NumberOfLabels]:0;
                 }
             }
         }
@@ -946,7 +949,7 @@ int seg_LabFusion::MV_Estimate()
 
   classifier_datatype * inputCLASSIFIERptr = static_cast<classifier_datatype *>(this->inputCLASSIFIER->data);
 
-  this->loglik=0;
+  this->tracePQ=0;
   for(int i=0;i<(this->CurrSizes->numel);i++){
       if(this->LNCC_status){
           for(int currclass=0; currclass<(this->NumberOfLabels);currclass++){
@@ -1729,8 +1732,8 @@ int  seg_LabFusion::Run_STAPLE_or_STEPS()
     }
   this->iter=0;
   STAPLE_STEPS_Multiclass_Expectation_Maximization();
-  if(this->verbose_level>0)printloglik(this->iter,this->loglik,this->oldloglik);
-
+  if(this->verbose_level>0)printloglik(this->iter,this->tracePQ,this->oldTracePQ);
+  this->oldTracePQ=this->tracePQ;
 
   this->iter=1;
   bool out= true;
@@ -1756,17 +1759,17 @@ int  seg_LabFusion::Run_STAPLE_or_STEPS()
       //STAPLE_STEPS_Multiclass_Maximization();
       STAPLE_STEPS_Multiclass_Expectation_Maximization();
       // Print LogLik depending on the verbose level
-      if(this->verbose_level>0)printloglik(this->iter,this->loglik,this->oldloglik);
+      if(this->verbose_level>0)printTrace(this->iter,this->tracePQ,this->oldTracePQ);
 
       // EXIT CHECKS
       // Check convergence
-      if( (((this->loglik-this->oldloglik)/this->oldloglik)<=this->Conv && this->iter>3) || iter>=this->maxIteration || isnan(this->loglik) )out=false;
+      if( (fabs(((this->tracePQ-this->oldTracePQ)/this->oldTracePQ))<=this->Conv && this->iter>1) || iter>=this->maxIteration || isnan(this->tracePQ) )out=false;
       // Exit if this->Numb_Neigh==1
       if(this->Numb_Neigh==1)out=false;
 
 
       // Update LogLik
-      this->oldloglik=this->loglik;
+      this->oldTracePQ=this->tracePQ;
       iter++;
     }
 

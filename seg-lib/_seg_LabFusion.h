@@ -44,8 +44,8 @@ protected:
   bool    Fixed_Prop_status;
   bool    PropUpdate;
   int     numb_classif;
-  float   loglik;
-  float   oldloglik;
+  float   tracePQ;
+  float   oldTracePQ;
   int     maxIteration;
   float   Conv;
 

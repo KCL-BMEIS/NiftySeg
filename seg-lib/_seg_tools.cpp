@@ -1718,6 +1718,19 @@ int calcM_mask_LoAd(nifti_image * T1,
   return 1;
 }
 
+int printTrace(int iter,
+                SegPrecisionTYPE tracePQ,
+                SegPrecisionTYPE oldTracePQ){
+  if(iter>0){
+          cout<< "Normalized Trace Change = " << fabs((tracePQ-oldTracePQ)/fabsf(oldTracePQ)) << endl;
+    }
+  else {
+      cout<< "Initial Normalized Trace Value = " << setprecision(7) << tracePQ << endl;
+    }
+  return 1;
+}
+
+
 int printloglik(int iter,
                 SegPrecisionTYPE loglik,
                 SegPrecisionTYPE oldloglik){

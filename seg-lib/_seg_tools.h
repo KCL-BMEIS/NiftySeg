@@ -10,6 +10,9 @@
 int printloglik(int iter,
                 SegPrecisionTYPE loglik,
                 SegPrecisionTYPE oldloglik);
+int printTrace(int iter,
+                SegPrecisionTYPE loglik,
+                SegPrecisionTYPE oldloglik);
 
 int calcM_mask(nifti_image * T1,
                SegPrecisionTYPE * Expec,

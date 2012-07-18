@@ -98,7 +98,7 @@ int main(int argc, char **argv)
     bool PropUpdate=false;
     float tmpP=0;
     float tmpQ=0;
-    float conv=0.00001;
+    float conv=0.0001;
     int dilunc=0;
 
     float LNCC_kernel=3;
