@@ -625,7 +625,7 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                   if(this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty]>1){
                       this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty]=1;
                     }
-                  //this->loglik+=W[this->mask_and_uncertain_indexes[i]+currclass*this->size_after_masking_and_uncertainty];
+                  //this->loglik+=W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty];
                 }
               this->loglik+=sumW;
             }
@@ -689,9 +689,9 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                   if(this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty]>1){
                       this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty]=1;
                     }
-                  //this->loglik+=W[uncertainindex+currclass*this->size_after_masking_and_uncertainty];
+                  this->loglik+=W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty];
                 }
-              this->loglik+=sumW;
+              //this->loglik+=sumW;
             }
 
           // **************************
