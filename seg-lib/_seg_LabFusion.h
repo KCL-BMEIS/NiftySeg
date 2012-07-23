@@ -50,9 +50,9 @@ protected:
   float   Conv;
 
   // LNCC
-  char * LNCC;
+  unsigned char * LNCC;
   bool LNCC_status;
-  char * NCC;
+  unsigned char * NCC;
   bool NCC_status;
   int Numb_Neigh;
 
@@ -66,6 +66,8 @@ protected:
   int Create_CurrSizes();
   int EstimateInitialDensity();
   int UpdateDensity();
+  int UpdateDensity_noTest();
+
   //    int Find_WMax();
   int STAPLE_STEPS_Multiclass_Maximization();
   int STAPLE_STEPS_Multiclass_Expectation();

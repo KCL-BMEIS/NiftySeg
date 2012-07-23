@@ -1238,6 +1238,43 @@ int seg_LabFusion::UpdateDensity()
 
 }
 
+int seg_LabFusion::UpdateDensity_noTest()
+{
+
+
+
+      LabFusion_datatype tempsum=0;
+      for(int currclass=0;currclass<this->NumberOfLabels;currclass++){
+          LabFusion_datatype tempprop=0;
+          for( int i=0; i<this->numel; i++){
+              if(this->maskAndUncertainIndeces[i]){
+                  tempprop+=this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty];
+                  tempsum+=this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty];
+                }
+            }
+          this->Prop[currclass]=tempprop+0.0000001;
+        }
+      for(int currclass=0;currclass<this->NumberOfLabels;currclass++){
+          this->Prop[currclass]=(this->Prop[currclass])/(LabFusion_datatype)(tempsum);
+        }
+
+
+      if(this->verbose_level>0){
+          cout << "Estimating proportion"<<endl;
+        }
+      if(this->verbose_level>1){
+          for(int currclass=0;currclass<this->NumberOfLabels;currclass++){
+              if(this->verbose_level>1){
+                  cout<<"\t"<<this->Prop[currclass]<<endl;
+                }
+            }
+          flush(cout);
+
+        }
+  return 1;
+
+}
+
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 
 int seg_LabFusion::Turn_Prop_Update_ON()
@@ -1292,13 +1329,15 @@ int seg_LabFusion::Allocate_Stuff_SBA()
 int seg_LabFusion::Allocate_Stuff_STAPLE()
 {
   if(this->verbose_level>1){
-      cout<< "Allocating this->num_true";
+      cout<< "Allocating this->FinalSeg";
+      flush(cout);
+    }
+  this->FinalSeg = new LabFusion_datatype [this->numel];
+  if(this->verbose_level>1){
+      cout<< " -> Done";
       flush(cout);
     }
 
-
-
-  this->FinalSeg = new LabFusion_datatype [this->numel];
   if(this->FinalSeg == NULL){
       fprintf(stderr,"\n* Error when alocating FinalSeg: Not enough memory\n");
       exit(1);
@@ -1718,6 +1757,7 @@ int  seg_LabFusion::Run_STAPLE_or_STEPS()
   if(!(this->Fixed_Prop_status)){
       //UpdateDensity();
       EstimateInitialDensity();
+     // UpdateDensity_noTest();
 
     }
   //**************

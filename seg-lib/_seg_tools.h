@@ -333,11 +333,11 @@ nifti_image * Get_Bias_Corrected_mask(float * BiasFieldCoefs,
                                       ImageSize * CurrSizes,
                                       int biasOrder);
 
-char * seg_norm_4D_GNCC(nifti_image * BaseImage,nifti_image * NCC,int numberordered,ImageSize * CurrSizes,int verbose);
+unsigned char * seg_norm_4D_GNCC(nifti_image * BaseImage,nifti_image * NCC,int numberordered,ImageSize * CurrSizes,int verbose);
 float seg_norm3GNCC(nifti_image * BaseImage,nifti_image * Template,nifti_image * Mask,int verbose);
-char * seg_norm4ROINCC(nifti_image * LableImage,nifti_image * BaseImage,nifti_image * LNCC,int numberordered,ImageSize * CurrSizes,int DilSize, int verbose);
-char * seg_norm4LNCC(nifti_image * BaseImage,nifti_image * LNCC,float distance,int numberordered,ImageSize * CurrSizes,int verbose);
-char * seg_norm4MLLNCC(nifti_image * BaseImage, nifti_image * LNCC,float distance,int labels, int numberordered,ImageSize * CurrSizes,int verbose);
+unsigned char * seg_norm4ROINCC(nifti_image * LableImage,nifti_image * BaseImage,nifti_image * LNCC,int numberordered,ImageSize * CurrSizes,int DilSize, int verbose);
+unsigned char * seg_norm4LNCC(nifti_image * BaseImage,nifti_image * LNCC,float distance,int numberordered,ImageSize * CurrSizes,int verbose);
+unsigned char * seg_norm4MLLNCC(nifti_image * BaseImage, nifti_image * LNCC,float distance,int labels, int numberordered,ImageSize * CurrSizes,int verbose);
 
 extern "C++" template <class NewTYPE>
 int seg_changeDatatype(nifti_image *image);

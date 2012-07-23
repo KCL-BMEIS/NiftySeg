@@ -3277,7 +3277,7 @@ nifti_image * Get_Bias_Corrected_mask(float * BiasFieldCoefs,
   return BiasCorrected;
 }
 
-char * seg_norm_4D_GNCC(nifti_image * BaseImage,nifti_image * NCC,int numberordered,ImageSize * CurrSizes,int verbose){
+unsigned char * seg_norm_4D_GNCC(nifti_image * BaseImage,nifti_image * NCC,int numberordered,ImageSize * CurrSizes,int verbose){
 
   LabFusion_datatype * NCCptr = static_cast<LabFusion_datatype *>(NCC->data);
   LabFusion_datatype * BaseImageptr = static_cast<LabFusion_datatype *>(BaseImage->data);
@@ -3344,7 +3344,7 @@ char * seg_norm_4D_GNCC(nifti_image * BaseImage,nifti_image * NCC,int numberorde
   CurrSizes->numclass=realt;
 
 
-  char * NCC_ordered=new char [numberordered];
+  unsigned char * NCC_ordered=new unsigned char [numberordered];
 
   if (verbose>0){
       cout << "Used Labels after sorting the GNCC"<<endl;
@@ -3458,7 +3458,7 @@ float seg_norm3GNCC(nifti_image * BaseImage,nifti_image * Template,nifti_image *
 
 
 
-char * seg_norm4ROINCC(nifti_image * LableImage,nifti_image * BaseImage,nifti_image * NCC,int numberordered,ImageSize * CurrSizes,int DilSize, int verbose){
+unsigned char * seg_norm4ROINCC(nifti_image * LableImage,nifti_image * BaseImage,nifti_image * NCC,int numberordered,ImageSize * CurrSizes,int DilSize, int verbose){
 
   LabFusion_datatype * NCCptr = static_cast<LabFusion_datatype *>(NCC->data);
   bool * LableImageptr = static_cast<bool *>(LableImage->data);
@@ -3564,7 +3564,7 @@ char * seg_norm4ROINCC(nifti_image * LableImage,nifti_image * BaseImage,nifti_im
   CurrSizes->numclass=realt;
 
 
-  char * NCC_ordered=new char [numberordered];
+  unsigned char * NCC_ordered=new unsigned char [numberordered];
 
   if (verbose>0){
       cout << "Used Labels after sorting the ROINCC"<<endl;
@@ -3583,12 +3583,12 @@ char * seg_norm4ROINCC(nifti_image * LableImage,nifti_image * BaseImage,nifti_im
 }
 
 
-char * seg_norm4MLLNCC(nifti_image * BaseImage, nifti_image * LNCC,float distance,int levels, int numberordered,ImageSize * CurrSizes,int verbose){
+unsigned char * seg_norm4MLLNCC(nifti_image * BaseImage, nifti_image * LNCC,float distance,int levels, int numberordered,ImageSize * CurrSizes,int verbose){
 
   LabFusion_datatype * LNCCptr = static_cast<LabFusion_datatype *>(LNCC->data);
   LabFusion_datatype * BaseImageptr = static_cast<LabFusion_datatype *>(BaseImage->data);
-  char * LNCC_ordered=NULL;
-  char * LNCC_ordered_save=NULL;
+  unsigned char * LNCC_ordered=NULL;
+  unsigned char * LNCC_ordered_save=NULL;
 
 
   int numbordered_level_old=LNCC->nt;
@@ -3596,7 +3596,7 @@ char * seg_norm4MLLNCC(nifti_image * BaseImage, nifti_image * LNCC,float distanc
   for(int curlevel=levels; curlevel;curlevel--){
 
       if(curlevel==levels){
-          LNCC_ordered_save=new char [numbordered_level_old*BaseImage->nx*BaseImage->ny*BaseImage->nz];
+          LNCC_ordered_save=new unsigned char [numbordered_level_old*BaseImage->nx*BaseImage->ny*BaseImage->nz];
           if(LNCC_ordered_save == NULL){
               fprintf(stderr,"* Error when alocating LNCC_ordered_save in function seg_norm4MLLNCC");
               exit(-1);
@@ -3702,7 +3702,7 @@ char * seg_norm4MLLNCC(nifti_image * BaseImage, nifti_image * LNCC,float distanc
       delete [] BaseMean;
 
       CurrSizes->numclass=realt;
-      LNCC_ordered=new char [numbordered_level*BaseImage->nx*BaseImage->ny*BaseImage->nz];
+      LNCC_ordered=new unsigned char [numbordered_level*BaseImage->nx*BaseImage->ny*BaseImage->nz];
       if(LNCC_ordered == NULL){
           fprintf(stderr,"* Error when alocating LNCC_ordered in function seg_norm4LNCC");
           exit(-1);
@@ -3752,7 +3752,7 @@ char * seg_norm4MLLNCC(nifti_image * BaseImage, nifti_image * LNCC,float distanc
       if(curlevel>1){
           numbordered_level_old=numbordered_level;
           delete [] LNCC_ordered_save;
-          LNCC_ordered_save=new char [numbordered_level_old*LNCC->nx*LNCC->ny*LNCC->nz];
+          LNCC_ordered_save=new unsigned char [numbordered_level_old*LNCC->nx*LNCC->ny*LNCC->nz];
           if(LNCC_ordered_save == NULL){
               fprintf(stderr,"* Error when alocating LNCC_ordered_save in function seg_norm4MLLNCC");
               exit(-1);
@@ -3775,11 +3775,11 @@ char * seg_norm4MLLNCC(nifti_image * BaseImage, nifti_image * LNCC,float distanc
 /* *************************************************************** */
 
 
-char * seg_norm4LNCC(nifti_image * BaseImage, nifti_image * LNCC,float distance,int numberordered,ImageSize * CurrSizes,int verbose){
+unsigned char * seg_norm4LNCC(nifti_image * BaseImage, nifti_image * LNCC,float distance,int numberordered,ImageSize * CurrSizes,int verbose){
 
   LabFusion_datatype * LNCCptr = static_cast<LabFusion_datatype *>(LNCC->data);
   LabFusion_datatype * BaseImageptr = static_cast<LabFusion_datatype *>(BaseImage->data);
-  char * LNCC_ordered=NULL;
+  unsigned char * LNCC_ordered=NULL;
   LabFusion_datatype * BaseMean=new LabFusion_datatype [BaseImage->nx*BaseImage->ny*BaseImage->nz];
   if(BaseMean == NULL){
       fprintf(stderr,"* Error when alocating BaseMean in function seg_norm4LNCC");
@@ -3870,7 +3870,7 @@ char * seg_norm4LNCC(nifti_image * BaseImage, nifti_image * LNCC,float distance,
   CurrSizes->numclass=realt;
   //  Gaussian_Filter_4D(LNCCptr,(float)(distance),CurrSizes);
 
-  LNCC_ordered=new char [numberordered*BaseImage->nx*BaseImage->ny*BaseImage->nz];
+  LNCC_ordered=new unsigned char [numberordered*BaseImage->nx*BaseImage->ny*BaseImage->nz];
   if(LNCC_ordered == NULL){
       fprintf(stderr,"* Error when alocating LNCC_ordered in function seg_norm4LNCC");
       exit(-1);
@@ -3892,7 +3892,7 @@ char * seg_norm4LNCC(nifti_image * BaseImage, nifti_image * LNCC,float distance,
         }
       int * ordertmp=quickSort_order(&LNCCvalue_tmp[0],LNCC->nt);
       for(int lable_order=0;lable_order<numberordered;lable_order++){
-          LNCC_ordered[i+lable_order*BaseImage->nx*BaseImage->ny*BaseImage->nz]=(char)ordertmp[LNCC->nt-lable_order-1];
+          LNCC_ordered[i+lable_order*BaseImage->nx*BaseImage->ny*BaseImage->nz]=(unsigned char)ordertmp[LNCC->nt-lable_order-1];
         }
       delete [] ordertmp;
       delete [] LNCCvalue_tmp;
