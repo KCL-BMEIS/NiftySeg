@@ -832,7 +832,7 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
       ConfusionMatrix[i]=ConfusionMatrix2[i];
     }
 
-
+  this->tracePQ=this->tracePQ/(this->numb_classif*this->NumberOfLabels);
 
   delete [] tmpW;
   delete [] ConfusionMatrix2;
@@ -1209,7 +1209,7 @@ int seg_LabFusion::UpdateDensity()
       for(int currclass=0;currclass<this->NumberOfLabels;currclass++){
           LabFusion_datatype tempprop=0;
           for( int i=0; i<this->numel; i++){
-              if(this->maskAndUncertainIndeces[i]){
+              if(this->maskAndUncertainIndeces[i]>0){
                   tempprop+=this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty];
                   tempsum+=this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty];
                 }

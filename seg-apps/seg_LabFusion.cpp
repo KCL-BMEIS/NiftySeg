@@ -144,7 +144,7 @@ int main(int argc, char **argv)
           }
         else if(strcmp(argv[i], "-STEPS") == 0&& (i+4)<argc){
             if(LabFusType==10){
-                PropUpdate = true;
+                //PropUpdate = true;
                 LabFusType = 0;
                 UNCERTAINflag = true;
                 LNCC_kernel= atof(argv[++i]);
