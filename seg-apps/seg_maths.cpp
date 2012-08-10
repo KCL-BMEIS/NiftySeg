@@ -46,6 +46,8 @@ void Usage(char *exec)
   printf("\t-lncc\t<file> <std>\tLocal CC between current img and <int> on a kernel with <std>\n");
   printf("\t-lssd\t<file> <std>\tLocal SSD between current img and <int> on a kernel with <std>\n");
   //printf("\t-lmi\t<file> <std>\tLocal MI between current img and <int> on a kernel with <std>\n");
+  printf("\n\t* * Sampling * *\n");
+  printf("\t-subsamp2\t<file> <std>\tSubsample the image by 2\n");
   printf("\n\t* * Image header operations * *\n");
   printf("\t-hdr_copy <file> \tCopy header from working image to <file> and save in <output>.\n");
   printf("\n\t* * Output * *\n");
@@ -96,7 +98,7 @@ int main(int argc, char **argv)
     CurrSize->zsize=InputImage->nz;
     CurrSize->usize=(InputImage->nu>1)?InputImage->nu:1;
     CurrSize->tsize=(InputImage->nt>1)?InputImage->nt:1;
-
+    float Scalling=1;
     bool verbose=0;
     int datatypeoutput=NIFTI_TYPE_FLOAT32;
 
@@ -120,7 +122,7 @@ int main(int argc, char **argv)
         // *********************  MUTIPLY  *************************
         else if(strcmp(argv[i], "-mul") == 0){
             string parser=argv[++i];
-            if(   (strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))    ||     (parser.length()==1 && parser.find("0")>=0)   ){
+            if(   (strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))    ||     (parser.length()==1 && parser.find("0")!=string::npos)   ){
                 double multfactor=strtod(parser.c_str(),NULL);
                 for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                   bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]*multfactor;
@@ -151,7 +153,7 @@ int main(int argc, char **argv)
         // *********************  ADD  *************************
         else if(strcmp(argv[i], "-add") == 0){
             string parser=argv[++i];
-            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))|| (parser.length()==1 && parser.find("0")>=0))){
+            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))|| (parser.length()==1 && parser.find("0")!=string::npos))){
                 double addfactor=strtod(parser.c_str(),NULL);
                 for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                   bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]+addfactor;
@@ -182,7 +184,7 @@ int main(int argc, char **argv)
         // *********************  SUBTRACT  *************************
         else if(strcmp(argv[i], "-sub") == 0){
             string parser=argv[++i];
-            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))|| (parser.length()==1 && parser.find("0")>=0))){
+            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))|| (parser.length()==1 && parser.find("0")!=string::npos))){
                 double factor=strtod(parser.c_str(),NULL);
                 for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                   bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]-factor;
@@ -213,7 +215,7 @@ int main(int argc, char **argv)
         // *********************  DIV  *************************
         else if(strcmp(argv[i], "-div") == 0){
             string parser=argv[++i];
-            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))|| (parser.length()==1 && parser.find("0")>=0))){
+            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))|| (parser.length()==1 && parser.find("0")!=string::npos))){
                 double factor=strtod(parser.c_str(),NULL);
                 for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                   bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]/factor;
@@ -244,7 +246,7 @@ int main(int argc, char **argv)
         // *********************  POWER  *************************
         else if(strcmp(argv[i], "-pow") == 0){
             string parser=argv[++i];
-            if(((strtod(parser.c_str(),NULL)!=0) || (parser.length()==1 && parser.find("0")>=0))){
+            if(((strtod(parser.c_str(),NULL)!=0) || (parser.length()==1 && parser.find("0")!=string::npos))){
                 float factor=strtof(parser.c_str(),NULL);
                 for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                   bufferImages[current_buffer?0:1][i]=powf(bufferImages[current_buffer][i],factor);
@@ -289,7 +291,7 @@ int main(int argc, char **argv)
         // *********************  THRESHOLD below  *************************
         else if(strcmp(argv[i], "-thr") == 0){
             string parser=argv[++i];
-            if(((strtod(parser.c_str(),NULL)!=0 ) || (parser.length()==1 && parser.find("0")>=0))){
+            if(((strtod(parser.c_str(),NULL)!=0 ) || (parser.length()==1 && parser.find("0")!=string::npos))){
                 double factor=strtod(parser.c_str(),NULL);
                 for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                   bufferImages[current_buffer?0:1][i]=(bufferImages[current_buffer][i]>factor)?bufferImages[current_buffer][i]:0;
@@ -303,7 +305,7 @@ int main(int argc, char **argv)
         // *********************  THRESHOLD ABOVE  *************************
         else if(strcmp(argv[i], "-uthr") == 0){
             string parser=argv[++i];
-            if(((strtod(parser.c_str(),NULL)!=0) || (parser.length()==1 && parser.find("0")>=0))){
+            if(((strtod(parser.c_str(),NULL)!=0) || (parser.length()==1 && parser.find("0")!=string::npos))){
                 double factor=strtod(parser.c_str(),NULL);
                 for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                   bufferImages[current_buffer?0:1][i]=(bufferImages[current_buffer][i]<factor)?bufferImages[current_buffer][i]:0;
@@ -368,7 +370,7 @@ int main(int argc, char **argv)
 
 
             string parser=argv[++i];
-            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))|| (parser.length()==1 && parser.find("0")>=0))){
+            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))|| (parser.length()==1 && parser.find("0")!=string::npos))){
                 if(strtod(parser.c_str(),NULL)<=0){
                     cout<< "ERROR: -geo speed should be larger than zero"<<endl;
                     return 1;
@@ -453,8 +455,8 @@ int main(int argc, char **argv)
             float min=1e32;
             float max=-1e32;
             for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++){
-              max=bufferImages[current_buffer][i]>max?bufferImages[current_buffer][i]:max;
-              min=bufferImages[current_buffer][i]<min?bufferImages[current_buffer][i]:min;
+                max=bufferImages[current_buffer][i]>max?bufferImages[current_buffer][i]:max;
+                min=bufferImages[current_buffer][i]<min?bufferImages[current_buffer][i]:min;
               }
             InputImage->cal_max=max;
             InputImage->cal_min=min;
@@ -462,7 +464,7 @@ int main(int argc, char **argv)
         // *********************  Extract time point  *************************
         else if(strcmp(argv[i], "-tp") == 0){
             string parser=argv[++i];
-            if(((strtod(parser.c_str(),NULL)!=0) || (parser.length()==1 && parser.find("0")>=0 && parser.find("0")>=0) )&& strtod(parser.c_str(),NULL)<=CurrSize->tsize ){
+            if(((strtod(parser.c_str(),NULL)!=0) || (parser.length()==1 && parser.find("0")!=string::npos && parser.find("0")!=string::npos) )&& strtod(parser.c_str(),NULL)<=CurrSize->tsize ){
                 float factor=strtof(parser.c_str(),NULL);
                 InputImage->dim[4]=InputImage->nt=CurrSize->tsize=1;
                 InputImage->dim[0]=3;
@@ -569,6 +571,36 @@ int main(int argc, char **argv)
                 cout << "ERROR: "<< parser << " has to be an integer > 0"<<endl;
                 i=argc;
               }
+          }
+        // *********************  merge time points  *************************
+        else if(strcmp(argv[i], "-subsamp2") == 0){
+
+            int newx=floor(CurrSize->xsize/2.0f);
+            int newy=floor(CurrSize->ysize/2.0f);
+            int newz=floor(CurrSize->zsize/2.0f);
+            int newnumel=newx*newy*newz;
+
+
+            delete [] bufferImages[current_buffer?0:1];
+            bufferImages[current_buffer?0:1]= new SegPrecisionTYPE [newnumel*CurrSize->tsize];
+            Scalling=0.5;
+
+            for(int indexT=0; indexT<CurrSize->tsize; indexT++)
+              for(int indexZ=0; indexZ<newz; indexZ++)
+                for(int indexY=0; indexY<newy; indexY++)
+                  for(int indexX=0; indexX<newx; indexX++)
+                    bufferImages[current_buffer?0:1][indexX+indexY*newx+indexZ*newy*newx+indexT*newnumel]=bufferImages[current_buffer][indexX*2+indexY*2*CurrSize->xsize+indexZ*2*CurrSize->xsize*CurrSize->ysize+indexT*CurrSize->numel];
+
+
+
+
+            delete [] bufferImages[current_buffer];
+            bufferImages[current_buffer]= new SegPrecisionTYPE [newnumel*CurrSize->tsize];
+            current_buffer=current_buffer?0:1;
+            CurrSize->xsize=newx;
+            CurrSize->ysize=newy;
+            CurrSize->zsize=newz;
+            CurrSize->numel=newnumel;
           }
         // *********************  Get max TP  *************************
         else if(strcmp(argv[i], "-tmax") == 0){
@@ -799,28 +831,28 @@ int main(int argc, char **argv)
           }
         else if(strcmp(argv[i], "-odt") == 0){
             string parser=argv[++i];
-            if(parser.find("uchar")>=0){
+            if(parser.find("uchar")!=string::npos){
                 datatypeoutput=NIFTI_TYPE_UINT8;
               }
-            else if(parser.find("ushort")>=0){
+            else if(parser.find("ushort")!=string::npos){
                 datatypeoutput=NIFTI_TYPE_UINT16;
               }
-            else if(parser.find("uint")>=0){
+            else if(parser.find("uint")!=string::npos){
                 datatypeoutput=NIFTI_TYPE_UINT32;
               }
-            else if(parser.find("char")>=0){
+            else if(parser.find("char")!=string::npos){
                 datatypeoutput=NIFTI_TYPE_INT8;
               }
-            else if(parser.find("short")>=0){
+            else if(parser.find("short")!=string::npos){
                 datatypeoutput=NIFTI_TYPE_INT16;
               }
-            else if(parser.find("int")>=0){
+            else if(parser.find("int")!=string::npos){
                 datatypeoutput=NIFTI_TYPE_INT32;
               }
-            else if(parser.find("float")>=0){
+            else if(parser.find("float")!=string::npos){
                 datatypeoutput=NIFTI_TYPE_FLOAT32;
               }
-            else if(parser.find("double")>=0){
+            else if(parser.find("double")!=string::npos){
                 datatypeoutput=NIFTI_TYPE_FLOAT64;
               }
             else{
@@ -854,6 +886,27 @@ int main(int argc, char **argv)
         OutputImage->dim[0]=(OutputImage->dim[5]>1?5:OutputImage->dim[0]);
         OutputImage->dim[0]=(OutputImage->dim[6]>1?6:OutputImage->dim[0]);
         OutputImage->dim[0]=(OutputImage->dim[7]>1?7:OutputImage->dim[0]);
+
+        if(Scalling!=1.0f){
+            OutputImage->dx=OutputImage->dx/Scalling;
+            OutputImage->dy=OutputImage->dy/Scalling;
+            OutputImage->dz=OutputImage->dz/Scalling;
+            OutputImage->pixdim[1]=OutputImage->dx;
+            OutputImage->pixdim[2]=OutputImage->dy;
+            OutputImage->pixdim[3]=OutputImage->dz;
+            if(OutputImage->sform_code>0){
+                OutputImage->sto_xyz.m[0][0]/=Scalling;
+                OutputImage->sto_xyz.m[0][1]/=Scalling;
+                OutputImage->sto_xyz.m[0][2]/=Scalling;
+                OutputImage->sto_xyz.m[1][0]/=Scalling;
+                OutputImage->sto_xyz.m[1][1]/=Scalling;
+                OutputImage->sto_xyz.m[1][2]/=Scalling;
+                OutputImage->sto_xyz.m[2][0]/=Scalling;
+                OutputImage->sto_xyz.m[2][1]/=Scalling;
+                OutputImage->sto_xyz.m[2][2]/=Scalling;
+              }
+            //OutputImage->s
+          }
 
         if(verbose){
             cout << "Output Dim = [ ";

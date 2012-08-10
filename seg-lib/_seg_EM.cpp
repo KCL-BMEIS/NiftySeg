@@ -229,10 +229,7 @@ int seg_EM::SetMaskImage(nifti_image *f)
 
 int seg_EM::SetVerbose(unsigned int verblevel)
 {
-  if(verblevel<0){
-      this->verbose_level=0;
-    }
-  else if(verblevel>2){
+  if(verblevel>2){
       this->verbose_level=2;
     }
   else{

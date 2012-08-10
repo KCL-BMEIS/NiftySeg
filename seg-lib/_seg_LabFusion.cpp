@@ -452,10 +452,8 @@ int seg_LabFusion::SetFilenameOut(char *f)
 
 int seg_LabFusion::SetVerbose(unsigned int verblevel)
 {
-  if(verblevel<0){
-      this->verbose_level=0;
-    }
-  else if(verblevel>2){
+
+  if(verblevel>2){
       this->verbose_level=2;
     }
   else{
@@ -1338,6 +1336,10 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
       flush(cout);
     }
 
+  if(this->verbose_level>1){
+      cout<< "Done";
+      flush(cout);
+    }
   if(this->FinalSeg == NULL){
       fprintf(stderr,"\n* Error when alocating FinalSeg: Not enough memory\n");
       exit(1);
