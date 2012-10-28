@@ -712,6 +712,17 @@ int seg_EM::Intensity_Based_Inisitalization_of_Means()
 }
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 
+float * seg_EM::GetMeans()
+{
+  return this->M;
+}
+
+float * seg_EM::GetSTD()
+{
+  return this->V;
+}
+/* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
+
 nifti_image * seg_EM::GetResult()
 {
   nifti_image * Result=NULL;

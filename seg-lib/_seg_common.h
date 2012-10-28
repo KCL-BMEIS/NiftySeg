@@ -52,7 +52,7 @@ inline int fabs(int _x) { return (int)fabs((float)(_x)); }
 
 #define SegPrecisionTYPE float
 #define non_PV_numclass 5
-#define PV_numbclass 7
+#define PV_numbclass 20
 #define max_numbclass 12
 #define maxallowedpowerorder 6
 #define redux_factor_for_bias 2

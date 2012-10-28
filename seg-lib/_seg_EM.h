@@ -127,6 +127,8 @@ public:
   int Initisalise_EM();
   int* Run_EM();
 
+  float * GetMeans();
+  float * GetSTD();
   nifti_image *GetResult();
   nifti_image *GetResultNeonate();
   nifti_image *GetBiasCorrected(char * filename);
