@@ -425,6 +425,9 @@ int Normalize_Image_mask(nifti_image * input,
           if(brainmaskptr[i]>0){
               //log(number_between_0_and_1 + 1)/log(2)
               Inputptr[i]=logf((((Inputptr[i])-tempmin)/(tempmax-tempmin))+1)/0.693147181;
+              if(Inputptr[i]!=Inputptr[i]){
+                   cout<< "Image has NaNs" << endl;
+              }
             }
           else{
               Inputptr[i]=0;
@@ -468,6 +471,9 @@ int Normalize_Image(nifti_image * input,
           for (int i=0; i<numel; i++) {
               //log(number_between_0_and_1 + 1)/log(2)
               *Inputptr=logf((((*Inputptr)-tempmin)/(tempmax-tempmin))+1)/0.693147181;
+              if(*Inputptr!=*Inputptr){
+                   cout<< "Image has NaNs" << endl;
+              }
               Inputptr++;
             }
         }
@@ -557,10 +563,8 @@ int * Create_Short_2_Long_Matrix_from_NII(nifti_image * Mask,
 
 int *  Create_Long_2_Short_Matrix_from_NII(nifti_image * Mask){
   int numel = Mask->nvox;
-  int * Long_2_Short_Indices= new int [rowsize(Mask)*colsize(Mask)*depth(Mask)]();
+  int * Long_2_Short_Indices= new int [numel]();
   if(Mask->datatype==DT_BINARY){
-
-
       bool * Maskptr = static_cast<bool *> (Mask->data);
       bool * Maskptrtmp = Maskptr;
       int * Long_2_Short_Indices_PTR = (int *) Long_2_Short_Indices;
@@ -808,12 +812,10 @@ int calcE_mask(nifti_image * T1,
             }
 
           if(OutliernessFlag){
-              Outlierness[i+Expec_offset[cl]]=(expf(mahal))/(expf(mahal)+expf(-0.5*(OutliernessThreshold*OutliernessThreshold)));
-              Expec[i+Expec_offset[cl]]=IterPrior[i+Expec_offset[cl]]*Outlierness[i+Expec_offset[cl]] * expf(mahal) * inv_sqrt_V_2pi[cl];
+              float outvalue=(expf(mahal)+0.01)/(expf(mahal)+expf(-0.5*(OutliernessThreshold*OutliernessThreshold))+0.01);
+              Outlierness[i+Expec_offset[cl]]=outvalue;
             }
-          else{
-              Expec[i+Expec_offset[cl]]=IterPrior[i+Expec_offset[cl]] * expf(mahal) * inv_sqrt_V_2pi[cl];
-            }
+          Expec[i+Expec_offset[cl]]=IterPrior[i+Expec_offset[cl]] * expf(mahal) * inv_sqrt_V_2pi[cl];
           SumExpec+=Expec[i+Expec_offset[cl]];
         }
 
@@ -1312,13 +1314,19 @@ int calcM(nifti_image * T1,
               if(BiasField!=NULL){
                   BiasField_PTR= &BiasField[Multispec*numel];
                   for (int i=0; i<numel; i++, Expec_PTR++,OutliernessPTR++,BiasField_PTR++) {
-                      tempsum+=(*Expec_PTR) * (*OutliernessPTR)*(T1_PTR[i]+(*BiasField_PTR));
-                      SumPriors+=(*Expec_PTR)*(*OutliernessPTR);
+                      float current_value=(*Expec_PTR) * (*OutliernessPTR)*(T1_PTR[i]+(*BiasField_PTR));
+                      if(current_value==current_value){
+                          tempsum+=current_value;
+                          SumPriors+=(*Expec_PTR)*(*OutliernessPTR);
+                        }
                     }
                 }else{
                   for (int i=0; i<numel; i++, Expec_PTR++,OutliernessPTR++) {
-                      tempsum+=(*Expec_PTR)*(*OutliernessPTR)*(T1_PTR[i]);
-                      SumPriors+=(*Expec_PTR)*(*OutliernessPTR);
+                      float current_value=(*Expec_PTR) * (*OutliernessPTR)*(T1_PTR[i]);
+                      if(current_value==current_value){
+                          tempsum+=current_value;
+                          SumPriors+=(*Expec_PTR)*(*OutliernessPTR);
+                        }
                     }
                 }
             }
@@ -1327,13 +1335,19 @@ int calcM(nifti_image * T1,
               if(BiasField!=NULL){
                   BiasField_PTR= &BiasField[Multispec*numel];
                   for (int i=0; i<numel; i++, Expec_PTR++,BiasField_PTR++) {
-                      tempsum+=(*Expec_PTR) * (T1_PTR[i]+(*BiasField_PTR));
-                      SumPriors+=(*Expec_PTR);
+                      float current_value=(*Expec_PTR) * (T1_PTR[i]+(*BiasField_PTR));
+                      if(current_value==current_value){
+                          tempsum+=current_value;
+                          SumPriors+=(*Expec_PTR);
+                        }
                     }
                 }else{
                   for (int i=0; i<numel; i++, Expec_PTR++) {
-                      tempsum+=(*Expec_PTR)*(T1_PTR[i]);
-                      SumPriors+=(*Expec_PTR);
+                      float current_value=(*Expec_PTR) * (T1_PTR[i]);
+                      if(current_value==current_value){
+                          tempsum+=current_value;
+                          SumPriors+=(*Expec_PTR);
+                        }
                     }
                 }
 
@@ -1500,13 +1514,19 @@ int calcM_mask(nifti_image * T1,
               if(BiasField!=NULL){
                   BiasField_PTR= &BiasField[Multispec*numel_masked];
                   for (int i=0; i<numel_masked; i++, Expec_PTR++,OutliernessPTR++,BiasField_PTR++,S2L_PTR++) {
-                      tempsum+=(*Expec_PTR)*(*OutliernessPTR)*(T1_PTR[(*S2L_PTR)]+(*BiasField_PTR));
-                      SumPriors+=(*Expec_PTR)*(*OutliernessPTR);
+                      float current_value=(*Expec_PTR)*(*OutliernessPTR)*(T1_PTR[(*S2L_PTR)]+(*BiasField_PTR));
+                      if(current_value==current_value){
+                          tempsum+=current_value;
+                          SumPriors+=(*Expec_PTR)*(*OutliernessPTR);
+                        }
                     }
                 }else{
                   for (int i=0; i<numel_masked; i++, Expec_PTR++,S2L_PTR++) {
-                      tempsum+=(*Expec_PTR)*(*OutliernessPTR)*(T1_PTR[(*S2L_PTR)]);
-                      SumPriors+=(*Expec_PTR)*(*OutliernessPTR);
+                      float current_value=(*Expec_PTR)*(*OutliernessPTR)*(T1_PTR[(*S2L_PTR)]);
+                      if(current_value==current_value){
+                          tempsum+=current_value;
+                          SumPriors+=(*Expec_PTR)*(*OutliernessPTR);
+                        }
                     }
                 }
             }
@@ -1514,75 +1534,82 @@ int calcM_mask(nifti_image * T1,
               if(BiasField!=NULL){
                   BiasField_PTR= &BiasField[Multispec*numel_masked];
                   for (int i=0; i<numel_masked; i++, Expec_PTR++,BiasField_PTR++,S2L_PTR++) {
-                      tempsum+=(*Expec_PTR) * (T1_PTR[(*S2L_PTR)]+(*BiasField_PTR));
-                      SumPriors+=(*Expec_PTR);
+                      float current_value=(*Expec_PTR)*(T1_PTR[(*S2L_PTR)]+(*BiasField_PTR));
+                      if(current_value==current_value){
+                          tempsum+=current_value;
+                          SumPriors+=(*Expec_PTR);
+                        }
                     }
                 }else{
                   for (int i=0; i<numel_masked; i++, Expec_PTR++,S2L_PTR++) {
-                      tempsum+=(*Expec_PTR)*(T1_PTR[(*S2L_PTR)]);
-                      SumPriors+=(*Expec_PTR);
-                    }
-                }
-
-            }
-          if(M_MAP==NULL){
-              M[cl*(CurrSizes->usize)+Multispec]=tempsum/SumPriors;
-            }
-          else{
-              M[cl*(CurrSizes->usize)+Multispec]=(tempsum/SumPriors/powf(V[cl*(CurrSizes->usize)+Multispec],2)+M_MAP[cl*(CurrSizes->usize)+Multispec]/powf(V_MAP[cl*(CurrSizes->usize)+Multispec],2))/(1/powf(V[cl*(CurrSizes->usize)+Multispec],2)+1/powf(V_MAP[cl*(CurrSizes->usize)+Multispec],2));
-            }
-
-          for(int Multispec2=Multispec; Multispec2<CurrSizes->usize; Multispec2++) {
-              S2L_PTR = (int *) S2L;
-
-              T1_PTR = static_cast<SegPrecisionTYPE *>(T1->data);
-              T1_PTR =&T1_PTR[Multispec*CurrSizes->numel];
-
-              T1_PTR2 = static_cast<SegPrecisionTYPE *>(T1->data);
-              T1_PTR2 =&T1_PTR2[Multispec2*CurrSizes->numel];
-              float tmpM=M[cl*CurrSizes->usize+Multispec];
-              float tmpM2=M[cl*CurrSizes->usize+Multispec2];
-              //STD
-              tempsum=0;
-              Expec_PTR=&Expec[Expec_offset[cl]];
-              OutliernessPTR=(SegPrecisionTYPE *) &Outlierness[Expec_offset[cl]];
-              if(BiasField!=NULL){
-                  BiasField_PTR=&BiasField[Multispec*numel_masked];
-                  BiasField_PTR2=&BiasField[Multispec2*numel_masked];
-                  if(OutliernessFlag){
-                      for (int i=0; i<numel_masked;i++,Expec_PTR++,BiasField_PTR++,OutliernessPTR++,BiasField_PTR2++,S2L_PTR++) {
-                          tempsum+=(*Expec_PTR) * (*OutliernessPTR)*(T1_PTR[(*S2L_PTR)]+(*BiasField_PTR)-tmpM) * (T1_PTR2[(*S2L_PTR)]+(*BiasField_PTR2)-tmpM2);
+                      float current_value=(*Expec_PTR)*(T1_PTR[(*S2L_PTR)]);
+                      if(current_value==current_value){
+                          tempsum+=current_value;
+                          SumPriors+=(*Expec_PTR);
                         }
                     }
-                  else{
-                      for (int i=0; i<numel_masked;i++,Expec_PTR++,BiasField_PTR++,BiasField_PTR2++,S2L_PTR++) {
-                          tempsum+=(*Expec_PTR) * (T1_PTR[(*S2L_PTR)]+(*BiasField_PTR)-tmpM) * (T1_PTR2[(*S2L_PTR)]+(*BiasField_PTR2)-tmpM2);
+                }
+
+            }
+          if(SumPriors==SumPriors && SumPriors>0){
+              if(M_MAP==NULL){
+                  M[cl*(CurrSizes->usize)+Multispec]=tempsum/SumPriors;
+                }
+              else{
+                  M[cl*(CurrSizes->usize)+Multispec]=(tempsum/SumPriors/powf(V[cl*(CurrSizes->usize)+Multispec],2)+M_MAP[cl*(CurrSizes->usize)+Multispec]/powf(V_MAP[cl*(CurrSizes->usize)+Multispec],2))/(1/powf(V[cl*(CurrSizes->usize)+Multispec],2)+1/powf(V_MAP[cl*(CurrSizes->usize)+Multispec],2));
+                }
+
+              for(int Multispec2=Multispec; Multispec2<CurrSizes->usize; Multispec2++) {
+                  S2L_PTR = (int *) S2L;
+
+                  T1_PTR = static_cast<SegPrecisionTYPE *>(T1->data);
+                  T1_PTR =&T1_PTR[Multispec*CurrSizes->numel];
+
+                  T1_PTR2 = static_cast<SegPrecisionTYPE *>(T1->data);
+                  T1_PTR2 =&T1_PTR2[Multispec2*CurrSizes->numel];
+                  float tmpM=M[cl*CurrSizes->usize+Multispec];
+                  float tmpM2=M[cl*CurrSizes->usize+Multispec2];
+                  //STD
+                  tempsum=0;
+                  Expec_PTR=&Expec[Expec_offset[cl]];
+                  OutliernessPTR=(SegPrecisionTYPE *) &Outlierness[Expec_offset[cl]];
+                  if(BiasField!=NULL){
+                      BiasField_PTR=&BiasField[Multispec*numel_masked];
+                      BiasField_PTR2=&BiasField[Multispec2*numel_masked];
+                      if(OutliernessFlag){
+                          for (int i=0; i<numel_masked;i++,Expec_PTR++,BiasField_PTR++,OutliernessPTR++,BiasField_PTR2++,S2L_PTR++) {
+                              float current_vaue=(*Expec_PTR) * (*OutliernessPTR)*(T1_PTR[(*S2L_PTR)]+(*BiasField_PTR)-tmpM) * (T1_PTR2[(*S2L_PTR)]+(*BiasField_PTR2)-tmpM2);
+                              if(current_vaue==current_vaue){
+                                  tempsum+=current_vaue;
+                                }
+                            }
+                        }
+                      else{
+                          for (int i=0; i<numel_masked;i++,Expec_PTR++,BiasField_PTR++,BiasField_PTR2++,S2L_PTR++) {
+                              float current_vaue=(*Expec_PTR) * (T1_PTR[(*S2L_PTR)]+(*BiasField_PTR)-tmpM) * (T1_PTR2[(*S2L_PTR)]+(*BiasField_PTR2)-tmpM2);
+                              if(current_vaue==current_vaue){
+                                  tempsum+=current_vaue;
+                                }
+                            }
+                        }
+                    }else{
+                      for (int i=0; i<numel_masked;i++,Expec_PTR++,S2L_PTR++) {
+                          float current_vaue=(*Expec_PTR) * (T1_PTR[(*S2L_PTR)]-tmpM) * (T1_PTR2[(*S2L_PTR)]-tmpM2);
+                          if(current_vaue==current_vaue){
+                              tempsum+=current_vaue;
+                            }
+                        }
+
+                    }
+                  if( (tempsum/SumPriors>0) && SumPriors>0  && (!isnan(tempsum/SumPriors))){
+                      V[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize]=tempsum/SumPriors;
+                      if(Multispec2!=Multispec){
+                          V[cl*CurrSizes->usize*CurrSizes->usize+Multispec2+Multispec*CurrSizes->usize]=V[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize];
+                          V[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize]/=reg_factor;
+                          V[cl*CurrSizes->usize*CurrSizes->usize+Multispec2+Multispec*CurrSizes->usize]/=reg_factor;
                         }
                     }
-                }else{
-                  for (int i=0; i<numel_masked;i++,Expec_PTR++,S2L_PTR++) {
-                      tempsum+=(*Expec_PTR) * (T1_PTR[(*S2L_PTR)]-tmpM) * (T1_PTR2[(*S2L_PTR)]-tmpM2);
-                    }
-
                 }
-              if( (tempsum/SumPriors>0) & (!isnan(tempsum/SumPriors))){
-                  V[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize]=tempsum/SumPriors;
-                  if(Multispec2!=Multispec){
-                      V[cl*CurrSizes->usize*CurrSizes->usize+Multispec2+Multispec*CurrSizes->usize]=V[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize];
-                    }
-                  else{
-                      V[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize]*=reg_factor;
-                    }
-                }
-            }
-        }
-
-    }
-
-  for (int cl=0; cl<num_class; cl++) {
-      for(int Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
-          for(int Multispec2=0; Multispec2<CurrSizes->usize; Multispec2++) {
-              V[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize]/=reg_factor;
             }
         }
     }
@@ -1719,10 +1746,10 @@ int calcM_mask_LoAd(nifti_image * T1,
 }
 
 int printTrace(int iter,
-                SegPrecisionTYPE tracePQ,
-                SegPrecisionTYPE oldTracePQ){
+               SegPrecisionTYPE tracePQ,
+               SegPrecisionTYPE oldTracePQ){
   if(iter>0){
-          cout<< "Normalized Trace Change = " << fabs((tracePQ-oldTracePQ)/fabsf(oldTracePQ)) << endl;
+      cout<< "Normalized Trace Change = " << fabs((tracePQ-oldTracePQ)/fabsf(oldTracePQ)) << endl;
     }
   else {
       cout<< "Initial Normalized Trace Value = " << setprecision(7) << tracePQ << endl;
@@ -4233,7 +4260,7 @@ void TrilinearResampleSourceImage_for_GIF(  nifti_image *sourceImage,
                     }
 
                   if(basis<0.99 && basis>0)
-                      intensity/=basis;
+                    intensity/=basis;
                 }
               else intensity = -1.0f;
             }
@@ -4298,7 +4325,7 @@ int get_all_files_that_match_string (string dir, vector<string> &files , string 
       if(dirp->d_name[0]!='.'){
           if(dirp->d_type==8){
               string curstring=dirp->d_name;
-              if(curstring.find(string_to_match)>=0){
+              if(curstring.find(string_to_match)!=string::npos){
                   files.push_back(dir+string("/")+string(dirp->d_name));
                 }
             }
@@ -4316,7 +4343,7 @@ int get_all_files_that_match_2_strings(string dir, vector<string> &files , strin
       return errno;
     }
   while ((dirp = readdir(dp)) != NULL) {
-	string curstring=dirp->d_name;
+      string curstring=dirp->d_name;
       if(dirp->d_name[0]!='.' ||  curstring.size()>2){
           if(dirp->d_type==8 || dirp->d_type==0){
               if((bool)(curstring.find(string_to_match)!=string::npos) && (bool)(curstring.find(string_to_match2)!=string::npos)){

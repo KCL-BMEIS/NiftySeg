@@ -38,7 +38,7 @@ void Usage(char *exec)
   printf("  -unc \t\t\t| Only consider non-consensus voxels to calculate statistics\n");
   printf("  -out <filename>\t\t| Filename of the integer segmented image (default=LabFusion.nii.gz)\n");
   printf("  -mask <filename>\t\t| Filename of the ROI for label fusion (greatly reduces memory requirements)\n");
-  //printf("  -outProb \t\t\t| Probabilistic/Fuzzy segmented image (only for 1 label)\n\n");
+  printf("  -outProb \t\t\t| Probabilistic/Fuzzy segmented image (only for 1 label)\n\n");
 
   printf("  * * * * * * * * * * * * * * STAPLE and STEPS options * * * * * * * * * * * * * *\n\n");
   printf("  -prop <proportion> \t\t| Proportion of the classifier (automatically estimated by default)\n");
@@ -279,9 +279,9 @@ int main(int argc, char **argv)
         else if(strcmp(argv[i], "-out") == 0){
             filename_OUT = argv[++i];
           }
-        /*else if(strcmp(argv[i], "-outProb") == 0){
+        else if(strcmp(argv[i], "-outProb") == 0){
             ProbOutput=1;
-          }*/
+          }
         /*else if(strcmp(argv[i], "-dil_unc") == 0){
             dilunc = atoi(argv[++i]);
           }*/
@@ -412,7 +412,7 @@ int main(int argc, char **argv)
 
         float sizeConfMatrix=Number_Labels*Number_Labels*Number_Atlases*4;
         float sizeMrfMatrix=Number_Labels*Number_Atlases*4;
-        float sizeresult_Image=(ProbOutput==0)?(tempImgSize*4):0;
+        float sizeresult_Image=(ProbOutput==0)?(tempImgSize*4):(tempImgSize*4);
         float sizeSum=sizeLabelImage + sizeLNCC+ sizeTargetImage + sizeAtlasImage + sizeProbabilities + sizeMRF + sizeConfMatrix + sizeMrfMatrix +sizeresult_Image;
 
         cout <<"Will require less than "<<setprecision (3) << (float)(1.1*(sizeSum))/powf(1024.0f,3) <<"Gb of memory"<<endl;
@@ -420,6 +420,11 @@ int main(int argc, char **argv)
             cout<<"Possibly much less, depending on how uncertain your labels are"<<endl<<endl;
           }
         flush(cout);
+      }
+
+    if(ProbOutput==1 && (MaxLab>2 || LabFusType>1)){
+        fprintf(stderr,"* Probabilistic output only available for 1 label and for STEPS/STAPLE\n");
+        flush(cout); return 1;
       }
     nifti_image * LNCC=NULL;
     nifti_image * BaseImage=NULL;

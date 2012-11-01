@@ -1549,6 +1549,10 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
 nifti_image * seg_LabFusion::GetResult_probability()
 {
   nifti_image * Result = nifti_copy_nim_info(this->inputCLASSIFIER);
+  Result->dim[0]=3;
+  Result->dim[4]=1;
+  Result->dim[5]=1;
+  nifti_update_dims_from_array(Result);
 
   Result->cal_min=10.0e30;
   Result->cal_max=-10.0e30;
@@ -1556,6 +1560,7 @@ nifti_image * seg_LabFusion::GetResult_probability()
 
   Result->cal_min=0;
   Result->cal_max=this->LableCorrespondences_small_to_big[this->NumberOfLabels];
+  //classifier_datatype * inputCLASSIFIERptr = static_cast<classifier_datatype *>(this->inputCLASSIFIER->data);
 
   if(this->FilenameOut.empty()){
       this->FilenameOut.assign("LabFusion.nii.gz");
@@ -1564,42 +1569,21 @@ nifti_image * seg_LabFusion::GetResult_probability()
   nifti_set_filenames(Result,(char*)this->FilenameOut.c_str(),0,0);
   nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
   Result->cal_max=(this->NumberOfLabels-1);
-
-  if(TYPE_OF_FUSION==1 || TYPE_OF_FUSION==3){
-
-
-
-      Result->dim[0]=4;
-      Result->dim[4]=this->NumberOfLabels;
-      nifti_update_dims_from_array(Result);
-      Result->data = (void *)W;
-      if(this->verbose_level>0){
-          cout << "Saving Probabilistic Fused Label. One label per time point and all labels will be projected down in value."<<endl;
-        }
-    }
-  else{
-      Result->dim[0]=4;
-      Result->dim[4]=1;
-      nifti_update_dims_from_array(Result);
-
-      if(this->NumberOfLabels>2){
-          for(int i=0;i<(this->numel);i++){
-              W[i]=this->LableCorrespondences_small_to_big[(int)W[i]];
+  Result->data = (void *) calloc(Result->nvox, sizeof(float));
+  float * Resultdata = static_cast<float *>(Result->data);
+  if(TYPE_OF_FUSION==1 ){
+      int uncertainindex=0;
+      for(int i=0;i<(this->numel);i++){
+          if(this->maskAndUncertainIndeces[i]>=0){
+              int currclass=1;
+              Resultdata[i]=W[uncertainindex+currclass*this->sizeAfterMaskingAndUncertainty];
+              uncertainindex++;
+            }
+          else{
+              Resultdata[i]=this->LableCorrespondences_small_to_big[(int)this->FinalSeg[i]];
             }
         }
-      else{
-          for(int i=0;i<(this->numel);i++){
-              W[i]=this->LableCorrespondences_small_to_big[(int)(W[i]>0.5)];
-            }
-        }
-      Result->data = (void *)W;
-      if(this->verbose_level>0){
-          cout << "Saving Integer Fused Label instead of Probabilistic. Probabilistic output is not available for MV"<<endl;
-        }
     }
-
-  this->W=NULL;
-
   return Result;
 }
 

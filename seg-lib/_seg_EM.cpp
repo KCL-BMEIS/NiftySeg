@@ -110,6 +110,7 @@ seg_EM::~seg_EM()
   if(this->Outlierness!=NULL){
       delete [] this->Outlierness;
     }
+
   if(this->MRF_status){
       delete [] this->MRF;
       delete [] this->MRF_transitionMatrix;
@@ -204,7 +205,14 @@ int seg_EM::SetMaskImage(nifti_image *f)
   this->maskImage_status = true;
 
   if(Mask->datatype!=DT_BINARY){
-      seg_convert2binary(Mask,0.0f);
+      seg_convert2binary(Mask,0.5f);
+    }
+
+  if(Mask->nt>1 ||Mask->nt>2){
+      cout << "ERROR: Mask has wrong dimentions" << endl;
+      this->Mask->nt=1;
+      this->Mask->nu=1;
+      this->Mask->ndim=3;
     }
 
   bool * MaskDataPtr = static_cast<bool *>(Mask->data);
@@ -257,13 +265,7 @@ int seg_EM::SetRegValue(float reg)
 
 int seg_EM::SetMaximalIterationNumber(unsigned int numberiter)
 {
-  if(numberiter<1){
-      this->maxIteration=1;
-      cout << "Warning: It will only stop at iteration 1"<< endl;
-    }
-  else{
       this->maxIteration=numberiter;
-    }
   return 0;
 }
 
@@ -399,7 +401,7 @@ int seg_EM::Maximization()
 int seg_EM::Expectation()
 {
 
-  if(this->ratio<(SegPrecisionTYPE)(this->Outlierness_ratio) && this->iter>3 && this->OutliernessUSE==NULL && this->OutliernessFlag){
+  if(this->ratio<(SegPrecisionTYPE)(this->Outlierness_ratio) && this->OutliernessUSE==NULL && this->OutliernessFlag){
       this->OutliernessUSE=this->Outlierness;
       if(this->verbose_level>0){
           cout << "Updating Outlierness - LogRatio = "<<ratio<<endl;
@@ -714,12 +716,29 @@ int seg_EM::Intensity_Based_Inisitalization_of_Means()
 
 float * seg_EM::GetMeans()
 {
-  return this->M;
+  float * OutM= new float [this->nu*this->numb_classes];
+  int index=0;
+  for(int j=0; j<(this->numb_classes); j++){
+      for(int i=0; i<(this->nu); i++){
+          //cout << "M["<<j<<"]="<<this->M[j+i*this->numb_classes]<<endl;
+          float resize=exp((this->M[index++])*0.693147181)-1;
+          OutM[j+i*this->numb_classes]=(resize*(CurrSizes->rescale_max[i]-CurrSizes->rescale_min[i])+CurrSizes->rescale_min[i]);
+        }
+    }
+
+  return OutM;
 }
 
 float * seg_EM::GetSTD()
 {
-  return this->V;
+  float * OutV= new float [this->nu *this->numb_classes*this->numb_classes];
+  for(int i=0; i<(this->nu); i++){
+      for(int j=0; j<(this->numb_classes*this->numb_classes); j++){
+          float resize=exp((sqrt(this->V[j+i*this->numb_classes*this->numb_classes]))*0.693147181)-1;
+          OutV[j+i*this->numb_classes*this->numb_classes]=(resize*(CurrSizes->rescale_max[i]-CurrSizes->rescale_min[i]));
+        }
+    }
+  return OutV;
 }
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 
@@ -863,8 +882,8 @@ int *  seg_EM::Run_EM()
       if(this->verbose_level>0 && this->iter>0){
           printloglik(iter,this->loglik,this->oldloglik);
         }
-      // Preform MRF reset or Exit
-      if((((this->loglik-this->oldloglik)/fabs(this->oldloglik))<(SegPrecisionTYPE)(0.0005) && this->iter>3 && this->iter>this->checkpoint_iter) || iter>=this->maxIteration || (isinf(this->loglik) && this->iter>3)){
+      // Preform Exit
+      if((((this->loglik-this->oldloglik)/fabs(this->oldloglik))<(SegPrecisionTYPE)(0.0005) && this->iter>this->checkpoint_iter) || iter>=this->maxIteration || (isinf(this->loglik) && this->iter>3)){
           out=false;
         }
       this->ratio=((this->loglik-this->oldloglik)/fabs(this->oldloglik));
