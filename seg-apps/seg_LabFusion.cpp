@@ -180,7 +180,7 @@ int main(int argc, char **argv)
         else if(strcmp(argv[i], "-unc") == 0){
             UNCERTAINflag = true;
           }
-        else if(strcmp(argv[i], "-unc") == 0){
+        else if(strcmp(argv[i], "-uncthres") == 0){
             uncthres =atof(argv[++i]);
           }
         else if(strcmp(argv[i], "-mask") == 0){

@@ -443,7 +443,7 @@ int seg_LabFusion::SetImgThresh(LabFusion_datatype _Thresh_IMG_value)
 
 int seg_LabFusion::SetUncThresh(float _uncthresh)
 {
-    this->uncertainthresh=(_uncthresh>0.6)?((_uncthresh<=1)?_uncthresh:1):0.6;
+    this->uncertainthresh=(_uncthresh>=0.5)?((_uncthresh<=1)?_uncthresh:1):0.5;
 
   return 0;
 }
@@ -1381,7 +1381,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
                 }
               bool is_uncertain=true;
               for(int currClass=0; currClass<this->NumberOfLabels;currClass++){
-                  float thisthresh=ceil(uncertainthresh*(double)this->Numb_Neigh);
+                  float thisthresh=ceil(this->uncertainthresh*(double)this->Numb_Neigh);
                   if(num_true[currClass]>=(thisthresh)){
                       is_uncertain=false;
                     }
