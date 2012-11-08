@@ -60,6 +60,7 @@ seg_LabFusion::seg_LabFusion(int _numb_classif, int numbclasses, int _Numb_Neigh
   this->maskAndUncertainIndeces=NULL;
   this->sizeAfterMaskingAndUncertainty=0;
   this->uncertainflag=false;
+  this->uncertainthresh=0.9;
   this->dilunc=0;
   this->Prop=new LabFusion_datatype [numbclasses];
   this->Fixed_Prop_status=false;
@@ -440,6 +441,13 @@ int seg_LabFusion::SetImgThresh(LabFusion_datatype _Thresh_IMG_value)
   return 0;
 }
 
+int seg_LabFusion::SetUncThresh(float _uncthresh)
+{
+    this->uncertainthresh=(_uncthresh>0.6)?((_uncthresh<=1)?_uncthresh:1):0.6;
+
+  return 0;
+}
+
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 
 int seg_LabFusion::SetFilenameOut(char *f)
@@ -474,7 +482,7 @@ int seg_LabFusion::SetDilUnc(int _dilunc)
 
 int seg_LabFusion::SetMaximalIterationNumber(unsigned int numberiter)
 {
-  if(numberiter<3){
+  if(numberiter<1){
       this->maxIteration=1;
       cout << "Warning: It will only stop at iteration 1. For less than 1 iteration, use majority voting."<< endl;
     }
@@ -1373,7 +1381,8 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
                 }
               bool is_uncertain=true;
               for(int currClass=0; currClass<this->NumberOfLabels;currClass++){
-                  if(num_true[currClass]>=(this->Numb_Neigh)){
+                  float thisthresh=ceil(uncertainthresh*(double)this->Numb_Neigh);
+                  if(num_true[currClass]>=(thisthresh)){
                       is_uncertain=false;
                     }
                 }
@@ -1735,8 +1744,7 @@ int  seg_LabFusion::Run_STAPLE_or_STEPS()
           cout << "MRF_beta = " << this->MRF_strength<<endl;
         }
     }
-
-
+    if(this->verbose_level>0){cout <<"Uncertainty area threshold is "<<this->uncertainthresh<<"percent"<<endl;}
 
   Allocate_Stuff_STAPLE();
 

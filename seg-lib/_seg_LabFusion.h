@@ -40,6 +40,7 @@ protected:
   int * maskAndUncertainIndeces;
   int  sizeAfterMaskingAndUncertainty;
   bool    uncertainflag;
+  float uncertainthresh;
   int dilunc;
   bool    Fixed_Prop_status;
   bool    PropUpdate;
@@ -91,6 +92,7 @@ public:
   int SetProp(float prior);
   int SetConv(float conv);
   int SetDilUnc(int _dilunc);
+  int SetUncThresh(float _uncthresh);
   int SetImgThresh(float Thresh_IMG_value);
   int SetFilenameOut(char *);
   int SetPQ(float tmpP,float tmpQ);

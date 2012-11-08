@@ -47,6 +47,7 @@ void Usage(char *exec)
   printf("  -setPQ <P> <Q> \t\t| Value of P and Q [ 0 < (P,Q) < 1 ] (default = 0.99 0.99) \n");
   printf("  -MRF_beta <float>\t\t| MRF prior strength [ 0 < beta < 5 ] \n");
   printf("  -max_iter <int>\t\t| Maximum number of iterations (default = 50)\n");
+  printf("  -uncthres <float>\t\t| If <float> percent of labels agree, then area is not uncertain \n");
   printf("  -conv <float>\t\t\t| Ratio for convergence (default epsilon = 10^-6)\n\n");
 
   printf("  * * * * * * * * Ranking for STAPLE and MV (mutually exclusive) * * * * * * * * *\n\n");
@@ -100,6 +101,7 @@ int main(int argc, char **argv)
     float tmpQ=0;
     float conv=0.0001;
     int dilunc=0;
+    float uncthres=-1;
 
     float LNCC_kernel=3;
 
@@ -177,6 +179,9 @@ int main(int argc, char **argv)
           }
         else if(strcmp(argv[i], "-unc") == 0){
             UNCERTAINflag = true;
+          }
+        else if(strcmp(argv[i], "-unc") == 0){
+            uncthres =atof(argv[++i]);
           }
         else if(strcmp(argv[i], "-mask") == 0){
             UseMask = true;
@@ -645,6 +650,7 @@ int main(int argc, char **argv)
         if(propflag){LabFusion.SetProp(prop);}
         if(MRF_strength>0.0f){LabFusion.Turn_MRF_ON(MRF_strength);}
         if(PropUpdate>0.0f){LabFusion.Turn_Prop_Update_ON();}
+        if(uncthres>0.5){LabFusion.SetUncThresh(uncthres);}
         if(tmpP>0 && tmpQ>0 && tmpP<1 && tmpQ<1){LabFusion.SetPQ(tmpP,tmpQ);}
         LabFusion.SetMaximalIterationNumber(maxIteration);
         LabFusion.Run_STAPLE_or_STEPS();
