@@ -1589,7 +1589,7 @@ nifti_image * seg_LabFusion::GetResult_probability()
               uncertainindex++;
             }
           else{
-              Resultdata[i]=this->LableCorrespondences_small_to_big[(int)this->FinalSeg[i]];
+              Resultdata[i]=(int)this->FinalSeg[i];
             }
         }
     }
