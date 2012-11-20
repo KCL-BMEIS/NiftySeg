@@ -1,4 +1,7 @@
+
 #include "_seg_LabFusion.h"
+#include "seg_LabFusion_CLIxml.h"
+
 #include <iostream>
 #include <time.h>
 #include <stdlib.h>
@@ -140,7 +143,10 @@ int main(int argc, char **argv)
             Usage(argv[0]);
             return 0;
           }
-
+	else if( (strcmp(argv[i], "-xml")==0) || (strcmp(argv[i], "--xml")==0) ){
+	    cout << xml_segLabFusion;
+	    return 0;
+        }
         else if(strcmp(argv[i], "-in") == 0 && (i+1)<argc){
             filename_LABELS = argv[++i];
           }

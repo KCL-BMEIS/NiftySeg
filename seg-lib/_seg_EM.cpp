@@ -568,12 +568,15 @@ int seg_EM::Allocate_and_Initialize()
         }
 
       float tmpnumb_clas=((this->numb_classes+(int)(this->PV_model_status)*2));
+      cout << "tmpnumb_clas: "<<tmpnumb_clas<<endl;
       this->Expec=new SegPrecisionTYPE [tmpnumb_elem] ();
       this->ShortPrior=new SegPrecisionTYPE [tmpnumb_elem] ();
       for(int i=0; i<tmpnumb_elem; i++){
           this->Expec[i]=1.0/tmpnumb_clas;
           this->ShortPrior[i]=1.0/tmpnumb_clas;
         }
+  for (int cl=0; cl<this->numb_classes; cl++) 
+    cout << "Expec " << cl << ": " << Expec[cl] << endl;
       if(this->maskImage_status){
           calcE_mask(this->inputImage,this->ShortPrior,this->Expec,&this->loglik,this->BiasField,NULL,0,this->Short_2_Long_Indices,this->M,this->V,CurrSizes,this->verbose_level);
         }
@@ -582,6 +585,9 @@ int seg_EM::Allocate_and_Initialize()
         }
 
     }
+
+  for (int cl=0; cl<this->numb_classes; cl++) 
+    cout << "Expec " << cl << ": " << Expec[cl] << endl;
 
   if(this->OutliernessFlag){
       int tmpnumb_elem=0;

@@ -64,21 +64,17 @@ int main(int argc, char **argv)
 
     SEG_PARAM * segment_param = new SEG_PARAM [1]();
     //SEG_PARAM segment_param;
-    segment_param->maxIteration=100;
-    segment_param->flag_T1=0;
-    segment_param->flag_out=0;
-    segment_param->flag_mask=0;
-    segment_param->flag_MRF=1;
-    segment_param->flag_Bias=1;
-    segment_param->flag_SG_deli=1;
-    segment_param->flag_bc_out=0;
-    segment_param->relax_factor=1.0f;
-    segment_param->flag_PV_model=1;
-    segment_param->verbose_level=0;
-    segment_param->flag_manual_priors=0;
-    segment_param->bias_order=5;
+
+    // Set defaults (SEG_PARAM constructor sets everything to zero)
     segment_param->MRF_strength=0.1f;
-    segment_param->numb_classes=0;
+    segment_param->bias_order=5;
+    segment_param->flag_Bias=1;
+    segment_param->flag_MRF=1;
+    segment_param->flag_PV_model=1;
+    segment_param->flag_SG_deli=1;
+    segment_param->maxIteration=100;
+    segment_param->relax_factor=1.0f;
+
     /* read the input parameter */
     for(int i=1;i<argc;i++){
         if(strcmp(argv[i], "-help")==0 || strcmp(argv[i], "-Help")==0 ||
@@ -198,6 +194,8 @@ int main(int argc, char **argv)
         return 1;
       }
 
+    if ( segment_param->verbose_level>1 )
+      segment_param->Print( cout );
 
     nifti_image * Priors=nifti_copy_nim_info(T1);
     Priors->dim[0]=4;

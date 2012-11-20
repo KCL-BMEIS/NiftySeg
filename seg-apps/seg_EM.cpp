@@ -1,4 +1,7 @@
+
 #include "_seg_EM.h"
+#include "seg_EM_CLIxml.h"
+
 #include <iostream>
 #include <time.h>
 #include <stdlib.h>
@@ -27,9 +30,9 @@ void Usage(char *exec)
   printf("\t-bc_order <int>\t\t| Polynomial order for the bias field [off = 0, max = 5] (default = 3) \n");
   printf("\t-bc_thresh <float>\t| Bias field correction will run only if the ratio of improvement is below bc_thresh (default=0 [OFF]) \n");
   printf("\t-bc_out <filename>\t| Output the bias corrected image\n");
-  printf("\t-reg <filename>\t\t| Amount of regularization over the diagonal of the covariance matrix [above 1]\n");
+  printf("\t-reg <float>\t\t| Amount of regularization over the diagonal of the covariance matrix [above 1]\n");
   printf("\t-outlier <fl1> <fl2>\t| Outlier detection as in (Van Leemput TMI 2003). <fl1> is the Mahalanobis threshold [recommended between 3 and 7] \n");
-  printf("\t\t\t\t| <fl2> is a convergence ratio below wich the outlier detection is going to be done [recommended 0.001].\n");
+  printf("\t\t\t\t| <fl2> is a convergence ratio below which the outlier detection is going to be done [recommended 0.01].\n");
   printf("\t-out_outlier <filename>\t| Output outlierness image \n");
   printf("\t-rf <rel> <gstd>\t| Relax Priors [relaxation factor: 0<rf<1 (recommended=0.5), gaussian regularization: gstd>0 (recommended=2.0)] /only 3D/\n");
   printf("\t-MAP <M V M V ...> \t| MAP formulation: M and V are the parameters (mean & variance) of the semiconjugate prior over the class mean\n\n");
@@ -58,6 +61,70 @@ void no_memory () {
   exit (1);
 }
 
+bool GetCommaSeparatedFloats(char *str, float &f1, float &f2)
+{
+  f1 = f2 = 0.;
+  if (sscanf(str, "%f%*1[x,]%f", &f1, &f2) != 2) {
+    std::cerr << "Incorrectly formatted string: '" << str << "' - should be '<a>,<b>'."
+	     << std::endl;
+    return false;
+  }
+  return true;
+}
+
+// Allocate and initialise to the arrays for MAP (if they haven't been allocated previously)
+void AllocAndInitialiseMAP( float *&MAP_M, float *&MAP_V, bool &flag_MAP, int &numb_classes,
+			    char *str, int iClass )
+{
+  // Has the number of classes been set large enough?
+  if ( iClass >= numb_classes ) 
+  {
+    // Array isn't allocated so we can just do it now
+    if ( ! MAP_M )
+    {
+      MAP_M = (float*) calloc( iClass + 1, sizeof(float) );
+    }
+    // We have to extend the array and copy the values across
+    else
+    {
+      float *New_MAP_M = (float*) calloc( iClass + 1, sizeof(float) );
+      for(int classnum=0; classnum<numb_classes; classnum++)
+	New_MAP_M[classnum]=MAP_M[classnum];
+      
+      free(MAP_M);
+      MAP_M = New_MAP_M;
+    }
+    // Array isn't allocated so we can just do it now
+    if ( ! MAP_V )
+    {
+      MAP_V = (float*) calloc( iClass + 1, sizeof(float) );
+    }
+    // We have to extend the array and copy the values across
+    else
+    {
+      float *New_MAP_V = (float*) calloc( iClass + 1, sizeof(float) );
+      for(int classnum=0; classnum<numb_classes; classnum++)
+	New_MAP_V[classnum]=MAP_V[classnum];
+      free(MAP_V);
+      MAP_V = New_MAP_V;
+    }
+    numb_classes = iClass + 1;
+  }
+  // Yes we have sufficient classes but do we have to allocate the arrays?
+  else
+  {
+    if ( ! MAP_M )
+      MAP_M = (float*) calloc( numb_classes, sizeof(float) );
+    if ( ! MAP_V )
+      MAP_V = (float*) calloc( numb_classes, sizeof(float) );
+  }
+  if ( GetCommaSeparatedFloats(str, MAP_M[iClass], MAP_V[iClass]) )
+    flag_MAP = true;
+  else
+    flag_MAP = false;
+}
+
+
 int main(int argc, char **argv)
 {
   try
@@ -72,32 +139,19 @@ int main(int argc, char **argv)
       }
 
     SEG_PARAM * segment_param = new SEG_PARAM [1]();
-    segment_param->maxIteration=100;
-    segment_param->flag_T1=0;
-    segment_param->flag_out=0;
-    segment_param->flag_mask=0;
-    segment_param->flag_MRF=1;
-    segment_param->flag_Bias=1;
-    segment_param->flag_SG_deli=1;
-    segment_param->flag_bc_out=0;
-    segment_param->relax_factor=0;
-    segment_param->relax_gauss_kernel=0;
-    segment_param->flag_PV_model=1;
-    segment_param->verbose_level=0;
-    segment_param->flag_manual_priors=0;
-    segment_param->bias_order=3;
+
+    // Set defaults (SEG_PARAM constructor sets everything to zero)
     segment_param->MRF_strength=0.4f;
-    segment_param->Bias_threshold=0;
-    segment_param->numb_classes=1;
-    segment_param->aprox=false;
-    segment_param->flag_Outlierness=0;
-    segment_param->OutliernessThreshold=0;
-    segment_param->flag_out_outlier=0;
-    float OutliernessRatio=0.01;
+    segment_param->bias_order=3;
+    segment_param->flag_Bias=1;
+    segment_param->flag_MRF=1;
+    segment_param->flag_PV_model=1;
+    segment_param->flag_SG_deli=1;
+    segment_param->maxIteration=100;
+    segment_param->OutliernessRatio=0.01;
+
     int To_do_MAP_index_argv=0;
     float regularization_amount=1;
-    bool priors4D=false;
-
 
 
     /* read the input parameter */
@@ -108,20 +162,23 @@ int main(int argc, char **argv)
             Usage(argv[0]);
             return 0;
           }
-
-        else if(strcmp(argv[i], "-in") == 0 && (i+1)<argc){
+	else if( (strcmp(argv[i], "-xml")==0) || (strcmp(argv[i], "--xml")==0) ){
+	    cout << xml_segEM;
+	    return 0;
+        }
+        else if((strcmp(argv[i], "-in") == 0 || strcmp(argv[i], "--in") == 0) && (i+1)<argc){
             segment_param->filename_T1 = argv[++i];
             segment_param->flag_T1=1;
           }
-        else if(strcmp(argv[i], "-out") == 0 && (i+1)<argc){
+        else if((strcmp(argv[i], "-out") == 0 || strcmp(argv[i], "--out") == 0) && (i+1)<argc){
             segment_param->filename_out = argv[++i];
             segment_param->flag_out=1;
           }
-        else if(strcmp(argv[i], "-mask") == 0 && (i+1)<argc){
+        else if((strcmp(argv[i], "-mask") == 0 || strcmp(argv[i], "--mask") == 0) && (i+1)<argc){
             segment_param->filename_mask=argv[++i];
             segment_param->flag_mask=1;
           }
-        else if(strcmp(argv[i], "-priors") == 0 && (i+1)<argc){
+        else if((strcmp(argv[i], "-priors") == 0 || strcmp(argv[i], "--priors") == 0) && (i+1)<argc){
             segment_param->numb_classes=atoi(argv[++i]);
             if(segment_param->numb_classes<2){
                 cout<<"Number of classes has to be bigger than 1";
@@ -140,7 +197,7 @@ int main(int argc, char **argv)
               }
             segment_param->flag_manual_priors=1;
           }
-        else if(strcmp(argv[i], "-priors4D") == 0 && (i+1)<argc){
+        else if((strcmp(argv[i], "-priors4D") == 0 || strcmp(argv[i], "--priors4D") == 0) && (i+1)<argc){
             segment_param->filename_priors= (char **) calloc(1,sizeof(char *));
             segment_param->filename_priors[0]=argv[++i];
             segment_param->flag_manual_priors=1;
@@ -151,67 +208,121 @@ int main(int argc, char **argv)
                 return 0;
               }
             nifti_image_free(tmpread);
-            priors4D=true;
+            segment_param->flag_priors4D=true;
           }
-        else if(strcmp(argv[i], "-nopriors") == 0 && (i+1)<argc){
-            segment_param->flag_manual_priors=0;
+        else if((strcmp(argv[i], "-nopriors") == 0 || strcmp(argv[i], "--nopriors") == 0) && (i+1)<argc){
+	  if(!segment_param->numb_classes)
             segment_param->numb_classes=atoi(argv[++i]);
           }
-        else if(strcmp(argv[i], "-outlier") == 0 && (i+2)<argc){
+        else if((strcmp(argv[i], "-outlier") == 0 || strcmp(argv[i], "--outlier") == 0) && (i+2)<argc){
             segment_param->flag_Outlierness=1;
             segment_param->OutliernessThreshold=atof(argv[++i]);
-            OutliernessRatio=atof(argv[++i]);
+            segment_param->OutliernessRatio=atof(argv[++i]);
           }
-        else if(strcmp(argv[i], "-out_outlier") == 0 && (i+1)<argc){
+	// Additional options "-outlier_thresh" and "-outlier_ratio"
+	// added for operation with command line interface XML
+	// interface
+        else if((strcmp(argv[i], "-outlier_thresh") == 0 || strcmp(argv[i], "--outlier_thresh") == 0) && (i+1)<argc){
+            segment_param->OutliernessThreshold=atof(argv[++i]);
+	    if (segment_param->OutliernessThreshold)
+	      segment_param->flag_Outlierness=1;
+          }
+        else if((strcmp(argv[i], "-outlier_ratio") == 0 || strcmp(argv[i], "--outlier_ratio") == 0) && (i+1)<argc){
+            segment_param->OutliernessRatio=atof(argv[++i]);
+          }
+        else if((strcmp(argv[i], "-out_outlier") == 0 || strcmp(argv[i], "--out_outlier") == 0) && (i+1)<argc){
             segment_param->filename_out_outlier = argv[++i];
             segment_param->flag_out_outlier=1;
           }
-        else if(strcmp(argv[i], "-MAP") == 0){
-            if(segment_param->numb_classes>0 && (i+segment_param->numb_classes)<argc){
-                segment_param->MAP_M= (float*) calloc(segment_param->numb_classes,sizeof(float));
-                segment_param->MAP_V= (float*) calloc(segment_param->numb_classes,sizeof(float));
-                for(int classnum=0; classnum<segment_param->numb_classes; classnum++){
-                    segment_param->MAP_M[classnum]=atof(argv[++i]);
-                    segment_param->MAP_V[classnum]=atof(argv[++i]);
-                  }
-                segment_param->flag_MAP=true;
-              }
+	// Additional options "-MAP_MV1/2/3/4/5" added for operation 
+	// with command line interface XML interface. Format: -MAP_MV1 <mean>,<var> etc.
+        else if(strcmp(argv[i], "-MAP_MV1") == 0 || strcmp(argv[i], "--MAP_MV1") == 0){
+	  if((i+1)<argc){ 
+	    AllocAndInitialiseMAP(segment_param->MAP_M, segment_param->MAP_V, 
+				  segment_param->flag_MAP, segment_param->numb_classes, 
+				  argv[++i], 0);
+	  }
+	}
+        else if(strcmp(argv[i], "-MAP_MV2") == 0 || strcmp(argv[i], "--MAP_MV2") == 0){
+	  if((i+1)<argc){ 
+	    AllocAndInitialiseMAP(segment_param->MAP_M, segment_param->MAP_V, 
+				  segment_param->flag_MAP, segment_param->numb_classes, 
+				  argv[++i], 1);
+	  }
+	}
+        else if(strcmp(argv[i], "-MAP_MV3") == 0 || strcmp(argv[i], "--MAP_MV3") == 0){
+	  if((i+1)<argc){ 
+	    AllocAndInitialiseMAP(segment_param->MAP_M, segment_param->MAP_V, 
+				  segment_param->flag_MAP, segment_param->numb_classes, 
+				  argv[++i], 2);
+	  }
+	}
+        else if(strcmp(argv[i], "-MAP_MV4") == 0 || strcmp(argv[i], "--MAP_MV4") == 0){
+	  if((i+1)<argc){ 
+	    AllocAndInitialiseMAP(segment_param->MAP_M, segment_param->MAP_V, 
+				  segment_param->flag_MAP, segment_param->numb_classes, 
+				  argv[++i], 3);
+	  }
+	}
+        else if(strcmp(argv[i], "-MAP_MV5") == 0 || strcmp(argv[i], "--MAP_MV5") == 0){
+	  if((i+1)<argc){ 
+	    AllocAndInitialiseMAP(segment_param->MAP_M, segment_param->MAP_V, 
+				  segment_param->flag_MAP, segment_param->numb_classes, 
+				  argv[++i], 4);
+	  }
+	}
+	// This option overides "-MAP_MV1/2/3/4/5"
+        else if(strcmp(argv[i], "-MAP") == 0 || strcmp(argv[i], "--MAP") == 0){
+            if(segment_param->numb_classes>0 && (i+2*segment_param->numb_classes)<argc){
+	      segment_param->MAP_M= (float*) calloc(segment_param->numb_classes,sizeof(float));
+	      segment_param->MAP_V= (float*) calloc(segment_param->numb_classes,sizeof(float));
+	      for(int classnum=0; classnum<segment_param->numb_classes; classnum++){
+		segment_param->MAP_M[classnum]=atof(argv[++i]);
+		segment_param->MAP_V[classnum]=atof(argv[++i]);
+	        }
+	      }
             else{
                 To_do_MAP_index_argv=i;
               }
           }
-        else if(strcmp(argv[i], "-bc_order") == 0 && (i+1)<argc){
+        else if((strcmp(argv[i], "-bc_order") == 0 || strcmp(argv[i], "--bc_order") == 0) && (i+1)<argc){
             segment_param->bias_order=(int)(atof(argv[++i]));
             if(segment_param->bias_order==0){
                 segment_param->flag_Bias=0;
               }
           }
-        else if(strcmp(argv[i], "-bc_thresh") == 0 && (i+1)<argc){
+        else if((strcmp(argv[i], "-bc_thresh") == 0 || strcmp(argv[i], "--bc_thresh") == 0) && (i+1)<argc){
             segment_param->Bias_threshold=atof(argv[++i]);
           }
-        else if(strcmp(argv[i], "-reg") == 0 && (i+1)<argc){
+        else if((strcmp(argv[i], "-reg") == 0 || strcmp(argv[i], "--reg") == 0) && (i+1)<argc){
             regularization_amount=atof(argv[++i]);
           }
-        else if(strcmp(argv[i], "-rf") == 0 && (i+1)<argc){
+        else if((strcmp(argv[i], "-rf") == 0 || strcmp(argv[i], "--rf") == 0) && (i+1)<argc){
             segment_param->relax_factor=atof(argv[++i]);
             segment_param->relax_gauss_kernel=atof(argv[++i]);
           }
-        //else if(strcmp(argv[i], "-aprox_off") == 0){
+        else if((strcmp(argv[i], "-rf_factor") == 0 || strcmp(argv[i], "--rf_factor") == 0) && (i+1)<argc){
+            segment_param->relax_factor=atof(argv[++i]);
+          }
+        else if((strcmp(argv[i], "-rf_gauss_kernel") == 0 || strcmp(argv[i], "--rf_gauss_kernel") == 0) && (i+1)<argc){
+            segment_param->relax_gauss_kernel=atof(argv[++i]);
+          }
+        //else if(strcmp(argv[i], "-aprox_off") == 0 || strcmp(argv[i], "--aprox_off") == 0){
         //    segment_param->aprox=false;
         //}
 
-        else if(strcmp(argv[i], "-v") == 0 &&(i+1)<argc){
+        else if((strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--v") == 0) &&(i+1)<argc){
             segment_param->verbose_level=(int)atoi(argv[++i]);
           }
-        else if(strcmp(argv[i], "-bc_out") == 0 && (i+1)<argc){
+        else if((strcmp(argv[i], "-bc_out") == 0 || strcmp(argv[i], "--bc_out") == 0) && (i+1)<argc){
             segment_param->filename_bias = argv[++i];
             segment_param->flag_bc_out=1;
           }
-        else if(strcmp(argv[i], "-mrf_beta") == 0 && (i+1)<argc){
+        else if((strcmp(argv[i], "-mrf_beta") == 0 || strcmp(argv[i], "--mrf_beta") == 0) && (i+1)<argc){
             segment_param->MRF_strength=(SegPrecisionTYPE)atof(argv[++i]);
 
           }
-        else if(strcmp(argv[i], "-max_iter") == 0 && (i+1)<argc){
+        else if((strcmp(argv[i], "-max_iter") == 0 || strcmp(argv[i], "--max_iter") == 0) && (i+1)<argc){
             segment_param->maxIteration=atoi(argv[++i]);
           }
         else{
@@ -231,7 +342,7 @@ int main(int argc, char **argv)
 
     if(To_do_MAP_index_argv>0){
         int i=To_do_MAP_index_argv;
-        if(segment_param->numb_classes>0){
+        if(segment_param->numb_classes>0 && (i+2*segment_param->numb_classes)<argc){
             segment_param->MAP_M= (float*) calloc(segment_param->numb_classes,sizeof(float));
             segment_param->MAP_V= (float*) calloc(segment_param->numb_classes,sizeof(float));
             for(int classnum=0; classnum<segment_param->numb_classes; classnum++){
@@ -241,6 +352,17 @@ int main(int argc, char **argv)
             segment_param->flag_MAP=true;
           }
       }
+
+    // Check that all the MAP value pairs are non-zero
+    if (segment_param->MAP_M && segment_param->MAP_V){
+      for(int classnum=0; classnum<segment_param->numb_classes; classnum++){
+	if ((! segment_param->MAP_M[classnum]) && (! segment_param->MAP_V[classnum])){
+	  fprintf(stderr,"Err:\tMAP value pair (class %d) are zero.\n",classnum+1);
+	  Usage(argv[0]);
+	  return 1;
+	}
+      }
+    }
 
     if(!segment_param->flag_T1){
         fprintf(stderr,"Err:\tThe T1 image name has to be defined.\n");
@@ -253,8 +375,6 @@ int main(int argc, char **argv)
         Usage(argv[0]);
         return 1;
       }
-
-
 
     // READING T1
     nifti_image * InputImage=nifti_image_read(segment_param->filename_T1,true);
@@ -307,7 +427,7 @@ int main(int argc, char **argv)
 
     if(segment_param->flag_manual_priors){
 
-        if(priors4D){
+        if(segment_param->flag_priors4D){
             int i=0;
             Priors = nifti_image_read(segment_param->filename_priors[i],true);
             if(Priors == NULL){
@@ -368,6 +488,8 @@ int main(int argc, char **argv)
 
     delete [] Priors_temp;
 
+    if ( segment_param->verbose_level>1 )
+      segment_param->Print( cout );
 
     seg_EM SEG(segment_param->numb_classes,InputImage->dim[5],InputImage->dim[4]);
     SEG.SetInputImage(InputImage);
@@ -382,7 +504,7 @@ int main(int argc, char **argv)
     SEG.SetMaximalIterationNumber(segment_param->maxIteration);
 
     if(segment_param->flag_Outlierness)
-      SEG.OutliernessON(segment_param->OutliernessThreshold,OutliernessRatio);
+      SEG.OutliernessON(segment_param->OutliernessThreshold,segment_param->OutliernessRatio);
     if(segment_param->flag_Bias)
       SEG.Turn_BiasField_ON(segment_param->bias_order,segment_param->Bias_threshold);
     if(segment_param->flag_MRF)
@@ -397,7 +519,7 @@ int main(int argc, char **argv)
     SEG.Run_EM();
 
     if(segment_param->verbose_level>0){
-        cout << "Saving Segmentation "<<endl;
+      cout << "Saving Segmentation to file: " << segment_param->filename_out <<endl;
       }
     nifti_image * Result = SEG.GetResult();
     nifti_image_write(Result);
@@ -408,7 +530,7 @@ int main(int argc, char **argv)
     nifti_image * OutliernessImage=NULL;
     if(segment_param->flag_out_outlier && segment_param->flag_Outlierness){
         if(segment_param->verbose_level>0){
-            cout << "Saving Outlierness Image"<<endl;
+	  cout << "Saving Outlierness Image to: " << segment_param->filename_out_outlier <<endl;
           }
         OutliernessImage=SEG.GetOutlierness(segment_param->filename_out_outlier);
         nifti_image_write(OutliernessImage);
@@ -419,14 +541,12 @@ int main(int argc, char **argv)
 
     if(segment_param->flag_bc_out){
         if(segment_param->verbose_level>0){
-            cout << "Saving Bias Field Corrected Image"<<endl;
+	  cout << "Saving Bias Field Corrected Image to file: " << segment_param->filename_bias <<endl;
           }
         BiasFieldCorrected = SEG.GetBiasCorrected(segment_param->filename_bias);
         nifti_image_write(BiasFieldCorrected);
         nifti_image_free(BiasFieldCorrected);
       }
-
-
 
     nifti_image_free(InputImage);
     nifti_image_free(Mask);
