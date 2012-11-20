@@ -3269,7 +3269,7 @@ nifti_image * Get_Bias_Corrected_mask(float * BiasFieldCoefs,
       float * BiasFieldCoefs_multispec = &BiasFieldCoefs[multispec*UsedBasisFunctions];
 
 
-      for(unsigned int i=0; i<BiasCorrected->nvox; i++){
+      for(unsigned int i=0; i<CurrSizes->numel; i++){
           BiasCorrected_PTR[i]=0;
         }
 
