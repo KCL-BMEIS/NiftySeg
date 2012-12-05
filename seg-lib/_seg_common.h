@@ -227,7 +227,7 @@ typedef struct SegParams {
 }SEG_PARAM;
 
 typedef struct{
-    SegPrecisionTYPE loglik;
+    double loglik;
     SegPrecisionTYPE oldloglik;
     int improv_phase;
     bool prior_relax;

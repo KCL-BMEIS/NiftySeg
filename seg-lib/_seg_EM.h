@@ -44,9 +44,10 @@ protected:
   int*    Short_2_Long_Indices;
   int*    Long_2_Short_Indices;
   int     numb_classes;
-  float   loglik;
-  float   oldloglik;
+  double   loglik;
+  double   oldloglik;
   int     maxIteration;
+  int     minIteration;
   bool    aprox;
 
   // Mask
@@ -119,6 +120,7 @@ public:
   int Turn_BiasField_ON(int BiasField_order,float ratiothresh);
   int SetLoAd(float RelaxFactor,bool Relax_status,bool PV_model_status,bool SG_deli_status);
   int SetMaximalIterationNumber(unsigned int numberiter);
+  int SetMinIterationNumber(unsigned int numberiter);
   int SetAprox(bool aproxval);
   int SetVerbose(unsigned int verblevel);
 

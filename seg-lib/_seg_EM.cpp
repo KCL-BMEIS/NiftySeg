@@ -42,6 +42,7 @@ seg_EM::seg_EM(int _numb_classes, int _nu,int _nt)
   this->reg_factor=1.1f;
 
   this->maxIteration=100;
+  this->minIteration=0;
   this->verbose_level=0;
   this->loglik=2.0;
   this->oldloglik=1.0;
@@ -251,7 +252,7 @@ int seg_EM::SetVerbose(unsigned int verblevel)
 
 int seg_EM::SetRegValue(float reg)
 {
-  if(reg>0){
+  if(reg>=1){
       this->reg_factor=reg;
     }
   else{
@@ -266,6 +267,15 @@ int seg_EM::SetRegValue(float reg)
 int seg_EM::SetMaximalIterationNumber(unsigned int numberiter)
 {
       this->maxIteration=numberiter;
+  return 0;
+}
+
+/* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
+
+int seg_EM::SetMinIterationNumber(unsigned int numberiter)
+{
+  this->minIteration=numberiter;
+  this->checkpoint_iter=this->minIteration;
   return 0;
 }
 
@@ -408,7 +418,7 @@ int seg_EM::Expectation()
         }
       this->loglik=2;
       this->oldloglik=1;
-      this->checkpoint_iter=this->iter+2;
+      this->checkpoint_iter=(this->iter+2)>(this->checkpoint_iter)?(this->iter+2):this->checkpoint_iter;
     }
 
   //update
@@ -568,7 +578,6 @@ int seg_EM::Allocate_and_Initialize()
         }
 
       float tmpnumb_clas=((this->numb_classes+(int)(this->PV_model_status)*2));
-      cout << "tmpnumb_clas: "<<tmpnumb_clas<<endl;
       this->Expec=new SegPrecisionTYPE [tmpnumb_elem] ();
       this->ShortPrior=new SegPrecisionTYPE [tmpnumb_elem] ();
       for(int i=0; i<tmpnumb_elem; i++){
@@ -576,7 +585,6 @@ int seg_EM::Allocate_and_Initialize()
           this->ShortPrior[i]=1.0/tmpnumb_clas;
         }
   for (int cl=0; cl<this->numb_classes; cl++) 
-    cout << "Expec " << cl << ": " << Expec[cl] << endl;
       if(this->maskImage_status){
           calcE_mask(this->inputImage,this->ShortPrior,this->Expec,&this->loglik,this->BiasField,NULL,0,this->Short_2_Long_Indices,this->M,this->V,CurrSizes,this->verbose_level);
         }
@@ -587,7 +595,6 @@ int seg_EM::Allocate_and_Initialize()
     }
 
   for (int cl=0; cl<this->numb_classes; cl++) 
-    cout << "Expec " << cl << ": " << Expec[cl] << endl;
 
   if(this->OutliernessFlag){
       int tmpnumb_elem=0;
@@ -889,7 +896,7 @@ int *  seg_EM::Run_EM()
           printloglik(iter,this->loglik,this->oldloglik);
         }
       // Preform Exit
-      if((((this->loglik-this->oldloglik)/fabs(this->oldloglik))<(SegPrecisionTYPE)(0.0005) && this->iter>this->checkpoint_iter) || iter>=this->maxIteration || (isinf(this->loglik) && this->iter>3)){
+      if((((this->loglik-this->oldloglik)/fabs(this->oldloglik))<(SegPrecisionTYPE)(0.0005) && this->iter > this->checkpoint_iter) || iter>=this->maxIteration || (isinf(this->loglik) && this->iter>3)){
           out=false;
         }
       this->ratio=((this->loglik-this->oldloglik)/fabs(this->oldloglik));
