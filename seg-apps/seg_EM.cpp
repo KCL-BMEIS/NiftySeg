@@ -25,6 +25,7 @@ void Usage(char *exec)
   printf("  * * * * * * * * * * * * * * * * General Options * * * * * * * * * * * * * * * * *\n\n");
   printf("\t-mask <filename>\t| Filename of the brain-mask of the input image\n");
   printf("\t-max_iter <int>\t\t| Maximum number of iterations (default = 100)\n");
+  printf("\t-min_iter <int>\t\t| Minimum number of iterations (default = 0)\n");
   printf("\t-v <int>\t\t| Verbose level [0 = off, 1 = on, 2 = debug] (default = 0)\n");
   printf("\t-mrf_beta <float>\t| MRF prior strength [off = 0, max = 1] (default = 0.4) \n");
   printf("\t-bc_order <int>\t\t| Polynomial order for the bias field [off = 0, max = 5] (default = 3) \n");
@@ -148,6 +149,7 @@ int main(int argc, char **argv)
     segment_param->flag_PV_model=1;
     segment_param->flag_SG_deli=1;
     segment_param->maxIteration=100;
+    segment_param->minIteration=4;
     segment_param->OutliernessRatio=0.01;
 
     int To_do_MAP_index_argv=0;
@@ -324,6 +326,9 @@ int main(int argc, char **argv)
           }
         else if((strcmp(argv[i], "-max_iter") == 0 || strcmp(argv[i], "--max_iter") == 0) && (i+1)<argc){
             segment_param->maxIteration=atoi(argv[++i]);
+          }
+        else if((strcmp(argv[i], "-min_iter") == 0 || strcmp(argv[i], "--min_iter") == 0) && (i+1)<argc){
+            segment_param->minIteration=atoi(argv[++i]);
           }
         else{
             fprintf(stderr,"Err:\tParameter %s unknown or incomplete \n",argv[i]);
@@ -502,6 +507,7 @@ int main(int argc, char **argv)
     SEG.SetFilenameOut(segment_param->filename_out);
     SEG.SetAprox(segment_param->aprox);
     SEG.SetMaximalIterationNumber(segment_param->maxIteration);
+    SEG.SetMinIterationNumber(segment_param->minIteration);
 
     if(segment_param->flag_Outlierness)
       SEG.OutliernessON(segment_param->OutliernessThreshold,segment_param->OutliernessRatio);

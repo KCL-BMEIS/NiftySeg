@@ -106,6 +106,7 @@ typedef struct SegParams {
   float Bias_threshold;
   SegPrecisionTYPE  MRF_strength;
   int  maxIteration;
+  int  minIteration;
   int  verbose_level;
   int numb_classes;
   bool flag_T1;
@@ -140,6 +141,7 @@ typedef struct SegParams {
     Bias_threshold = 0;
     MRF_strength = 0;
     maxIteration = 0;
+    minIteration = 0;
     verbose_level = 0;
     numb_classes = 0;
     flag_T1 = 0;
@@ -221,6 +223,7 @@ typedef struct SegParams {
 	 << "PARAMS: flag_MRF: " << flag_MRF << endl
 	 << "PARAMS: MRF_strength: " << MRF_strength << endl
 	 << "PARAMS: maxIteration: " << maxIteration << endl
+	 << "PARAMS: minIteration: " << minIteration << endl
 	 << "PARAMS: aprox: " << aprox << endl;
 
   };

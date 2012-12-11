@@ -42,7 +42,7 @@ seg_EM::seg_EM(int _numb_classes, int _nu,int _nt)
   this->reg_factor=1.1f;
 
   this->maxIteration=100;
-  this->minIteration=0;
+  this->minIteration=4;
   this->verbose_level=0;
   this->loglik=2.0;
   this->oldloglik=1.0;
