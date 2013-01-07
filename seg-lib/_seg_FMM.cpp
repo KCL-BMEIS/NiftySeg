@@ -252,15 +252,18 @@ void FMM(bool *Seeds,
         }
     }
 
-  bool curr_res=false;
   for(centre_short_index=0; centre_short_index<NumElements; centre_short_index++){
+      bool curr_res=false;
       index_long=S2L[centre_short_index];
-      curr_res=false;
-      for(i=0; i<6; i++){
-          if(!curr_res){
-              curr_res=(L2S[index_long+neighbour6[i]]<=0)?true:false;
-            }
-        }
+      //text_z
+      int index_long_tmp_test_z=(int)floor((float)index_long/(float)(CurrSizes->xsize*CurrSizes->ysize));
+      if(index_long_tmp_test_z==0 || index_long_tmp_test_z>=(CurrSizes->zsize-1)){curr_res=true;}
+      //text_y
+      int index_long_tmp_test_y=(int)floor((float)((float)index_long - (float)index_long_tmp_test_z*(float)(CurrSizes->xsize*CurrSizes->ysize))/(float)(CurrSizes->xsize));
+      if(index_long_tmp_test_y==0 || index_long_tmp_test_y>=(CurrSizes->ysize-1)){curr_res=true;}
+      //text_x
+      int index_long_tmp_test_x=(int)floor((float)index_long - (float)index_long_tmp_test_z*(float)(CurrSizes->xsize*CurrSizes->ysize) - (float)index_long_tmp_test_y*(float)(CurrSizes->xsize));
+      if(index_long_tmp_test_x==0 || index_long_tmp_test_x>=(CurrSizes->xsize-1)){curr_res=true;}
       Border[centre_short_index]=curr_res;
     }
 
@@ -316,8 +319,10 @@ void FMM(bool *Seeds,
           index_long=S2L[centre_short_index];
           float curr_max=0;
           for(i=0; i<6; i++){
-              if(!Border[L2S[index_long+neighbour6[i]]] && GeoTime[L2S[index_long+neighbour6[i]]]>curr_max){
-                  curr_max=GeoTime[L2S[index_long+neighbour6[i]]];
+              if(((index_long+neighbour6[i])>0 && (index_long+neighbour6[i])<CurrSizes->numel)){
+                  if(!Border[L2S[index_long+neighbour6[i]]] && GeoTime[L2S[index_long+neighbour6[i]]]>curr_max){
+                      curr_max=GeoTime[L2S[index_long+neighbour6[i]]];
+                    }
                 }
             }
           GeoTime[centre_short_index]=curr_max;
@@ -443,9 +448,15 @@ void TransformGeoTime(SegPrecisionTYPE *GeoTime,
   for(int centre_short_index=0; centre_short_index<CurrSizes->numelmasked; centre_short_index++){
       int index_long=S2L[centre_short_index];
       isBroder=false;
+
       for(int i=0; i<6; i++){
           if(!isBroder){
-              isBroder=(L2S[index_long+neighbour6[i]]<=0)?true:false;
+              if((index_long+neighbour6[i])>0 && (index_long+neighbour6[i])<CurrSizes->numel){
+                  isBroder=true;
+                }
+              else{
+                  isBroder=(L2S[index_long+neighbour6[i]]<=0)?true:false;
+                }
             }
         }
       if(!isBroder){
@@ -479,11 +490,17 @@ void TransformGeoTime(SegPrecisionTYPE *GeoTime,
   for(int centre_short_index=0; centre_short_index<CurrSizes->numelmasked; centre_short_index++){
       int index_long=S2L[centre_short_index];
       isBroder=false;
-      for(int i=0; i<6; i++){
-          if(!isBroder){
-              isBroder=(L2S[index_long+neighbour6[i]]<=0)?true:false;
-            }
-        }
+
+      //text_z
+      int index_long_tmp_test_z=(int)floor((float)index_long/(float)(CurrSizes->xsize*CurrSizes->ysize));
+      if(index_long_tmp_test_z==0 || index_long_tmp_test_z>=(CurrSizes->zsize-1)){isBroder=true;}
+      //text_y
+      int index_long_tmp_test_y=(int)floor((float)((float)index_long - (float)index_long_tmp_test_z*(float)(CurrSizes->xsize*CurrSizes->ysize))/(float)(CurrSizes->xsize));
+      if(index_long_tmp_test_y==0 || index_long_tmp_test_y>=(CurrSizes->ysize-1)){isBroder=true;}
+      //text_x
+      int index_long_tmp_test_x=(int)floor((float)index_long - (float)index_long_tmp_test_z*(float)(CurrSizes->xsize*CurrSizes->ysize) - (float)index_long_tmp_test_y*(float)(CurrSizes->xsize));
+      if(index_long_tmp_test_x==0 || index_long_tmp_test_x>=(CurrSizes->xsize-1)){isBroder=true;}
+
       if(!isBroder){
           sqrtgrad=sqrt(Gradxyz[centre_short_index*3]*Gradxyz[centre_short_index*3]+Gradxyz[centre_short_index*3+1]*Gradxyz[centre_short_index*3+1]+Gradxyz[centre_short_index*3+2]*Gradxyz[centre_short_index*3+2]);
           normgrad=(sqrtgrad/7)<1?(1-(sqrtgrad/7)):0;

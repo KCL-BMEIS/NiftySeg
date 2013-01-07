@@ -50,6 +50,7 @@ void Usage(char *exec)
   printf("\t-subsamp2\t\tSubsample the image by 2 using NN sampling (qform and sform scaled) \n");
   printf("\n\t* * Image header operations * *\n");
   printf("\t-hdr_copy <file> \tCopy header from working image to <file> and save in <output>.\n");
+  printf("\t-scl\t\t\tReset scale and slope info.\n");
   printf("\n\t* * Output * *\n");
   printf("\t-odt <datatype> \tSet output <datatype> (char, short, int, uchar, ushort, uint, float, double).\n");
   printf("\t-range\t\t\tReset the image range to the min max\n");
@@ -658,6 +659,12 @@ int main(int argc, char **argv)
             CurrSize->tsize=1;
             current_buffer=current_buffer?0:1;
           }
+        // *********************  Reset SCL  *************************
+        else if(strcmp(argv[i], "-scl") == 0){
+            InputImage->scl_inter=0;
+            InputImage->scl_slope=1;
+
+         }
         // *********************  Copy Header  *************************
         else if(strcmp(argv[i], "-hdr_copy") == 0){
             string parser=argv[++i];
