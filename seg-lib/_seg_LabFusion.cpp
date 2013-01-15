@@ -60,7 +60,7 @@ seg_LabFusion::seg_LabFusion(int _numb_classif, int numbclasses, int _Numb_Neigh
   this->maskAndUncertainIndeces=NULL;
   this->sizeAfterMaskingAndUncertainty=0;
   this->uncertainflag=false;
-  this->uncertainthresh=0.9;
+  this->uncertainthresh=0.999;
   this->dilunc=0;
   this->Prop=new LabFusion_datatype [numbclasses];
   this->Fixed_Prop_status=false;
@@ -606,12 +606,14 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                         }
                     }
                 }
-
+              //cout << "1- "<<this->0] << "  "  <<this->Prop[1] <<endl;
               LabFusion_datatype sumW=0;
               for(int currclass=0; currclass<this->NumberOfLabels; currclass++){
                   tmpW[currclass]=((LabFusion_datatype)this->Prop[currclass])*tmpW[currclass]*this->MRF[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty];
                   sumW+=tmpW[currclass];
                 }
+              //cout << "2- " <<tmpW[0] << "  "  <<tmpW[1] <<endl;
+              //cout << this->MRF[this->maskAndUncertainIndeces[i]+0*this->sizeAfterMaskingAndUncertainty] << "  " << this->MRF[this->maskAndUncertainIndeces[i]+1*this->sizeAfterMaskingAndUncertainty]<< endl;
 
               if(sumW<=0){
                   if(verbose_level>1)cout << "Normalize by zero at voxel - "<<i<<endl;
@@ -631,9 +633,9 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                   if(this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty]>1){
                       this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty]=1;
                     }
-                  //this->loglik+=W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty];
+                  //loglik+=W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty];
                 }
-              //this->loglik+=sumW;
+              //loglik+=sumW;
             }
 
           else{
@@ -695,9 +697,9 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                   if(this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty]>1){
                       this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty]=1;
                     }
-                  //this->loglik+=W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty];
+
                 }
-              //this->loglik+=sumW;
+              //loglik+=sumW;
             }
 
           // **************************
@@ -839,7 +841,6 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
     }
 
   this->tracePQ=this->tracePQ/(this->numb_classif*this->NumberOfLabels);
-
   delete [] tmpW;
   delete [] ConfusionMatrix2;
   delete [] nccexists_once;
@@ -1122,6 +1123,7 @@ int seg_LabFusion::UpdateMRF()
                         }
                       Sum_Temp_MRF_Class_Expect = 0;
                       for (currclass=0; currclass<this->NumberOfLabels; currclass++){
+                          //cout <<  Clique[currclass] <<" ";
                           Temp_MRF_Class_Expect[currclass]=0;
                           for (neighbourclass=0; neighbourclass<this->NumberOfLabels; neighbourclass++){
                               Temp_MRF_Class_Expect[currclass]-=this->MRF_matrix[currclass+(this->NumberOfLabels)*neighbourclass]*Clique[neighbourclass];
@@ -1130,9 +1132,12 @@ int seg_LabFusion::UpdateMRF()
                           Temp_MRF_Class_Expect[currclass] = exp(this->MRF_strength*Temp_MRF_Class_Expect[currclass]);
                           Sum_Temp_MRF_Class_Expect += Temp_MRF_Class_Expect[currclass];
                         }
+                      //cout <<endl;
+
                       if(Sum_Temp_MRF_Class_Expect<=0){
                           Sum_Temp_MRF_Class_Expect=0.0001;
                       }
+                      //cout<<Temp_MRF_Class_Expect[0]/Sum_Temp_MRF_Class_Expect<<" "<<Temp_MRF_Class_Expect[1]/Sum_Temp_MRF_Class_Expect<<endl;
                       for (currclass=0; currclass<this->NumberOfLabels; currclass++) {
 
                           MRF[index_within_mask+currclass*this->sizeAfterMaskingAndUncertainty]=(Temp_MRF_Class_Expect[currclass]/Sum_Temp_MRF_Class_Expect);
@@ -1163,25 +1168,31 @@ int seg_LabFusion::EstimateInitialDensity()
 
 
   int tempsum=0;
+  int * propcount = new int [this->NumberOfLabels];
   for(int currclass=0;currclass<this->NumberOfLabels;currclass++){
+      propcount[currclass]=0;
       this->Prop[currclass]=0;
-    }
+  }
   for( int i=0; i<this->numel; i++){
       if(this->maskAndUncertainIndeces[i]>=0){
           tempsum+=1;
           for(int classifier=0; classifier<this->numb_classif; classifier++){
-              this->Prop[inputCLASSIFIERptr[i+this->numel*classifier]]+=1.0;
+              propcount[inputCLASSIFIERptr[i+this->numel*classifier]]++;
+
+              //cout << (float)inputCLASSIFIERptr[i+this->numel*classifier];
             }
+          //cout << "\n";
         }
     }
   for(int currclass=0;currclass<this->NumberOfLabels;currclass++){
-      this->Prop[currclass]=this->Prop[currclass]/(LabFusion_datatype)(tempsum*this->numb_classif);
+      //cout<<"\tlabel["<<currclass<<"] - "<<propcount[currclass]<<" - "<<tempsum<<endl;
+      this->Prop[currclass]=propcount[currclass]/(LabFusion_datatype)((float)tempsum*(float)this->numb_classif);
     }
 
-
+  delete [] propcount;
   if(this->verbose_level>0){
       cout << "Estimating initial proportion"<<endl;
-      if(this->verbose_level>1){
+      if(this->verbose_level>0){
           for(int currclass=0;currclass<this->NumberOfLabels;currclass++){
               cout<<"\tlabel["<<currclass<<"] - "<<this->Prop[currclass]<<endl;
             }
@@ -1220,7 +1231,7 @@ int seg_LabFusion::UpdateDensity()
                   tempsum+=this->W[this->maskAndUncertainIndeces[i]+currclass*this->sizeAfterMaskingAndUncertainty];
                 }
             }
-          this->Prop[currclass]=tempprop+0.0000001;
+          this->Prop[currclass]=tempprop+0.00000001;
         }
       for(int currclass=0;currclass<this->NumberOfLabels;currclass++){
           this->Prop[currclass]=(this->Prop[currclass])/(LabFusion_datatype)(tempsum);
@@ -1382,6 +1393,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
               bool is_uncertain=true;
               for(int currClass=0; currClass<this->NumberOfLabels;currClass++){
                   float thisthresh=ceil(this->uncertainthresh*(double)this->Numb_Neigh);
+                  //float thisthresh=7;
                   if(num_true[currClass]>=(thisthresh)){
                       is_uncertain=false;
                     }
@@ -1473,6 +1485,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
           for(int currLabel=0; currLabel<this->NumberOfLabels;currLabel++){
               this->W[this->maskAndUncertainIndeces[i]+currLabel*(this->sizeAfterMaskingAndUncertainty)]=(float)(num_true[currLabel]/this->Numb_Neigh);
             }
+          this->FinalSeg[i]=0;
         }
       // If it is not uncertain area
       else{
@@ -1673,7 +1686,7 @@ nifti_image * seg_LabFusion::GetResult_label()
       cout << "ERROR: Variable TYPE_OF_FUSION is not set. Cannot save."<<endl;
     }
 
-  return Result;
+    return Result;
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
@@ -1772,7 +1785,7 @@ int  seg_LabFusion::Run_STAPLE_or_STEPS()
   this->iter=1;
   bool out= true;
   while (out) {
-
+   //out= false;
       if(this->verbose_level>0){
           cout << endl << "*******************************" << endl;
           cout << "Iteration " << iter << endl;
