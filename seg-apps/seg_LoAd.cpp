@@ -214,6 +214,8 @@ int main(int argc, char **argv)
       }
 
     nifti_image * Result = LoAd_Segment(T1,Mask,Priors,segment_param);
+    Result->scl_inter=0;
+    Result->scl_slope=1;
     nifti_image_write(Result);
     nifti_image_free(Result);
     nifti_image_free(Priors);
