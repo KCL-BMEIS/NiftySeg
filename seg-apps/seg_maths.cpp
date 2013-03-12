@@ -59,6 +59,16 @@ void Usage(char *exec)
   return;
 }
 
+int isNumeric (const char *s)
+{
+    if(s==NULL || *s=='\0' || isspace(*s))
+      return 0;
+    char * p;
+    double a=0; //useless - here to avoid a warning
+    a=strtod (s, &p);
+    return *p == '\0';
+}
+
 void no_memory () {
   cout << "Failed to allocate memory!\n";
   exit (1);
@@ -154,7 +164,7 @@ int main(int argc, char **argv)
         // *********************  ADD  *************************
         else if(strcmp(argv[i], "-add") == 0){
             string parser=argv[++i];
-            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))|| (parser.length()==1 && parser.find("0")!=string::npos))){
+            if(parser.find_first_not_of("1234567890.")== string::npos){
                 double addfactor=strtod(parser.c_str(),NULL);
                 for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                   bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]+addfactor;
@@ -185,7 +195,7 @@ int main(int argc, char **argv)
         // *********************  SUBTRACT  *************************
         else if(strcmp(argv[i], "-sub") == 0){
             string parser=argv[++i];
-            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))|| (parser.length()==1 && parser.find("0")!=string::npos))){
+            if(parser.find_first_not_of("1234567890.")== string::npos){
                 double factor=strtod(parser.c_str(),NULL);
                 for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                   bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]-factor;
@@ -216,7 +226,7 @@ int main(int argc, char **argv)
         // *********************  DIV  *************************
         else if(strcmp(argv[i], "-div") == 0){
             string parser=argv[++i];
-            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))|| (parser.length()==1 && parser.find("0")!=string::npos))){
+            if(parser.find_first_not_of("1234567890.")== string::npos){
                 double factor=strtod(parser.c_str(),NULL);
                 for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                   bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]/factor;
@@ -320,7 +330,7 @@ int main(int argc, char **argv)
         // *********************  Dilate   *************************
         else if(strcmp(argv[i], "-dil") == 0){
             string parser=argv[++i];
-            if((strtod(parser.c_str(),NULL)>0)){
+            if(parser.find_first_not_of("1234567890.")== string::npos){
                 double factor=strtod(parser.c_str(),NULL);
                 Dillate(bufferImages[current_buffer],(int)round(factor),CurrSize);
                 for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
@@ -335,7 +345,7 @@ int main(int argc, char **argv)
         // *********************  Erosion   *************************
         else if(strcmp(argv[i], "-ero") == 0){
             string parser=argv[++i];
-            if((strtod(parser.c_str(),NULL)>0 )){
+            if(parser.find_first_not_of("1234567890.")== string::npos){
                 double factor=strtod(parser.c_str(),NULL);
                 Erosion(bufferImages[current_buffer],(int)round(factor),CurrSize);
                 for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
@@ -371,7 +381,7 @@ int main(int argc, char **argv)
 
 
             string parser=argv[++i];
-            if(((strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))|| (parser.length()==1 && parser.find("0")!=string::npos))){
+            if(parser.find_first_not_of("1234567890.")== string::npos){
                 if(strtod(parser.c_str(),NULL)<=0){
                     cout<< "ERROR: -geo speed should be larger than zero"<<endl;
                     return 1;
