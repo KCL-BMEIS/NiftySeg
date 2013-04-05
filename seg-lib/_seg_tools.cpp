@@ -1876,8 +1876,8 @@ int Gaussian_Filter_Short_4D(SegPrecisionTYPE * ShortData,
                              int class_with_CSF){
 
     int kernelsize=0;
-    int kernelsizemin=(int)floorf(gauss_std*3.0);
-    int kernelsizemax=(int)ceilf(gauss_std*3.0);
+    int kernelsizemin=(int)floorf(gauss_std*6.0);
+    int kernelsizemax=(int)ceilf(gauss_std*6.0);
 
     if((kernelsizemin/2.0)==(double)(kernelsizemin/2) && kernelsizemin!=kernelsizemax){ // Which one is odd? kernelsizemin or kernelsizemax?
         kernelsize=kernelsizemax;}
@@ -1969,8 +1969,8 @@ int Gaussian_Filter_4D(SegPrecisionTYPE * LongData,
                        ImageSize * CurrSizes){
 
     int kernelsize=0;
-    int kernelsizemin=(int)floorf(gauss_std*4.0);
-    int kernelsizemax=(int)ceilf(gauss_std*4.0);
+    int kernelsizemin=(int)floorf(gauss_std*6.0);
+    int kernelsizemax=(int)ceilf(gauss_std*6.0);
 
     if((kernelsizemin/2.0)==(double)(kernelsizemin/2) && kernelsizemin!=kernelsizemax){ // Which one is odd? kernelsizemin or kernelsizemax?
         kernelsize=kernelsizemax;}
@@ -2073,8 +2073,8 @@ SegPrecisionTYPE * Gaussian_Filter_4D_inside_mask(SegPrecisionTYPE * LongData,
                                                   ImageSize * CurrSizes){
 
     int kernelsize=0;
-    int kernelsizemin=(int)floorf(gauss_std*3.0);
-    int kernelsizemax=(int)ceilf(gauss_std*3.0);
+    int kernelsizemin=(int)floorf(gauss_std*6.0);
+    int kernelsizemax=(int)ceilf(gauss_std*6.0);
 
     if((kernelsizemin/2.0)==(double)(kernelsizemin/2) && kernelsizemin!=kernelsizemax){ // Which one is odd? kernelsizemin or kernelsizemax?
         kernelsize=kernelsizemax;}
