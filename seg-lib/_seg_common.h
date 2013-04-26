@@ -12,6 +12,14 @@
 #define M_PI (3.14159265358979323846)
 #endif
 
+
+
+#if (defined(_WIN32) || defined(_WINDOWS)) && !defined(__CYGWIN__)
+#define SEP "\"
+#else
+#define SEP "/"
+#endif
+
 template<typename T> inline bool isinf(T value) { return std::numeric_limits<T>::has_infinity && value == std::numeric_limits<T>::infinity(); }
 #ifndef isnan(_X)
 #define isnan(_X) _isnan(_X)

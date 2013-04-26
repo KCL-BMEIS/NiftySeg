@@ -3,6 +3,13 @@
 #include "omp.h"
 #endif
 
+#if (defined(_WIN32) || defined(_WINDOWS)) && !defined(__CYGWIN__)
+#define SEP "\"
+#else
+#define SEP "/"
+#endif
+
+
 int Create_diagonal_GH_Nclass(SegPrecisionTYPE * G,
                               SegPrecisionTYPE * H,
                               SegPrecisionTYPE ratio,
@@ -4303,12 +4310,18 @@ int get_all_files_and_folders_in_dir (string dir, vector<string> &files , vector
         if(dirp->d_name[0]!='.'){
             if(dirp->d_type==8){
                 if((&files)!=NULL){
-                    files.push_back(dir+string("/")+string(dirp->d_name));
+                    string curstring=dir;
+                    curstring.append(SEP);
+                    curstring.append(dirp->d_name);
+                    files.push_back(curstring);
                 }
             }
             else{
                 if((&folders)!=NULL){
-                    folders.push_back(dir+string("/")+string(dirp->d_name));
+                    string curstring=dir;
+                    curstring.append(SEP);
+                    curstring.append(dirp->d_name);
+                    folders.push_back(curstring);
                 }
             }
         }
@@ -4330,7 +4343,7 @@ int get_all_files_that_match_string (string dir, vector<string> &files , string 
             if(dirp->d_type==8){
                 string curstring=dirp->d_name;
                 if(curstring.find(string_to_match)!=string::npos){
-                    files.push_back(dir+string("/")+string(dirp->d_name));
+                    files.push_back(dir+string(SEP)+string(dirp->d_name));
                 }
             }
         }
@@ -4351,7 +4364,7 @@ int get_all_files_that_match_2_strings(string dir, vector<string> &files , strin
         if(dirp->d_name[0]!='.' ||  curstring.size()>2){
             if(dirp->d_type==8 || dirp->d_type==0){
                 if((bool)(curstring.find(string_to_match)!=string::npos) && (bool)(curstring.find(string_to_match2)!=string::npos)){
-                    files.push_back(dir+string("/")+string(dirp->d_name));
+                    files.push_back(dir+string(SEP)+string(dirp->d_name));
                 }
             }
             //            else{
@@ -4373,8 +4386,8 @@ int get_all_files_in_dir_without_extension(string dir, vector<string> &files)
     while ((dirp = readdir(dp)) != NULL) {
         if(dirp->d_name[0]!='.'){
             if(dirp->d_type==8){
-                string tmpstring=dir+string("/")+string(dirp->d_name);
-                tmpstring.erase(tmpstring.find_first_of(".",tmpstring.find_last_of("/")),tmpstring.length());
+                string tmpstring=dir+string(SEP)+string(dirp->d_name);
+                tmpstring.erase(tmpstring.find_first_of(".",tmpstring.find_last_of(SEP)),tmpstring.length());
                 files.push_back(tmpstring);
             }
         }
