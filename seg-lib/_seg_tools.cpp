@@ -4426,3 +4426,16 @@ float * getNN(float * DistanceMatrix,int size_matrix,int sizeneig){
     }
     return UpdatedDistanceMatrix;
 }
+
+mat44 seg_mat44_mul(mat44 const* A, mat44 const* B)
+{
+        mat44 R;
+
+        for(int i=0; i<4; i++){
+                for(int j=0; j<4; j++){
+                        R.m[i][j] = A->m[i][0]*B->m[0][j] + A->m[i][1]*B->m[1][j] + A->m[i][2]*B->m[2][j] + A->m[i][3]*B->m[3][j];
+                }
+        }
+
+        return R;
+}

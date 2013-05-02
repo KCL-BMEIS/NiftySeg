@@ -366,3 +366,5 @@ int get_all_files_that_match_2_strings(string dir, vector<string> &files , strin
 int get_all_files_in_dir_without_extension(string dir, vector<string> &files);
 float * getHeatWij(float * DistanceMatrix,int size_matrix, float temperature);
 float * getNN(float * DistanceMatrix,int size_matrix,int sizeneig);
+
+mat44 seg_mat44_mul(mat44 const* A, mat44 const* B);
