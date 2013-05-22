@@ -367,4 +367,5 @@ int get_all_files_in_dir_without_extension(string dir, vector<string> &files);
 float * getHeatWij(float * DistanceMatrix,int size_matrix, float temperature);
 float * getNN(float * DistanceMatrix,int size_matrix,int sizeneig);
 
-mat44 seg_mat44_mul(mat44 const* A, mat44 const* B);
+void LTS_Vecs(float * Y, float * X,int * mask, float percentOutliers,int maxNumbIter, float convergenceRatio, unsigned int size, float *a, float *b);
+void LS_Vecs(float * Y, float * X, unsigned int size, float *a, float *b);

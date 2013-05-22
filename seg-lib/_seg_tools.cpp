@@ -3017,20 +3017,16 @@ int quickSort(float *arr, int elements) {
     int beg[300], end[300], i=0, L, R, swap ;
 
     beg[0]=0; end[0]=elements;
-    cout << elements<<endl;
 
     while (i>=0) {
         L=beg[i]; R=end[i]-1;
         if (L<R) {
             piv=arr[L];
-            cout <<"part1= "<< L << "," <<arr[L] << " ... " <<R << "," <<arr[R]<<endl;
             while (L<R) {
                 while (arr[R]>=piv && L<R) R--; if (L<R) arr[L++]=arr[R];
                 while (arr[L]<=piv && L<R) L++; if (L<R) arr[R--]=arr[L];
             }
-            cout <<"part2= "<< L << "," <<arr[L] << " ... " <<R << "," <<arr[R]<<endl;
             arr[L]=piv; beg[i+1]=L+1; end[i+1]=end[i]; end[i++]=L;
-            cout <<i<<endl;
             if (end[i]-beg[i]>end[i-1]-beg[i-1]) {
                 swap=beg[i];
                 beg[i]=beg[i-1];
@@ -3039,7 +3035,6 @@ int quickSort(float *arr, int elements) {
                 end[i]=end[i-1];
                 end[i-1]=swap;
             }
-            cout <<i<<endl;
         }
         else {
             i--;
@@ -4427,15 +4422,125 @@ float * getNN(float * DistanceMatrix,int size_matrix,int sizeneig){
     return UpdatedDistanceMatrix;
 }
 
-mat44 seg_mat44_mul(mat44 const* A, mat44 const* B)
-{
-        mat44 R;
 
-        for(int i=0; i<4; i++){
-                for(int j=0; j<4; j++){
-                        R.m[i][j] = A->m[i][0]*B->m[0][j] + A->m[i][1]*B->m[1][j] + A->m[i][2]*B->m[2][j] + A->m[i][3]*B->m[3][j];
+void LTS_Vecs(float * Y, float * X,int * mask, float percentOutliers,int maxNumbIter, float convergenceRatio, unsigned int size, float *a, float *b){
+
+    percentOutliers=percentOutliers<0?0:(percentOutliers>0.499)?0.499:percentOutliers;
+    float distance_threshold=std::numeric_limits<float>::max();
+    int iteration=maxNumbIter;
+    float Aval=1;
+    float Bval=0;
+    float olddistance_threshold=distance_threshold;
+
+    while(iteration){
+        float sumX=0;
+        float sumY=0;
+        float sumXY=0;
+        float sumXsquared=0;
+        float sizefloat=size;
+        int count=0;
+        int count_in_mask=0;
+        for(int i=0; i<size; i++){
+            if(mask==NULL || (mask!=NULL && mask[i]==true)){
+                count_in_mask++;
+                if( distance_threshold > fabs(Y[i]-Aval*X[i]+Bval) ){
+                    sumX+=X[i];
+                    sumY+=Y[i];
+                    sumXY+=X[i]*Y[i];
+                    sumXsquared+=X[i]*X[i];
+                    count++;
                 }
+            }
         }
 
-        return R;
+        Aval=((float)count*sumXY-sumX*sumY)/((float)count*sumXsquared-sumX*sumX);
+        Bval=(sumY-Aval*sumX)/sizefloat;
+
+
+        float * distance=new float [count_in_mask];
+        float maxdistance=0;
+        int indexmask=0;
+        for(int i=0; i<size; i++){
+            if(mask==NULL || (mask!=NULL && mask[i]==true)){
+                distance[indexmask]=fabs(Y[i]-Aval*X[i]+Bval);
+                maxdistance=(maxdistance<distance[indexmask])?distance[indexmask]:maxdistance;
+                indexmask++;
+            }
+        }
+
+
+        // Fill histogram
+        float histsize=200.0f;
+        float histo[201]={0};
+        for(int i=0; i<(int)histsize; i++) histo[i]=0;
+
+        for(int i=0; i<indexmask; i++){
+            float location=histsize*distance[i]/maxdistance;
+            float weight=location-floorf(location);
+            histo[(int)floor(location)]+=(1-weight);
+            histo[(int)ceil(location)]+=(weight);
+        }
+
+        // Normalise histogram
+        float sumhisto=0;
+        for(int i=0; i<(int)histsize; i++)
+            sumhisto+=histo[i];
+        for(int i=0; i<(int)histsize; i++)
+            histo[i]=histo[i]/sumhisto;
+
+
+        // Find location of percentile
+        float targetcount=(1-percentOutliers*(1.0f/(float)iteration));
+        float after_currentcount=0;
+        float before_currentcount=0;
+        float index_count=histsize;
+        for(int i=0; i<(int)histsize; i++){
+            before_currentcount=after_currentcount;
+            after_currentcount+=histo[i];
+            if(after_currentcount>targetcount){
+                index_count=i;
+                i=(int)histsize;
+            }
+        }
+
+        // Interpolate Val
+        float valbefore=((index_count-1)>=0?(index_count-1):0)*maxdistance/histsize;
+        float valafter=(index_count)*maxdistance/histsize;
+        float InterpWeight=(targetcount-before_currentcount)/(after_currentcount-before_currentcount);
+
+        // New threshold
+        distance_threshold=valafter*InterpWeight+(1-InterpWeight)*valbefore;
+        delete [] distance;
+        iteration--;
+        if( (((olddistance_threshold-distance_threshold)/distance_threshold)<convergenceRatio) && ( fabs(maxNumbIter-iteration)>3 || maxNumbIter<=3)){
+            iteration=0;
+        }
+        else{
+            a[0]=Aval;
+            b[0]=Bval;
+        }
+        olddistance_threshold=distance_threshold;
+    }
 }
+
+void LS_Vecs(float * Y, float * X,unsigned int size, float *a, float *b){
+
+    float sumX=0;
+    float sumY=0;
+    float sumXY=0;
+    float sumXsquared=0;
+    float sizefloat=size;
+    for(int i=0; i<size; i++){
+        sumX+=X[i];
+        sumY+=Y[i];
+        sumXY+=X[i]*Y[i];
+        sumXsquared+=X[i]*X[i];
+    }
+
+    *a=(sizefloat*sumXY-sumX*sumY)/(sizefloat*sumXsquared-sumX*sumX);
+    *b=(sumY-(a[0])*sumX)/sizefloat;
+
+}
+
+
+

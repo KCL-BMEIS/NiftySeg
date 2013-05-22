@@ -33,9 +33,6 @@ void Usage(char *exec)
     printf("\t-fill\t\t\tFill holes in binary object (e.g. fill ventricle in brain mask).\n");
     printf("\t-euc\t\t\tEuclidean distance trasnform\n");
     printf("\t-geo <float/file>\tGeodesic distance according to the speed function <float/file>\n");
-    printf("\n\t* * Intensity Normalisation  * *\n");
-    printf("\t-z\t\tz-score the image\n");
-    printf("\t-zr <float>\tz-score the image to the percentile <float> [0-50].\n");
     printf("\n\t* * Dimensionality reduction operations: from 4-D to 3-D * *\n");
     printf("\t-tp <int>\t\tExtract time point <int>\n");
     printf("\t-tpmax\t\t\tGet the time point with the highest value (binarise 4D probabilities)\n");
@@ -49,6 +46,9 @@ void Usage(char *exec)
     printf("\t-lncc\t<file> <std>\tLocal CC between current img and <int> on a kernel with <std>\n");
     printf("\t-lssd\t<file> <std>\tLocal SSD between current img and <int> on a kernel with <std>\n");
     //printf("\t-lmi\t<file> <std>\tLocal MI between current img and <int> on a kernel with <std>\n");
+    printf("\n\t* * Normalisation * *\n");
+    printf("\t-lsnorm\t<file_norm>\t LS normalisation between current and <file_norm>\n");
+    printf("\t-ltsnorm\t<file_norm> <float>\t LTS normalisation assuming <float> percent outliers\n");
     printf("\n\t* * Sampling * *\n");
     printf("\t-subsamp2\t\tSubsample the image by 2 using NN sampling (qform and sform scaled) \n");
     printf("\n\t* * Image header operations * *\n");
@@ -77,13 +77,10 @@ void no_memory () {
     exit (1);
 }
 
-int main(int argc, char **argv)
-{
-    try
-    {
+int main(int argc, char **argv){
+    try{
         set_new_handler(no_memory);
-        if (argc <= 2)
-        {
+        if (argc <= 2){
             Usage(argv[0]);
             return 0;
         }
@@ -136,10 +133,11 @@ int main(int argc, char **argv)
             // *********************  MUTIPLY  *************************
             else if(strcmp(argv[i], "-mul") == 0){
                 string parser=argv[++i];
-                if(   (strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))    ||     (parser.length()==1 && parser.find("0")!=string::npos)   ){
+                if(parser.find_first_not_of("1234567890.-+")== string::npos){
                     double multfactor=strtod(parser.c_str(),NULL);
-                    for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
+                    for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++){
                         bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]*multfactor;
+                    }
                     current_buffer=current_buffer?0:1;
                 }
                 else{
@@ -156,16 +154,30 @@ int main(int argc, char **argv)
                         current_buffer=current_buffer?0:1;
                     }
                     else{
-                        cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
-                             <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" ) New image = ( "
-                            <<NewImage->nx<<","<<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<" )"<<endl;
-                        i=argc;
+                        nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
+                        NewImage->nu=(NewImage->nu>1)?NewImage->nu:1;
+                        NewImage->nt=(NewImage->nt>1)?NewImage->nt:1;
+                        if(NewImage->datatype!=DT_FLOAT32){
+                            seg_changeDatatype<SegPrecisionTYPE>(NewImage);
+                        }
+                        SegPrecisionTYPE * NewImagePtr = static_cast<SegPrecisionTYPE *>(NewImage->data);
+                        if(NewImage->nx==CurrSize->xsize&&NewImage->ny==CurrSize->ysize&&NewImage->nz==CurrSize->zsize&&NewImage->nt==CurrSize->tsize&&NewImage->nu==CurrSize->usize){
+                            for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
+                                bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]*NewImagePtr[i];
+                            current_buffer=current_buffer?0:1;
+                        }
+                        else{
+                            cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
+                                 <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" ) New image = ( "
+                                <<NewImage->nx<<","<<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<" )"<<endl;
+                            i=argc;
+                        }
+                        nifti_image_free(NewImage);
                     }
-                    nifti_image_free(NewImage);
                 }
             }
             // *********************  ADD  *************************
-            else if(strcmp(argv[i], "-add") == 0){
+            else if( strcmp(argv[i], "-add") == 0){
                 string parser=argv[++i];
                 if(parser.find_first_not_of("1234567890.-+")== string::npos){
                     double addfactor=strtod(parser.c_str(),NULL);
@@ -396,33 +408,87 @@ int main(int argc, char **argv)
                         Speed[i]=strtod(parser.c_str(),NULL);
                     }
                     float * Distance = DoubleEuclideanDistance_3D(Lable,Speed,CurrSize);
+                }
+            }
 
-                    for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
-                        bufferImages[current_buffer?0:1][i]=Distance[i];
-                    current_buffer=current_buffer?0:1;
-                    delete [] Distance;
-                    delete [] Lable;
-                    delete [] Speed;
+            // *********************  LS Normlise  *************************
+            else if(strcmp(argv[i], "-lsnorm") == 0){
+                string parser=argv[++i];
+                if(   (strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))    ||     (parser.length()==1 && parser.find("0")!=string::npos)   ){
+                    cerr<<"ERROR: "<<argv[i]<<"  has to be an image"<<endl;
+                    exit(1);
                 }
                 else{
-                    nifti_image * Speed=nifti_image_read(parser.c_str(),true);
-                    if(Speed->datatype!=DT_FLOAT32){
-                        seg_changeDatatype<SegPrecisionTYPE>(Speed);
+                    nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
+                    NewImage->nu=(NewImage->nu>1)?NewImage->nu:1;
+                    NewImage->nt=(NewImage->nt>1)?NewImage->nt:1;
+                    if(NewImage->datatype!=DT_FLOAT32){
+                        seg_changeDatatype<float>(NewImage);
                     }
-                    SegPrecisionTYPE * SpeedPtr = static_cast<SegPrecisionTYPE *>(Speed->data);
+                    float * NewImagePtr = static_cast<float *>(NewImage->data);
 
-                    bool * Lable= new bool [CurrSize->numel];
-                    for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
-                        Lable[i]=bufferImages[current_buffer][i];
+                    // Y=a*X+b
+                    float a=0;
+                    float b=0;
 
-                    float * Distance = DoubleEuclideanDistance_3D(Lable,SpeedPtr,CurrSize);
-                    for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
-                        bufferImages[current_buffer?0:1][i]=Distance[i];
-                    current_buffer=current_buffer?0:1;
 
-                    delete [] Distance;
-                    delete [] Lable;
-                    nifti_image_free(Speed);
+                    if(NewImage->nx==CurrSize->xsize&&NewImage->ny==CurrSize->ysize&&NewImage->nz==CurrSize->zsize&&NewImage->nt==CurrSize->tsize&&NewImage->nu==CurrSize->usize){
+
+                        LS_Vecs(bufferImages[current_buffer],NewImagePtr, (CurrSize->xsize*CurrSize->ysize*CurrSize->zsize),&a, &b);
+                        for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
+                            bufferImages[current_buffer?0:1][i]=a*NewImagePtr[i]+b;
+                        current_buffer=current_buffer?0:1;
+                    }
+                    else{
+                        cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
+                             <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" ) New image = ( "
+                            <<NewImage->nx<<","<<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<" )"<<endl;
+                        i=argc;
+                    }
+                    nifti_image_free(NewImage);
+                }
+            }
+
+            // *********************  LTS Normlise  *************************
+            else if(strcmp(argv[i], "-ltsnorm") == 0){
+                string parser=argv[++i];
+
+                string parserout=argv[++i];
+                float percent_outlier=strtod(parserout.c_str(),NULL);
+                percent_outlier=percent_outlier>0.5?0.5:(percent_outlier<0?0:percent_outlier);
+                if(   (strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))    ||     (parser.length()==1 && parser.find("0")!=string::npos)   ){
+                    cerr<<"ERROR: "<<argv[i]<<"  has to be an image"<<endl;
+                    exit(1);
+                }
+                else{
+                    nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
+                    NewImage->nu=(NewImage->nu>1)?NewImage->nu:1;
+                    NewImage->nt=(NewImage->nt>1)?NewImage->nt:1;
+                    if(NewImage->datatype!=DT_FLOAT32){
+                        seg_changeDatatype<float>(NewImage);
+                    }
+                    float * NewImagePtr = static_cast<float *>(NewImage->data);
+
+                    // Y=a*X+b
+                    float a=0;
+                    float b=0;
+
+
+                    if(NewImage->nx==CurrSize->xsize&&NewImage->ny==CurrSize->ysize&&NewImage->nz==CurrSize->zsize&&NewImage->nt==CurrSize->tsize&&NewImage->nu==CurrSize->usize){
+
+                        LTS_Vecs(bufferImages[current_buffer],NewImagePtr,NULL,percent_outlier,20, 0.001, (CurrSize->xsize*CurrSize->ysize*CurrSize->zsize),&a, &b);
+
+                        for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
+                            bufferImages[current_buffer?0:1][i]=a*NewImagePtr[i]+b;
+                        current_buffer=current_buffer?0:1;
+                    }
+                    else{
+                        cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
+                             <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" ) New image = ( "
+                            <<NewImage->nx<<","<<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<" )"<<endl;
+                        i=argc;
+                    }
+                    nifti_image_free(NewImage);
                 }
             }
 
