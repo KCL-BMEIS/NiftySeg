@@ -2074,6 +2074,106 @@ int Gaussian_Filter_4D(SegPrecisionTYPE * LongData,
     return 0;
 }
 
+void GaussianSmoothing(nifti_image * Data,int * mask,float gauss_std_in){
+
+    int nx=Data->nx;
+    int ny=Data->ny;
+    int nz=Data->nz;
+
+    float * ImageBuffer= new float [nx*ny*nz]();
+    float * Density= new float [nx*ny*nz]();
+    float * DensityBuffer= new float [nx*ny*nz]();
+
+    float * DataPTR=static_cast<float *>(Data->data);
+
+    int shiftdirection[3]={1,nx,nx*ny};
+    int dim_array[3]={nx,ny,nz};
+    float dist_array[3]={Data->dx,Data->dy,Data->dz};
+
+    int numel=nx*ny*nz;
+    for(int curr4d=0; curr4d<Data->nt; curr4d++){ //For Each TP
+        int current_4dShift_short=curr4d*nx*ny*nz;
+
+        // Masking density and area
+        for(int i=0; i<nx*ny*nz; i++){
+            Density[i]=mask[i]>0;
+            DataPTR[i+current_4dShift_short]=(mask[i]>0)?DataPTR[i+current_4dShift_short]:0;
+        }
+
+        //Blur Buffer and density along each direction
+        for(int currentdirection=0;currentdirection<3;currentdirection++){
+
+            // Setup kernel
+            float gauss_std=gauss_std_in>0?gauss_std_in:fabs(gauss_std_in/(float)dist_array[currentdirection]);
+
+            int kernelsize=(int)(gauss_std*6.0f) % 2 != 0 ? (int)(gauss_std*6.0f) : (int)(gauss_std*6.0f)+1;
+            int kernelshift=(int)(kernelsize/2.0f);
+            float GaussKernel[400]= {0};
+            float kernelsum=0;
+            for(int i=0; i<kernelsize; i++){
+                GaussKernel[i]=expf((float)(-0.5f*powf((float)((float)i-(float)kernelshift)/gauss_std, 2.0f)))/(sqrtf(2.0f*3.14159265*powf(gauss_std, 2)));
+                kernelsum+=GaussKernel[i];
+            }
+            for(int i=0; i<kernelsize; i++)
+                GaussKernel[i]/=kernelsum;
+
+            // Updating buffers
+            for(int index=0;index<numel;index++){
+                ImageBuffer[index]=DataPTR[index+current_4dShift_short];
+                DensityBuffer[index]=Density[index];
+            }
+
+            int xyzpos[3];
+            // For every pixel
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+    shared(DataPTR, Density, floatingMatrix_xyz, controlPointNumber,dim_array,xyzpos) \
+    private(kernelshift,nx,ny,nz)
+#endif
+            for(xyzpos[2]=0;xyzpos[2]<nz;xyzpos[2]++){
+                for(xyzpos[1]=0;xyzpos[1]<ny;xyzpos[1]++){
+                    for(xyzpos[0]=0;xyzpos[0]<nx;xyzpos[0]++){
+                        float TmpDataConvolution=0;
+                        float TmpMaskConvolution=0;
+                        float TmpKernDensity=0;
+                        int index=xyzpos[0]+(xyzpos[1]+xyzpos[2]*ny)*nx;
+                        // Calculate allowed kernel shifts
+                        int shiftstart=((xyzpos[currentdirection]<kernelshift)?-xyzpos[currentdirection]:-kernelshift);
+                        int shiftstop=((xyzpos[currentdirection]>=(dim_array[currentdirection]-kernelshift))?(int)dim_array[currentdirection]-xyzpos[currentdirection]-1:kernelshift);
+
+                        for(int shift=shiftstart;shift<=shiftstop; shift++){
+                            // Data Blur
+                            TmpDataConvolution+=GaussKernel[shift+kernelshift]*ImageBuffer[index+shift*shiftdirection[currentdirection]];
+                            // Mask Blur
+                            TmpMaskConvolution+=GaussKernel[shift+kernelshift]*DensityBuffer[index+shift*shiftdirection[currentdirection]];
+                            // Kernel density
+                            TmpKernDensity+=GaussKernel[shift+kernelshift];
+                        }
+                        // Devide convolutions by the kernel density
+                        DataPTR[index+current_4dShift_short]=TmpDataConvolution/TmpKernDensity;
+                        Density[index]=TmpMaskConvolution/TmpKernDensity;
+
+                    }
+                }
+            }
+        }
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+    shared(DataPTR, mask, Density) \
+    private(current_4dShift_short)
+#endif
+        for(int index=0;index<numel;index++){
+            DataPTR[index+current_4dShift_short]=(mask[index]>0)?DataPTR[index+current_4dShift_short]/Density[index]:0;
+        }
+    }
+
+    delete [] ImageBuffer;
+    delete [] Density;
+    delete [] DensityBuffer;
+    return;
+}
+
+
 SegPrecisionTYPE * Gaussian_Filter_4D_inside_mask(SegPrecisionTYPE * LongData,
                                                   bool * mask,
                                                   SegPrecisionTYPE gauss_std,

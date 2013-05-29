@@ -201,6 +201,8 @@ SegPrecisionTYPE * Gaussian_Filter_4D_inside_mask(SegPrecisionTYPE * LongData,
                                                   SegPrecisionTYPE gauss_std,
                                                   ImageSize * CurrSizes);
 
+void GaussianSmoothing(nifti_image * Data,int * mask,float gauss_std);
+
 int Create_diagonal_GH_Nclass(SegPrecisionTYPE * G,
                               SegPrecisionTYPE * H,
                               SegPrecisionTYPE ratio,

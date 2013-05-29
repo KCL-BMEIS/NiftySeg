@@ -408,6 +408,12 @@ int main(int argc, char **argv){
                         Speed[i]=strtod(parser.c_str(),NULL);
                     }
                     float * Distance = DoubleEuclideanDistance_3D(Lable,Speed,CurrSize);
+                    for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
+                        bufferImages[current_buffer?0:1][i]=Distance[i];
+                    current_buffer=current_buffer?0:1;
+                    delete [] Distance;
+                    delete [] Lable;
+                    delete [] Speed;
                 }
             }
 
