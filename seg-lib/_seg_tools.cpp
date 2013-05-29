@@ -2125,11 +2125,11 @@ void GaussianSmoothing(nifti_image * Data,int * mask,float gauss_std_in){
 
             int xyzpos[3];
             // For every pixel
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    shared(DataPTR, Density, floatingMatrix_xyz, controlPointNumber,dim_array,xyzpos) \
-    private(kernelshift,nx,ny,nz)
-#endif
+//#ifdef _OPENMP
+//#pragma omp parallel for default(none) \
+//    shared(DataPTR, Density, floatingMatrix_xyz, controlPointNumber,dim_array,xyzpos) \
+//    private(kernelshift,nx,ny,nz)
+//#endif
             for(xyzpos[2]=0;xyzpos[2]<nz;xyzpos[2]++){
                 for(xyzpos[1]=0;xyzpos[1]<ny;xyzpos[1]++){
                     for(xyzpos[0]=0;xyzpos[0]<nx;xyzpos[0]++){
@@ -2157,11 +2157,11 @@ void GaussianSmoothing(nifti_image * Data,int * mask,float gauss_std_in){
                 }
             }
         }
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    shared(DataPTR, mask, Density) \
-    private(current_4dShift_short)
-#endif
+//#ifdef _OPENMP
+//#pragma omp parallel for default(none) \
+//    shared(DataPTR, mask, Density) \
+//    private(current_4dShift_short)
+//#endif
         for(int index=0;index<numel;index++){
             DataPTR[index+current_4dShift_short]=(mask[index]>0)?DataPTR[index+current_4dShift_short]/Density[index]:0;
         }
