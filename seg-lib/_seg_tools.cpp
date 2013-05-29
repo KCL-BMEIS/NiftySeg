@@ -3,12 +3,6 @@
 #include "omp.h"
 #endif
 
-#if (defined(_WIN32) || defined(_WINDOWS)) && !defined(__CYGWIN__)
-#define SEP "\"
-#else
-#define SEP "/"
-#endif
-
 
 int Create_diagonal_GH_Nclass(SegPrecisionTYPE * G,
                               SegPrecisionTYPE * H,
@@ -2095,7 +2089,13 @@ void GaussianSmoothing(nifti_image * Data,int * mask,float gauss_std_in){
         int current_4dShift_short=curr4d*nx*ny*nz;
 
         // Masking density and area
-        for(int i=0; i<nx*ny*nz; i++){
+        int i=0;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+    shared(DataPTR,mask,current_4dShift_short,nx,ny,nz,Density) \
+    private(i)
+#endif
+        for(i=0; i<nx*ny*nz; i++){
             Density[i]=mask[i]>0;
             DataPTR[i+current_4dShift_short]=(mask[i]>0)?DataPTR[i+current_4dShift_short]:0;
         }
@@ -2118,30 +2118,47 @@ void GaussianSmoothing(nifti_image * Data,int * mask,float gauss_std_in){
                 GaussKernel[i]/=kernelsum;
 
             // Updating buffers
-            for(int index=0;index<numel;index++){
+            int index;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+    shared(DataPTR,Density,ImageBuffer,DensityBuffer,current_4dShift_short,numel) \
+    private(i)
+#endif
+            for(index=0;index<numel;index++){
                 ImageBuffer[index]=DataPTR[index+current_4dShift_short];
                 DensityBuffer[index]=Density[index];
             }
 
+            // openmp defines
+
+            float TmpDataConvolution=0;
+            float TmpMaskConvolution=0;
+            float TmpKernDensity=0;
+            int shiftstart=0;
+            int shiftstop=0;
+            int shift=0;
             int xyzpos[3];
+            int xyzpos2;
             // For every pixel
-//#ifdef _OPENMP
-//#pragma omp parallel for default(none) \
-//    shared(DataPTR, Density, floatingMatrix_xyz, controlPointNumber,dim_array,xyzpos) \
-//    private(kernelshift,nx,ny,nz)
-//#endif
-            for(xyzpos[2]=0;xyzpos[2]<nz;xyzpos[2]++){
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+    shared(DataPTR,GaussKernel,ImageBuffer,DensityBuffer,nx,ny,nz,kernelshift,Density,dim_array,currentdirection,shiftdirection,current_4dShift_short) \
+    private(xyzpos2,TmpDataConvolution,TmpMaskConvolution,TmpKernDensity,index,shiftstart,shiftstop,shift,xyzpos)
+#endif
+            for(xyzpos2=0;xyzpos2<nz;xyzpos2++){
+                xyzpos[2]=xyzpos2;
                 for(xyzpos[1]=0;xyzpos[1]<ny;xyzpos[1]++){
                     for(xyzpos[0]=0;xyzpos[0]<nx;xyzpos[0]++){
-                        float TmpDataConvolution=0;
-                        float TmpMaskConvolution=0;
-                        float TmpKernDensity=0;
-                        int index=xyzpos[0]+(xyzpos[1]+xyzpos[2]*ny)*nx;
-                        // Calculate allowed kernel shifts
-                        int shiftstart=((xyzpos[currentdirection]<kernelshift)?-xyzpos[currentdirection]:-kernelshift);
-                        int shiftstop=((xyzpos[currentdirection]>=(dim_array[currentdirection]-kernelshift))?(int)dim_array[currentdirection]-xyzpos[currentdirection]-1:kernelshift);
 
-                        for(int shift=shiftstart;shift<=shiftstop; shift++){
+                        TmpDataConvolution=0;
+                        TmpMaskConvolution=0;
+                        TmpKernDensity=0;
+                        index=xyzpos[0]+(xyzpos[1]+xyzpos[2]*ny)*nx;
+                        // Calculate allowed kernel shifts
+                        shiftstart=((xyzpos[currentdirection]<kernelshift)?-xyzpos[currentdirection]:-kernelshift);
+                        shiftstop=((xyzpos[currentdirection]>=(dim_array[currentdirection]-kernelshift))?(int)dim_array[currentdirection]-xyzpos[currentdirection]-1:kernelshift);
+
+                        for(shift=shiftstart;shift<=shiftstop; shift++){
                             // Data Blur
                             TmpDataConvolution+=GaussKernel[shift+kernelshift]*ImageBuffer[index+shift*shiftdirection[currentdirection]];
                             // Mask Blur
@@ -2157,12 +2174,13 @@ void GaussianSmoothing(nifti_image * Data,int * mask,float gauss_std_in){
                 }
             }
         }
-//#ifdef _OPENMP
-//#pragma omp parallel for default(none) \
-//    shared(DataPTR, mask, Density) \
-//    private(current_4dShift_short)
-//#endif
-        for(int index=0;index<numel;index++){
+        int index=0;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+    shared(DataPTR, mask, Density,current_4dShift_short,numel) \
+    private(index)
+#endif
+        for(index=0;index<numel;index++){
             DataPTR[index+current_4dShift_short]=(mask[index]>0)?DataPTR[index+current_4dShift_short]/Density[index]:0;
         }
     }
@@ -2299,11 +2317,11 @@ int Sulci_and_gyri_correction(SegPrecisionTYPE * MRF_Beta,
 
     for(int i=0; i<CurrSizes->numelmasked;i++){
         Seed_Mask[i]=(Expec[i+WMclass*CurrSizes->numelmasked]+
-                Expec[i+WMGMpvclass*CurrSizes->numelmasked]+
-                Expec[i+dGMclass*CurrSizes->numelmasked]+
-                Expec[i+iCSFclass*CurrSizes->numelmasked])>0.5f;
+                      Expec[i+WMGMpvclass*CurrSizes->numelmasked]+
+                      Expec[i+dGMclass*CurrSizes->numelmasked]+
+                      Expec[i+iCSFclass*CurrSizes->numelmasked])>0.5f;
         SpeedFunc[i]=(Expec[i+CSFclass*CurrSizes->numelmasked]+
-                Expec[i+GMCSFpvclass*CurrSizes->numelmasked])*2;
+                      Expec[i+GMCSFpvclass*CurrSizes->numelmasked])*2;
     }
 
     FMM(Seed_Mask, SpeedFunc, wSulci,30, L2S, S2L, CurrSizes);
@@ -2311,11 +2329,11 @@ int Sulci_and_gyri_correction(SegPrecisionTYPE * MRF_Beta,
 
     for(int i=0; i<CurrSizes->numelmasked;i++){
         Seed_Mask[i]=(Expec[i+CSFclass*CurrSizes->numelmasked]+
-                Expec[i+GMCSFpvclass*CurrSizes->numelmasked])>0.5f;
+                      Expec[i+GMCSFpvclass*CurrSizes->numelmasked])>0.5f;
         SpeedFunc[i]=(Expec[i+WMclass*CurrSizes->numelmasked]+
-                Expec[i+WMGMpvclass*CurrSizes->numelmasked]+
-                Expec[i+dGMclass*CurrSizes->numelmasked]+
-                Expec[i+iCSFclass*CurrSizes->numelmasked])*2;
+                      Expec[i+WMGMpvclass*CurrSizes->numelmasked]+
+                      Expec[i+dGMclass*CurrSizes->numelmasked]+
+                      Expec[i+iCSFclass*CurrSizes->numelmasked])*2;
     }
 
     FMM(Seed_Mask, SpeedFunc, wGyri,30, L2S, S2L, CurrSizes);
@@ -3371,7 +3389,7 @@ nifti_image * Get_Bias_Corrected_mask(float * BiasFieldCoefs,
         float * BiasFieldCoefs_multispec = &BiasFieldCoefs[multispec*UsedBasisFunctions];
 
 
-        for(unsigned int i=0; i<CurrSizes->numel; i++){
+        for(int i=0; i<CurrSizes->numel; i++){
             BiasCorrected_PTR[i]=0;
         }
 
@@ -4540,7 +4558,7 @@ void LTS_Vecs(float * Y, float * X,int * mask, float percentOutliers,int maxNumb
         float sizefloat=size;
         int count=0;
         int count_in_mask=0;
-        for(int i=0; i<size; i++){
+        for(unsigned int i=0; i<size; i++){
             if(mask==NULL || (mask!=NULL && mask[i]==true)){
                 count_in_mask++;
                 if( distance_threshold > fabs(Y[i]-Aval*X[i]+Bval) ){
@@ -4560,7 +4578,7 @@ void LTS_Vecs(float * Y, float * X,int * mask, float percentOutliers,int maxNumb
         float * distance=new float [count_in_mask];
         float maxdistance=0;
         int indexmask=0;
-        for(int i=0; i<size; i++){
+        for(unsigned int i=0; i<size; i++){
             if(mask==NULL || (mask!=NULL && mask[i]==true)){
                 distance[indexmask]=fabs(Y[i]-Aval*X[i]+Bval);
                 maxdistance=(maxdistance<distance[indexmask])?distance[indexmask]:maxdistance;
@@ -4630,7 +4648,7 @@ void LS_Vecs(float * Y, float * X,unsigned int size, float *a, float *b){
     float sumXY=0;
     float sumXsquared=0;
     float sizefloat=size;
-    for(int i=0; i<size; i++){
+    for(unsigned int i=0; i<size; i++){
         sumX+=X[i];
         sumY+=Y[i];
         sumXY+=X[i]*Y[i];

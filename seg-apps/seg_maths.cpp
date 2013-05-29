@@ -69,6 +69,7 @@ int isNumeric (const char *s)
     char * p;
     double a=0; //useless - here to avoid a warning
     a=strtod (s, &p);
+    a=a;
     return *p == '\0';
 }
 
@@ -993,7 +994,7 @@ int main(int argc, char **argv){
 
                     float * imgsort=new float [img3Dsize];
                     int curindex=0;
-                    for(unsigned int index=0; index<img3Dsize; index++){
+                    for(int index=0; index<img3Dsize; index++){
                         imgsort[curindex]=bufferImages[current_buffer][index+img3Dsize*tup];
                         curindex++;
                     }

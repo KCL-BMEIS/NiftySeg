@@ -6,6 +6,11 @@
 #include "_seg_Topo.h"
 #include "_seg_BiasCorrection.h"
 
+#if (defined(_WIN32) || defined(_WINDOWS)) && !defined(__CYGWIN__)
+#define SEP "\\0"
+#else
+#define SEP "/\0"
+#endif
 
 int printloglik(int iter,
                 SegPrecisionTYPE loglik,

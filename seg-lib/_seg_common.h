@@ -15,9 +15,9 @@
 
 
 #if (defined(_WIN32) || defined(_WINDOWS)) && !defined(__CYGWIN__)
-#define SEP "\"
+#define SEP "\\0"
 #else
-#define SEP "/"
+#define SEP "/\0"
 #endif
 
 template<typename T> inline bool isinf(T value) { return std::numeric_limits<T>::has_infinity && value == std::numeric_limits<T>::infinity(); }
