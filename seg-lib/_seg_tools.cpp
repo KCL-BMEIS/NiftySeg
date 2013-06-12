@@ -4550,14 +4550,20 @@ void LTS_Vecs(float * Y, float * X,int * mask, float percentOutliers,int maxNumb
     float Bval=0;
     float olddistance_threshold=distance_threshold;
 
+
     while(iteration){
         float sumX=0;
         float sumY=0;
+        float aval_sumX=0;
         float sumXY=0;
         float sumXsquared=0;
         float sizefloat=size;
         int count=0;
         int count_in_mask=0;
+
+
+
+
         for(unsigned int i=0; i<size; i++){
             if(mask==NULL || (mask!=NULL && mask[i]==true)){
                 count_in_mask++;
@@ -4570,9 +4576,19 @@ void LTS_Vecs(float * Y, float * X,int * mask, float percentOutliers,int maxNumb
                 }
             }
         }
+        float NewAval=((float)count*sumXY-sumX*sumY)/((float)count*sumXsquared-sumX*sumX);
 
-        Aval=((float)count*sumXY-sumX*sumY)/((float)count*sumXsquared-sumX*sumX);
-        Bval=(sumY-Aval*sumX)/sizefloat;
+        for(unsigned int i=0; i<size; i++){
+            if(mask==NULL || (mask!=NULL && mask[i]==true)){
+                count_in_mask++;
+                if( distance_threshold > fabs(Y[i]-Aval*X[i]+Bval) ){
+                    aval_sumX+=NewAval*X[i];
+                }
+            }
+        }
+
+        Aval=NewAval;
+        Bval=(sumY-aval_sumX)/sizefloat;
 
 
         float * distance=new float [count_in_mask];
@@ -4632,6 +4648,8 @@ void LTS_Vecs(float * Y, float * X,int * mask, float percentOutliers,int maxNumb
         iteration--;
         if( (((olddistance_threshold-distance_threshold)/distance_threshold)<convergenceRatio) && ( fabs(maxNumbIter-iteration)>3 || maxNumbIter<=3)){
             iteration=0;
+            a[0]=Aval;
+            b[0]=Bval;
         }
         else{
             a[0]=Aval;
@@ -4641,7 +4659,7 @@ void LTS_Vecs(float * Y, float * X,int * mask, float percentOutliers,int maxNumb
     }
 }
 
-void LS_Vecs(float * Y, float * X,unsigned int size, float *a, float *b){
+void LS_Vecs(float * Y, float * X,int * mask, unsigned int size, float *a, float *b){
 
     float sumX=0;
     float sumY=0;
@@ -4649,10 +4667,12 @@ void LS_Vecs(float * Y, float * X,unsigned int size, float *a, float *b){
     float sumXsquared=0;
     float sizefloat=size;
     for(unsigned int i=0; i<size; i++){
-        sumX+=X[i];
-        sumY+=Y[i];
-        sumXY+=X[i]*Y[i];
-        sumXsquared+=X[i]*X[i];
+        if(mask==NULL || (mask!=NULL && mask[i]==true)){
+            sumX+=X[i];
+            sumY+=Y[i];
+            sumXY+=X[i]*Y[i];
+            sumXsquared+=X[i]*X[i];
+        }
     }
 
     *a=(sizefloat*sumXY-sumX*sumY)/(sizefloat*sumXsquared-sumX*sumX);

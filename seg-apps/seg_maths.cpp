@@ -441,7 +441,7 @@ int main(int argc, char **argv){
 
                     if(NewImage->nx==CurrSize->xsize&&NewImage->ny==CurrSize->ysize&&NewImage->nz==CurrSize->zsize&&NewImage->nt==CurrSize->tsize&&NewImage->nu==CurrSize->usize){
 
-                        LS_Vecs(bufferImages[current_buffer],NewImagePtr, (CurrSize->xsize*CurrSize->ysize*CurrSize->zsize),&a, &b);
+                        LS_Vecs(bufferImages[current_buffer],NewImagePtr,NULL, (CurrSize->xsize*CurrSize->ysize*CurrSize->zsize),&a, &b);
                         for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                             bufferImages[current_buffer?0:1][i]=a*NewImagePtr[i]+b;
                         current_buffer=current_buffer?0:1;

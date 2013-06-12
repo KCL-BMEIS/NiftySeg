@@ -375,4 +375,4 @@ float * getHeatWij(float * DistanceMatrix,int size_matrix, float temperature);
 float * getNN(float * DistanceMatrix,int size_matrix,int sizeneig);
 
 void LTS_Vecs(float * Y, float * X,int * mask, float percentOutliers,int maxNumbIter, float convergenceRatio, unsigned int size, float *a, float *b);
-void LS_Vecs(float * Y, float * X, unsigned int size, float *a, float *b);
+void LS_Vecs(float * Y, float * X,int * mask, unsigned int size, float *a, float *b);

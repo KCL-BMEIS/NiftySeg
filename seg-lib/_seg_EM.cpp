@@ -22,7 +22,7 @@ seg_EM::seg_EM(int _numb_classes, int _nu,int _nt)
   this->aprox=true;
   this->iter=0;
   this->checkpoint_iter=0;
-  this->ratio=0;
+  this->ratio=1000;
 
   this->numb_classes=_numb_classes;
   this->M= new float [MaxMultispectalSize*max_numbclass];
