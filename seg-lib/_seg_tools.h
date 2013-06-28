@@ -207,6 +207,7 @@ SegPrecisionTYPE * Gaussian_Filter_4D_inside_mask(SegPrecisionTYPE * LongData,
                                                   ImageSize * CurrSizes);
 
 void GaussianSmoothing(nifti_image * Data,int * mask,float gauss_std);
+void GaussianSmoothing_carray(float * DataPTR,int * mask,float gauss_std_in, ImageSize *Currentsize);
 
 int Create_diagonal_GH_Nclass(SegPrecisionTYPE * G,
                               SegPrecisionTYPE * H,
@@ -376,3 +377,6 @@ float * getNN(float * DistanceMatrix,int size_matrix,int sizeneig);
 
 void LTS_Vecs(float * Y, float * X,int * mask, float percentOutliers,int maxNumbIter, float convergenceRatio, unsigned int size, float *a, float *b);
 void LS_Vecs(float * Y, float * X,int * mask, unsigned int size, float *a, float *b);
+
+void otsu(float * Image, int * mask, ImageSize *Currentsize );
+void BiasCorrect(float * Image,ImageSize *Currentsize);

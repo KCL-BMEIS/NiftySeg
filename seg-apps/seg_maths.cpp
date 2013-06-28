@@ -22,6 +22,7 @@ void Usage(char *exec)
     printf("\t-smo\t<float>\t\tGaussian smoothing by std <float> (in voxels and up to 4-D).\n");
     printf("\t-sqrt \t\t\tSquare root of the image.\n");
     printf("\t-exp \t\t\tExponential root of the image.\n");
+    printf("\t-log \t\t\tLog of the image.\n");
     printf("\t-recip \t\t\tReciprocal (1/I) of the image.\n");
     printf("\t-abs \t\t\tAbsolute value of the image.\n");
     printf("\t-bin \t\t\tBinarise the image.\n");
@@ -69,7 +70,7 @@ int isNumeric (const char *s)
     char * p;
     double a=0; //useless - here to avoid a warning
     a=strtod (s, &p);
-    a=a;
+//a=a;
     return *p == '\0';
 }
 
@@ -296,6 +297,12 @@ int main(int argc, char **argv){
                     bufferImages[current_buffer?0:1][i]=expf(bufferImages[current_buffer][i]);
                 current_buffer=current_buffer?0:1;
             }
+            // *********************  Exponential  *************************
+            else if(strcmp(argv[i], "-log") == 0){
+                for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
+                    bufferImages[current_buffer?0:1][i]=logf(bufferImages[current_buffer][i]);
+                current_buffer=current_buffer?0:1;
+            }
             // *********************  reciprocal  *************************
             else if(strcmp(argv[i], "-recip") == 0){
                 for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
@@ -514,6 +521,44 @@ int main(int argc, char **argv){
                     cout << "ERROR: "<< parser << " has to be a number > 0"<<endl;
                     i=argc;
                 }
+            }
+            // *********************  GAUSSIAN sharpening *************************
+            else if(strcmp(argv[i], "-sharp") == 0){
+                string parser=argv[++i];
+                if((strtod(parser.c_str(),NULL)!=0 )){
+                    float factor=strtof(parser.c_str(),NULL);
+                    for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
+                        bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i];
+
+                    Gaussian_Filter_4D(&bufferImages[current_buffer][0], factor, CurrSize);
+                    for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
+                        bufferImages[current_buffer?0:1][i]=(bufferImages[current_buffer?0:1][i]-bufferImages[current_buffer][i]);
+
+                    current_buffer=current_buffer?0:1;
+                }
+                else{
+                    cout << "ERROR: "<< parser << " has to be a number > 0"<<endl;
+                    i=argc;
+                }
+            }
+            // *********************  GAUSSIAN sharpening *************************
+            else if(strcmp(argv[i], "-otsu") == 0){
+
+                    otsu(bufferImages[current_buffer],NULL,CurrSize);
+                    for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
+                        bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i];
+
+                    current_buffer=current_buffer?0:1;
+            }
+
+            // *********************  GAUSSIAN sharpening ************************
+            else if(strcmp(argv[i], "-bc") == 0){
+
+                    BiasCorrect(bufferImages[current_buffer],CurrSize);
+                    for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
+                        bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i];
+
+                    current_buffer=current_buffer?0:1;
             }
             // *********************  Fill  *************************
             else if(strcmp(argv[i], "-fill") == 0){
