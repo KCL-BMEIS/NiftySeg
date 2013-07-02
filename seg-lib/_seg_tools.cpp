@@ -4886,6 +4886,7 @@ void BiasCorrect(float * Image,
     float * Mask = new float [Currentsize->numel];
     float * TmpMask = new float [Currentsize->numel];
     float * BiasCorrected = new float [Currentsize->numel];
+//    float * BiasCorrected2 = new float [Currentsize->numel];
 
     for(int i=0; i<Currentsize->numel; i++){
         TmpMask[i]=Image[i];
@@ -4907,33 +4908,33 @@ void BiasCorrect(float * Image,
 
     for(int i=0; i<Currentsize->numel; i++){
         BiasCorrected[i]=0;
+//        BiasCorrected2[i]=0;
     }
 
-    for(int iteration=0;iteration<4;iteration++){
+    for(int iteration=0;iteration<1;iteration++){
         cout << iteration<<endl;
 
         for(int i=0; i<Currentsize->numel; i++){
-            BiasCorrected[i]=log(Image[i]+1);
+            BiasCorrected[i]=log(Image[i]+1.0f);
         }
-
-        GaussianSmoothing_carray(BiasCorrected,MaskInt,20.0f,Currentsize);
-
+        GaussianSmoothing_carray(BiasCorrected,MaskInt,10.0f,Currentsize);
 
 
         for(int i=0; i<Currentsize->numel; i++){
             if(MaskInt[i]){
-                BiasCorrected[i]=log(Image[i]+1)-BiasCorrected[i];
+                BiasCorrected[i]=log(Image[i]+1.0f)-BiasCorrected[i];
             }
             else{
                 BiasCorrected[i]=0;
             }
         }
 
-        GaussianSmoothing_carray(BiasCorrected,MaskInt,20.0f,Currentsize);
+        //GaussianSmoothing_carray(BiasCorrected,MaskInt,20.0f,Currentsize);
 
         for(int i=0; i<Currentsize->numel; i++){
             if(MaskInt[i]){
-                Image[i]=exp(log(Image[i]+1)-BiasCorrected[i])-1;
+                //Image[i]=(Image[i]+(exp(log(Image[i]+1.0f)-BiasCorrected[i])-1.0f))/2.0f;
+                Image[i]=exp(BiasCorrected[i])-1;
             }
             else{
                 Image[i]=0;
