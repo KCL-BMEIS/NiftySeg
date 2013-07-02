@@ -68,8 +68,8 @@ int isNumeric (const char *s)
     if(s==NULL || *s=='\0' || isspace(*s))
         return 0;
     char * p;
-    double a=0; //useless - here to avoid a warning
-    a=strtod (s, &p);
+    double a=strtod (s, &p);
+    a=a;
 //a=a;
     return *p == '\0';
 }
