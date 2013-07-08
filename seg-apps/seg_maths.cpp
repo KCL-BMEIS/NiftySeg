@@ -544,7 +544,7 @@ int main(int argc, char **argv){
             // *********************  GAUSSIAN sharpening *************************
             else if(strcmp(argv[i], "-otsu") == 0){
 
-                    otsu(bufferImages[current_buffer],NULL,CurrSize);
+                otsu(bufferImages[current_buffer],NULL,CurrSize);
                     for(int i=0; i<(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                         bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i];
 
