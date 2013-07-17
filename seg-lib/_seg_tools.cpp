@@ -423,16 +423,16 @@ int Normalize_Image_mask(nifti_image * input,
         Inputptr=&Inputptrtmp[numel*udir];
         brainmaskptr = static_cast<bool *> (Mask->data);
         for (int i=0; i<numel; i++) {
-            if(brainmaskptr[i]>0){
+            //if(brainmaskptr[i]>0){
                 //log(number_between_0_and_1 + 1)/log(2)
                 Inputptr[i]=logf((((Inputptr[i])-tempmin)/(tempmax-tempmin))+1)/0.693147181;
                 if(Inputptr[i]!=Inputptr[i]){
                     cout<< "Image has NaNs" << endl;
                 }
-            }
+            /*}
             else{
                 Inputptr[i]=0;
-            }
+            }*/
         }
     }
     return 1;
@@ -3435,13 +3435,16 @@ nifti_image * Get_Bias_Corrected(float * BiasField,
     BiasCorrected->cal_max=(CurrSizes->rescale_max[0]);
     BiasCorrected->scl_inter=0;
     BiasCorrected->scl_slope=1;
+    SegPrecisionTYPE * T1data = static_cast<SegPrecisionTYPE *>(T1->data);
+
+
 
     nifti_set_filenames(BiasCorrected,filename,0,0);
     nifti_update_dims_from_array(BiasCorrected);
     nifti_datatype_sizes(BiasCorrected->datatype,&BiasCorrected->nbyper,&BiasCorrected->swapsize);
     BiasCorrected->data = (void *) calloc(BiasCorrected->nvox, sizeof(SegPrecisionTYPE));
     SegPrecisionTYPE * BiasCorrected_PTR = static_cast<SegPrecisionTYPE *>(BiasCorrected->data);
-    SegPrecisionTYPE * T1data = static_cast<SegPrecisionTYPE *>(T1->data);
+
     for(int multispec=0;multispec<CurrSizes->usize;multispec++){
 
         BiasCorrected_PTR = static_cast<SegPrecisionTYPE *>(BiasCorrected->data);
@@ -3472,6 +3475,7 @@ nifti_image * Get_Bias_Corrected_mask(float * BiasFieldCoefs,
                                       int biasOrder){
 
     int UsedBasisFunctions=(int)((biasOrder+1) * (biasOrder+2)/2 *(biasOrder+3)/3);
+    SegPrecisionTYPE * T1data = static_cast<SegPrecisionTYPE *>(T1->data);
 
     nifti_image * BiasCorrected = nifti_copy_nim_info(T1);
     BiasCorrected->dim[0]=4;
@@ -3481,12 +3485,22 @@ nifti_image * Get_Bias_Corrected_mask(float * BiasFieldCoefs,
     BiasCorrected->scl_inter=0;
     BiasCorrected->scl_slope=1;
 
+    float * brainmask= new float [CurrSizes->numel];
+    for(int i=0;i<CurrSizes->numel;i++){
+        brainmask[i]=T1data[i];
+    }
+    otsu(brainmask,NULL,CurrSizes);
+    Dillate(brainmask,5,CurrSizes);
+    Erosion(brainmask,4,CurrSizes);
+    Gaussian_Filter_4D(brainmask, 3.0f, CurrSizes);
+
+
     nifti_set_filenames(BiasCorrected,filename,0,0);
     nifti_update_dims_from_array(BiasCorrected);
     nifti_datatype_sizes(BiasCorrected->datatype,&BiasCorrected->nbyper,&BiasCorrected->swapsize);
     BiasCorrected->data = (void *) calloc(BiasCorrected->nvox, sizeof(SegPrecisionTYPE));
     SegPrecisionTYPE * BiasCorrected_PTR = static_cast<SegPrecisionTYPE *>(BiasCorrected->data);
-    SegPrecisionTYPE * T1data = static_cast<SegPrecisionTYPE *>(T1->data);
+
     float BiasField=0;
     SegPrecisionTYPE currxpower[maxallowedpowerorder];
     SegPrecisionTYPE currypower[maxallowedpowerorder];
@@ -3536,6 +3550,7 @@ nifti_image * Get_Bias_Corrected_mask(float * BiasFieldCoefs,
                             }
                         }
                     }
+                    BiasField*=brainmask[index_full];
 
                     to_resize=exp((BiasField+T1data[index_full])*0.693147181)-1;
                     BiasCorrected_PTR[index_full]=(to_resize*(CurrSizes->rescale_max[multispec]-CurrSizes->rescale_min[multispec])+CurrSizes->rescale_min[multispec]);

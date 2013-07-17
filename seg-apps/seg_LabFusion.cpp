@@ -49,9 +49,9 @@ void Usage(char *exec)
   //printf("  -dil_unc <int> \t\t\t| Dilate uncertainty region by <int>.\n");
   printf("  -setPQ <P> <Q> \t\t| Value of P and Q [ 0 < (P,Q) < 1 ] (default = 0.99 0.99) \n");
   printf("  -MRF_beta <float>\t\t| MRF prior strength [ 0 < beta < 5 ] \n");
-  printf("  -max_iter <int>\t\t| Maximum number of iterations (default = 50)\n");
+  printf("  -max_iter <int>\t\t| Maximum number of iterations (default = 15)\n");
   printf("  -uncthres <float>\t\t| If <float> percent of labels agree, then area is not uncertain \n");
-  printf("  -conv <float>\t\t\t| Ratio for convergence (default epsilon = 10^-6)\n\n");
+  printf("  -conv <float>\t\t\t| Ratio for convergence (default epsilon = 10^-5)\n\n");
 
   printf("  * * * * * * * * Ranking for STAPLE and MV (mutually exclusive) * * * * * * * * *\n\n");
   printf("  -ALL  (default)\t\t| Use all labels with no Ranking\n");
@@ -97,12 +97,12 @@ int main(int argc, char **argv)
     float prop=0.0f;
     bool propflag=0;
     float MRF_strength=0;
-    int maxIteration=50;
+    int maxIteration=15;
     int verbose_level=0;
     bool PropUpdate=false;
     float tmpP=0;
     float tmpQ=0;
-    float conv=0.0001;
+    float conv=0.001;
     int dilunc=0;
     float uncthres=-1;
 
