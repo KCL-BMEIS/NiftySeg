@@ -772,9 +772,9 @@ int main(int argc, char **argv){
             else if(strcmp(argv[i], "-tmax") == 0){
                 for(int i=0; i<CurrSize->numel; i++){
                     float tmax=(float)-1.0e32;
-                    for(int tp=0; tp<CurrSize->tsize; tp++){
-                        if(tmax<bufferImages[current_buffer][i+(int)(tp)*CurrSize->numel])
-                            tmax=bufferImages[current_buffer][i+(int)(tp)*CurrSize->numel];
+                    for(size_t tp=0; tp<(size_t)CurrSize->tsize; tp++){
+                        if(tmax<bufferImages[current_buffer][i+(size_t)(tp)*(size_t)CurrSize->numel])
+                            tmax=bufferImages[current_buffer][i+(size_t)(tp)*(size_t)CurrSize->numel];
                     }
                     bufferImages[current_buffer?0:1][i]=tmax;
                 }
@@ -784,18 +784,18 @@ int main(int argc, char **argv){
             // *********************  Get TP with maxval  *************************
             else if(strcmp(argv[i], "-tpmax") == 0){
                 for(int i=0; i<CurrSize->numel; i++){
-                    float tmax=(float)-1.0e32;
+                    float tmax=std::numeric_limits<float>::min();
                     float tmaxindex=-1;
-                    for(int tp=0; tp<CurrSize->tsize; tp++){
-                        if(bufferImages[current_buffer][i+(int)(tp)*CurrSize->numel]>tmax){
-                            tmax=bufferImages[current_buffer][i+(int)(tp)*CurrSize->numel];
+                    for(size_t tp=0; tp<(size_t)CurrSize->tsize; tp++){
+                        if(bufferImages[current_buffer][i+(size_t)(tp)*(size_t)CurrSize->numel]>tmax){
+                            tmax=bufferImages[current_buffer][i+(size_t)(tp)*(size_t)CurrSize->numel];
                             tmaxindex=(float)tp;
                         }
                     }
                     bufferImages[current_buffer?0:1][i]=(float)tmaxindex;
                 }
-                CurrSize->tsize=1;
                 InputImage->cal_max=CurrSize->tsize;
+                CurrSize->tsize=1;
 
                 current_buffer=current_buffer?0:1;
             }
@@ -803,8 +803,8 @@ int main(int argc, char **argv){
             else if(strcmp(argv[i], "-tmean") == 0){
                 for(int i=0; i<CurrSize->numel; i++){
                     float tmean=0;
-                    for(int tp=0; tp<CurrSize->tsize; tp++){
-                        tmean+=bufferImages[current_buffer][i+(int)(tp)*CurrSize->numel];
+                    for(size_t tp=0; tp<(size_t)CurrSize->tsize; tp++){
+                        tmean+=bufferImages[current_buffer][i+(size_t)(tp)*CurrSize->numel];
                     }
                     bufferImages[current_buffer?0:1][i]=tmean/CurrSize->tsize;
                 }

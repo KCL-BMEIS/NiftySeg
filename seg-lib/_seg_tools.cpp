@@ -4692,44 +4692,30 @@ void LTS_Vecs(float * Y, float * X,int * mask, float percentOutliers,int maxNumb
     while(iteration){
         float sumX=0;
         float sumY=0;
-        float aval_sumX=0;
         float sumXY=0;
         float sumXsquared=0;
-        float sizefloat=size;
-        int count=0;
-        int count_in_mask=0;
-
+        float sizefloat=0;
 
 
 
         for(unsigned int i=0; i<size; i++){
             if(mask==NULL || (mask!=NULL && mask[i]==true)){
-                count_in_mask++;
                 if( distance_threshold > fabs(Y[i]-Aval*X[i]+Bval) ){
-                    sumX+=X[i];
-                    sumY+=Y[i];
-                    sumXY+=X[i]*Y[i];
-                    sumXsquared+=X[i]*X[i];
-                    count++;
-                }
-            }
-        }
-        float NewAval=((float)count*sumXY-sumX*sumY)/((float)count*sumXsquared-sumX*sumX);
-
-        for(unsigned int i=0; i<size; i++){
-            if(mask==NULL || (mask!=NULL && mask[i]==true)){
-                count_in_mask++;
-                if( distance_threshold > fabs(Y[i]-Aval*X[i]+Bval) ){
-                    aval_sumX+=NewAval*X[i];
+                sumX+=X[i];
+                sumY+=Y[i];
+                sumXY+=X[i]*Y[i];
+                sumXsquared+=X[i]*X[i];
+                sizefloat++;
                 }
             }
         }
 
-        Aval=NewAval;
-        Bval=(sumY-aval_sumX)/sizefloat;
+        Aval=(sizefloat*sumXY-sumX*sumY)/(sizefloat*sumXsquared-sumX*sumX);
+        Bval=(sumY*sumXsquared-sumX*sumXY)/(sizefloat*sumXsquared-sumX*sumX);
 
 
-        float * distance=new float [count_in_mask];
+
+        float * distance=new float [(int)(sizefloat)];
         float maxdistance=0;
         int indexmask=0;
         for(unsigned int i=0; i<size; i++){
@@ -4803,18 +4789,20 @@ void LS_Vecs(float * Y, float * X,int * mask, unsigned int size, float *a, float
     float sumY=0;
     float sumXY=0;
     float sumXsquared=0;
-    float sizefloat=size;
+    float sizefloat=0;
     for(unsigned int i=0; i<size; i++){
         if(mask==NULL || (mask!=NULL && mask[i]==true)){
             sumX+=X[i];
             sumY+=Y[i];
             sumXY+=X[i]*Y[i];
             sumXsquared+=X[i]*X[i];
+            sizefloat++;
         }
     }
 
     *a=(sizefloat*sumXY-sumX*sumY)/(sizefloat*sumXsquared-sumX*sumX);
-    *b=(sumY-(a[0])*sumX)/sizefloat;
+    *b=(sumY*sumXsquared-sumX*sumXY)/(sizefloat*sumXsquared-sumX*sumX);
+    //cout << "LS: VAL_A = "<<*a<<" , VAL_B = "<<*b<<endl;
 
 }
 
@@ -4879,7 +4867,7 @@ void otsu(float * Image,
         u+=(i*histo[i-1]);
         work1 = (uT * w - u);
         work2 = (work1 * work1) / ( w * (1.0f-w) );
-        if (work2>work3) work3=work2;
+        if (work2>work3 && work2==work2 && isinf(work2)==0 ) work3=work2;
     }
 
     float threshold=(sqrt(work3)-1)/(histsize-2)*(tempmax-tempmin)+tempmin;
