@@ -235,15 +235,15 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
 int * Create_Long_2_Short_Matrix_from_NII(nifti_image * Mask);
 
 int * Create_Short_2_Long_Matrix_from_NII(nifti_image * Mask,
-                                          int * shortsize);
+                                          long *shortsize);
 
-SegPrecisionTYPE * Create_cArray_from_Prior_mask( nifti_image * Mask,
+SegPrecisionTYPE * Create_cArray_from_Prior_mask(nifti_image * Mask,
                                                   nifti_image * Priors,
-                                                  int numclass,
+                                                  long numclass,
                                                   bool PV_ON);
 
 SegPrecisionTYPE * Create_cArray_from_Prior(nifti_image * Priors,
-                                            int numclass,
+                                            long numclass,
                                             bool PV_ON);
 
 SegPrecisionTYPE * Create_cArray_from_3D_image(nifti_image * Mask,

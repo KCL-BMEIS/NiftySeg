@@ -46,9 +46,9 @@ float * DoubleEuclideanDistance_3D(bool *LablePtr, float * speedptr,
 
 
     centre_index=0;
-    for(int zpos=0; zpos<CurrSizes->zsize; zpos++){
-        for(int ypos=0; ypos<CurrSizes->ysize; ypos++){
-            for(int xpos=0; xpos<CurrSizes->xsize; xpos++){
+    for(long zpos=0; zpos<CurrSizes->zsize; zpos++){
+        for(long ypos=0; ypos<CurrSizes->ysize; ypos++){
+            for(long xpos=0; xpos<CurrSizes->xsize; xpos++){
                 Border[centre_index]=0;
                 if(xpos==0 || xpos==(CurrSizes->xsize-1) || ypos==0 || ypos==(CurrSizes->ysize-1) || zpos==0 || zpos==(CurrSizes->zsize-1)){
                     Border[centre_index]=1;
@@ -108,9 +108,9 @@ float * DoubleEuclideanDistance_3D(bool *LablePtr, float * speedptr,
 
 
     centre_index=0;
-    for(int zpos=0; zpos<CurrSizes->zsize; zpos++){
-        for(int ypos=0; ypos<CurrSizes->ysize; ypos++){
-            for(int xpos=0; xpos<CurrSizes->xsize; xpos++){
+    for(long zpos=0; zpos<CurrSizes->zsize; zpos++){
+        for(long ypos=0; ypos<CurrSizes->ysize; ypos++){
+            for(long xpos=0; xpos<CurrSizes->xsize; xpos++){
                 if(xpos==0 || xpos==(CurrSizes->xsize-1) || ypos==0 || ypos==(CurrSizes->ysize-1) || zpos==0 || zpos==(CurrSizes->zsize-1)){
                     GeoTime[centre_index]=MaxGeoTime;
                 }
@@ -186,9 +186,9 @@ float * DoubleEuclideanDistance_3D(bool *LablePtr, float * speedptr,
     }
 
     centre_index=0;
-    for(int zpos=0; zpos<CurrSizes->zsize; zpos++){
-        for(int ypos=0; ypos<CurrSizes->ysize; ypos++){
-            for(int xpos=0; xpos<CurrSizes->xsize; xpos++){
+    for(long zpos=0; zpos<CurrSizes->zsize; zpos++){
+        for(long ypos=0; ypos<CurrSizes->ysize; ypos++){
+            for(long xpos=0; xpos<CurrSizes->xsize; xpos++){
                 if(Border[centre_index]){
                     int xshift=(xpos==0)?1:(xpos==(CurrSizes->xsize-1)?-1:0);
                     int yshift=(ypos==0)?1:(ypos==(CurrSizes->ysize-1)?-1:0);
@@ -215,8 +215,8 @@ void FMM(bool *Seeds,
          ImageSize * CurrSizes){
 
     int i, NumElements, centre_short_index;
-    int index_long;
-    int index_neighbour_short;
+    long index_long;
+    long index_neighbour_short;
     NumElements=CurrSizes->numelmasked;
     i=0;
     int neighbour6[6]={0};
@@ -237,7 +237,7 @@ void FMM(bool *Seeds,
     MapLengthType::iterator first_element=MapLength.begin();
 
     char * Labels = (char *) calloc(NumElements, sizeof(char));
-    int mycounter=0;
+    long mycounter=0;
     bool *Border= (bool *) calloc(NumElements, sizeof(bool));
 
     for(centre_short_index=0;centre_short_index<NumElements;centre_short_index++){
@@ -256,13 +256,13 @@ void FMM(bool *Seeds,
         bool curr_res=false;
         index_long=S2L[centre_short_index];
         //text_z
-        int index_long_tmp_test_z=(int)floor((float)index_long/(float)(CurrSizes->xsize*CurrSizes->ysize));
+        long index_long_tmp_test_z=(int)floor((float)index_long/(float)(CurrSizes->xsize*CurrSizes->ysize));
         if(index_long_tmp_test_z==0 || index_long_tmp_test_z>=(CurrSizes->zsize-1)){curr_res=true;}
         //text_y
-        int index_long_tmp_test_y=(int)floor((float)((float)index_long - (float)index_long_tmp_test_z*(float)(CurrSizes->xsize*CurrSizes->ysize))/(float)(CurrSizes->xsize));
+        long index_long_tmp_test_y=(int)floor((float)((float)index_long - (float)index_long_tmp_test_z*(float)(CurrSizes->xsize*CurrSizes->ysize))/(float)(CurrSizes->xsize));
         if(index_long_tmp_test_y==0 || index_long_tmp_test_y>=(CurrSizes->ysize-1)){curr_res=true;}
         //text_x
-        int index_long_tmp_test_x=(int)floor((float)index_long - (float)index_long_tmp_test_z*(float)(CurrSizes->xsize*CurrSizes->ysize) - (float)index_long_tmp_test_y*(float)(CurrSizes->xsize));
+        long index_long_tmp_test_x=(int)floor((float)index_long - (float)index_long_tmp_test_z*(float)(CurrSizes->xsize*CurrSizes->ysize) - (float)index_long_tmp_test_y*(float)(CurrSizes->xsize));
         if(index_long_tmp_test_x==0 || index_long_tmp_test_x>=(CurrSizes->xsize-1)){curr_res=true;}
         Border[centre_short_index]=curr_res;
     }
@@ -319,7 +319,7 @@ void FMM(bool *Seeds,
             index_long=S2L[centre_short_index];
             float curr_max=0;
             for(i=0; i<6; i++){
-                if(((index_long+neighbour6[i])>0 && (index_long+neighbour6[i])<CurrSizes->numel)){
+                if(((index_long+neighbour6[i])>0 && (index_long+neighbour6[i])<(long)CurrSizes->numel)){
                     if(L2S[index_long+neighbour6[i]]>=0){
                         if(!Border[L2S[index_long+neighbour6[i]]] && GeoTime[L2S[index_long+neighbour6[i]]]>curr_max){
                             curr_max=GeoTime[L2S[index_long+neighbour6[i]]];
@@ -351,7 +351,7 @@ SegPrecisionTYPE CalcGeoTime(int index,
     SegPrecisionTYPE a=0.0f, c=0.0f;
 
     int neighbour_index[2]={0};
-    for(int i=0; i<6; i+=2){
+    for(long i=0; i<6; i+=2){
         neighbour_index[0]=L2S[index+neighbour[i]];
         neighbour_index[1]=L2S[index+neighbour[i+1]];
         if((neighbour_index[0]>=0)&&(neighbour_index[1]>=0)){
@@ -364,7 +364,7 @@ SegPrecisionTYPE CalcGeoTime(int index,
     }
     average=average/counter;
 
-    for(int i=0; i<6; i+=2){
+    for(long i=0; i<6; i+=2){
         neighbour_index[0]=L2S[index+neighbour[i]];
         neighbour_index[1]=L2S[index+neighbour[i+1]];
         if((neighbour_index[0]>=0)&&(neighbour_index[1]>=0)){
@@ -399,7 +399,7 @@ SegPrecisionTYPE CalcGeoTime_long(int index,
     SegPrecisionTYPE a=0.0f, c=0.0f;
 
     int neighbour_index[2]={0};
-    for(int i=0; i<6; i+=2){
+    for(long i=0; i<6; i+=2){
         neighbour_index[0]=index+neighbour[i];
         neighbour_index[1]=index+neighbour[i+1];
         if(((GeoTime[neighbour_index[0]]<Max &&GeoTime[neighbour_index[0]]>0) || (GeoTime[neighbour_index[1]]<Max &&GeoTime[neighbour_index[1]]>0))){
@@ -411,7 +411,7 @@ SegPrecisionTYPE CalcGeoTime_long(int index,
     }
     average=average/counter;
 
-    for(int i=0; i<6; i+=2){
+    for(long i=0; i<6; i+=2){
         neighbour_index[0]=index+neighbour[i];
         neighbour_index[1]=index+neighbour[i+1];
         if(((GeoTime[neighbour_index[0]]<Max &&GeoTime[neighbour_index[0]]>0) || (GeoTime[neighbour_index[1]]<Max &&GeoTime[neighbour_index[1]]>0))){
@@ -439,7 +439,7 @@ void TransformGeoTime(SegPrecisionTYPE *GeoTime,
 
 
     float trace_xgrad,trace_ygrad,trace_zgrad,normgrad,trace,sqrtgrad;
-    int neighbour6[6];
+    long neighbour6[6];
     neighbour6[0]=-1;
     neighbour6[1]=1;
     neighbour6[2]=-1*CurrSizes->xsize;
@@ -450,18 +450,18 @@ void TransformGeoTime(SegPrecisionTYPE *GeoTime,
     float *Buffer= (float *) calloc(CurrSizes->numelmasked, sizeof(float));
     float *Gradxyz= (float *) calloc(CurrSizes->numelmasked*3, sizeof(float));
     bool isBroder=false;
-    for(int centre_short_index=0; centre_short_index<CurrSizes->numelmasked; centre_short_index++){
-        int index_long=S2L[centre_short_index];
+    for(long centre_short_index=0; centre_short_index<(long)CurrSizes->numelmasked; centre_short_index++){
+        long index_long=S2L[centre_short_index];
         isBroder=false;
 
-        for(int i=0; i<6; i++){
+        for(long i=0; i<6; i++){
             if(!isBroder){
-                if((index_long+neighbour6[i])>0 && (index_long+neighbour6[i])<CurrSizes->numel){
+                if((index_long+neighbour6[i])>0 && (index_long+neighbour6[i])<(long)CurrSizes->numel){
                     isBroder=true;
                 }
             }
             if(!isBroder){
-                for(int j=0; j<6; j++){
+                for(long j=0; j<6; j++){
                     if(!isBroder && j!=i){
                         isBroder=(L2S[index_long+neighbour6[i]+neighbour6[j]]<=0)?true:((L2S[index_long+neighbour6[i]+neighbour6[j]]<=0)?true:false);
                     }
@@ -495,18 +495,18 @@ void TransformGeoTime(SegPrecisionTYPE *GeoTime,
         }
     }
 
-    for(int centre_short_index=0; centre_short_index<CurrSizes->numelmasked; centre_short_index++){
+    for(long centre_short_index=0; centre_short_index<(long)CurrSizes->numelmasked; centre_short_index++){
         int index_long=S2L[centre_short_index];
         isBroder=false;
 
         //text_z
-        int index_long_tmp_test_z=(int)floor((float)index_long/(float)(CurrSizes->xsize*CurrSizes->ysize));
+        long index_long_tmp_test_z=(int)floor((float)index_long/(float)(CurrSizes->xsize*CurrSizes->ysize));
         if(index_long_tmp_test_z==0 || index_long_tmp_test_z>=(CurrSizes->zsize-1)){isBroder=true;}
         //text_y
-        int index_long_tmp_test_y=(int)floor((float)((float)index_long - (float)index_long_tmp_test_z*(float)(CurrSizes->xsize*CurrSizes->ysize))/(float)(CurrSizes->xsize));
+        long index_long_tmp_test_y=(int)floor((float)((float)index_long - (float)index_long_tmp_test_z*(float)(CurrSizes->xsize*CurrSizes->ysize))/(float)(CurrSizes->xsize));
         if(index_long_tmp_test_y==0 || index_long_tmp_test_y>=(CurrSizes->ysize-1)){isBroder=true;}
         //text_x
-        int index_long_tmp_test_x=(int)floor((float)index_long - (float)index_long_tmp_test_z*(float)(CurrSizes->xsize*CurrSizes->ysize) - (float)index_long_tmp_test_y*(float)(CurrSizes->xsize));
+        long index_long_tmp_test_x=(int)floor((float)index_long - (float)index_long_tmp_test_z*(float)(CurrSizes->xsize*CurrSizes->ysize) - (float)index_long_tmp_test_y*(float)(CurrSizes->xsize));
         if(index_long_tmp_test_x==0 || index_long_tmp_test_x>=(CurrSizes->xsize-1)){isBroder=true;}
 
         if(!isBroder){
@@ -529,7 +529,7 @@ void TransformGeoTime(SegPrecisionTYPE *GeoTime,
     }
 
 
-    for(int centre_short_index=0; centre_short_index<CurrSizes->numelmasked; centre_short_index++){
+    for(long centre_short_index=0; centre_short_index<(long)CurrSizes->numelmasked; centre_short_index++){
         GeoTime[centre_short_index]=(GeoTime[centre_short_index]>2 && GeoTime[centre_short_index]<10)?Buffer[centre_short_index]:0;
         //GeoTime[centre_short_index]=Buffer[centre_short_index];
     }

@@ -92,15 +92,15 @@ using namespace std;
 
 
 typedef struct{
-    int xsize;
-    int ysize;
-    int zsize;
-    int usize;
-    int tsize;
-    int numclass;
-    int numel;
-    int numelmasked;
-    int numelbias;
+    long xsize;
+    long ysize;
+    long zsize;
+    long usize;
+    long tsize;
+    long numclass;
+    long numel;
+    long numelmasked;
+    long numelbias;
     float rescale_max[MaxMultispectalSize];
     float rescale_min[MaxMultispectalSize];
 }ImageSize;
@@ -116,7 +116,7 @@ typedef struct SegParams {
   int  maxIteration;
   int  minIteration;
   int  verbose_level;
-  int numb_classes;
+  long numb_classes;
   bool flag_T1;
   bool flag_mask;
   bool flag_MRF;
@@ -193,7 +193,7 @@ typedef struct SegParams {
       if ( flag_priors4D )
 	sout << "PARAMS: filename_priors[4D]: " << (char *) ( ( filename_priors[0] ) ? filename_priors[0] : "0" ) << endl;
       else
-	for(int classnum=0; classnum<numb_classes; classnum++)
+    for(long classnum=0; classnum<numb_classes; classnum++)
 	  sout << "PARAMS: filename_priors[" 
 	       << classnum << "]: " << (char *) ( ( filename_priors[classnum] ) ? filename_priors[classnum] : "0" ) << endl;
     }
@@ -208,13 +208,13 @@ typedef struct SegParams {
 	 << "PARAMS: flag_MAP: " << flag_MAP << endl;
 
     if ( MAP_M )
-      for(int classnum=0; classnum<numb_classes; classnum++)
+      for(long classnum=0; classnum<numb_classes; classnum++)
 	sout << "PARAMS: MAP_M[" << classnum << "]: " << MAP_M[classnum] << endl;
     else
       sout << "PARAMS: MAP_M: " << MAP_M << endl;
 
     if ( MAP_V )
-      for(int classnum=0; classnum<numb_classes; classnum++)
+      for(long classnum=0; classnum<numb_classes; classnum++)
 	sout << "PARAMS: MAP_V[" << classnum << "]: " << MAP_V[classnum] << endl;
     else
       sout << "PARAMS: MAP_V: " << MAP_V << endl;

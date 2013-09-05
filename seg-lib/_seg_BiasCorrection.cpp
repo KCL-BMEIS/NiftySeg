@@ -49,7 +49,7 @@ for(int order=0; order<=biasOrder; order++){
 SegPrecisionTYPE invV[max_numbclass];
 SegPrecisionTYPE currM[max_numbclass];
 
-for(int multispec=0; multispec<CurrSizes->usize; multispec++){
+for(long multispec=0; multispec<CurrSizes->usize; multispec++){
   sampledData = &sampledData[multispec*CurrSizes->numel];
   // Precompute the M and V  inverses
 
@@ -659,7 +659,7 @@ for(int order=0; order<=biasOrder; order++){
 SegPrecisionTYPE invV[max_numbclass];
 SegPrecisionTYPE currM[max_numbclass];
 
-for(int multispec=0; multispec<CurrSizes->usize; multispec++){
+for(long multispec=0; multispec<CurrSizes->usize; multispec++){
   sampledData = static_cast<SegPrecisionTYPE *>(T1->data);
   sampledData = &sampledData[multispec*CurrSizes->numel];
   // Precompute the M and V  inverses
@@ -1019,7 +1019,7 @@ for(int order=0; order<=biasOrder; order++){
 SegPrecisionTYPE invV[max_numbclass];
 SegPrecisionTYPE currM[max_numbclass];
 
-for(int multispec=0; multispec<CurrSizes->usize; multispec++){
+for(long multispec=0; multispec<CurrSizes->usize; multispec++){
   sampledData = &sampledData[multispec*CurrSizes->numel];
   // Precompute the M and V  inverses
 
@@ -1284,10 +1284,10 @@ void BiasCorrection_mask2D(SegPrecisionTYPE * BiasField,
       flush(cout);
     }
   int reduxfactor=redux_factor_for_bias;
-  int nrOfClasses = CurrSizes->numclass;
+  long nrOfClasses = CurrSizes->numclass;
   //nrOfClasses = 1;
   //int nrOfClasses = non_PV_numclass;
-  int TotalLength = CurrSizes->numelmasked;
+  long TotalLength = CurrSizes->numelmasked;
   int UsedBasisFunctions=(int)((biasOrder+1) * (biasOrder+2)/2);
   SegPrecisionTYPE * sampledData = static_cast<SegPrecisionTYPE *>(T1->data);
 
@@ -1306,11 +1306,11 @@ for(int order=0; order<=biasOrder; order++){
 SegPrecisionTYPE invV[max_numbclass];
 SegPrecisionTYPE currM[max_numbclass];
 
-for(int multispec=0; multispec<CurrSizes->usize; multispec++){
+for(long multispec=0; multispec<CurrSizes->usize; multispec++){
   sampledData = static_cast<SegPrecisionTYPE *>(T1->data);
   sampledData = &sampledData[multispec*CurrSizes->numel];
   // Precompute the M and V  inverses
-  for(int i=0; i<nrOfClasses; i++){
+  for(long i=0; i<nrOfClasses; i++){
       invV[i]=1.0f/(V[i*CurrSizes->usize*CurrSizes->usize+multispec+multispec*CurrSizes->usize]);
       currM[i]=M[i*CurrSizes->usize+multispec];
     }
@@ -1366,7 +1366,7 @@ for (int iy=0; iy<maxiy; iy+=reduxfactor) {
       currshortindex=Long_2_Short_Indices[iy*col_size+ix];
       if(currshortindex>=0){
           Tempvar_tmp=0;
-          for(int j=0; j<nrOfClasses; j++){
+          for(long j=0; j<nrOfClasses; j++){
               Tempvar_tmp+=Expec[currshortindex+TotalLength*j]*invV[j];
             }
           Tempvar[tempvarindex]=Tempvar_tmp;
@@ -1461,7 +1461,7 @@ for (int iy=0; iy<maxiy; iy+=reduxfactor) {
           Wij=0;
           Yest=0;
           Ysum=0;
-          for(int j=0; j<nrOfClasses; j++){
+          for(long j=0; j<nrOfClasses; j++){
               SegPrecisionTYPE tmpexpec = (SegPrecisionTYPE)Expec[currshortindex+TotalLength*j];
               Wij=tmpexpec*(invV[j]);
               Wi+=Wij;
