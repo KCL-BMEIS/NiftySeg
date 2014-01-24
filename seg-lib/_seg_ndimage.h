@@ -6,46 +6,46 @@
 class ndimage
 {
 
-  bool is_initialized;
+    bool is_initialized;
 
-  // data size and type
-  short datatype;
-  short nbyper;
-  float pixdim[8];
-  int dim[8];
-  int size_xyz;
-  int size_all;
+    // data size and type
+    short datatype;
+    short nbyper;
+    float pixdim[8];
+    int dim[8];
+    int size_xyz;
+    int size_all;
 
-  // data presentation
-  float scl_slope;
-  float scl_inter;
-  float cal_max;
-  float cal_min;
+    // data presentation
+    float scl_slope;
+    float scl_inter;
+    float cal_max;
+    float cal_min;
 
-  // data orientation
-  short qform_code;
-  short sform_code;
-  float quatern_b;
-  float quatern_c;
-  float quatern_d;
-  float qoffset_x;
-  float qoffset_y;
-  float qoffset_z;
-  float sform_matrix[4][4];
+    // data orientation
+    short qform_code;
+    short sform_code;
+    float quatern_b;
+    float quatern_c;
+    float quatern_d;
+    float qoffset_x;
+    float qoffset_y;
+    float qoffset_z;
+    float sform_matrix[4][4];
 
-  // data itself
-  void * data; // if the image is not masked, then data has size this->size_all
-               // if the image is masked, then data has size this->size_masked*(dim[4]*dim[5]*dim[6]*dim[7])
+    // data itself
+    void * data; // if the image is not masked, then data has size this->size_all
+    // if the image is masked, then data has size this->size_masked*(dim[4]*dim[5]*dim[6]*dim[7])
 
-  // data mask
-  bool is_masked;   // assignes of the image is masked or not
-  bool size_masked; // number of elements equal to 1 within the mask
-  bool * mask; // the mask, if exists, is always the size of dim[1]*dim[2]*dim[3]
-               // i.e., is the same for all time points
+    // data mask
+    bool is_masked;   // assignes of the image is masked or not
+    bool size_masked; // number of elements equal to 1 within the mask
+    bool * mask; // the mask, if exists, is always the size of dim[1]*dim[2]*dim[3]
+    // i.e., is the same for all time points
 
-  // data name
+    // data name
 
-  char * filename;
+    char * filename;
 
 public:
     ndimage(nifti_image * input_image); // converts input_image into a ndimage

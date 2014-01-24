@@ -16,8 +16,8 @@ int printloglik(int iter,
                 SegPrecisionTYPE loglik,
                 SegPrecisionTYPE oldloglik);
 int printTrace(int iter,
-                SegPrecisionTYPE loglik,
-                SegPrecisionTYPE oldloglik);
+               SegPrecisionTYPE loglik,
+               SegPrecisionTYPE oldloglik);
 
 int calcM_mask(nifti_image * T1,
                SegPrecisionTYPE * Expec,
@@ -202,9 +202,9 @@ int Gaussian_Filter_4D(SegPrecisionTYPE * LongData,
 
 
 SegPrecisionTYPE * Gaussian_Filter_4D_inside_mask(SegPrecisionTYPE * LongData,
-                                                  bool * mask,
-                                                  SegPrecisionTYPE gauss_std,
-                                                  ImageSize * CurrSizes);
+        bool * mask,
+        SegPrecisionTYPE gauss_std,
+        ImageSize * CurrSizes);
 
 void GaussianSmoothing(nifti_image * Data,int * mask,float gauss_std);
 void GaussianSmoothing_carray(float * DataPTR,int * mask,float gauss_std_in, ImageSize *Currentsize);
@@ -235,47 +235,47 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
 int * Create_Long_2_Short_Matrix_from_NII(nifti_image * Mask);
 
 int * Create_Short_2_Long_Matrix_from_NII(nifti_image * Mask,
-                                          long *shortsize);
+        long *shortsize);
 
 SegPrecisionTYPE * Create_cArray_from_Prior_mask(nifti_image * Mask,
-                                                  nifti_image * Priors,
-                                                  long numclass,
-                                                  bool PV_ON);
+        nifti_image * Priors,
+        long numclass,
+        bool PV_ON);
 
 SegPrecisionTYPE * Create_cArray_from_Prior(nifti_image * Priors,
-                                            long numclass,
-                                            bool PV_ON);
+        long numclass,
+        bool PV_ON);
 
 SegPrecisionTYPE * Create_cArray_from_3D_image(nifti_image * Mask,
-                                               nifti_image * SourceImage);
+        nifti_image * SourceImage);
 
 int * Create_Short_2_Long_Matrix_from_Carray(bool * Mask,
-                                             int * shortsize,
-                                             int nvox);
+        int * shortsize,
+        int nvox);
 
 int *  Create_Long_2_Short_Matrix_from_Carray(bool * Mask,
-                                              int nvox);
+        int nvox);
 
 nifti_image * Copy_Single_ShortImage_to_Result(SegPrecisionTYPE * SingleImage,
-                                               int * Short_2_Long_Indices,
-                                               nifti_image * Priors,
-                                               char * filename,
-                                               ImageSize * CurrSizes);
+        int * Short_2_Long_Indices,
+        nifti_image * Priors,
+        char * filename,
+        ImageSize * CurrSizes);
 
 template <class DTYPE> int seg_convert2binary_data(nifti_image *image,
-                                                   float thresh);
+        float thresh);
 
 nifti_image * Copy_Expec_and_BiasCorrected_to_Result_mask(SegPrecisionTYPE * Expec,
-                                                          SegPrecisionTYPE * BiasField,
-                                                          int * Short_2_Long_Indices,
-                                                          nifti_image * T1,
-                                                          char * filename,
-                                                          ImageSize * CurrSizes);
+        SegPrecisionTYPE * BiasField,
+        int * Short_2_Long_Indices,
+        nifti_image * T1,
+        char * filename,
+        ImageSize * CurrSizes);
 nifti_image * Copy_Expec_and_BiasCorrected_to_Result(SegPrecisionTYPE * Expec,
-                                                     SegPrecisionTYPE * BiasField,
-                                                     nifti_image * T1,
-                                                     char * filename,
-                                                     ImageSize * CurrSizes);
+        SegPrecisionTYPE * BiasField,
+        nifti_image * T1,
+        char * filename,
+        ImageSize * CurrSizes);
 
 nifti_image * Copy_Expec_to_Result_mask(SegPrecisionTYPE * Expec,
                                         int * Short_2_Long_Indices,
@@ -284,13 +284,13 @@ nifti_image * Copy_Expec_to_Result_mask(SegPrecisionTYPE * Expec,
                                         ImageSize * CurrSizes);
 
 nifti_image * Copy_Expec_to_Result_Neonate_mask(SegPrecisionTYPE * Expec,
-                                                int * Short_2_Long_Indices,
-                                                int * Long_2_Short_Indices,
-                                                nifti_image * T1,
-                                                float * Biasfield,
-                                                float * M,
-                                                char * filename,
-                                                ImageSize * CurrSizes);
+        int * Short_2_Long_Indices,
+        int * Long_2_Short_Indices,
+        nifti_image * T1,
+        float * Biasfield,
+        float * M,
+        char * filename,
+        ImageSize * CurrSizes);
 
 
 nifti_image * Copy_Expec_to_Result(SegPrecisionTYPE * Expec,
@@ -309,18 +309,18 @@ int PriorWeight_mask(float * ShortPrior,
                      int verbose_level);
 
 nifti_image * Copy_single_image_to_Result(int * Mask,
-                                          nifti_image * Original,
-                                          char * filename);
+        nifti_image * Original,
+        char * filename);
 
 nifti_image * Copy_single_image_to_Result(bool * Mask,
-                                          nifti_image * Original,
-                                          char * filename);
+        nifti_image * Original,
+        char * filename);
 nifti_image * Copy_single_image_to_Result(float * Mask,
-                                          nifti_image * Original,
-                                          char * filename);
+        nifti_image * Original,
+        char * filename);
 nifti_image * Copy_single_image_to_Result(double * Mask,
-                                          nifti_image * Original,
-                                          char * filename);
+        nifti_image * Original,
+        char * filename);
 
 int quickSort(int *arr, int elements);
 int quickSort(float *arr, int elements);

@@ -11,13 +11,17 @@ int Create_diagonal_GH_Nclass(SegPrecisionTYPE * G,
 {
     //WM - neighbours GM and dGM
     int numclass=segment_param->numb_classes;
-    for(long i=0; i<segment_param->numb_classes; i++){
-        for(long j=0; j<segment_param->numb_classes; j++){
-            if(i!=j){
+    for(long i=0; i<segment_param->numb_classes; i++)
+    {
+        for(long j=0; j<segment_param->numb_classes; j++)
+        {
+            if(i!=j)
+            {
                 G[i+j*numclass]=segment_param->MRF_strength;
                 H[i+j*numclass]=ratio*G[i+j*numclass];
             }
-            else{
+            else
+            {
                 G[i+j*numclass]=0.0;
                 H[i+j*numclass]=ratio*G[i+j*numclass];
             }
@@ -26,17 +30,22 @@ int Create_diagonal_GH_Nclass(SegPrecisionTYPE * G,
     }
 
     //Print G
-    if(segment_param->verbose_level>1){
+    if(segment_param->verbose_level>1)
+    {
         cout<<"G=" << endl;
-        for (int i=0; i<numclass; i++) {
-            for (int  j=0; j<numclass; j++) {
+        for (int i=0; i<numclass; i++)
+        {
+            for (int  j=0; j<numclass; j++)
+            {
                 cout<< (SegPrecisionTYPE)G[i+j*numclass] << '\t';
             }
             cout<< endl;
         }
         cout<< endl << "H=" << endl;
-        for (int i=0; i<numclass; i++) {
-            for (int j=0; j<numclass; j++) {
+        for (int i=0; i<numclass; i++)
+        {
+            for (int j=0; j<numclass; j++)
+            {
                 cout<< G[i+j*numclass] << '\t';
             }
             cout<< endl;
@@ -79,21 +88,35 @@ int Create_GH_5class(SegPrecisionTYPE * G,
     int i,j;
 
     //Copy to lower triangle
-    for (j=0; j<numclass; j++) { for (i=1+j; i<numclass; i++) { G[j+i*numclass]=G[i+j*numclass]; } }
+    for (j=0; j<numclass; j++)
+    {
+        for (i=1+j; i<numclass; i++)
+        {
+            G[j+i*numclass]=G[i+j*numclass];
+        }
+    }
     //Copy G to H
-    for (int i=0; i<(numclass*numclass); i++) { H[i]=ratio*G[i]; }
+    for (int i=0; i<(numclass*numclass); i++)
+    {
+        H[i]=ratio*G[i];
+    }
     //Print G
-    if(segment_param->verbose_level>1){
+    if(segment_param->verbose_level>1)
+    {
         cout<<"G=" << endl;
-        for (i=0; i<numclass; i++) {
-            for (j=0; j<numclass; j++) {
+        for (i=0; i<numclass; i++)
+        {
+            for (j=0; j<numclass; j++)
+            {
                 cout<< (SegPrecisionTYPE)G[i+j*numclass] << '\t';
             }
             cout<< endl;
         }
         cout<< endl << "H=" << endl;
-        for (i=0; i<numclass; i++) {
-            for (j=0; j<numclass; j++) {
+        for (i=0; i<numclass; i++)
+        {
+            for (j=0; j<numclass; j++)
+            {
                 cout<< G[i+j*numclass] << '\t';
             }
             cout<< endl;
@@ -151,21 +174,35 @@ int Create_GH_7class(SegPrecisionTYPE * G,
     int i,j;
 
     //Copy to lower triangle
-    for (j=0; j<numclass; j++) { for (i=1+j; i<numclass; i++) { G[j+i*numclass]=G[i+j*numclass]; } }
+    for (j=0; j<numclass; j++)
+    {
+        for (i=1+j; i<numclass; i++)
+        {
+            G[j+i*numclass]=G[i+j*numclass];
+        }
+    }
     //Copy G to H
-    for (int i=0; i<(numclass*numclass); i++) { H[i]=ratio*G[i]; }
+    for (int i=0; i<(numclass*numclass); i++)
+    {
+        H[i]=ratio*G[i];
+    }
     //Print G
-    if(segment_param->verbose_level>1){
+    if(segment_param->verbose_level>1)
+    {
         cout<<"G=" << endl;
-        for (i=0; i<numclass; i++) {
-            for (j=0; j<numclass; j++) {
+        for (i=0; i<numclass; i++)
+        {
+            for (j=0; j<numclass; j++)
+            {
                 cout<< G[i+j*numclass] << '\t';
             }
             cout<< endl;
         }
         cout<< endl << "H=" << endl;
-        for (i=0; i<numclass; i++) {
-            for (j=0; j<numclass; j++) {
+        for (i=0; i<numclass; i++)
+        {
+            for (j=0; j<numclass; j++)
+            {
                 cout<< G[i+j*numclass] << '\t';
             }
             cout<< endl;
@@ -180,7 +217,8 @@ int Create_GH_7class(SegPrecisionTYPE * G,
 int seg_convert2binary(nifti_image *image,
                        float thresh)
 {
-    switch(image->datatype){
+    switch(image->datatype)
+    {
     case DT_BINARY:
         break;
     case NIFTI_TYPE_UINT8:
@@ -230,7 +268,8 @@ int seg_convert2binary_data(nifti_image *image,
     image->data=(void *)calloc(image->nvox,sizeof(bool));
     bool *dataPtr = static_cast<bool *>(image->data);
 
-    for(unsigned int i=0; i<image->nvox; i++){
+    for(unsigned int i=0; i<image->nvox; i++)
+    {
         dataPtr[i] = (bool)((initialValue[i])>thresh);
     }
     free(initialValue);
@@ -244,29 +283,38 @@ int Normalize_NaN_Priors(nifti_image * Priors,
     register int numel = Priors->nx*Priors->ny*Priors->nz;
     register int ups=0;
     register int good=0;
-    if(verbose>0){
+    if(verbose>0)
+    {
         cout<< "Normalizing Priors" << endl;
     }
-    if(Priors->datatype==NIFTI_TYPE_FLOAT32){
+    if(Priors->datatype==NIFTI_TYPE_FLOAT32)
+    {
         SegPrecisionTYPE * priorsptr = static_cast<SegPrecisionTYPE *>(Priors->data);
-        for (int i=0; i<numel; i++) {
+        for (int i=0; i<numel; i++)
+        {
             float tempsum=0;
-            for (int j=0; j<Priors->nt; j++) {
+            for (int j=0; j<Priors->nt; j++)
+            {
                 int tempind=i+numel*j;
-                if( priorsptr[tempind]<0.0 || priorsptr[tempind]!=priorsptr[tempind] || priorsptr[tempind]>1000 ){
+                if( priorsptr[tempind]<0.0 || priorsptr[tempind]!=priorsptr[tempind] || priorsptr[tempind]>1000 )
+                {
                     priorsptr[tempind]=0.0;
                 }
                 tempsum+=priorsptr[tempind];
             }
-            if (tempsum>0 && tempsum<1000) {
-                for (int j=0; j<Priors->nt; j++) {
+            if (tempsum>0 && tempsum<1000)
+            {
+                for (int j=0; j<Priors->nt; j++)
+                {
                     int tempind=i+numel*j;
                     priorsptr[tempind]=priorsptr[tempind]/tempsum;
                 }
                 good++;
             }
-            else{
-                for (int j=0; j<Priors->nt; j++) {
+            else
+            {
+                for (int j=0; j<Priors->nt; j++)
+                {
                     int tempind=i+numel*j;
                     priorsptr[tempind]=0.2f;
                 }
@@ -274,13 +322,15 @@ int Normalize_NaN_Priors(nifti_image * Priors,
             }
         }
     }
-    else{
+    else
+    {
 
         printf("err\tNormalize_NaN_Priors\tWrong Image datatype\n");
 
     }
 
-    if(verbose>0){
+    if(verbose>0)
+    {
         cout<<"Priors: "<< good<<" good voxels and "<<ups<<" bad voxels" << endl;
         flush(cout);
     }
@@ -288,15 +338,18 @@ int Normalize_NaN_Priors(nifti_image * Priors,
     return 1;
 }
 
-int PriorWeight_mask(float * ShortPrior,nifti_image * Priors, float * Expec,float GaussKernelSize,float RelaxFactor, int * S2L, int * L2S,ImageSize * CurrSizes,int verbose_level){
+int PriorWeight_mask(float * ShortPrior,nifti_image * Priors, float * Expec,float GaussKernelSize,float RelaxFactor, int * S2L, int * L2S,ImageSize * CurrSizes,int verbose_level)
+{
 
-    for(long i=0; i<(CurrSizes->numclass*CurrSizes->numelmasked);i++)ShortPrior[i]=Expec[i];
+    for(long i=0; i<(CurrSizes->numclass*CurrSizes->numelmasked); i++)ShortPrior[i]=Expec[i];
     Gaussian_Filter_Short_4D(ShortPrior,S2L,L2S,GaussKernelSize,CurrSizes,CSFclass);
     float * PriorsPtr = static_cast<float *>(Priors->data);
     long currindex=0;
-    for(long k=0; k<CurrSizes->numclass; k++){
+    for(long k=0; k<CurrSizes->numclass; k++)
+    {
         currindex=k*CurrSizes->numelmasked;
-        for(long i=0; i<(CurrSizes->numelmasked);i++){
+        for(long i=0; i<(CurrSizes->numelmasked); i++)
+        {
             ShortPrior[currindex]*=(1-RelaxFactor);
             ShortPrior[currindex]+=(RelaxFactor)*PriorsPtr[S2L[i]+k*CurrSizes->numel];
             currindex++;
@@ -316,33 +369,44 @@ int Normalize_NaN_Priors_mask(nifti_image * Priors,
     register int numel = Mask->nvox;
     register int ups=0;
     register int good=0;
-    if(verbose>0){
+    if(verbose>0)
+    {
         cout<< "Normalizing Priors" << endl;
     }
-    if(Mask->datatype==DT_BINARY){
-        if(Priors->datatype==NIFTI_TYPE_FLOAT32){
+    if(Mask->datatype==DT_BINARY)
+    {
+        if(Priors->datatype==NIFTI_TYPE_FLOAT32)
+        {
             SegPrecisionTYPE * priorsptr = static_cast<SegPrecisionTYPE *>(Priors->data);
             bool * brainmaskptr = static_cast<bool *> (Mask->data);
 
-            for (int i=0; i<numel; i++) {
-                if(brainmaskptr[i]){
+            for (int i=0; i<numel; i++)
+            {
+                if(brainmaskptr[i])
+                {
                     float tempsum=0;
-                    for (int j=0; j<Priors->nt; j++) {
+                    for (int j=0; j<Priors->nt; j++)
+                    {
                         int tempind=i+numel*j;
-                        if( priorsptr[tempind]<0.0 || priorsptr[tempind]!=priorsptr[tempind] || priorsptr[tempind]>1000 ){
+                        if( priorsptr[tempind]<0.0 || priorsptr[tempind]!=priorsptr[tempind] || priorsptr[tempind]>1000 )
+                        {
                             priorsptr[tempind]=0.0;
                         }
                         tempsum+=priorsptr[tempind];
                     }
-                    if (tempsum>0 && tempsum<1000) {
-                        for (int j=0; j<Priors->nt; j++) {
+                    if (tempsum>0 && tempsum<1000)
+                    {
+                        for (int j=0; j<Priors->nt; j++)
+                        {
                             int tempind=i+numel*j;
                             priorsptr[tempind]=priorsptr[tempind]/tempsum;
                         }
                         good++;
                     }
-                    else{
-                        for (int j=0; j<Priors->nt; j++) {
+                    else
+                    {
+                        for (int j=0; j<Priors->nt; j++)
+                        {
                             int tempind=i+numel*j;
                             priorsptr[tempind]=1.0f/(Priors->nt);
                         }
@@ -350,27 +414,32 @@ int Normalize_NaN_Priors_mask(nifti_image * Priors,
 
                     }
                 }
-                else{
-                    for (int j=0; j<Priors->nt; j++) {
+                else
+                {
+                    for (int j=0; j<Priors->nt; j++)
+                    {
                         int tempind=i+numel*j;
                         priorsptr[tempind]=0;
                     }
                 }
             }
         }
-        else{
+        else
+        {
 
             printf("err\tNormalize_NaN_Priors\tWrong Image datatype\n");
 
         }
     }
-    else{
+    else
+    {
 
         printf("err\tNormalize_NaN_Priors\tWrong mask datatype\n");
 
     }
 
-    if(verbose>0){
+    if(verbose>0)
+    {
         cout<<"Priors: "<< good<<" good voxels and "<<ups<<" bad voxels" << endl;
         flush(cout);
     }
@@ -384,20 +453,25 @@ int Normalize_Image_mask(nifti_image * input,
                          ImageSize * CurrSizes,
                          bool verbose)
 {
-    if(input->datatype!=NIFTI_TYPE_FLOAT32){
+    if(input->datatype!=NIFTI_TYPE_FLOAT32)
+    {
         seg_changeDatatype<float>(input);
     }
-    if(verbose>0){
+    if(verbose>0)
+    {
         cout<< "Normalizing Input Image" << endl;
     }
     int numel=(int)(rowsize(input)*colsize(input)*depth(input));
-    if(Mask->datatype!=DT_BINARY){
+    if(Mask->datatype!=DT_BINARY)
+    {
         seg_convert2binary(Mask,0.0f);
     }
-    if(input->datatype!=NIFTI_TYPE_FLOAT32){
+    if(input->datatype!=NIFTI_TYPE_FLOAT32)
+    {
         seg_changeDatatype<SegPrecisionTYPE>(input);
     }
-    for(long udir=0; udir<CurrSizes->usize;udir++){ // Per Multispectral Image
+    for(long udir=0; udir<CurrSizes->usize; udir++) // Per Multispectral Image
+    {
         bool * brainmaskptr = static_cast<bool *> (Mask->data);
         SegPrecisionTYPE * Inputptrtmp = static_cast<SegPrecisionTYPE *>(input->data);
         SegPrecisionTYPE * Inputptr=&Inputptrtmp[numel*udir];
@@ -405,30 +479,37 @@ int Normalize_Image_mask(nifti_image * input,
         float tempmax=-(1e32);
         float tempmin=1e32;
 
-        for (int i=0; i<numel; i++) {
-            if(brainmaskptr[i]){
-                if (Inputptr[i]<tempmin) {
+        for (int i=0; i<numel; i++)
+        {
+            if(brainmaskptr[i])
+            {
+                if (Inputptr[i]<tempmin)
+                {
                     tempmin=Inputptr[i];
                 }
-                if (Inputptr[i]>tempmax) {
+                if (Inputptr[i]>tempmax)
+                {
                     tempmax=Inputptr[i];
                 }
             }
         }
         CurrSizes->rescale_max[udir]=tempmax;
         CurrSizes->rescale_min[udir]=tempmin;
-        if(verbose>0){
+        if(verbose>0)
+        {
             cout << "Normalization["<<udir<<"] = ["<<tempmin<<","<<tempmax<<"]"<<endl;
         }
         Inputptr=&Inputptrtmp[numel*udir];
         brainmaskptr = static_cast<bool *> (Mask->data);
-        for (int i=0; i<numel; i++) {
+        for (int i=0; i<numel; i++)
+        {
             //if(brainmaskptr[i]>0){
-                //log(number_between_0_and_1 + 1)/log(2)
-                Inputptr[i]=logf((((Inputptr[i])-tempmin)/(tempmax-tempmin))+1)/0.693147181;
-                if(Inputptr[i]!=Inputptr[i]){
-                    cout<< "Image has NaNs" << endl;
-                }
+            //log(number_between_0_and_1 + 1)/log(2)
+            Inputptr[i]=logf((((Inputptr[i])-tempmin)/(tempmax-tempmin))+1)/0.693147181;
+            if(Inputptr[i]!=Inputptr[i])
+            {
+                cout<< "Image has NaNs" << endl;
+            }
             /*}
             else{
                 Inputptr[i]=0;
@@ -442,26 +523,33 @@ int Normalize_Image(nifti_image * input,
                     ImageSize * CurrSizes,
                     bool verbose)
 {
-    if(input->datatype!=NIFTI_TYPE_FLOAT32){
+    if(input->datatype!=NIFTI_TYPE_FLOAT32)
+    {
         seg_changeDatatype<float>(input);
     }
-    if(verbose>0){
+    if(verbose>0)
+    {
         cout<< "Normalizing Input Image" << endl;
     }
-    if(input->datatype==NIFTI_TYPE_FLOAT32){
+    if(input->datatype==NIFTI_TYPE_FLOAT32)
+    {
         // if mask is not set up
-        for(long udir=0; udir<CurrSizes->usize;udir++){ // Per Multispectral Image
+        for(long udir=0; udir<CurrSizes->usize; udir++) // Per Multispectral Image
+        {
             int numel=(int)(rowsize(input)*colsize(input)*depth(input));
             SegPrecisionTYPE * Inputptrtmp = static_cast<SegPrecisionTYPE *>(input->data);
             SegPrecisionTYPE * Inputptr=&Inputptrtmp[numel*udir];
 
             float tempmax=0;
             float tempmin=1000000.f;
-            for (int i=0; i<numel; i++) {
-                if (*Inputptr<tempmin) {
+            for (int i=0; i<numel; i++)
+            {
+                if (*Inputptr<tempmin)
+                {
                     tempmin=*Inputptr;
                 }
-                if (*Inputptr>tempmax) {
+                if (*Inputptr>tempmax)
+                {
                     tempmax=*Inputptr;
                 }
                 Inputptr++;
@@ -469,10 +557,12 @@ int Normalize_Image(nifti_image * input,
             CurrSizes->rescale_max[udir]=tempmax;
             CurrSizes->rescale_min[udir]=tempmin;
             Inputptr=&Inputptrtmp[numel*udir];
-            for (int i=0; i<numel; i++) {
+            for (int i=0; i<numel; i++)
+            {
                 //log(number_between_0_and_1 + 1)/log(2)
                 *Inputptr=logf((((*Inputptr)-tempmin)/(tempmax-tempmin))+1)/0.693147181;
-                if(*Inputptr!=*Inputptr){
+                if(*Inputptr!=*Inputptr)
+                {
                     cout<< "Image has NaNs" << endl;
                 }
                 Inputptr++;
@@ -496,12 +586,16 @@ int Normalize_T1_and_MV(nifti_image * T1,
     int numel=(int)(rowsize(T1)*colsize(T1)*depth(T1));
     float tempmax=0;
     float tempmin=100000;
-    for (int i=0; i<numel; i++) {
-        if(*brainmaskptr){
-            if (*T1ptr<tempmin) {
+    for (int i=0; i<numel; i++)
+    {
+        if(*brainmaskptr)
+        {
+            if (*T1ptr<tempmin)
+            {
                 tempmin=*T1ptr;
             }
-            if (*T1ptr>tempmax) {
+            if (*T1ptr>tempmax)
+            {
                 tempmax=*T1ptr;
             }
         }
@@ -512,16 +606,21 @@ int Normalize_T1_and_MV(nifti_image * T1,
     CurrSizes->rescale_min[0]=tempmin;
     T1ptr=T1ptrtmp;
     brainmaskptr = static_cast<bool *>(Mask->data);
-    for (int i=0; i<numel; i++) {
-        if(*brainmaskptr){
+    for (int i=0; i<numel; i++)
+    {
+        if(*brainmaskptr)
+        {
             *T1ptr=logf((((*T1ptr)-tempmin)/(tempmax-tempmin))+1)/0.693147181;
-        }else{
+        }
+        else
+        {
             *T1ptr=0;
         }
         brainmaskptr++;
         T1ptr++;
     }
-    for(long cl=0; cl<CurrSizes->numclass; cl++){
+    for(long cl=0; cl<CurrSizes->numclass; cl++)
+    {
         M[cl]=log(1+(M[cl]-tempmin)/(tempmax-tempmin));
         V[cl]=log(1+(V[cl])/(tempmax-tempmin));
     }
@@ -530,13 +629,16 @@ int Normalize_T1_and_MV(nifti_image * T1,
 }
 
 int * Create_Short_2_Long_Matrix_from_NII(nifti_image * Mask,
-                                          long * shortsize){
+        long * shortsize)
+{
     int numel_masked=0;
     int numel = Mask->nvox;
-    if(Mask->datatype==DT_BINARY){
+    if(Mask->datatype==DT_BINARY)
+    {
         bool * Maskptr = static_cast<bool *> (Mask->data);
         bool * Maskptrtmp = Maskptr;
-        for (int i=0; i<numel; i++, Maskptrtmp++) {
+        for (int i=0; i<numel; i++, Maskptrtmp++)
+        {
             (*Maskptrtmp)>0?numel_masked++:0;
         }
         shortsize[0]=numel_masked;
@@ -546,8 +648,10 @@ int * Create_Short_2_Long_Matrix_from_NII(nifti_image * Mask,
 
         Maskptrtmp = Maskptr;
         int tempindex=0;
-        for (int i=0; i<numel; i++) {
-            if ((*Maskptrtmp)>0) {
+        for (int i=0; i<numel; i++)
+        {
+            if ((*Maskptrtmp)>0)
+            {
                 Short_2_Long_Indices_PTR[tempindex]=i;
                 tempindex++;
             }
@@ -555,35 +659,42 @@ int * Create_Short_2_Long_Matrix_from_NII(nifti_image * Mask,
         }
         return Short_2_Long_Indices;
     }
-    else {
+    else
+    {
         printf("err\tCreate_Short_2_Long_Matrix\tWrong Mask datatype\n");
         return NULL;
 
     }
 }
 
-int *  Create_Long_2_Short_Matrix_from_NII(nifti_image * Mask){
+int *  Create_Long_2_Short_Matrix_from_NII(nifti_image * Mask)
+{
     int numel = Mask->nvox;
     int * Long_2_Short_Indices= new int [numel]();
-    if(Mask->datatype==DT_BINARY){
+    if(Mask->datatype==DT_BINARY)
+    {
         bool * Maskptr = static_cast<bool *> (Mask->data);
         bool * Maskptrtmp = Maskptr;
         int * Long_2_Short_Indices_PTR = (int *) Long_2_Short_Indices;
 
         Maskptrtmp = Maskptr;
         int tempindex=0;
-        for (int i=0; i<numel; i++,Maskptrtmp++,Long_2_Short_Indices_PTR++) {
-            if ((*Maskptrtmp)>0) {
+        for (int i=0; i<numel; i++,Maskptrtmp++,Long_2_Short_Indices_PTR++)
+        {
+            if ((*Maskptrtmp)>0)
+            {
                 (*Long_2_Short_Indices_PTR)=tempindex;
                 tempindex++;
             }
-            else{
+            else
+            {
                 (*Long_2_Short_Indices_PTR)=-1;
             }
         }
         return Long_2_Short_Indices;
     }
-    else {
+    else
+    {
         cout<< "err\tCreate_Correspondace_Matrices\tWrong Mask datatype\n" << endl;
     }
     return Long_2_Short_Indices;
@@ -591,11 +702,13 @@ int *  Create_Long_2_Short_Matrix_from_NII(nifti_image * Mask){
 
 
 int * Create_Short_2_Long_Matrix_from_Carray(bool * Mask,
-                                             int * shortsize,
-                                             int nvox){
+        int * shortsize,
+        int nvox)
+{
     int numel_masked=0;
     int numel = nvox;
-    for (int i=0; i<numel; i++) {
+    for (int i=0; i<numel; i++)
+    {
         Mask[i]?numel_masked++:0;
     }
     shortsize[0]=numel_masked;
@@ -604,8 +717,10 @@ int * Create_Short_2_Long_Matrix_from_Carray(bool * Mask,
     int * Short_2_Long_Indices_PTR = (int *)(Short_2_Long_Indices);
 
     int tempindex=0;
-    for (int i=0; i<numel; i++) {
-        if ((Mask[i])>0) {
+    for (int i=0; i<numel; i++)
+    {
+        if ((Mask[i])>0)
+        {
             Short_2_Long_Indices_PTR[tempindex]=i;
             tempindex++;
         }
@@ -616,16 +731,20 @@ int * Create_Short_2_Long_Matrix_from_Carray(bool * Mask,
 }
 
 int *  Create_Long_2_Short_Matrix_from_Carray(bool * Mask,
-                                              int nvox){
+        int nvox)
+{
     int * Long_2_Short_Indices= new int [nvox]();
     int * Long_2_Short_Indices_PTR = (int *) Long_2_Short_Indices;
     int tempindex=0;
-    for (int i=0; i<nvox; i++,Long_2_Short_Indices_PTR++) {
-        if ((Mask[i])>0) {
+    for (int i=0; i<nvox; i++,Long_2_Short_Indices_PTR++)
+    {
+        if ((Mask[i])>0)
+        {
             (*Long_2_Short_Indices_PTR)=tempindex;
             tempindex++;
         }
-        else{
+        else
+        {
             (*Long_2_Short_Indices_PTR)=-1;
         }
     }
@@ -634,15 +753,16 @@ int *  Create_Long_2_Short_Matrix_from_Carray(bool * Mask,
 }
 
 SegPrecisionTYPE * Create_cArray_from_Prior_mask(nifti_image * Mask,
-                                                 nifti_image * Priors,
-                                                 long numclass,
-                                                 bool PV_ON)
+        nifti_image * Priors,
+        long numclass,
+        bool PV_ON)
 {
     register long numel=(int)(rowsize(Mask)*colsize(Mask)*depth(Mask));
     register long numel_masked=0;
 
     bool * Maskptrtmp = static_cast<bool *> (Mask->data);;
-    for (long i=0; i<numel; i++, Maskptrtmp++) {
+    for (long i=0; i<numel; i++, Maskptrtmp++)
+    {
         *Maskptrtmp?numel_masked++:0;
     }
     int pluspv=(int)(PV_ON)*2;
@@ -650,10 +770,13 @@ SegPrecisionTYPE * Create_cArray_from_Prior_mask(nifti_image * Mask,
     SegPrecisionTYPE * Expec = new SegPrecisionTYPE [numel_masked*(numclass+pluspv)] ();
     SegPrecisionTYPE * tempExpec= (SegPrecisionTYPE *) Expec;
     SegPrecisionTYPE * PriorPTR = static_cast<SegPrecisionTYPE *>(Priors->data);
-    for(long cl=0; cl<numclass;cl++){
+    for(long cl=0; cl<numclass; cl++)
+    {
         Maskptrtmp = static_cast<bool *> (Mask->data);;
-        for (int i=numel; i--; Maskptrtmp++,PriorPTR++) {
-            if(*Maskptrtmp){
+        for (int i=numel; i--; Maskptrtmp++,PriorPTR++)
+        {
+            if(*Maskptrtmp)
+            {
                 *tempExpec = *PriorPTR;
                 tempExpec++;
             }
@@ -664,16 +787,18 @@ SegPrecisionTYPE * Create_cArray_from_Prior_mask(nifti_image * Mask,
 }
 
 SegPrecisionTYPE * Create_cArray_from_Prior(nifti_image * Priors,
-                                            long numclass,
-                                            bool PV_ON)
+        long numclass,
+        bool PV_ON)
 {
     register long numel=(int)(rowsize(Priors)*colsize(Priors)*depth(Priors));
     long pluspv=(int)(PV_ON)*2;
     SegPrecisionTYPE * Expec = new SegPrecisionTYPE [numel*(numclass+pluspv)] ();
     SegPrecisionTYPE * Expec_PTR= Expec;
     SegPrecisionTYPE * PriorPTR = static_cast<SegPrecisionTYPE *>(Priors->data);
-    for(long cl=0; cl<numclass;cl++){
-        for (int i=numel; i--; PriorPTR++,Expec_PTR++) {
+    for(long cl=0; cl<numclass; cl++)
+    {
+        for (int i=numel; i--; PriorPTR++,Expec_PTR++)
+        {
             *Expec_PTR = *PriorPTR;
         }
     }
@@ -681,13 +806,14 @@ SegPrecisionTYPE * Create_cArray_from_Prior(nifti_image * Priors,
 }
 
 SegPrecisionTYPE * Create_cArray_from_3D_image(nifti_image * Mask,
-                                               nifti_image * SourceImage)
+        nifti_image * SourceImage)
 {
     register int numel=(int)(rowsize(Mask)*colsize(Mask)*depth(Mask));
     register int numel_masked=0;
 
     bool * Maskptrtmp = static_cast<bool *> (Mask->data);;
-    for (int i=0; i<numel; i++, Maskptrtmp++) {
+    for (int i=0; i<numel; i++, Maskptrtmp++)
+    {
         *Maskptrtmp?numel_masked++:0;
     }
 
@@ -696,8 +822,10 @@ SegPrecisionTYPE * Create_cArray_from_3D_image(nifti_image * Mask,
     SegPrecisionTYPE * SourceImagePTR = static_cast<SegPrecisionTYPE *>(SourceImage->data);
     Maskptrtmp = static_cast<bool *> (Mask->data);
 
-    for (int i=numel; i--; Maskptrtmp++,SourceImagePTR++) {
-        if(*Maskptrtmp){
+    for (int i=numel; i--; Maskptrtmp++,SourceImagePTR++)
+    {
+        if(*Maskptrtmp)
+        {
             *outimage_ptr = *SourceImagePTR;
             outimage_ptr++;
         }
@@ -724,55 +852,68 @@ int calcE_mask(nifti_image * T1,
     int numel_masked=CurrSizes->numelmasked;
     int num_class=CurrSizes->numclass;
     bool OutliernessFlag=(Outlierness==NULL)?0:1;
-    SegPrecisionTYPE inv_v [max_numbclass*MaxMultispectalSize*MaxMultispectalSize]={0.0f};
-    SegPrecisionTYPE inv_sqrt_V_2pi [max_numbclass]={0.0f};
+    SegPrecisionTYPE inv_v [max_numbclass*MaxMultispectalSize*MaxMultispectalSize]= {0.0f};
+    SegPrecisionTYPE inv_sqrt_V_2pi [max_numbclass]= {0.0f};
 
-    int Expec_offset [max_numbclass]={0};
+    int Expec_offset [max_numbclass]= {0};
 
-    for (int cl=0; cl<num_class; cl++) {
+    for (int cl=0; cl<num_class; cl++)
+    {
         Expec_offset[cl]=(int) cl*numel_masked;
-        if(CurrSizes->usize>1){
+        if(CurrSizes->usize>1)
+        {
             matrix <double> Vmat(CurrSizes->usize,CurrSizes->usize);
 
-            for(long j2=0; j2<CurrSizes->usize; j2++){
-                for(long i2=j2; i2<CurrSizes->usize; i2++){
+            for(long j2=0; j2<CurrSizes->usize; j2++)
+            {
+                for(long i2=j2; i2<CurrSizes->usize; i2++)
+                {
                     Vmat.setvalue(i2,j2,(double)(V[i2+j2*CurrSizes->usize+cl*CurrSizes->usize*CurrSizes->usize]));
                     Vmat.setvalue(j2,i2,(double)(V[i2+j2*CurrSizes->usize+cl*CurrSizes->usize*CurrSizes->usize]));
                 }
             }
             inv_sqrt_V_2pi[cl]=1/(sqrtf(2*M_PI*Vmat.determinant()));
-            if(verbose>1){
+            if(verbose>1)
+            {
                 cout<<endl<<"inv_sqrt_V_2pi["<< cl <<"]= "<< inv_sqrt_V_2pi[cl] << endl;
                 flush(cout);
             }
             Vmat.invert();
             double cvalue=0.0f;
             bool success;
-            if(verbose>1){
+            if(verbose>1)
+            {
                 cout<<"inv_V["<< cl <<"]= ";
                 flush(cout);
             }
-            for(long j2=0; j2<CurrSizes->usize; j2++){
-                if(verbose>1){
-                    if(j2!=0){
+            for(long j2=0; j2<CurrSizes->usize; j2++)
+            {
+                if(verbose>1)
+                {
+                    if(j2!=0)
+                    {
                         cout<< endl << "          ";
                     }
                 }
-                for(long i2=0; i2<CurrSizes->usize; i2++){
+                for(long i2=0; i2<CurrSizes->usize; i2++)
+                {
                     Vmat.getvalue(i2,j2,cvalue,success);
                     inv_v[i2+j2*CurrSizes->usize+cl*CurrSizes->usize*CurrSizes->usize]=(SegPrecisionTYPE)(cvalue);
-                    if(verbose>1){
+                    if(verbose>1)
+                    {
                         cout<<inv_v[i2+j2*CurrSizes->usize+cl*CurrSizes->usize*CurrSizes->usize]<< "\t";
                         flush(cout);
                     }
                 }
 
             }
-            if(verbose>1){
+            if(verbose>1)
+            {
                 cout<< endl;
             }
         }
-        else{
+        else
+        {
             inv_sqrt_V_2pi[cl]=1/(sqrtf(2*M_PI*V[cl]));
             inv_v[cl]=1/V[cl];
         }
@@ -789,9 +930,10 @@ int calcE_mask(nifti_image * T1,
     for(long i=0; i<(long)omp_get_max_threads(); i++)
         loglikthread[i]=0;
 
-#pragma omp parallel for shared(Expec,loglikthread,T1,BiasField,Outlierness,IterPrior)
+    #pragma omp parallel for shared(Expec,loglikthread,T1,BiasField,Outlierness,IterPrior)
 #endif
-    for (int i=0; i<numel_masked;i++) {
+    for (int i=0; i<numel_masked; i++)
+    {
         SegPrecisionTYPE * T1_PTR = static_cast<SegPrecisionTYPE *>(T1->data);
         SegPrecisionTYPE T1_Bias_corr[MaxMultispectalSize];
         SegPrecisionTYPE SumExpec=0.0f;
@@ -803,16 +945,20 @@ int calcE_mask(nifti_image * T1,
 
         //Expec_offset_PTR=Expec_offset;
 
-        for (int cl=0; cl<num_class; cl++) {
+        for (int cl=0; cl<num_class; cl++)
+        {
             SegPrecisionTYPE mahal=0.0f;
-            for(long Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
+            for(long Multispec=0; Multispec<CurrSizes->usize; Multispec++)
+            {
                 SegPrecisionTYPE tmpT1_BC_minusM=(T1_Bias_corr[Multispec] - M[cl*(CurrSizes->usize)+Multispec]);
-                for(long Multispec2=0; Multispec2<CurrSizes->usize; Multispec2++) {
+                for(long Multispec2=0; Multispec2<CurrSizes->usize; Multispec2++)
+                {
                     mahal-=(0.5f)*(T1_Bias_corr[Multispec2] - M[cl*(CurrSizes->usize)+Multispec2])*inv_v[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize]*tmpT1_BC_minusM;
                 }
             }
 
-            if(OutliernessFlag){
+            if(OutliernessFlag)
+            {
                 float outvalue=(expf(mahal)+0.01)/(expf(mahal)+expf(-0.5*(OutliernessThreshold*OutliernessThreshold))+0.01);
                 Outlierness[i+Expec_offset[cl]]=outvalue;
             }
@@ -820,15 +966,19 @@ int calcE_mask(nifti_image * T1,
             SumExpec+=Expec[i+Expec_offset[cl]];
         }
 
-        if (SumExpec<=0.0 || SumExpec!=SumExpec){
-            for (int cl=0; cl<num_class; cl++) {
+        if (SumExpec<=0.0 || SumExpec!=SumExpec)
+        {
+            for (int cl=0; cl<num_class; cl++)
+            {
                 Expec[i+Expec_offset[cl]]=(float)(1)/(float)(num_class);
             }
 
         }
-        else{
+        else
+        {
 
-            for (int cl=0; cl<num_class; cl++) {
+            for (int cl=0; cl<num_class; cl++)
+            {
                 Expec[i+Expec_offset[cl]]=Expec[i+Expec_offset[cl]]/SumExpec;
             }
 #ifdef _OPENMP
@@ -871,56 +1021,69 @@ int calcE(nifti_image * T1,
     SegPrecisionTYPE * Expec_PTR= (SegPrecisionTYPE *) Expec;
     SegPrecisionTYPE * Outlierness_PTR= (SegPrecisionTYPE *) Outlierness;
     SegPrecisionTYPE * T1_PTR = static_cast<SegPrecisionTYPE *>(T1->data);
-    SegPrecisionTYPE inv_v [max_numbclass*MaxMultispectalSize*MaxMultispectalSize]={0.0f};
-    SegPrecisionTYPE inv_sqrt_V_2pi [max_numbclass]={0.0f};
+    SegPrecisionTYPE inv_v [max_numbclass*MaxMultispectalSize*MaxMultispectalSize]= {0.0f};
+    SegPrecisionTYPE inv_sqrt_V_2pi [max_numbclass]= {0.0f};
     SegPrecisionTYPE tmpT1_BC_minusM=0;
 
-    int Expec_offset [max_numbclass]={0};
+    int Expec_offset [max_numbclass]= {0};
 
-    for (int cl=0; cl<num_class; cl++) {
+    for (int cl=0; cl<num_class; cl++)
+    {
         Expec_offset[cl]=(int) cl*numel;
-        if(CurrSizes->usize>1){
+        if(CurrSizes->usize>1)
+        {
             matrix <double> Vmat(CurrSizes->usize,CurrSizes->usize);
 
-            for(long j2=0; j2<CurrSizes->usize; j2++){
-                for(long i2=j2; i2<CurrSizes->usize; i2++){
+            for(long j2=0; j2<CurrSizes->usize; j2++)
+            {
+                for(long i2=j2; i2<CurrSizes->usize; i2++)
+                {
                     Vmat.setvalue(i2,j2,(double)(V[i2+j2*CurrSizes->usize+cl*CurrSizes->usize*CurrSizes->usize]));
                     Vmat.setvalue(j2,i2,(double)(V[i2+j2*CurrSizes->usize+cl*CurrSizes->usize*CurrSizes->usize]));
                 }
             }
             inv_sqrt_V_2pi[cl]=1/(sqrtf(2*M_PI)*Vmat.determinant());
-            if(verbose>1){
+            if(verbose>1)
+            {
                 cout<<endl<<"inv_sqrt_V_2pi["<< cl <<"]= "<< inv_sqrt_V_2pi[cl] << endl;
                 flush(cout);
             }
             Vmat.invert();
             double cvalue=0.0f;
             bool success;
-            if(verbose>1){
+            if(verbose>1)
+            {
                 cout<<"inv_V["<< cl <<"]= ";
                 flush(cout);
             }
-            for(long j2=0; j2<CurrSizes->usize; j2++){
-                if(verbose>1){
-                    if(j2!=0){
+            for(long j2=0; j2<CurrSizes->usize; j2++)
+            {
+                if(verbose>1)
+                {
+                    if(j2!=0)
+                    {
                         cout<< endl << "          ";
                     }
                 }
-                for(long i2=0; i2<CurrSizes->usize; i2++){
+                for(long i2=0; i2<CurrSizes->usize; i2++)
+                {
                     Vmat.getvalue(i2,j2,cvalue,success);
                     inv_v[i2+j2*CurrSizes->usize+cl*CurrSizes->usize*CurrSizes->usize]=(SegPrecisionTYPE)(cvalue);
-                    if(verbose>1){
+                    if(verbose>1)
+                    {
                         cout<<inv_v[i2+j2*CurrSizes->usize+cl*CurrSizes->usize*CurrSizes->usize]<< "\t";
                         flush(cout);
                     }
                 }
 
             }
-            if(verbose>1){
+            if(verbose>1)
+            {
                 cout<< endl;
             }
         }
-        else{
+        else
+        {
             inv_sqrt_V_2pi[cl]=1/(sqrtf(2*M_PI)* V[cl]);
             inv_v[cl]=1/V[cl];
         }
@@ -935,11 +1098,13 @@ int calcE(nifti_image * T1,
     for(long i=0; i<(long)omp_get_max_threads(); i++)
         loglikthread[i]=0;
 
-#pragma omp parallel for shared(Expec,loglikthread,T1,BiasField,Outlierness,IterPrior)
+    #pragma omp parallel for shared(Expec,loglikthread,T1,BiasField,Outlierness,IterPrior)
 #endif
-    for (int i=0; i<numel;i++) {
-        SegPrecisionTYPE T1_Bias_corr[MaxMultispectalSize]={0.0f};
-        for(long Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
+    for (int i=0; i<numel; i++)
+    {
+        SegPrecisionTYPE T1_Bias_corr[MaxMultispectalSize]= {0.0f};
+        for(long Multispec=0; Multispec<CurrSizes->usize; Multispec++)
+        {
             T1_Bias_corr[Multispec]=(BiasField!=NULL)?(T1_PTR[i+Multispec*numel] + BiasField[i+Multispec*numel]):(T1_PTR[i+Multispec*numel]);
         }
         SegPrecisionTYPE mahal=0.0f;
@@ -947,31 +1112,40 @@ int calcE(nifti_image * T1,
 
         //Expec_offset_PTR=Expec_offset;
 
-        for (int cl=0; cl<num_class; cl++) {
+        for (int cl=0; cl<num_class; cl++)
+        {
             mahal=0.0f;
-            for(long Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
+            for(long Multispec=0; Multispec<CurrSizes->usize; Multispec++)
+            {
                 tmpT1_BC_minusM=(T1_Bias_corr[Multispec] - M[cl*(CurrSizes->usize)+Multispec]);
-                for(long Multispec2=0; Multispec2<CurrSizes->usize; Multispec2++) {
+                for(long Multispec2=0; Multispec2<CurrSizes->usize; Multispec2++)
+                {
                     mahal-=(0.5f)*(T1_Bias_corr[Multispec2] - M[cl*(CurrSizes->usize)+Multispec2])*inv_v[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize]*tmpT1_BC_minusM;
                 }
             }
             Expec_PTR[i+Expec_offset[cl]]=IterPrior_PTR[i+Expec_offset[cl]] * expf(mahal) * inv_sqrt_V_2pi[cl];
-            if(OutliernessFlag){
+            if(OutliernessFlag)
+            {
                 Outlierness_PTR[i+Expec_offset[cl]]=(expf(mahal))/(expf(mahal)+expf(-0.5*(OutliernessThreshold*OutliernessThreshold)));
             }
             SumExpec+=Expec_PTR[i+Expec_offset[cl]];
         }
-        if (SumExpec<=0.0 || SumExpec!=SumExpec){
+        if (SumExpec<=0.0 || SumExpec!=SumExpec)
+        {
             SumExpec=0.01;
         }
 
-        if (SumExpec<=0.0 || SumExpec!=SumExpec){
-            for (int cl=0; cl<num_class; cl++) {
+        if (SumExpec<=0.0 || SumExpec!=SumExpec)
+        {
+            for (int cl=0; cl<num_class; cl++)
+            {
                 Expec_PTR[i+Expec_offset[cl]]=(float)(1)/(float)(num_class);
             }
         }
-        else{
-            for (int cl=0; cl<num_class; cl++) {
+        else
+        {
+            for (int cl=0; cl<num_class; cl++)
+            {
                 Expec_PTR[i+Expec_offset[cl]]=Expec_PTR[i+Expec_offset[cl]]/SumExpec;
             }
 #ifdef _OPENMP
@@ -1277,7 +1451,8 @@ int calcM(nifti_image * T1,
 
     bool OutliernessFlag=(Outlierness==NULL)?0:1;
 
-    if(verbose>0){
+    if(verbose>0)
+    {
         cout<< "Optimising Gaussian Parameters" << endl;
         flush(cout);
     }
@@ -1291,7 +1466,8 @@ int calcM(nifti_image * T1,
     SegPrecisionTYPE * BiasField_PTR2= (SegPrecisionTYPE *) BiasField;
 
     int Expec_offset[PV_numbclass];
-    for (int cl=0; cl<currentnum_class; cl++) {
+    for (int cl=0; cl<currentnum_class; cl++)
+    {
         Expec_offset[cl]=cl*numel;
     }
     SegPrecisionTYPE tempsum= (SegPrecisionTYPE) 0.0;
@@ -1299,9 +1475,11 @@ int calcM(nifti_image * T1,
 
     // ***********
 
-    for (int cl=0; cl<currentnum_class; cl++) {
+    for (int cl=0; cl<currentnum_class; cl++)
+    {
         // MEAN
-        for(long Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
+        for(long Multispec=0; Multispec<CurrSizes->usize; Multispec++)
+        {
             Expec_PTR=(SegPrecisionTYPE *) &Expec[Expec_offset[cl]];
             OutliernessPTR=(SegPrecisionTYPE *) &Outlierness[Expec_offset[cl]];
             T1_PTR = static_cast<SegPrecisionTYPE *>(T1->data);
@@ -1310,42 +1488,58 @@ int calcM(nifti_image * T1,
             SumPriors=(SegPrecisionTYPE)0.0;
 
 
-            if(OutliernessFlag){
+            if(OutliernessFlag)
+            {
 
-                if(BiasField!=NULL){
+                if(BiasField!=NULL)
+                {
                     BiasField_PTR= &BiasField[Multispec*numel];
-                    for (int i=0; i<numel; i++, Expec_PTR++,OutliernessPTR++,BiasField_PTR++) {
+                    for (int i=0; i<numel; i++, Expec_PTR++,OutliernessPTR++,BiasField_PTR++)
+                    {
                         float current_value=(*Expec_PTR) * (*OutliernessPTR)*(T1_PTR[i]+(*BiasField_PTR));
-                        if(current_value==current_value){
+                        if(current_value==current_value)
+                        {
                             tempsum+=current_value;
                             SumPriors+=(*Expec_PTR)*(*OutliernessPTR);
                         }
                     }
-                }else{
-                    for (int i=0; i<numel; i++, Expec_PTR++,OutliernessPTR++) {
+                }
+                else
+                {
+                    for (int i=0; i<numel; i++, Expec_PTR++,OutliernessPTR++)
+                    {
                         float current_value=(*Expec_PTR) * (*OutliernessPTR)*(T1_PTR[i]);
-                        if(current_value==current_value){
+                        if(current_value==current_value)
+                        {
                             tempsum+=current_value;
                             SumPriors+=(*Expec_PTR)*(*OutliernessPTR);
                         }
                     }
                 }
             }
-            else{
+            else
+            {
 
-                if(BiasField!=NULL){
+                if(BiasField!=NULL)
+                {
                     BiasField_PTR= &BiasField[Multispec*numel];
-                    for (int i=0; i<numel; i++, Expec_PTR++,BiasField_PTR++) {
+                    for (int i=0; i<numel; i++, Expec_PTR++,BiasField_PTR++)
+                    {
                         float current_value=(*Expec_PTR) * (T1_PTR[i]+(*BiasField_PTR));
-                        if(current_value==current_value){
+                        if(current_value==current_value)
+                        {
                             tempsum+=current_value;
                             SumPriors+=(*Expec_PTR);
                         }
                     }
-                }else{
-                    for (int i=0; i<numel; i++, Expec_PTR++) {
+                }
+                else
+                {
+                    for (int i=0; i<numel; i++, Expec_PTR++)
+                    {
                         float current_value=(*Expec_PTR) * (T1_PTR[i]);
-                        if(current_value==current_value){
+                        if(current_value==current_value)
+                        {
                             tempsum+=current_value;
                             SumPriors+=(*Expec_PTR);
                         }
@@ -1355,14 +1549,17 @@ int calcM(nifti_image * T1,
             }
 
 
-            if(M_MAP==NULL){
+            if(M_MAP==NULL)
+            {
                 M[cl*(CurrSizes->usize)+Multispec]=tempsum/SumPriors;
             }
-            else{
+            else
+            {
                 M[cl*(CurrSizes->usize)+Multispec]=(tempsum/SumPriors/powf(V[cl*(CurrSizes->usize)+Multispec],2)+M_MAP[cl*(CurrSizes->usize)+Multispec]/powf(V_MAP[cl*(CurrSizes->usize)+Multispec],2))/(1/powf(V[cl*(CurrSizes->usize)+Multispec],2)+1/powf(V_MAP[cl*(CurrSizes->usize)+Multispec],2));
             }
 
-            for(long Multispec2=Multispec; Multispec2<CurrSizes->usize; Multispec2++) {
+            for(long Multispec2=Multispec; Multispec2<CurrSizes->usize; Multispec2++)
+            {
 
                 T1_PTR = static_cast<SegPrecisionTYPE *>(T1->data);
                 T1_PTR =&T1_PTR[Multispec*CurrSizes->numel];
@@ -1375,29 +1572,41 @@ int calcM(nifti_image * T1,
                 tempsum=0;
                 Expec_PTR=&Expec[Expec_offset[cl]];
                 OutliernessPTR=(SegPrecisionTYPE *) &Outlierness[Expec_offset[cl]];
-                if(OutliernessFlag){
-                    if(BiasField!=NULL){
+                if(OutliernessFlag)
+                {
+                    if(BiasField!=NULL)
+                    {
                         BiasField_PTR=&BiasField[Multispec*numel];
                         BiasField_PTR2=&BiasField[Multispec2*numel];
-                        for (int i=0; i<numel;i++,Expec_PTR++,BiasField_PTR++,OutliernessPTR++,BiasField_PTR2++) {
+                        for (int i=0; i<numel; i++,Expec_PTR++,BiasField_PTR++,OutliernessPTR++,BiasField_PTR2++)
+                        {
                             tempsum+=(*Expec_PTR) *(*OutliernessPTR)* (T1_PTR[i]+(*BiasField_PTR)-tmpM) * (T1_PTR2[i]+(*BiasField_PTR2)-tmpM2);
                         }
-                    }else{
-                        for (int i=0; i<numel;i++,Expec_PTR++,OutliernessPTR++) {
+                    }
+                    else
+                    {
+                        for (int i=0; i<numel; i++,Expec_PTR++,OutliernessPTR++)
+                        {
                             tempsum+=(*Expec_PTR) *(*OutliernessPTR)* (T1_PTR[i]-tmpM) * (T1_PTR2[i]-tmpM2);
                         }
 
                     }
                 }
-                else{
-                    if(BiasField!=NULL){
+                else
+                {
+                    if(BiasField!=NULL)
+                    {
                         BiasField_PTR=&BiasField[Multispec*numel];
                         BiasField_PTR2=&BiasField[Multispec2*numel];
-                        for (int i=0; i<numel;i++,Expec_PTR++,BiasField_PTR++,BiasField_PTR2++) {
+                        for (int i=0; i<numel; i++,Expec_PTR++,BiasField_PTR++,BiasField_PTR2++)
+                        {
                             tempsum+=(*Expec_PTR) * (T1_PTR[i]+(*BiasField_PTR)-tmpM) * (T1_PTR2[i]+(*BiasField_PTR2)-tmpM2);
                         }
-                    }else{
-                        for (int i=0; i<numel;i++,Expec_PTR++) {
+                    }
+                    else
+                    {
+                        for (int i=0; i<numel; i++,Expec_PTR++)
+                        {
                             tempsum+=(*Expec_PTR) * (T1_PTR[i]-tmpM) * (T1_PTR2[i]-tmpM2);
                         }
 
@@ -1413,35 +1622,46 @@ int calcM(nifti_image * T1,
         }
     }
 
-    for (int cl=0; cl<currentnum_class; cl++) {
-        for(long Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
-            for(long Multispec2=0; Multispec2<CurrSizes->usize; Multispec2++) {
+    for (int cl=0; cl<currentnum_class; cl++)
+    {
+        for(long Multispec=0; Multispec<CurrSizes->usize; Multispec++)
+        {
+            for(long Multispec2=0; Multispec2<CurrSizes->usize; Multispec2++)
+            {
                 V[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize]/=reg_factor;
             }
         }
     }
 
-    for (int cl=0; cl<currentnum_class; cl++) {
-        if(verbose>0){
-            if(CurrSizes->usize==1){
+    for (int cl=0; cl<currentnum_class; cl++)
+    {
+        if(verbose>0)
+        {
+            if(CurrSizes->usize==1)
+            {
                 cout.fill('0');
                 cout<< "M["<<(int)(cl)<<"]= "<<setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(M[cl])<<"\tV["<<(int)(cl)<<"]="<<setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(V[cl])<< endl;
                 flush(cout);
             }
-            else{
+            else
+            {
 
                 cout<< "M["<<(int)(cl)<<"]= ";
-                for(long Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
+                for(long Multispec=0; Multispec<CurrSizes->usize; Multispec++)
+                {
                     cout<< setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(M[cl*CurrSizes->usize+Multispec])<<"\t";
                 }
                 cout<< endl;
                 flush(cout);
                 cout<< "V["<<(int)(cl)<<"]= ";
-                for(long Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
-                    if(Multispec>0){
+                for(long Multispec=0; Multispec<CurrSizes->usize; Multispec++)
+                {
+                    if(Multispec>0)
+                    {
                         cout<< "      ";
                     }
-                    for(long Multispec2=0; Multispec2<CurrSizes->usize; Multispec2++) {
+                    for(long Multispec2=0; Multispec2<CurrSizes->usize; Multispec2++)
+                    {
                         cout<< setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(V[cl*CurrSizes->usize*CurrSizes->usize+Multispec*CurrSizes->usize+Multispec2])<<"\t";
                     }
                     cout<< endl;
@@ -1472,7 +1692,8 @@ int calcM_mask(nifti_image * T1,
                int verbose)
 {
 
-    if(verbose>0){
+    if(verbose>0)
+    {
         cout<< "Optimising Gaussian Parameters" << endl;
         flush(cout);
     }
@@ -1481,15 +1702,17 @@ int calcM_mask(nifti_image * T1,
     int numel_masked=CurrSizes->numelmasked;
     int num_class=CurrSizes->numclass;
     int Expec_offset[PV_numbclass];
-    for (int cl=0; cl<num_class; cl++) {
+    for (int cl=0; cl<num_class; cl++)
+    {
         Expec_offset[cl]=cl*numel_masked;
     }
 
 #ifdef _OPENMP
-#pragma omp parallel for shared(T1,BiasField,Outlierness)
+    #pragma omp parallel for shared(T1,BiasField,Outlierness)
 #endif
     // ***********
-    for (int cl=0; cl<num_class; cl++) {
+    for (int cl=0; cl<num_class; cl++)
+    {
         int * S2L_PTR = (int *) S2L;
         SegPrecisionTYPE * Expec_PTR = (SegPrecisionTYPE *) Expec;
         SegPrecisionTYPE * OutliernessPTR = (SegPrecisionTYPE *) Outlierness;
@@ -1501,7 +1724,8 @@ int calcM_mask(nifti_image * T1,
         SegPrecisionTYPE * BiasField_PTR2= (SegPrecisionTYPE *) BiasField;
 
         // MEAN
-        for(long Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
+        for(long Multispec=0; Multispec<CurrSizes->usize; Multispec++)
+        {
             Expec_PTR=(SegPrecisionTYPE *) &Expec[Expec_offset[cl]];
             OutliernessPTR=(SegPrecisionTYPE *) &Outlierness[Expec_offset[cl]];
             S2L_PTR = (int *) S2L;
@@ -1511,40 +1735,56 @@ int calcM_mask(nifti_image * T1,
             tempsum=(SegPrecisionTYPE)0.0;
             SumPriors=(SegPrecisionTYPE)0.0;
 
-            if(OutliernessFlag){
-                if(BiasField!=NULL){
+            if(OutliernessFlag)
+            {
+                if(BiasField!=NULL)
+                {
                     BiasField_PTR= &BiasField[Multispec*numel_masked];
-                    for (int i=0; i<numel_masked; i++, Expec_PTR++,OutliernessPTR++,BiasField_PTR++,S2L_PTR++) {
+                    for (int i=0; i<numel_masked; i++, Expec_PTR++,OutliernessPTR++,BiasField_PTR++,S2L_PTR++)
+                    {
                         float current_value=(*Expec_PTR)*(*OutliernessPTR)*(T1_PTR[(*S2L_PTR)]+(*BiasField_PTR));
-                        if(current_value==current_value){
+                        if(current_value==current_value)
+                        {
                             tempsum+=current_value;
                             SumPriors+=(*Expec_PTR)*(*OutliernessPTR);
                         }
                     }
-                }else{
-                    for (int i=0; i<numel_masked; i++, Expec_PTR++,S2L_PTR++) {
+                }
+                else
+                {
+                    for (int i=0; i<numel_masked; i++, Expec_PTR++,S2L_PTR++)
+                    {
                         float current_value=(*Expec_PTR)*(*OutliernessPTR)*(T1_PTR[(*S2L_PTR)]);
-                        if(current_value==current_value){
+                        if(current_value==current_value)
+                        {
                             tempsum+=current_value;
                             SumPriors+=(*Expec_PTR)*(*OutliernessPTR);
                         }
                     }
                 }
             }
-            else{
-                if(BiasField!=NULL){
+            else
+            {
+                if(BiasField!=NULL)
+                {
                     BiasField_PTR= &BiasField[Multispec*numel_masked];
-                    for (int i=0; i<numel_masked; i++, Expec_PTR++,BiasField_PTR++,S2L_PTR++) {
+                    for (int i=0; i<numel_masked; i++, Expec_PTR++,BiasField_PTR++,S2L_PTR++)
+                    {
                         float current_value=(*Expec_PTR)*(T1_PTR[(*S2L_PTR)]+(*BiasField_PTR));
-                        if(current_value==current_value){
+                        if(current_value==current_value)
+                        {
                             tempsum+=current_value;
                             SumPriors+=(*Expec_PTR);
                         }
                     }
-                }else{
-                    for (int i=0; i<numel_masked; i++, Expec_PTR++,S2L_PTR++) {
+                }
+                else
+                {
+                    for (int i=0; i<numel_masked; i++, Expec_PTR++,S2L_PTR++)
+                    {
                         float current_value=(*Expec_PTR)*(T1_PTR[(*S2L_PTR)]);
-                        if(current_value==current_value){
+                        if(current_value==current_value)
+                        {
                             tempsum+=current_value;
                             SumPriors+=(*Expec_PTR);
                         }
@@ -1552,15 +1792,19 @@ int calcM_mask(nifti_image * T1,
                 }
 
             }
-            if(SumPriors==SumPriors && SumPriors>0){
-                if(M_MAP==NULL){
+            if(SumPriors==SumPriors && SumPriors>0)
+            {
+                if(M_MAP==NULL)
+                {
                     M[cl*(CurrSizes->usize)+Multispec]=tempsum/SumPriors;
                 }
-                else{
+                else
+                {
                     M[cl*(CurrSizes->usize)+Multispec]=(tempsum/SumPriors/powf(V[cl*(CurrSizes->usize)+Multispec],2)+M_MAP[cl*(CurrSizes->usize)+Multispec]/powf(V_MAP[cl*(CurrSizes->usize)+Multispec],2))/(1/powf(V[cl*(CurrSizes->usize)+Multispec],2)+1/powf(V_MAP[cl*(CurrSizes->usize)+Multispec],2));
                 }
 
-                for(long Multispec2=Multispec; Multispec2<CurrSizes->usize; Multispec2++) {
+                for(long Multispec2=Multispec; Multispec2<CurrSizes->usize; Multispec2++)
+                {
                     S2L_PTR = (int *) S2L;
 
                     T1_PTR = static_cast<SegPrecisionTYPE *>(T1->data);
@@ -1574,37 +1818,50 @@ int calcM_mask(nifti_image * T1,
                     tempsum=0;
                     Expec_PTR=&Expec[Expec_offset[cl]];
                     OutliernessPTR=(SegPrecisionTYPE *) &Outlierness[Expec_offset[cl]];
-                    if(BiasField!=NULL){
+                    if(BiasField!=NULL)
+                    {
                         BiasField_PTR=&BiasField[Multispec*numel_masked];
                         BiasField_PTR2=&BiasField[Multispec2*numel_masked];
-                        if(OutliernessFlag){
-                            for (int i=0; i<numel_masked;i++,Expec_PTR++,BiasField_PTR++,OutliernessPTR++,BiasField_PTR2++,S2L_PTR++) {
+                        if(OutliernessFlag)
+                        {
+                            for (int i=0; i<numel_masked; i++,Expec_PTR++,BiasField_PTR++,OutliernessPTR++,BiasField_PTR2++,S2L_PTR++)
+                            {
                                 float current_vaue=(*Expec_PTR) * (*OutliernessPTR)*(T1_PTR[(*S2L_PTR)]+(*BiasField_PTR)-tmpM) * (T1_PTR2[(*S2L_PTR)]+(*BiasField_PTR2)-tmpM2);
-                                if(current_vaue==current_vaue){
+                                if(current_vaue==current_vaue)
+                                {
                                     tempsum+=current_vaue;
                                 }
                             }
                         }
-                        else{
-                            for (int i=0; i<numel_masked;i++,Expec_PTR++,BiasField_PTR++,BiasField_PTR2++,S2L_PTR++) {
+                        else
+                        {
+                            for (int i=0; i<numel_masked; i++,Expec_PTR++,BiasField_PTR++,BiasField_PTR2++,S2L_PTR++)
+                            {
                                 float current_vaue=(*Expec_PTR) * (T1_PTR[(*S2L_PTR)]+(*BiasField_PTR)-tmpM) * (T1_PTR2[(*S2L_PTR)]+(*BiasField_PTR2)-tmpM2);
-                                if(current_vaue==current_vaue){
+                                if(current_vaue==current_vaue)
+                                {
                                     tempsum+=current_vaue;
                                 }
                             }
                         }
-                    }else{
-                        for (int i=0; i<numel_masked;i++,Expec_PTR++,S2L_PTR++) {
+                    }
+                    else
+                    {
+                        for (int i=0; i<numel_masked; i++,Expec_PTR++,S2L_PTR++)
+                        {
                             float current_vaue=(*Expec_PTR) * (T1_PTR[(*S2L_PTR)]-tmpM) * (T1_PTR2[(*S2L_PTR)]-tmpM2);
-                            if(current_vaue==current_vaue){
+                            if(current_vaue==current_vaue)
+                            {
                                 tempsum+=current_vaue;
                             }
                         }
 
                     }
-                    if( (tempsum/SumPriors>0) && SumPriors>0  && (!isnan(tempsum/SumPriors))){
+                    if( (tempsum/SumPriors>0) && SumPriors>0  && (!isnan(tempsum/SumPriors)))
+                    {
                         V[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize]=tempsum/SumPriors;
-                        if(Multispec2!=Multispec){
+                        if(Multispec2!=Multispec)
+                        {
                             V[cl*CurrSizes->usize*CurrSizes->usize+Multispec2+Multispec*CurrSizes->usize]=V[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize];
                             V[cl*CurrSizes->usize*CurrSizes->usize+Multispec+Multispec2*CurrSizes->usize]/=reg_factor;
                             V[cl*CurrSizes->usize*CurrSizes->usize+Multispec2+Multispec*CurrSizes->usize]/=reg_factor;
@@ -1615,27 +1872,35 @@ int calcM_mask(nifti_image * T1,
         }
     }
 
-    for (int cl=0; cl<num_class; cl++) {
-        if(verbose>0){
-            if(CurrSizes->usize==1){
+    for (int cl=0; cl<num_class; cl++)
+    {
+        if(verbose>0)
+        {
+            if(CurrSizes->usize==1)
+            {
                 cout.fill('0');
                 cout<< "M["<<(int)(cl)<<"]= "<<setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(M[cl])<<"\tV["<<(int)(cl)<<"]="<<setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(V[cl])<< endl;
                 flush(cout);
             }
-            else{
+            else
+            {
 
                 cout<< "M["<<(int)(cl)<<"]= ";
-                for(long Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
+                for(long Multispec=0; Multispec<CurrSizes->usize; Multispec++)
+                {
                     cout<< setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(M[cl*CurrSizes->usize+Multispec])<<"\t";
                 }
                 cout<< endl;
                 flush(cout);
                 cout<< "V["<<(int)(cl)<<"]= ";
-                for(long Multispec=0; Multispec<CurrSizes->usize; Multispec++) {
-                    if(Multispec>0){
+                for(long Multispec=0; Multispec<CurrSizes->usize; Multispec++)
+                {
+                    if(Multispec>0)
+                    {
                         cout<< "      ";
                     }
-                    for(long Multispec2=0; Multispec2<CurrSizes->usize; Multispec2++) {
+                    for(long Multispec2=0; Multispec2<CurrSizes->usize; Multispec2++)
+                    {
                         cout<< setw(10)<<setprecision(7)<<left<<(SegPrecisionTYPE)(V[cl*CurrSizes->usize*CurrSizes->usize+Multispec*CurrSizes->usize+Multispec2])<<"\t";
                     }
                     cout<< endl;
@@ -1663,7 +1928,8 @@ int calcM_mask_LoAd(nifti_image * T1,
                     bool PVon)
 {
 
-    if(verbose>0){
+    if(verbose>0)
+    {
         cout<< "Optimising Gaussian Parameters" << endl;
         flush(cout);
     }
@@ -1674,14 +1940,16 @@ int calcM_mask_LoAd(nifti_image * T1,
     SegPrecisionTYPE * T1_PTR = static_cast<SegPrecisionTYPE *>(T1->data);
     SegPrecisionTYPE * BiasField_PTR= (SegPrecisionTYPE *) BiasField;
     int Expec_offset[PV_numbclass];
-    for (int cl=0; cl<currentnum_class; cl++) {
+    for (int cl=0; cl<currentnum_class; cl++)
+    {
         Expec_offset[cl]=cl*numel_masked;
     }
     SegPrecisionTYPE tempsum= (SegPrecisionTYPE) 0.0;
     SegPrecisionTYPE SumPriors= (SegPrecisionTYPE) 0.0;
 
 
-    for (int cl=0; cl<5; cl++) {
+    for (int cl=0; cl<5; cl++)
+    {
         Expec_PTR=(SegPrecisionTYPE *) &Expec[Expec_offset[cl]];
         BiasField_PTR= (SegPrecisionTYPE *) BiasField;
         S2L_PTR = (int *) S2L;
@@ -1689,13 +1957,18 @@ int calcM_mask_LoAd(nifti_image * T1,
         SumPriors=(SegPrecisionTYPE)0.0;
 
         // MEAN
-        if(BiasField!=NULL){
-            for (int i=0; i<numel_masked; i++, Expec_PTR++,S2L_PTR++,BiasField_PTR++) {
+        if(BiasField!=NULL)
+        {
+            for (int i=0; i<numel_masked; i++, Expec_PTR++,S2L_PTR++,BiasField_PTR++)
+            {
                 tempsum+=(*Expec_PTR) * (T1_PTR[(*S2L_PTR)]+(*BiasField_PTR));
                 SumPriors+=(*Expec_PTR);
             }
-        }else{
-            for (int i=0; i<numel_masked; i++, Expec_PTR++,S2L_PTR++) {
+        }
+        else
+        {
+            for (int i=0; i<numel_masked; i++, Expec_PTR++,S2L_PTR++)
+            {
                 tempsum+=(*Expec_PTR) * (T1_PTR[(*S2L_PTR)]);
                 SumPriors+=(*Expec_PTR);
             }
@@ -1708,30 +1981,38 @@ int calcM_mask_LoAd(nifti_image * T1,
         Expec_PTR=&Expec[Expec_offset[cl]];
         BiasField_PTR=BiasField;
         S2L_PTR = (int *) S2L;
-        if(BiasField!=NULL){
-            for (int i=0; i<numel_masked;i++,Expec_PTR++,S2L_PTR++,BiasField_PTR++) {
+        if(BiasField!=NULL)
+        {
+            for (int i=0; i<numel_masked; i++,Expec_PTR++,S2L_PTR++,BiasField_PTR++)
+            {
                 tempsum+=(*Expec_PTR) * (T1_PTR[(*S2L_PTR)]+(*BiasField_PTR)-M[cl]) * (T1_PTR[(*S2L_PTR)]+(*BiasField_PTR)-M[cl]);
             }
-        }else{
-            for (int i=0; i<numel_masked;i++,Expec_PTR++,S2L_PTR++) {
+        }
+        else
+        {
+            for (int i=0; i<numel_masked; i++,Expec_PTR++,S2L_PTR++)
+            {
                 tempsum+=(*Expec_PTR) * (T1_PTR[(*S2L_PTR)]-M[cl]) * (T1_PTR[(*S2L_PTR)]-M[cl]);
             }
 
         }
         V[cl]=tempsum/SumPriors;
 
-        if(V[cl]<0.0001 || V[cl]!=V[cl]){
+        if(V[cl]<0.0001 || V[cl]!=V[cl])
+        {
             V[cl]=0.0001;
         }
 
-        if(verbose>0){
+        if(verbose>0)
+        {
             cout.fill('0');
             cout << "M[" << (int)(cl) << "]= " << setw(10) << setprecision(7) << left << (SegPrecisionTYPE)(M[cl]) << "\tV[" << (int)(cl) << "]=" << setw(10) << setprecision(7) <<left << (SegPrecisionTYPE)(V[cl]) << endl;
             flush(cout);
         }
     }
 
-    if(PVon){
+    if(PVon)
+    {
         M[WMGMpvclass]=(M[WMclass]*V[GMclass]+M[GMclass]*V[WMclass])/(float)(V[WMclass]+V[GMclass]);
         M[GMCSFpvclass]=(M[CSFclass]*V[GMclass]+M[GMclass]*V[CSFclass])/(float)(V[CSFclass]+V[GMclass]);
         V[WMGMpvclass]=0.5*V[WMclass]+0.5*V[GMclass];
@@ -1748,11 +2029,14 @@ int calcM_mask_LoAd(nifti_image * T1,
 
 int printTrace(int iter,
                SegPrecisionTYPE tracePQ,
-               SegPrecisionTYPE oldTracePQ){
-    if(iter>0){
+               SegPrecisionTYPE oldTracePQ)
+{
+    if(iter>0)
+    {
         cout<< "Normalized Trace Change = " << fabs((tracePQ-oldTracePQ)/fabsf(oldTracePQ)) << endl;
     }
-    else {
+    else
+    {
         cout<< "Initial Normalized Trace Value = " << setprecision(7) << tracePQ << endl;
     }
     return 1;
@@ -1761,16 +2045,21 @@ int printTrace(int iter,
 
 int printloglik(int iter,
                 SegPrecisionTYPE loglik,
-                SegPrecisionTYPE oldloglik){
-    if(iter>0){
-        if ((loglik-oldloglik)/fabsf(oldloglik)>0 && (loglik-oldloglik)/fabsf(oldloglik)<100){
+                SegPrecisionTYPE oldloglik)
+{
+    if(iter>0)
+    {
+        if ((loglik-oldloglik)/fabsf(oldloglik)>0 && (loglik-oldloglik)/fabsf(oldloglik)<100)
+        {
             cout<< "Loglik = " << setprecision(7)<<loglik << " : Ratio = " << (loglik-oldloglik)/fabsf(oldloglik) << endl;
         }
-        else{
+        else
+        {
             cout<< "Loglik = " << setprecision(7)<<loglik << endl;
         }
     }
-    else {
+    else
+    {
         cout<< "Initial Loglik = " << setprecision(7) << loglik << endl;
     }
     return 1;
@@ -1786,31 +2075,38 @@ int Relax_Priors(SegPrecisionTYPE * Priors,
                  SegPrecisionTYPE ba,
                  SegPrecisionTYPE be,
                  ImageSize *  CurrSizes,
-                 SEG_PARAM * segment_param){
+                 SEG_PARAM * segment_param)
+{
 
-    if(RelaxFactor<0){
+    if(RelaxFactor<0)
+    {
         RelaxFactor=0;
-        if(segment_param->verbose_level>0){
+        if(segment_param->verbose_level>0)
+        {
             cout<< "RelaxFactor was bellow 0 (min). Assuming RelaxFactor=0." << endl;
         }
     }
 
-    if(RelaxFactor>1){
+    if(RelaxFactor>1)
+    {
         RelaxFactor=1;
-        if(segment_param->verbose_level>0){
+        if(segment_param->verbose_level>0)
+        {
             cout<< "RelaxFactor was above 1 (max). Assuming RelaxFactor=1." << endl;
         }
     }
 
 
-    if(RelaxFactor>=0){
-        if(segment_param->verbose_level>0){
+    if(RelaxFactor>=0)
+    {
+        if(segment_param->verbose_level>0)
+        {
             cout<< "Relaxing Priors with Rf = "<< RelaxFactor << endl;
             flush(cout);
         }
         Gaussian_Filter_Short_4D(Expec,S2L,L2S,2.0, CurrSizes,CSFclass);
         Relax_Priors_Share(Priors,Expec,RelaxFactor,G,be,CurrSizes);
-        for(long i=0; i<(CurrSizes->numclass*CurrSizes->numelmasked);i++)MRF[i]=Priors[i];
+        for(long i=0; i<(CurrSizes->numclass*CurrSizes->numelmasked); i++)MRF[i]=Priors[i];
         memcpy(Priors,Expec,CurrSizes->numelmasked*CurrSizes->numclass*sizeof(SegPrecisionTYPE));
     }
 
@@ -1823,7 +2119,8 @@ int Relax_Priors_Share(SegPrecisionTYPE * Priors,
                        float RelaxFactor,
                        SegPrecisionTYPE * G,
                        SegPrecisionTYPE be,
-                       ImageSize * CurrSizes){
+                       ImageSize * CurrSizes)
+{
     long numclass=CurrSizes->numclass;
 
     int N[PV_numbclass*PV_numbclass];
@@ -1833,35 +2130,43 @@ int Relax_Priors_Share(SegPrecisionTYPE * Priors,
     SegPrecisionTYPE Currexpec_class;
     int Class_shift[PV_numbclass];
     // Precompute Class Shift
-    for (long cl=0; cl<numclass; cl++) {
+    for (long cl=0; cl<numclass; cl++)
+    {
         Class_shift[cl]=cl*CurrSizes->numelmasked;
     }
 
     //Find neighbouring rules
-    for(long i=0; i<numclass; i++){
-        for(long j=0; j<numclass; j++){
+    for(long i=0; i<numclass; i++)
+    {
+        for(long j=0; j<numclass; j++)
+        {
             N[i+j*numclass]=(G[i+j*numclass]<=be)?1:0;
         }
     }
 
-    for (long i=0; i<(long)CurrSizes->numelmasked;i++) {
+    for (long i=0; i<(long)CurrSizes->numelmasked; i++)
+    {
         //Copy current expec for all classes
-        for (long cl=0; cl<numclass; cl++) {
+        for (long cl=0; cl<numclass; cl++)
+        {
             Currexpec[cl]=(1-RelaxFactor)*Expec[i+Class_shift[cl]]+(RelaxFactor)*Priors[i+Class_shift[cl]];
         }
         //Compute relaxed expec
         Currexpec_sumall=0;
-        for (long cl=0; cl<numclass; cl++) {
+        for (long cl=0; cl<numclass; cl++)
+        {
             Currexpec_updated[cl]=0;
             Currexpec_class=Currexpec[cl];
-            for (long cl2=0; cl2<numclass; cl2++) {
+            for (long cl2=0; cl2<numclass; cl2++)
+            {
                 Currexpec_updated[cl]+=Currexpec_class*Currexpec[cl2]*double(N[cl+cl2*numclass]);
             }
             Currexpec_sumall+=Currexpec_updated[cl];
         }
         Currexpec_sumall=Currexpec_sumall==0?1:Currexpec_sumall;
         //Copy current expec back all classes
-        for (long cl=0; cl<numclass; cl++) {
+        for (long cl=0; cl<numclass; cl++)
+        {
             Expec[i+Class_shift[cl]]=Currexpec_updated[cl]/Currexpec_sumall;
         }
 
@@ -1874,27 +2179,36 @@ int Gaussian_Filter_Short_4D(SegPrecisionTYPE * ShortData,
                              int * L2S,
                              SegPrecisionTYPE gauss_std,
                              ImageSize * CurrSizes,
-                             int class_with_CSF){
+                             int class_with_CSF)
+{
 
     long kernelsize=0;
     long kernelsizemin=(int)floorf(gauss_std*6.0);
     long kernelsizemax=(int)ceilf(gauss_std*6.0);
 
-    if((kernelsizemin/2.0)==(double)(kernelsizemin/2) && kernelsizemin!=kernelsizemax){ // Which one is odd? kernelsizemin or kernelsizemax?
-        kernelsize=kernelsizemax;}
-    else if((kernelsizemax/2.0)==(double)(kernelsizemax/2) && kernelsizemin!=kernelsizemax){
-        kernelsize=kernelsizemin;}
-    else{
-        kernelsize=kernelsizemin+1;}
+    if((kernelsizemin/2.0)==(double)(kernelsizemin/2) && kernelsizemin!=kernelsizemax)  // Which one is odd? kernelsizemin or kernelsizemax?
+    {
+        kernelsize=kernelsizemax;
+    }
+    else if((kernelsizemax/2.0)==(double)(kernelsizemax/2) && kernelsizemin!=kernelsizemax)
+    {
+        kernelsize=kernelsizemin;
+    }
+    else
+    {
+        kernelsize=kernelsizemin+1;
+    }
 
-    if(kernelsize<3){
+    if(kernelsize<3)
+    {
         kernelsize=3;
     }
 
     long kernelshift=(int)floorf(kernelsize/2);
     SegPrecisionTYPE GaussKernel [100]= {0};
 
-    for(long i=0; i<kernelsize; i++){
+    for(long i=0; i<kernelsize; i++)
+    {
         float kernelvalue=expf((float)(-0.5*powf((i-kernelshift)/gauss_std, 2)))/(sqrtf(2*3.14159265*powf(gauss_std, 2)));
         GaussKernel[i]=kernelvalue;
     }
@@ -1915,29 +2229,38 @@ int Gaussian_Filter_Short_4D(SegPrecisionTYPE * ShortData,
 
     //Outside the mask is considered Pure CSF
     int outsiderangevalue[10];
-    for(long i=0; i<10; i++){
+    for(long i=0; i<10; i++)
+    {
         outsiderangevalue[i]=0;
     }
     outsiderangevalue[class_with_CSF]=1;
 
-    for(long curr4d=0; curr4d<CurrSizes->numclass; curr4d++){ //For Each Class
+    for(long curr4d=0; curr4d<CurrSizes->numclass; curr4d++)  //For Each Class
+    {
         int current_4dShift_short=curr4d*CurrSizes->numelmasked;
-        for(long index=0;index<(long)CurrSizes->numelmasked;index++){ //Copy Class to Buffer in LongFormat
+        for(long index=0; index<(long)CurrSizes->numelmasked; index++) //Copy Class to Buffer in LongFormat
+        {
             Buffer[S2L[index]]=ShortData[index+current_4dShift_short];
         }
 
 
         long xyzpos[3];
-        for(long currentdirection=0;currentdirection<3;currentdirection++){ //Blur Buffer along each direction
+        for(long currentdirection=0; currentdirection<3; currentdirection++) //Blur Buffer along each direction
+        {
             int index=0;
-            for(xyzpos[2]=0;xyzpos[2]<(long)CurrSizes->zsize;xyzpos[2]++){
-                for(xyzpos[1]=0;xyzpos[1]<(long)CurrSizes->ysize;xyzpos[1]++){
-                    for(xyzpos[0]=0;xyzpos[0]<(long)CurrSizes->xsize;xyzpos[0]++){
+            for(xyzpos[2]=0; xyzpos[2]<(long)CurrSizes->zsize; xyzpos[2]++)
+            {
+                for(xyzpos[1]=0; xyzpos[1]<(long)CurrSizes->ysize; xyzpos[1]++)
+                {
+                    for(xyzpos[0]=0; xyzpos[0]<(long)CurrSizes->xsize; xyzpos[0]++)
+                    {
                         SegPrecisionTYPE tmpvalue=0.0f;
                         SegPrecisionTYPE tmpkernelsum=0.0f;
                         LongData[index]=0.0f;
-                        if(L2S[index]>=0){
-                            for(long shift=((xyzpos[currentdirection]<kernelshift)?-xyzpos[currentdirection]:-kernelshift);shift<=((xyzpos[currentdirection]>=(dim_array[currentdirection]-kernelshift))?(int)dim_array[currentdirection]-xyzpos[currentdirection]-1:kernelshift) ; shift++){
+                        if(L2S[index]>=0)
+                        {
+                            for(long shift=((xyzpos[currentdirection]<kernelshift)?-xyzpos[currentdirection]:-kernelshift); shift<=((xyzpos[currentdirection]>=(dim_array[currentdirection]-kernelshift))?(int)dim_array[currentdirection]-xyzpos[currentdirection]-1:kernelshift) ; shift++)
+                            {
                                 tmpvalue+=(L2S[index+shift*shiftdirection[currentdirection]]==-1)?GaussKernel[shift+kernelshift]*outsiderangevalue[curr4d]:GaussKernel[shift+kernelshift]*Buffer[index+shift*shiftdirection[currentdirection]];
                                 tmpkernelsum+=GaussKernel[shift+kernelshift];
                             }
@@ -1947,14 +2270,17 @@ int Gaussian_Filter_Short_4D(SegPrecisionTYPE * ShortData,
                     }
                 }
             }
-            if(currentdirection<2){
-                for(long index2=0;index2<(long)CurrSizes->numel;index2++){
+            if(currentdirection<2)
+            {
+                for(long index2=0; index2<(long)CurrSizes->numel; index2++)
+                {
                     Buffer[index2]=LongData[index2];
                 }
             }
         }
 
-        for(long index=0;index<(long)CurrSizes->numelmasked;index++){ //Copy Class to Buffer in LongFormat
+        for(long index=0; index<(long)CurrSizes->numelmasked; index++) //Copy Class to Buffer in LongFormat
+        {
             ShortData[index+current_4dShift_short]=LongData[S2L[index]];
         }
 
@@ -1967,19 +2293,27 @@ int Gaussian_Filter_Short_4D(SegPrecisionTYPE * ShortData,
 
 int Gaussian_Filter_4D(SegPrecisionTYPE * LongData,
                        SegPrecisionTYPE gauss_std,
-                       ImageSize * CurrSizes){
+                       ImageSize * CurrSizes)
+{
 
     long kernelsize=0;
     long kernelsizemin=(int)floorf(gauss_std*6.0);
     long kernelsizemax=(int)ceilf(gauss_std*6.0);
 
-    if((kernelsizemin/2.0)==(double)(kernelsizemin/2) && kernelsizemin!=kernelsizemax){ // Which one is odd? kernelsizemin or kernelsizemax?
-        kernelsize=kernelsizemax;}
-    else if((kernelsizemax/2.0)==(double)(kernelsizemax/2) && kernelsizemin!=kernelsizemax){
-        kernelsize=kernelsizemin;}
-    else{
-        kernelsize=kernelsizemin+1;}
-    if(kernelsize<3){
+    if((kernelsizemin/2.0)==(double)(kernelsizemin/2) && kernelsizemin!=kernelsizemax)  // Which one is odd? kernelsizemin or kernelsizemax?
+    {
+        kernelsize=kernelsizemax;
+    }
+    else if((kernelsizemax/2.0)==(double)(kernelsizemax/2) && kernelsizemin!=kernelsizemax)
+    {
+        kernelsize=kernelsizemin;
+    }
+    else
+    {
+        kernelsize=kernelsizemin+1;
+    }
+    if(kernelsize<3)
+    {
         kernelsize=3;
     }
 
@@ -1987,12 +2321,14 @@ int Gaussian_Filter_4D(SegPrecisionTYPE * LongData,
 
     SegPrecisionTYPE GaussKernel [500]= {0};
 
-    if(kernelsize>500){
+    if(kernelsize>500)
+    {
         cout << "ERROR: Std is to large for Gaussian filter"<<endl;
         flush(cout);
         exit(9);
     }
-    for(long i=0; i<kernelsize; i++){
+    for(long i=0; i<kernelsize; i++)
+    {
         GaussKernel[i]=expf((float)(-0.5*powf((i-kernelshift)/gauss_std, 2)))/(sqrtf(2*3.14159265*powf(gauss_std, 2)));
     }
 
@@ -2011,30 +2347,38 @@ int Gaussian_Filter_4D(SegPrecisionTYPE * LongData,
     dim_array[2]=(int)CurrSizes->zsize;
 
 
-    for(long curr4d=0; curr4d<CurrSizes->tsize; curr4d++){ //For Each Class
+    for(long curr4d=0; curr4d<CurrSizes->tsize; curr4d++)  //For Each Class
+    {
 
         long current_4dShift_short=curr4d*CurrSizes->numel;
         SegPrecisionTYPE * longdataptr=&LongData[current_4dShift_short];
-        for(long index=0;index<(long)CurrSizes->numel;index++){ //Copy Class to Buffer in LongFormat
+        for(long index=0; index<(long)CurrSizes->numel; index++) //Copy Class to Buffer in LongFormat
+        {
             Buffer[index]=longdataptr[index];
         }
 
 
         long xyzpos[3];
-        for(long currentdirection=0;currentdirection<3;currentdirection++){ //Blur Buffer along each direction
+        for(long currentdirection=0; currentdirection<3; currentdirection++) //Blur Buffer along each direction
+        {
             long index=0;
             SegPrecisionTYPE * longdataptr2=&longdataptr[0];
-            for(xyzpos[2]=0;xyzpos[2]<(long)CurrSizes->zsize;xyzpos[2]++){
-                for(xyzpos[1]=0;xyzpos[1]<(long)CurrSizes->ysize;xyzpos[1]++){
+            for(xyzpos[2]=0; xyzpos[2]<(long)CurrSizes->zsize; xyzpos[2]++)
+            {
+                for(xyzpos[1]=0; xyzpos[1]<(long)CurrSizes->ysize; xyzpos[1]++)
+                {
                     xyzpos[0]=0;
                     int kernelshiftminus=((xyzpos[currentdirection]<kernelshift)?-xyzpos[currentdirection]:-kernelshift);
                     int kernelshiftmplus=kernelshift;
-                    for(xyzpos[0]=0;xyzpos[0]<CurrSizes->xsize;xyzpos[0]++){
+                    for(xyzpos[0]=0; xyzpos[0]<CurrSizes->xsize; xyzpos[0]++)
+                    {
 
-                        if(xyzpos[currentdirection]<=kernelshift){
+                        if(xyzpos[currentdirection]<=kernelshift)
+                        {
                             kernelshiftminus=((xyzpos[currentdirection]<kernelshift)?-xyzpos[currentdirection]:-kernelshift);
                         }
-                        if((xyzpos[currentdirection]>=(dim_array[currentdirection]-kernelshift))){
+                        if((xyzpos[currentdirection]>=(dim_array[currentdirection]-kernelshift)))
+                        {
                             kernelshiftmplus=dim_array[currentdirection]-xyzpos[currentdirection]-1;
                         }
 
@@ -2043,7 +2387,8 @@ int Gaussian_Filter_4D(SegPrecisionTYPE * LongData,
                         SegPrecisionTYPE tmpvalue=0.0f;
                         SegPrecisionTYPE tmpkernelsum=0.0f;
 
-                        for(int shift=kernelshiftminus;shift<=kernelshiftmplus ; shift++, GaussKernelptr++,Bufferptr+=shiftdirection[currentdirection]){
+                        for(int shift=kernelshiftminus; shift<=kernelshiftmplus ; shift++, GaussKernelptr++,Bufferptr+=shiftdirection[currentdirection])
+                        {
                             SegPrecisionTYPE GaussKernelvar=(*GaussKernelptr);
                             tmpvalue+=GaussKernelvar*(*Bufferptr);
                             tmpkernelsum+=GaussKernelvar;
@@ -2056,8 +2401,10 @@ int Gaussian_Filter_4D(SegPrecisionTYPE * LongData,
                     }
                 }
             }
-            if(currentdirection<2){
-                for(long index2=0;index2<(long)CurrSizes->numel;index2++){
+            if(currentdirection<2)
+            {
+                for(long index2=0; index2<(long)CurrSizes->numel; index2++)
+                {
                     Buffer[index2]=longdataptr[index2];
                 }
             }
@@ -2068,7 +2415,8 @@ int Gaussian_Filter_4D(SegPrecisionTYPE * LongData,
     return 0;
 }
 
-void GaussianSmoothing(nifti_image * Data,int * mask,float gauss_std_in){
+void GaussianSmoothing(nifti_image * Data,int * mask,float gauss_std_in)
+{
 
     int nx=Data->nx;
     int ny=Data->ny;
@@ -2080,28 +2428,36 @@ void GaussianSmoothing(nifti_image * Data,int * mask,float gauss_std_in){
 
     float * DataPTR=static_cast<float *>(Data->data);
 
-    int shiftdirection[3]={1,nx,nx*ny};
-    int dim_array[3]={nx,ny,nz};
-    float dist_array[3]={Data->dx,Data->dy,Data->dz};
+    int shiftdirection[3]= {1,nx,nx*ny};
+    int dim_array[3]= {nx,ny,nz};
+    float dist_array[3]= {Data->dx,Data->dy,Data->dz};
 
     int numel=nx*ny*nz;
-    for(long curr4d=0; curr4d<(long)Data->nt; curr4d++){ //For Each TP
+    for(long curr4d=0; curr4d<(long)Data->nt; curr4d++)  //For Each TP
+    {
         long current_4dShift_short=curr4d*nx*ny*nz;
 
         // Masking density and area
         int i=0;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    shared(DataPTR,mask,current_4dShift_short,nx,ny,nz,Density) \
-    private(i)
+        #pragma omp parallel for default(none) \
+        shared(DataPTR,mask,current_4dShift_short,nx,ny,nz,Density) \
+        private(i)
 #endif
-        for(i=0; i<nx*ny*nz; i++){
-            Density[i]=mask[i]>0;
-            DataPTR[i+current_4dShift_short]=(mask[i]>0)?DataPTR[i+current_4dShift_short]:0;
+        for(i=0; i<nx*ny*nz; i++)
+        {
+            if(mask!=NULL){
+                Density[i]=(mask[i]>0 && isnan(DataPTR[i+current_4dShift_short])==0);
+            }
+            else{
+                Density[i]=(isnan(DataPTR[i+current_4dShift_short])==0);
+            }
+            DataPTR[i+current_4dShift_short]=(Density[i]>0)?DataPTR[i+current_4dShift_short]:0;
         }
 
         //Blur Buffer and density along each direction
-        for(long currentdirection=0;currentdirection<3;currentdirection++){
+        for(long currentdirection=0; currentdirection<3; currentdirection++)
+        {
 
             // Setup kernel
             float gauss_std=gauss_std_in>0?gauss_std_in:fabs(gauss_std_in/(float)dist_array[currentdirection]);
@@ -2110,7 +2466,8 @@ void GaussianSmoothing(nifti_image * Data,int * mask,float gauss_std_in){
             int kernelshift=(int)(kernelsize/2.0f);
             float GaussKernel[400]= {0};
             float kernelsum=0;
-            for(int i=0; i<kernelsize; i++){
+            for(int i=0; i<kernelsize; i++)
+            {
                 GaussKernel[i]=expf((float)(-0.5f*powf((float)((float)i-(float)kernelshift)/gauss_std, 2.0f)))/(sqrtf(2.0f*3.14159265*powf(gauss_std, 2)));
                 kernelsum+=GaussKernel[i];
             }
@@ -2120,11 +2477,12 @@ void GaussianSmoothing(nifti_image * Data,int * mask,float gauss_std_in){
             // Updating buffers
             int index;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    shared(DataPTR,Density,ImageBuffer,DensityBuffer,current_4dShift_short,numel) \
-    private(i)
+            #pragma omp parallel for default(none) \
+            shared(DataPTR,Density,ImageBuffer,DensityBuffer,current_4dShift_short,numel) \
+            private(i)
 #endif
-            for(index=0;index<numel;index++){
+            for(index=0; index<numel; index++)
+            {
                 ImageBuffer[index]=DataPTR[index+current_4dShift_short];
                 DensityBuffer[index]=Density[index];
             }
@@ -2141,14 +2499,17 @@ void GaussianSmoothing(nifti_image * Data,int * mask,float gauss_std_in){
             int xyzpos2;
             // For every pixel
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    shared(DataPTR,GaussKernel,ImageBuffer,DensityBuffer,nx,ny,nz,kernelshift,Density,dim_array,currentdirection,shiftdirection,current_4dShift_short) \
-    private(xyzpos2,TmpDataConvolution,TmpMaskConvolution,TmpKernDensity,index,shiftstart,shiftstop,shift,xyzpos)
+            #pragma omp parallel for default(none) \
+            shared(DataPTR,GaussKernel,ImageBuffer,DensityBuffer,nx,ny,nz,kernelshift,Density,dim_array,currentdirection,shiftdirection,current_4dShift_short) \
+            private(xyzpos2,TmpDataConvolution,TmpMaskConvolution,TmpKernDensity,index,shiftstart,shiftstop,shift,xyzpos)
 #endif
-            for(xyzpos2=0;xyzpos2<nz;xyzpos2++){
+            for(xyzpos2=0; xyzpos2<nz; xyzpos2++)
+            {
                 xyzpos[2]=xyzpos2;
-                for(xyzpos[1]=0;xyzpos[1]<ny;xyzpos[1]++){
-                    for(xyzpos[0]=0;xyzpos[0]<nx;xyzpos[0]++){
+                for(xyzpos[1]=0; xyzpos[1]<ny; xyzpos[1]++)
+                {
+                    for(xyzpos[0]=0; xyzpos[0]<nx; xyzpos[0]++)
+                    {
 
                         TmpDataConvolution=0;
                         TmpMaskConvolution=0;
@@ -2158,7 +2519,8 @@ void GaussianSmoothing(nifti_image * Data,int * mask,float gauss_std_in){
                         shiftstart=((xyzpos[currentdirection]<kernelshift)?-xyzpos[currentdirection]:-kernelshift);
                         shiftstop=((xyzpos[currentdirection]>=(dim_array[currentdirection]-kernelshift))?(int)dim_array[currentdirection]-xyzpos[currentdirection]-1:kernelshift);
 
-                        for(shift=shiftstart;shift<=shiftstop; shift++){
+                        for(shift=shiftstart; shift<=shiftstop; shift++)
+                        {
                             // Data Blur
                             TmpDataConvolution+=GaussKernel[shift+kernelshift]*ImageBuffer[index+shift*shiftdirection[currentdirection]];
                             // Mask Blur
@@ -2176,12 +2538,18 @@ void GaussianSmoothing(nifti_image * Data,int * mask,float gauss_std_in){
         }
         int index=0;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    shared(DataPTR, mask, Density,current_4dShift_short,numel) \
-    private(index)
+        #pragma omp parallel for default(none) \
+        shared(DataPTR, mask, Density,current_4dShift_short,numel) \
+        private(index)
 #endif
-        for(index=0;index<numel;index++){
-            DataPTR[index+current_4dShift_short]=(mask[index]>0)?DataPTR[index+current_4dShift_short]/Density[index]:0;
+        for(index=0; index<numel; index++)
+        {
+            if(mask!=NULL){
+                DataPTR[index+current_4dShift_short]=(mask[index]>0)?DataPTR[index+current_4dShift_short]/Density[index]:0;
+            }
+            else{
+                DataPTR[index+current_4dShift_short]=DataPTR[index+current_4dShift_short]/Density[index];
+            }
         }
     }
 
@@ -2192,7 +2560,8 @@ void GaussianSmoothing(nifti_image * Data,int * mask,float gauss_std_in){
 }
 
 
-void GaussianSmoothing_carray(float * DataPTR,int * mask,float gauss_std_in, ImageSize *Currentsize){
+void GaussianSmoothing_carray(float * DataPTR,int * mask,float gauss_std_in, ImageSize *Currentsize)
+{
 
     int nx=Currentsize->xsize;
     int ny=Currentsize->ysize;
@@ -2203,28 +2572,31 @@ void GaussianSmoothing_carray(float * DataPTR,int * mask,float gauss_std_in, Ima
     float * DensityBuffer= new float [nx*ny*nz]();
 
 
-    int shiftdirection[3]={1,nx,nx*ny};
-    int dim_array[3]={nx,ny,nz};
-    float dist_array[3]={1.0f,1.0f,1.0f};
+    int shiftdirection[3]= {1,nx,nx*ny};
+    int dim_array[3]= {nx,ny,nz};
+    float dist_array[3]= {1.0f,1.0f,1.0f};
 
     int numel=nx*ny*nz;
-    for(long curr4d=0; curr4d<Currentsize->tsize; curr4d++){ //For Each TP
+    for(long curr4d=0; curr4d<Currentsize->tsize; curr4d++)  //For Each TP
+    {
         int current_4dShift_short=curr4d*nx*ny*nz;
 
         // Masking density and area
         int i=0;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    shared(DataPTR,mask,current_4dShift_short,nx,ny,nz,Density) \
-    private(i)
+        #pragma omp parallel for default(none) \
+        shared(DataPTR,mask,current_4dShift_short,nx,ny,nz,Density) \
+        private(i)
 #endif
-        for(i=0; i<nx*ny*nz; i++){
+        for(i=0; i<nx*ny*nz; i++)
+        {
             Density[i]=mask[i]>0;
             DataPTR[i+current_4dShift_short]=(mask[i]>0)?DataPTR[i+current_4dShift_short]:0;
         }
 
         //Blur Buffer and density along each direction
-        for(long currentdirection=0;currentdirection<3;currentdirection++){
+        for(long currentdirection=0; currentdirection<3; currentdirection++)
+        {
 
             // Setup kernel
             float gauss_std=gauss_std_in>0?gauss_std_in:fabs(gauss_std_in/(float)dist_array[currentdirection]);
@@ -2233,7 +2605,8 @@ void GaussianSmoothing_carray(float * DataPTR,int * mask,float gauss_std_in, Ima
             int kernelshift=(int)(kernelsize/2.0f);
             float GaussKernel[400]= {0};
             float kernelsum=0;
-            for(int i=0; i<kernelsize; i++){
+            for(int i=0; i<kernelsize; i++)
+            {
                 GaussKernel[i]=expf((float)(-0.5f*powf((float)((float)i-(float)kernelshift)/gauss_std, 2.0f)))/(sqrtf(2.0f*3.14159265*powf(gauss_std, 2)));
                 kernelsum+=GaussKernel[i];
             }
@@ -2243,11 +2616,12 @@ void GaussianSmoothing_carray(float * DataPTR,int * mask,float gauss_std_in, Ima
             // Updating buffers
             int index;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    shared(DataPTR,Density,ImageBuffer,DensityBuffer,current_4dShift_short,numel) \
-    private(i)
+            #pragma omp parallel for default(none) \
+            shared(DataPTR,Density,ImageBuffer,DensityBuffer,current_4dShift_short,numel) \
+            private(i)
 #endif
-            for(index=0;index<numel;index++){
+            for(index=0; index<numel; index++)
+            {
                 ImageBuffer[index]=DataPTR[index+current_4dShift_short];
                 DensityBuffer[index]=Density[index];
             }
@@ -2264,14 +2638,17 @@ void GaussianSmoothing_carray(float * DataPTR,int * mask,float gauss_std_in, Ima
             int xyzpos2;
             // For every pixel
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    shared(DataPTR,GaussKernel,ImageBuffer,DensityBuffer,nx,ny,nz,kernelshift,Density,dim_array,currentdirection,shiftdirection,current_4dShift_short) \
-    private(xyzpos2,TmpDataConvolution,TmpMaskConvolution,TmpKernDensity,index,shiftstart,shiftstop,shift,xyzpos)
+            #pragma omp parallel for default(none) \
+            shared(DataPTR,GaussKernel,ImageBuffer,DensityBuffer,nx,ny,nz,kernelshift,Density,dim_array,currentdirection,shiftdirection,current_4dShift_short) \
+            private(xyzpos2,TmpDataConvolution,TmpMaskConvolution,TmpKernDensity,index,shiftstart,shiftstop,shift,xyzpos)
 #endif
-            for(xyzpos2=0;xyzpos2<nz;xyzpos2++){
+            for(xyzpos2=0; xyzpos2<nz; xyzpos2++)
+            {
                 xyzpos[2]=xyzpos2;
-                for(xyzpos[1]=0;xyzpos[1]<ny;xyzpos[1]++){
-                    for(xyzpos[0]=0;xyzpos[0]<nx;xyzpos[0]++){
+                for(xyzpos[1]=0; xyzpos[1]<ny; xyzpos[1]++)
+                {
+                    for(xyzpos[0]=0; xyzpos[0]<nx; xyzpos[0]++)
+                    {
 
                         TmpDataConvolution=0;
                         TmpMaskConvolution=0;
@@ -2281,7 +2658,8 @@ void GaussianSmoothing_carray(float * DataPTR,int * mask,float gauss_std_in, Ima
                         shiftstart=((xyzpos[currentdirection]<kernelshift)?-xyzpos[currentdirection]:-kernelshift);
                         shiftstop=((xyzpos[currentdirection]>=(dim_array[currentdirection]-kernelshift))?(int)dim_array[currentdirection]-xyzpos[currentdirection]-1:kernelshift);
 
-                        for(shift=shiftstart;shift<=shiftstop; shift++){
+                        for(shift=shiftstart; shift<=shiftstop; shift++)
+                        {
                             // Data Blur
                             TmpDataConvolution+=GaussKernel[shift+kernelshift]*ImageBuffer[index+shift*shiftdirection[currentdirection]];
                             // Mask Blur
@@ -2299,11 +2677,12 @@ void GaussianSmoothing_carray(float * DataPTR,int * mask,float gauss_std_in, Ima
         }
         int index=0;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    shared(DataPTR, mask, Density,current_4dShift_short,numel) \
-    private(index)
+        #pragma omp parallel for default(none) \
+        shared(DataPTR, mask, Density,current_4dShift_short,numel) \
+        private(index)
 #endif
-        for(index=0;index<numel;index++){
+        for(index=0; index<numel; index++)
+        {
             DataPTR[index+current_4dShift_short]=(mask[index]>0)?DataPTR[index+current_4dShift_short]/Density[index]:0;
         }
     }
@@ -2316,25 +2695,33 @@ void GaussianSmoothing_carray(float * DataPTR,int * mask,float gauss_std_in, Ima
 
 
 SegPrecisionTYPE * Gaussian_Filter_4D_inside_mask(SegPrecisionTYPE * LongData,
-                                                  bool * mask,
-                                                  SegPrecisionTYPE gauss_std,
-                                                  ImageSize * CurrSizes){
+        bool * mask,
+        SegPrecisionTYPE gauss_std,
+        ImageSize * CurrSizes)
+{
 
     int kernelsize=0;
     int kernelsizemin=(int)floorf(gauss_std*6.0);
     int kernelsizemax=(int)ceilf(gauss_std*6.0);
 
-    if((kernelsizemin/2.0)==(double)(kernelsizemin/2) && kernelsizemin!=kernelsizemax){ // Which one is odd? kernelsizemin or kernelsizemax?
-        kernelsize=kernelsizemax;}
-    else if((kernelsizemax/2.0)==(double)(kernelsizemax/2) && kernelsizemin!=kernelsizemax){
-        kernelsize=kernelsizemin;}
-    else{
-        kernelsize=kernelsizemin+1;}
+    if((kernelsizemin/2.0)==(double)(kernelsizemin/2) && kernelsizemin!=kernelsizemax)  // Which one is odd? kernelsizemin or kernelsizemax?
+    {
+        kernelsize=kernelsizemax;
+    }
+    else if((kernelsizemax/2.0)==(double)(kernelsizemax/2) && kernelsizemin!=kernelsizemax)
+    {
+        kernelsize=kernelsizemin;
+    }
+    else
+    {
+        kernelsize=kernelsizemin+1;
+    }
 
     int kernelshift=(int)floorf(kernelsize/2);
     SegPrecisionTYPE GaussKernel [100]= {0};
 
-    for(int i=0; i<kernelsize; i++){
+    for(int i=0; i<kernelsize; i++)
+    {
         float kernelvalue=expf((float)(-0.5*powf((i-kernelshift)/gauss_std, 2)))/(sqrtf(2*3.14159265*powf(gauss_std, 2)));
         GaussKernel[i]=kernelvalue;
     }
@@ -2354,34 +2741,45 @@ SegPrecisionTYPE * Gaussian_Filter_4D_inside_mask(SegPrecisionTYPE * LongData,
 
 
 
-    for(long curr4d=0; curr4d<CurrSizes->numclass; curr4d++){ //For Each Class
+    for(long curr4d=0; curr4d<CurrSizes->numclass; curr4d++)  //For Each Class
+    {
         int current_4dShift_short=curr4d*CurrSizes->numel;
-        for(long index=0;index<(long)CurrSizes->numel;index++){ //Copy Class to Buffer in LongFormat
+        for(long index=0; index<(long)CurrSizes->numel; index++) //Copy Class to Buffer in LongFormat
+        {
             Buffer[index]=LongData[index+current_4dShift_short];
         }
 
 
         int xyzpos[3];
-        for(long currentdirection=0;currentdirection<3;currentdirection++){ //Blur Buffer along each direction
+        for(long currentdirection=0; currentdirection<3; currentdirection++) //Blur Buffer along each direction
+        {
             int index=0;
-            for(xyzpos[2]=0;xyzpos[2]<(int)CurrSizes->zsize;xyzpos[2]++){
-                for(xyzpos[1]=0;xyzpos[1]<(int)CurrSizes->ysize;xyzpos[1]++){
-                    for(xyzpos[0]=0;xyzpos[0]<(int)CurrSizes->xsize;xyzpos[0]++){
+            for(xyzpos[2]=0; xyzpos[2]<(int)CurrSizes->zsize; xyzpos[2]++)
+            {
+                for(xyzpos[1]=0; xyzpos[1]<(int)CurrSizes->ysize; xyzpos[1]++)
+                {
+                    for(xyzpos[0]=0; xyzpos[0]<(int)CurrSizes->xsize; xyzpos[0]++)
+                    {
                         SegPrecisionTYPE tmpvalue=0.0f;
                         SegPrecisionTYPE tmpkernelsum=0.0f;
                         LongData[index]=0.0f;
-                        if(mask[index]>0){
-                            for(int shift=((xyzpos[currentdirection]<kernelshift)?-xyzpos[currentdirection]:-kernelshift);shift<=((xyzpos[currentdirection]>=(dim_array[currentdirection]-kernelshift))?(int)dim_array[currentdirection]-xyzpos[currentdirection]-1:kernelshift) ; shift++){
+                        if(mask[index]>0)
+                        {
+                            for(int shift=((xyzpos[currentdirection]<kernelshift)?-xyzpos[currentdirection]:-kernelshift); shift<=((xyzpos[currentdirection]>=(dim_array[currentdirection]-kernelshift))?(int)dim_array[currentdirection]-xyzpos[currentdirection]-1:kernelshift) ; shift++)
+                            {
                                 tmpvalue+=GaussKernel[shift+kernelshift]*Buffer[index+shift*shiftdirection[currentdirection]];
                                 tmpkernelsum+=GaussKernel[shift+kernelshift];
                             }
                             LongData[index]=tmpvalue/tmpkernelsum;
                         }
-                        else{
-                            if(curr4d==2){
+                        else
+                        {
+                            if(curr4d==2)
+                            {
                                 LongData[index]=1;
                             }
-                            else{
+                            else
+                            {
                                 LongData[index]=0;
                             }
                         }
@@ -2389,8 +2787,10 @@ SegPrecisionTYPE * Gaussian_Filter_4D_inside_mask(SegPrecisionTYPE * LongData,
                     }
                 }
             }
-            if(currentdirection<2){
-                for(long index2=0;index2<(long)CurrSizes->numel;index2++){
+            if(currentdirection<2)
+            {
+                for(long index2=0; index2<(long)CurrSizes->numel; index2++)
+                {
                     Buffer[index2]=LongData[index2];
                 }
             }
@@ -2409,15 +2809,18 @@ int Convert_to_PV(nifti_image * T1,
                   int * S2L,
                   int * L2S,
                   ImageSize * CurrSizes,
-                  SEG_PARAM * segment_param){
-    if(segment_param->verbose_level>0){
+                  SEG_PARAM * segment_param)
+{
+    if(segment_param->verbose_level>0)
+    {
         cout<< "Covert to Explicit PV modeling" << endl;
     }
     Gaussian_Filter_Short_4D(Expec,S2L,L2S,1.0,CurrSizes,CSFclass);
     Gaussian_Filter_Short_4D(MRF,S2L,L2S,1.0,CurrSizes,CSFclass);
     Convert_WM_and_GM_to_PV(T1,BiasField,ShortPrior,Expec,S2L,M,V,CurrSizes);
     CurrSizes->numclass=7;
-    for(long i=0; i<(CurrSizes->numclass*CurrSizes->numelmasked);i++){
+    for(long i=0; i<(CurrSizes->numclass*CurrSizes->numelmasked); i++)
+    {
         MRF[i]=1.0f;
     }
     return 1;
@@ -2429,7 +2832,8 @@ int Sulci_and_gyri_correction(SegPrecisionTYPE * MRF_Beta,
                               SegPrecisionTYPE *MRF,
                               int * S2L,
                               int * L2S,
-                              ImageSize *CurrSizes){
+                              ImageSize *CurrSizes)
+{
 
     // Deep Sulci ->  Seed=WM+WMGMpv+dGM+iCSF
     cout<< "Sucli and Gyri correction" << endl;
@@ -2438,25 +2842,27 @@ int Sulci_and_gyri_correction(SegPrecisionTYPE * MRF_Beta,
     SegPrecisionTYPE * wSulci= new SegPrecisionTYPE [CurrSizes->numelmasked]();
     SegPrecisionTYPE * wGyri= new SegPrecisionTYPE [CurrSizes->numelmasked]();
 
-    for(long i=0; i<(long)CurrSizes->numelmasked;i++){
+    for(long i=0; i<(long)CurrSizes->numelmasked; i++)
+    {
         Seed_Mask[i]=(Expec[i+WMclass*CurrSizes->numelmasked]+
-                Expec[i+WMGMpvclass*CurrSizes->numelmasked]+
-                Expec[i+dGMclass*CurrSizes->numelmasked]+
-                Expec[i+iCSFclass*CurrSizes->numelmasked])>0.5f;
+                      Expec[i+WMGMpvclass*CurrSizes->numelmasked]+
+                      Expec[i+dGMclass*CurrSizes->numelmasked]+
+                      Expec[i+iCSFclass*CurrSizes->numelmasked])>0.5f;
         SpeedFunc[i]=(Expec[i+CSFclass*CurrSizes->numelmasked]+
-                Expec[i+GMCSFpvclass*CurrSizes->numelmasked])*2;
+                      Expec[i+GMCSFpvclass*CurrSizes->numelmasked])*2;
     }
 
     FMM(Seed_Mask, SpeedFunc, wSulci,30, L2S, S2L, CurrSizes);
     TransformGeoTime(wSulci,30, L2S, S2L, CurrSizes);
 
-    for(long i=0; i<(long)CurrSizes->numelmasked;i++){
+    for(long i=0; i<(long)CurrSizes->numelmasked; i++)
+    {
         Seed_Mask[i]=(Expec[i+CSFclass*CurrSizes->numelmasked]+
-                Expec[i+GMCSFpvclass*CurrSizes->numelmasked])>0.5f;
+                      Expec[i+GMCSFpvclass*CurrSizes->numelmasked])>0.5f;
         SpeedFunc[i]=(Expec[i+WMclass*CurrSizes->numelmasked]+
-                Expec[i+WMGMpvclass*CurrSizes->numelmasked]+
-                Expec[i+dGMclass*CurrSizes->numelmasked]+
-                Expec[i+iCSFclass*CurrSizes->numelmasked])*2;
+                      Expec[i+WMGMpvclass*CurrSizes->numelmasked]+
+                      Expec[i+dGMclass*CurrSizes->numelmasked]+
+                      Expec[i+iCSFclass*CurrSizes->numelmasked])*2;
     }
 
     FMM(Seed_Mask, SpeedFunc, wGyri,30, L2S, S2L, CurrSizes);
@@ -2468,26 +2874,34 @@ int Sulci_and_gyri_correction(SegPrecisionTYPE * MRF_Beta,
     float wGyri_tmp=0;
     float MRFbeta_tmp=0;
 
-    for(long i=0; i<(long)CurrSizes->numelmasked;i++){
+    for(long i=0; i<(long)CurrSizes->numelmasked; i++)
+    {
         wSulci_tmp=wSulci[i];
         wGyri_tmp=wGyri[i];
         MRFbeta_tmp=(1-wSulci_tmp)*(1-wGyri_tmp);
         MRF_Beta[i]=MRFbeta_tmp;
         sumed_all=0;
-        if((wSulci_tmp+wGyri_tmp)>0){
+        if((wSulci_tmp+wGyri_tmp)>0)
+        {
             Expec[i+WMGMpvclass*CurrSizes->numelmasked]=Expec[i+WMGMpvclass*CurrSizes->numelmasked]+wGyri[i]*Expec[i+GMclass*CurrSizes->numelmasked];
             Expec[i+GMCSFpvclass*CurrSizes->numelmasked]=Expec[i+GMCSFpvclass*CurrSizes->numelmasked]+wSulci[i]*Expec[i+GMclass*CurrSizes->numelmasked];
             Expec[i+GMclass*CurrSizes->numelmasked]=Expec[i+GMclass*CurrSizes->numelmasked]*(MRFbeta_tmp);
 
-            for(long c=0;c<7;c++){
+            for(long c=0; c<7; c++)
+            {
                 sumed_all+=Expec[i+c*CurrSizes->numelmasked];
             }
-            if(sumed_all>0){
-                for(long c=0;c<7;c++){
+            if(sumed_all>0)
+            {
+                for(long c=0; c<7; c++)
+                {
                     Expec[i+c*CurrSizes->numelmasked]=Expec[i+c*CurrSizes->numelmasked]/sumed_all;
                 }
-            }else{
-                for(long c=0;c<7;c++){
+            }
+            else
+            {
+                for(long c=0; c<7; c++)
+                {
                     Expec[i+c*CurrSizes->numelmasked]=1.0/7.0;
                 }
 
@@ -2497,8 +2911,10 @@ int Sulci_and_gyri_correction(SegPrecisionTYPE * MRF_Beta,
     }
     Gaussian_Filter_Short_4D(Expec,S2L,L2S,1.0, CurrSizes,CSFclass);
 
-    for(long i=0; i<(long)CurrSizes->numelmasked;i++){
-        for(long c=0;c<7;c++){
+    for(long i=0; i<(long)CurrSizes->numelmasked; i++)
+    {
+        for(long c=0; c<7; c++)
+        {
             ShortPrior[i+c*CurrSizes->numelmasked]=Expec[i+c*CurrSizes->numelmasked];
             MRF[i+c*CurrSizes->numelmasked]=Expec[i+c*CurrSizes->numelmasked];
         }
@@ -2519,7 +2935,8 @@ int Convert_WM_and_GM_to_PV(nifti_image * T1,
                             int * S2L,
                             SegPrecisionTYPE * M,
                             SegPrecisionTYPE * V,
-                            ImageSize * CurrSizes){
+                            ImageSize * CurrSizes)
+{
 
     int WMindex=WMclass*CurrSizes->numelmasked;
     int GMindex=GMclass*CurrSizes->numelmasked;
@@ -2538,19 +2955,22 @@ int Convert_WM_and_GM_to_PV(nifti_image * T1,
     int count2=0;
 
     SegPrecisionTYPE * T1ptrtmp = static_cast<SegPrecisionTYPE *>(T1->data);
-    for (long i=0; i<(long)CurrSizes->numelmasked;i++){
+    for (long i=0; i<(long)CurrSizes->numelmasked; i++)
+    {
         currentT1=T1ptrtmp[S2L[i]]+BiasField[i];
 
         averageFCtmp_WMGM=(currentT1-M[GMclass])/(M[WMclass]-M[GMclass]);
 
-        if(averageFCtmp_WMGM<1 && averageFCtmp_WMGM>0){
+        if(averageFCtmp_WMGM<1 && averageFCtmp_WMGM>0)
+        {
             averageFC_WMGM+=averageFCtmp_WMGM;
             count1++;
         }
 
         averageFCtmp_GMCSF=(currentT1-M[CSFclass])/(M[GMclass]-M[CSFclass]);
 
-        if(averageFCtmp_GMCSF<1 && averageFCtmp_GMCSF>0){
+        if(averageFCtmp_GMCSF<1 && averageFCtmp_GMCSF>0)
+        {
             averageFC_GMCSF+=averageFCtmp_GMCSF;
             count2++;
         }
@@ -2563,7 +2983,8 @@ int Convert_WM_and_GM_to_PV(nifti_image * T1,
     cout<< "avr_WMGMfc=" << averageFC_WMGM << endl;
     cout<< "avr_GMCSFfc=" << averageFC_GMCSF << endl;
 
-    for (long i=0; i<(long)CurrSizes->numelmasked;i++,WMindex++,GMindex++,CSFindex++,dGMindex++,iCSFindex++,WMGMpvindex++,GMCSFpvindex++) {
+    for (long i=0; i<(long)CurrSizes->numelmasked; i++,WMindex++,GMindex++,CSFindex++,dGMindex++,iCSFindex++,WMGMpvindex++,GMCSFpvindex++)
+    {
         //Copy current expec for all classes
         ShortPrior[WMindex]=(ShortPrior[WMindex]*Expec[WMindex]);
         Expec[WMindex]=ShortPrior[WMindex];
@@ -2603,10 +3024,12 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
                                         nifti_image * Priors,
                                         SEG_PARAM * segment_param,
                                         SegPrecisionTYPE * M,
-                                        ImageSize * CurrSizes){
+                                        ImageSize * CurrSizes)
+{
 
     nifti_image * Result = nifti_copy_nim_info(Priors);
-    if(segment_param->flag_PV_model){
+    if(segment_param->flag_PV_model)
+    {
 
         SegPrecisionTYPE * T1ptrtmp = static_cast<SegPrecisionTYPE *>(T1->data);
 
@@ -2619,7 +3042,10 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
         nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
         Result->data = (void *) calloc(Result->nvox, sizeof(SegPrecisionTYPE));
         SegPrecisionTYPE * Result_PTR = static_cast<SegPrecisionTYPE *>(Result->data);
-        for(unsigned int i=0; i<Result->nvox; i++){Result_PTR[i]=0;}
+        for(unsigned int i=0; i<Result->nvox; i++)
+        {
+            Result_PTR[i]=0;
+        }
 
         int Short_2_Long_Indices_tmp = 0;
         int class_nvox=Result->nx*Result->ny*Result->nz;
@@ -2628,10 +3054,13 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
         SegPrecisionTYPE Expec_tmp_sum=0;
         SegPrecisionTYPE Fractional_content=0;
 
-        if(BiasField!=NULL){
-            for(long i=0; i<(long)CurrSizes->numelmasked; i++){
+        if(BiasField!=NULL)
+        {
+            for(long i=0; i<(long)CurrSizes->numelmasked; i++)
+            {
                 Short_2_Long_Indices_tmp=S2L[i];
-                for(long currclass=0; currclass<CurrSizes->numclass;currclass++){
+                for(long currclass=0; currclass<CurrSizes->numclass; currclass++)
+                {
                     Expec_tmp[currclass]=Expec[i+currclass*CurrSizes->numelmasked];
                 }
                 float classthreshold=0.1;
@@ -2643,8 +3072,10 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
 
 
                 // Estimating WM/GM fractional content from the T1 bias corrected data
-                if(Expec_tmp[WMGMpvclass]>classthreshold){
-                    if(((Expec_tmp[WMclass])<(Expec_tmp[WMGMpvclass])) & (Expec_tmp[GMclass]<(Expec_tmp[WMGMpvclass]))){
+                if(Expec_tmp[WMGMpvclass]>classthreshold)
+                {
+                    if(((Expec_tmp[WMclass])<(Expec_tmp[WMGMpvclass])) & (Expec_tmp[GMclass]<(Expec_tmp[WMGMpvclass])))
+                    {
                         Expec_tmp_sum=Expec_tmp[WMclass]+Expec_tmp[WMGMpvclass]+Expec_tmp[GMclass];
                         Fractional_content=(M[WMclass]-(T1ptrtmp[Short_2_Long_Indices_tmp]+BiasField[i]))/(M[WMclass]-M[GMclass]);
                         Fractional_content=(Fractional_content<0)?0:Fractional_content;
@@ -2652,19 +3083,23 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
                         Resultdata[Short_2_Long_Indices_tmp+(WMclass)*class_nvox]=(1-Fractional_content)/Expec_tmp_sum;
                         Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=(Fractional_content)/Expec_tmp_sum;
                     }
-                    else if(Expec_tmp[WMclass]>Expec_tmp[GMclass]){
+                    else if(Expec_tmp[WMclass]>Expec_tmp[GMclass])
+                    {
                         Resultdata[Short_2_Long_Indices_tmp+(WMclass)*class_nvox]=1;
                         Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=0;
                     }
-                    else{
+                    else
+                    {
                         Resultdata[Short_2_Long_Indices_tmp+(WMclass)*class_nvox]=0;
                         Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=1;
                     }
                 }
 
                 // Estimating CSF/GM fractional content from the T1 bias corrected data
-                if(Expec_tmp[GMCSFpvclass]>classthreshold){
-                    if((Expec_tmp[CSFclass]<(Expec_tmp[GMCSFpvclass])) & (Expec_tmp[GMclass]<(Expec_tmp[GMCSFpvclass]))){
+                if(Expec_tmp[GMCSFpvclass]>classthreshold)
+                {
+                    if((Expec_tmp[CSFclass]<(Expec_tmp[GMCSFpvclass])) & (Expec_tmp[GMclass]<(Expec_tmp[GMCSFpvclass])))
+                    {
                         Expec_tmp_sum=Expec_tmp[CSFclass]+Expec_tmp[GMCSFpvclass]+Expec_tmp[GMclass];
                         Fractional_content=(M[CSFclass]-(T1ptrtmp[Short_2_Long_Indices_tmp]+BiasField[i]))/(M[CSFclass]-M[GMclass]);
                         Fractional_content=(Fractional_content<0)?0:Fractional_content;
@@ -2672,11 +3107,13 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
                         Resultdata[Short_2_Long_Indices_tmp+(CSFclass)*class_nvox]=(1-Fractional_content)/Expec_tmp_sum;
                         Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=(Fractional_content)/Expec_tmp_sum;
                     }
-                    else if(Expec_tmp[CSFclass]>Expec_tmp[GMclass]){
+                    else if(Expec_tmp[CSFclass]>Expec_tmp[GMclass])
+                    {
                         Resultdata[Short_2_Long_Indices_tmp+(CSFclass)*class_nvox]=1;
                         Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=0;
                     }
-                    else{
+                    else
+                    {
                         Resultdata[Short_2_Long_Indices_tmp+(CSFclass)*class_nvox]=0;
                         Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=1;
                     }
@@ -2684,20 +3121,25 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
 
                 // Normalizing the fractional contents
                 Expec_tmp_sum=0;
-                for(long currclass=0; currclass<non_PV_numclass;currclass++){
+                for(long currclass=0; currclass<non_PV_numclass; currclass++)
+                {
                     Expec_tmp_sum+=Resultdata[Short_2_Long_Indices_tmp+(currclass)*class_nvox];
                 }
-                for(long currclass=0; currclass<non_PV_numclass;currclass++){
+                for(long currclass=0; currclass<non_PV_numclass; currclass++)
+                {
                     Resultdata[Short_2_Long_Indices_tmp+(currclass)*class_nvox]=Resultdata[Short_2_Long_Indices_tmp+(currclass)*class_nvox]/Expec_tmp_sum;
                 }
 
             }
         }
-        else{
+        else
+        {
 
-            for(long i=0; i<(long)CurrSizes->numelmasked; i++){
+            for(long i=0; i<(long)CurrSizes->numelmasked; i++)
+            {
                 Short_2_Long_Indices_tmp=S2L[i];
-                for(long currclass=0; currclass<CurrSizes->numclass;currclass++){
+                for(long currclass=0; currclass<CurrSizes->numclass; currclass++)
+                {
                     Expec_tmp[currclass]=Expec[i+currclass*CurrSizes->numelmasked];
                 }
                 float classthreshold=0.1;
@@ -2709,8 +3151,10 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
 
 
                 // Estimating WM/GM fractional content from the T1 data
-                if(Expec_tmp[WMGMpvclass]>classthreshold){
-                    if(((Expec_tmp[WMclass])<(Expec_tmp[WMGMpvclass])) & (Expec_tmp[GMclass]<(Expec_tmp[WMGMpvclass]))){
+                if(Expec_tmp[WMGMpvclass]>classthreshold)
+                {
+                    if(((Expec_tmp[WMclass])<(Expec_tmp[WMGMpvclass])) & (Expec_tmp[GMclass]<(Expec_tmp[WMGMpvclass])))
+                    {
                         Expec_tmp_sum=Expec_tmp[WMclass]+Expec_tmp[WMGMpvclass]+Expec_tmp[GMclass];
                         Fractional_content=(M[WMclass]-(T1ptrtmp[Short_2_Long_Indices_tmp]))/(M[WMclass]-M[GMclass]);
                         Fractional_content=(Fractional_content<0)?0:Fractional_content;
@@ -2718,19 +3162,23 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
                         Resultdata[Short_2_Long_Indices_tmp+(WMclass)*class_nvox]=(1-Fractional_content)/Expec_tmp_sum;
                         Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=(Fractional_content)/Expec_tmp_sum;
                     }
-                    else if(Expec_tmp[WMclass]>Expec_tmp[GMclass]){
+                    else if(Expec_tmp[WMclass]>Expec_tmp[GMclass])
+                    {
                         Resultdata[Short_2_Long_Indices_tmp+(WMclass)*class_nvox]=1;
                         Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=0;
                     }
-                    else{
+                    else
+                    {
                         Resultdata[Short_2_Long_Indices_tmp+(WMclass)*class_nvox]=0;
                         Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=1;
                     }
                 }
 
                 // Estimating CSF/GM fractional content from the T1 data
-                if(Expec_tmp[GMCSFpvclass]>classthreshold){
-                    if((Expec_tmp[CSFclass]<Expec_tmp[GMCSFpvclass]) & (Expec_tmp[GMclass]<Expec_tmp[GMCSFpvclass])){
+                if(Expec_tmp[GMCSFpvclass]>classthreshold)
+                {
+                    if((Expec_tmp[CSFclass]<Expec_tmp[GMCSFpvclass]) & (Expec_tmp[GMclass]<Expec_tmp[GMCSFpvclass]))
+                    {
                         Expec_tmp_sum=Expec_tmp[CSFclass]+Expec_tmp[GMCSFpvclass]+Expec_tmp[GMclass];
                         Fractional_content=(M[CSFclass]-(T1ptrtmp[Short_2_Long_Indices_tmp]))/(M[CSFclass]-M[GMclass]);
                         Fractional_content=(Fractional_content<0)?0:Fractional_content;
@@ -2738,11 +3186,13 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
                         Resultdata[Short_2_Long_Indices_tmp+(CSFclass)*class_nvox]=(1-Fractional_content)/Expec_tmp_sum;
                         Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=(Fractional_content)/Expec_tmp_sum;
                     }
-                    else if(Expec_tmp[CSFclass]>Expec_tmp[GMclass]){
+                    else if(Expec_tmp[CSFclass]>Expec_tmp[GMclass])
+                    {
                         Resultdata[Short_2_Long_Indices_tmp+(CSFclass)*class_nvox]=1;
                         Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=0;
                     }
-                    else{
+                    else
+                    {
                         Resultdata[Short_2_Long_Indices_tmp+(CSFclass)*class_nvox]=0;
                         Resultdata[Short_2_Long_Indices_tmp+(GMclass)*class_nvox]=1;
                     }
@@ -2750,10 +3200,12 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
 
                 // Normalizing the fractional contents
                 Expec_tmp_sum=0;
-                for(long currclass=0; currclass<non_PV_numclass;currclass++){
+                for(long currclass=0; currclass<non_PV_numclass; currclass++)
+                {
                     Expec_tmp_sum+=Resultdata[Short_2_Long_Indices_tmp+(currclass)*class_nvox];
                 }
-                for(long currclass=0; currclass<non_PV_numclass;currclass++){
+                for(long currclass=0; currclass<non_PV_numclass; currclass++)
+                {
                     Resultdata[Short_2_Long_Indices_tmp+(currclass)*class_nvox]=Resultdata[Short_2_Long_Indices_tmp+(currclass)*class_nvox]/Expec_tmp_sum;
                 }
 
@@ -2765,7 +3217,8 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
 
         }
     }
-    else{
+    else
+    {
         Result->dim[0]=4;
         Result->dim[4]=(CurrSizes->numclass);
         Result->datatype=DT_FLOAT32;
@@ -2775,20 +3228,25 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
         nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
         Result->data = (void *) calloc(Result->nvox, sizeof(SegPrecisionTYPE));
         SegPrecisionTYPE * Result_PTR = static_cast<SegPrecisionTYPE *>(Result->data);
-        for(unsigned int i=0; i<Result->nvox; i++){Result_PTR[i]=0;}
+        for(unsigned int i=0; i<Result->nvox; i++)
+        {
+            Result_PTR[i]=0;
+        }
 
         int * S2L_PRT = (int *) S2L;
         SegPrecisionTYPE * Resultdata= static_cast<SegPrecisionTYPE *>(Result->data);
 
 
         int class_nvox=CurrSizes->numel;
-        for(long currclass=0; currclass<CurrSizes->numclass;currclass++){
+        for(long currclass=0; currclass<CurrSizes->numclass; currclass++)
+        {
 
             SegPrecisionTYPE * Resultdata_class = &Resultdata[(currclass)*class_nvox];
             SegPrecisionTYPE * Expec_PTR = &Expec[(currclass)*CurrSizes->numelmasked];
             S2L_PRT= (int *) S2L;
 
-            for(long i=0; i<(long)CurrSizes->numelmasked; i++,S2L_PRT++,Expec_PTR++){
+            for(long i=0; i<(long)CurrSizes->numelmasked; i++,S2L_PRT++,Expec_PTR++)
+            {
                 Resultdata_class[*S2L_PRT]=*Expec_PTR;
             }
         }
@@ -2798,27 +3256,33 @@ nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
 
 bool * binarise_image(SegPrecisionTYPE * SingleImage,
                       SegPrecisionTYPE Threshold,
-                      ImageSize * CurrSizes){
+                      ImageSize * CurrSizes)
+{
 
     bool * Result = new bool [CurrSizes->numelmasked];
 
-    for(long i=0; i<(long)CurrSizes->numelmasked; i++){
+    for(long i=0; i<(long)CurrSizes->numelmasked; i++)
+    {
         Result[i]=(SingleImage[i]>Threshold);
     }
     return Result;
 }
 
 nifti_image * Copy_Single_ShortImage_to_Result(SegPrecisionTYPE * SingleImage,
-                                               int * Short_2_Long_Indices,
-                                               nifti_image * Sourceimage,
-                                               char * filename,
-                                               ImageSize * CurrSizes){
+        int * Short_2_Long_Indices,
+        nifti_image * Sourceimage,
+        char * filename,
+        ImageSize * CurrSizes)
+{
 
     nifti_image * Result = nifti_copy_nim_info(Sourceimage);
     nifti_set_filenames(Result,filename,0,0);
     Result->data = (void *) calloc(Result->nvox, sizeof(SegPrecisionTYPE));
     SegPrecisionTYPE * Result_PTR = static_cast<SegPrecisionTYPE *>(Result->data);
-    for(unsigned int i=0; i<Result->nvox; i++){Result_PTR[i]=0;}
+    for(unsigned int i=0; i<Result->nvox; i++)
+    {
+        Result_PTR[i]=0;
+    }
 
     int * Short_2_Long_Indices_PRT = (int *) Short_2_Long_Indices;
     SegPrecisionTYPE * Resultdata= static_cast<SegPrecisionTYPE *>(Result->data);
@@ -2826,7 +3290,8 @@ nifti_image * Copy_Single_ShortImage_to_Result(SegPrecisionTYPE * SingleImage,
     SegPrecisionTYPE * SingleImage_PTR =SingleImage;
     Short_2_Long_Indices_PRT= (int *) Short_2_Long_Indices;
 
-    for(long i=0; i<(long)CurrSizes->numelmasked; i++,Short_2_Long_Indices_PRT++,SingleImage_PTR++){
+    for(long i=0; i<(long)CurrSizes->numelmasked; i++,Short_2_Long_Indices_PRT++,SingleImage_PTR++)
+    {
         Resultdata[*Short_2_Long_Indices_PRT]=(SegPrecisionTYPE)(*SingleImage_PTR);
     }
     return Result;
@@ -2835,10 +3300,11 @@ nifti_image * Copy_Single_ShortImage_to_Result(SegPrecisionTYPE * SingleImage,
 
 
 nifti_image * Copy_BiasCorrected_to_Result_mask(SegPrecisionTYPE * BiasField,
-                                                int * Short_2_Long_Indices,
-                                                nifti_image * T1,
-                                                char * filename,
-                                                ImageSize * CurrSizes){
+        int * Short_2_Long_Indices,
+        nifti_image * T1,
+        char * filename,
+        ImageSize * CurrSizes)
+{
 
     nifti_image * Result = nifti_copy_nim_info(T1);
     Result->dim[0]=4;
@@ -2851,19 +3317,27 @@ nifti_image * Copy_BiasCorrected_to_Result_mask(SegPrecisionTYPE * BiasField,
     Result->data = (void *) calloc(Result->nvox, sizeof(SegPrecisionTYPE));
     SegPrecisionTYPE * Resultdata = static_cast<SegPrecisionTYPE *>(Result->data);
     SegPrecisionTYPE * T1data = static_cast<SegPrecisionTYPE *>(T1->data);
-    for(unsigned int i=0; i<Result->nvox; i++){Resultdata[i]=0;}
+    for(unsigned int i=0; i<Result->nvox; i++)
+    {
+        Resultdata[i]=0;
+    }
 
     int * Short_2_Long_Indices_PRT = (int *) Short_2_Long_Indices;
 
     Short_2_Long_Indices_PRT= (int *) Short_2_Long_Indices;
     SegPrecisionTYPE to_resize=0;
-    if(BiasField!=NULL){
-        for(long i=0; i<(long)CurrSizes->numelmasked; i++,Short_2_Long_Indices_PRT++){
+    if(BiasField!=NULL)
+    {
+        for(long i=0; i<(long)CurrSizes->numelmasked; i++,Short_2_Long_Indices_PRT++)
+        {
             to_resize=exp((BiasField[i]+T1data[*Short_2_Long_Indices_PRT])*0.693147181)-1;
             Resultdata[*Short_2_Long_Indices_PRT]=(to_resize*(CurrSizes->rescale_max[0]-CurrSizes->rescale_min[0])+CurrSizes->rescale_min[0]);
         }
-    }else{
-        for(long i=0; i<(long)CurrSizes->numelmasked; i++,Short_2_Long_Indices_PRT++){
+    }
+    else
+    {
+        for(long i=0; i<(long)CurrSizes->numelmasked; i++,Short_2_Long_Indices_PRT++)
+        {
             to_resize=exp((T1data[*Short_2_Long_Indices_PRT])*0.693147181)-1;
             Resultdata[*Short_2_Long_Indices_PRT]=(to_resize*(CurrSizes->rescale_max[0]-CurrSizes->rescale_min[0])+CurrSizes->rescale_min[0]);
         }
@@ -2872,9 +3346,10 @@ nifti_image * Copy_BiasCorrected_to_Result_mask(SegPrecisionTYPE * BiasField,
 }
 
 nifti_image * Copy_BiasCorrected_to_Result(SegPrecisionTYPE * BiasField,
-                                           nifti_image * T1,
-                                           char * filename,
-                                           ImageSize * CurrSizes){
+        nifti_image * T1,
+        char * filename,
+        ImageSize * CurrSizes)
+{
 
     nifti_image * Result = nifti_copy_nim_info(T1);
     Result->dim[0]=4;
@@ -2887,15 +3362,23 @@ nifti_image * Copy_BiasCorrected_to_Result(SegPrecisionTYPE * BiasField,
     Result->data = (void *) calloc(Result->nvox, sizeof(SegPrecisionTYPE));
     SegPrecisionTYPE * Resultdata = static_cast<SegPrecisionTYPE *>(Result->data);
     SegPrecisionTYPE * T1data = static_cast<SegPrecisionTYPE *>(T1->data);
-    for(unsigned int i=0; i<Result->nvox; i++){Resultdata[i]=0;}
+    for(unsigned int i=0; i<Result->nvox; i++)
+    {
+        Resultdata[i]=0;
+    }
     SegPrecisionTYPE to_resize=0;
-    if(BiasField!=NULL){
-        for(long i=0; i<(long)CurrSizes->numel; i++){
+    if(BiasField!=NULL)
+    {
+        for(long i=0; i<(long)CurrSizes->numel; i++)
+        {
             to_resize=exp((BiasField[i]+T1data[i])*0.693147181)-1;
             Resultdata[i]=(to_resize*(CurrSizes->rescale_max[0]-CurrSizes->rescale_min[0])+CurrSizes->rescale_min[0]);
         }
-    }else{
-        for(long i=0; i<(long)CurrSizes->numel; i++){
+    }
+    else
+    {
+        for(long i=0; i<(long)CurrSizes->numel; i++)
+        {
             to_resize=exp((T1data[i])*0.693147181)-1;
             Resultdata[i]=(to_resize*(CurrSizes->rescale_max[0]-CurrSizes->rescale_min[0])+CurrSizes->rescale_min[0]);
         }
@@ -2906,13 +3389,14 @@ nifti_image * Copy_BiasCorrected_to_Result(SegPrecisionTYPE * BiasField,
 
 
 nifti_image * Copy_Expec_to_Result_Neonate_mask(SegPrecisionTYPE * Expec,
-                                                int * Short_2_Long_Indices,
-                                                int * Long_2_Short_Indices,
-                                                nifti_image * T1,
-                                                float * BiasField,
-                                                float * M,
-                                                char * filename,
-                                                ImageSize * CurrSizes){
+        int * Short_2_Long_Indices,
+        int * Long_2_Short_Indices,
+        nifti_image * T1,
+        float * BiasField,
+        float * M,
+        char * filename,
+        ImageSize * CurrSizes)
+{
 
     nifti_image * Result = nifti_copy_nim_info(T1);
     Result->dim[0]=4;
@@ -2927,24 +3411,29 @@ nifti_image * Copy_Expec_to_Result_Neonate_mask(SegPrecisionTYPE * Expec,
     SegPrecisionTYPE * Resultdata = static_cast<SegPrecisionTYPE *>(Result->data);
 
     SegPrecisionTYPE * T1ptrtmp = static_cast<SegPrecisionTYPE *>(T1->data);
-    for(unsigned int i=0; i<Result->nvox; i++){Resultdata[i]=0;}
+    for(unsigned int i=0; i<Result->nvox; i++)
+    {
+        Resultdata[i]=0;
+    }
 
     int * Short_2_Long_Indices_PRT = (int *) Short_2_Long_Indices;
 
     int class_nvox=Result->nx*Result->ny*Result->nz;
 
     Short_2_Long_Indices_PRT= (int *) Short_2_Long_Indices;
-    for(long currclass=0; currclass<6;currclass++){
+    for(long currclass=0; currclass<6; currclass++)
+    {
         SegPrecisionTYPE * Resultdata_class = &Resultdata[(currclass)*class_nvox];
         SegPrecisionTYPE * Expec_PTR = &Expec[(currclass)*CurrSizes->numelmasked];
         Short_2_Long_Indices_PRT= (int *) Short_2_Long_Indices;
-        for(long i=0; i<(long)CurrSizes->numelmasked; i++,Short_2_Long_Indices_PRT++,Expec_PTR++){
+        for(long i=0; i<(long)CurrSizes->numelmasked; i++,Short_2_Long_Indices_PRT++,Expec_PTR++)
+        {
             Resultdata_class[(*Short_2_Long_Indices_PRT)]=(*Expec_PTR);
         }
     }
 
 
-    int xyzpos[3]={0};
+    int xyzpos[3]= {0};
     int distance=4;
     Short_2_Long_Indices_PRT= (int *) Short_2_Long_Indices;
     float Fractional_content=0;
@@ -2954,28 +3443,39 @@ nifti_image * Copy_Expec_to_Result_Neonate_mask(SegPrecisionTYPE * Expec,
     float biggestclass2_prob=-1;
     int neigh_index=0;
 
-    for(long i=0; i<(long)CurrSizes->numelmasked; i++,Short_2_Long_Indices_PRT++){
-        if(Expec[(6)*CurrSizes->numelmasked+i]>0.1){
+    for(long i=0; i<(long)CurrSizes->numelmasked; i++,Short_2_Long_Indices_PRT++)
+    {
+        if(Expec[(6)*CurrSizes->numelmasked+i]>0.1)
+        {
             biggestclass=-1;
             biggestclass_prob=0.1;
             biggestclass2=-2;
             biggestclass2_prob=0.1;
-            for(xyzpos[2]=-distance;xyzpos[2]<distance;xyzpos[2]++){
-                for(xyzpos[1]=-distance;xyzpos[1]<distance;xyzpos[1]++){
-                    for(xyzpos[0]=-distance;xyzpos[0]<distance;xyzpos[0]++){
+            for(xyzpos[2]=-distance; xyzpos[2]<distance; xyzpos[2]++)
+            {
+                for(xyzpos[1]=-distance; xyzpos[1]<distance; xyzpos[1]++)
+                {
+                    for(xyzpos[0]=-distance; xyzpos[0]<distance; xyzpos[0]++)
+                    {
                         neigh_index=Long_2_Short_Indices[(*Short_2_Long_Indices_PRT)+xyzpos[0]+xyzpos[1]*CurrSizes->xsize+xyzpos[2]*CurrSizes->xsize*CurrSizes->ysize];
-                        if(neigh_index>0 && neigh_index<(int)CurrSizes->numel){
-                            for(long neigh_class=1; neigh_class<6;neigh_class++){
-                                if(Expec[neigh_index+(neigh_class)*CurrSizes->numelmasked]>biggestclass_prob){
-                                    if(biggestclass!=biggestclass2){
+                        if(neigh_index>0 && neigh_index<(int)CurrSizes->numel)
+                        {
+                            for(long neigh_class=1; neigh_class<6; neigh_class++)
+                            {
+                                if(Expec[neigh_index+(neigh_class)*CurrSizes->numelmasked]>biggestclass_prob)
+                                {
+                                    if(biggestclass!=biggestclass2)
+                                    {
                                         biggestclass2_prob=biggestclass_prob;
                                         biggestclass2=biggestclass;
                                     }
                                     biggestclass_prob=Expec[neigh_index+(neigh_class)*CurrSizes->numelmasked];
                                     biggestclass=neigh_class;
                                 }
-                                if(Expec[neigh_index+(neigh_class)*CurrSizes->numelmasked]>biggestclass2_prob && Expec[neigh_index+(neigh_class)*CurrSizes->numelmasked]<biggestclass2_prob){
-                                    if(biggestclass!=neigh_class){
+                                if(Expec[neigh_index+(neigh_class)*CurrSizes->numelmasked]>biggestclass2_prob && Expec[neigh_index+(neigh_class)*CurrSizes->numelmasked]<biggestclass2_prob)
+                                {
+                                    if(biggestclass!=neigh_class)
+                                    {
                                         biggestclass2_prob=Expec[neigh_index+(neigh_class)*CurrSizes->numelmasked];
                                         biggestclass2=neigh_class;
                                     }
@@ -2986,20 +3486,25 @@ nifti_image * Copy_Expec_to_Result_Neonate_mask(SegPrecisionTYPE * Expec,
                 }
             }
 
-            if(biggestclass>0 && biggestclass2>0){
+            if(biggestclass>0 && biggestclass2>0)
+            {
                 Fractional_content=(M[biggestclass]-(T1ptrtmp[(*Short_2_Long_Indices_PRT)]+BiasField[i]))/(M[biggestclass]-M[biggestclass2]);
                 Fractional_content=(Fractional_content<0)?0:Fractional_content;
                 Fractional_content=(Fractional_content>1)?1:Fractional_content;
                 Resultdata[(*Short_2_Long_Indices_PRT)+(biggestclass)*class_nvox]=(1-Fractional_content);
                 Resultdata[(*Short_2_Long_Indices_PRT)+(biggestclass2)*class_nvox]=(Fractional_content);
-                for(long otherclasses=0;otherclasses<6;otherclasses++){
-                    if(otherclasses!=biggestclass && otherclasses!=biggestclass2){
+                for(long otherclasses=0; otherclasses<6; otherclasses++)
+                {
+                    if(otherclasses!=biggestclass && otherclasses!=biggestclass2)
+                    {
                         Resultdata[(*Short_2_Long_Indices_PRT)+(otherclasses)*class_nvox]=0;
                     }
                 }
             }
-            else{
-                for(long otherclasses=0;otherclasses<6;otherclasses++){
+            else
+            {
+                for(long otherclasses=0; otherclasses<6; otherclasses++)
+                {
                     Resultdata[(*Short_2_Long_Indices_PRT)+(otherclasses)*class_nvox]=0;
                 }
                 Resultdata[(*Short_2_Long_Indices_PRT)+(2)*class_nvox]=1;
@@ -3011,20 +3516,28 @@ nifti_image * Copy_Expec_to_Result_Neonate_mask(SegPrecisionTYPE * Expec,
     Short_2_Long_Indices_PRT= (int *) Short_2_Long_Indices;
     float sumexp=0;
 
-    for(long i=0; i<(long)CurrSizes->numel; i++){
-        if(Long_2_Short_Indices[i]>0){
+    for(long i=0; i<(long)CurrSizes->numel; i++)
+    {
+        if(Long_2_Short_Indices[i]>0)
+        {
             sumexp=0;
-            for(long currclass=0; currclass<6;currclass++){
-                if((Resultdata[i+currclass*CurrSizes->numel])>0.01){
+            for(long currclass=0; currclass<6; currclass++)
+            {
+                if((Resultdata[i+currclass*CurrSizes->numel])>0.01)
+                {
                     sumexp+=Resultdata[i+currclass*CurrSizes->numel];
                 }
             }
-            if(sumexp>0){
-                for(long currclass=0; currclass<6;currclass++){
-                    if((Resultdata[i+currclass*CurrSizes->numel])>0.01){
+            if(sumexp>0)
+            {
+                for(long currclass=0; currclass<6; currclass++)
+                {
+                    if((Resultdata[i+currclass*CurrSizes->numel])>0.01)
+                    {
                         Resultdata[i+currclass*CurrSizes->numel]=Resultdata[i+currclass*CurrSizes->numel]/sumexp;
                     }
-                    else{
+                    else
+                    {
                         Resultdata[i+currclass*CurrSizes->numel]=0;
                     }
                 }
@@ -3039,7 +3552,8 @@ nifti_image * Copy_Expec_to_Result_mask(SegPrecisionTYPE * Expec,
                                         int * Short_2_Long_Indices,
                                         nifti_image * T1,
                                         char * filename,
-                                        ImageSize * CurrSizes){
+                                        ImageSize * CurrSizes)
+{
 
     nifti_image * Result = nifti_copy_nim_info(T1);
     Result->dim[0]=4;
@@ -3054,20 +3568,25 @@ nifti_image * Copy_Expec_to_Result_mask(SegPrecisionTYPE * Expec,
     nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
     Result->data = (void *) calloc(Result->nvox, sizeof(SegPrecisionTYPE));
     SegPrecisionTYPE * Resultdata = static_cast<SegPrecisionTYPE *>(Result->data);
-    for(unsigned int i=0; i<Result->nvox; i++){Resultdata[i]=0;}
+    for(unsigned int i=0; i<Result->nvox; i++)
+    {
+        Resultdata[i]=0;
+    }
 
     int * Short_2_Long_Indices_PRT = (int *) Short_2_Long_Indices;
 
     int class_nvox=Result->nx*Result->ny*Result->nz;
 
     Short_2_Long_Indices_PRT= (int *) Short_2_Long_Indices;
-    for(long currclass=0; currclass<CurrSizes->numclass;currclass++){
+    for(long currclass=0; currclass<CurrSizes->numclass; currclass++)
+    {
 
         SegPrecisionTYPE * Resultdata_class = &Resultdata[(currclass)*class_nvox];
         SegPrecisionTYPE * Expec_PTR = &Expec[(currclass)*CurrSizes->numelmasked];
         Short_2_Long_Indices_PRT= (int *) Short_2_Long_Indices;
 
-        for(long i=0; i<(long)CurrSizes->numelmasked; i++,Short_2_Long_Indices_PRT++,Expec_PTR++){
+        for(long i=0; i<(long)CurrSizes->numelmasked; i++,Short_2_Long_Indices_PRT++,Expec_PTR++)
+        {
             Resultdata_class[Short_2_Long_Indices[i]]=*Expec_PTR;
         }
     }
@@ -3078,7 +3597,8 @@ nifti_image * Copy_Expec_to_Result_mask(SegPrecisionTYPE * Expec,
 nifti_image * Copy_Expec_to_Result(SegPrecisionTYPE * Expec,
                                    nifti_image * T1,
                                    char * filename,
-                                   ImageSize * CurrSizes){
+                                   ImageSize * CurrSizes)
+{
 
     nifti_image * Result = nifti_copy_nim_info(T1);
     Result->dim[0]=4;
@@ -3092,15 +3612,20 @@ nifti_image * Copy_Expec_to_Result(SegPrecisionTYPE * Expec,
     nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
     Result->data = (void *) calloc(Result->nvox, sizeof(SegPrecisionTYPE));
     SegPrecisionTYPE * Resultdata = static_cast<SegPrecisionTYPE *>(Result->data);
-    for(unsigned int i=0; i<Result->nvox; i++){Resultdata[i]=0;}
+    for(unsigned int i=0; i<Result->nvox; i++)
+    {
+        Resultdata[i]=0;
+    }
     int class_nvox=Result->nx*Result->ny*Result->nz;
 
-    for(long currclass=0; currclass<CurrSizes->numclass;currclass++){
+    for(long currclass=0; currclass<CurrSizes->numclass; currclass++)
+    {
 
         SegPrecisionTYPE * Resultdata_class = &Resultdata[(currclass)*class_nvox];
         SegPrecisionTYPE * Expec_PTR = &Expec[(currclass)*CurrSizes->numel];
 
-        for(long i=0; i<(long)CurrSizes->numel; i++,Expec_PTR++){
+        for(long i=0; i<(long)CurrSizes->numel; i++,Expec_PTR++)
+        {
             Resultdata_class[i]=*Expec_PTR;
         }
     }
@@ -3109,8 +3634,9 @@ nifti_image * Copy_Expec_to_Result(SegPrecisionTYPE * Expec,
 
 
 nifti_image * Copy_single_image_to_Result(bool * Mask,
-                                          nifti_image * Original,
-                                          char * filename){
+        nifti_image * Original,
+        char * filename)
+{
 
     nifti_image * Result = nifti_copy_nim_info(Original);
     Result->dim[0]=4;
@@ -3129,7 +3655,8 @@ nifti_image * Copy_single_image_to_Result(bool * Mask,
 
     bool * Expec_PTR = static_cast<bool *>(Mask);
 
-    for(unsigned int i=0; i<Result->nvox; i++,Expec_PTR++,Resultdata++){
+    for(unsigned int i=0; i<Result->nvox; i++,Expec_PTR++,Resultdata++)
+    {
         *Resultdata=(int)(*Expec_PTR);
     }
 
@@ -3138,8 +3665,9 @@ nifti_image * Copy_single_image_to_Result(bool * Mask,
 
 
 nifti_image * Copy_single_image_to_Result(float * W,
-                                          nifti_image * Original,
-                                          char * filename){
+        nifti_image * Original,
+        char * filename)
+{
 
     nifti_image * Result = nifti_copy_nim_info(Original);
     Result->dim[0]=4;
@@ -3158,7 +3686,8 @@ nifti_image * Copy_single_image_to_Result(float * W,
 
     float * Expec_PTR = static_cast<float *>(W);
 
-    for(unsigned int i=0; i<Result->nvox; i++,Expec_PTR++,Resultdata++){
+    for(unsigned int i=0; i<Result->nvox; i++,Expec_PTR++,Resultdata++)
+    {
         *Resultdata=(float)(*Expec_PTR);
     }
 
@@ -3166,8 +3695,9 @@ nifti_image * Copy_single_image_to_Result(float * W,
 }
 
 nifti_image * Copy_single_image_to_Result(double * W,
-                                          nifti_image * Original,
-                                          char * filename){
+        nifti_image * Original,
+        char * filename)
+{
 
     nifti_image * Result = nifti_copy_nim_info(Original);
     Result->dim[0]=4;
@@ -3186,7 +3716,8 @@ nifti_image * Copy_single_image_to_Result(double * W,
 
     double * Expec_PTR = static_cast<double *>(W);
 
-    for(unsigned int i=0; i<Result->nvox; i++,Expec_PTR++,Resultdata++){
+    for(unsigned int i=0; i<Result->nvox; i++,Expec_PTR++,Resultdata++)
+    {
         *Resultdata=(float)(*Expec_PTR);
     }
 
@@ -3194,8 +3725,9 @@ nifti_image * Copy_single_image_to_Result(double * W,
 }
 
 nifti_image * Copy_single_image_to_Result(int * Image,
-                                          nifti_image * Original,
-                                          char * filename){
+        nifti_image * Original,
+        char * filename)
+{
 
     nifti_image * Result = nifti_copy_nim_info(Original);
     Result->dim[0]=4;
@@ -3214,7 +3746,8 @@ nifti_image * Copy_single_image_to_Result(int * Image,
     int * Resultdata = static_cast<int *>(Result->data);
     int * Image_PTR = Image;
 
-    for(unsigned int i=0; i<Result->nvox; i++,Image_PTR++,Resultdata++){
+    for(unsigned int i=0; i<Result->nvox; i++,Image_PTR++,Resultdata++)
+    {
         *Resultdata=(int)(*Image_PTR);
     }
 
@@ -3222,21 +3755,33 @@ nifti_image * Copy_single_image_to_Result(int * Image,
 }
 
 
-int quickSort(int *arr, int elements) {
+int quickSort(int *arr, int elements)
+{
 
     int  piv, beg[300], end[300], i=0, L, R, swap ;
 
-    beg[0]=0; end[0]=elements;
-    while (i>=0) {
-        L=beg[i]; R=end[i]-1;
-        if (L<R) {
+    beg[0]=0;
+    end[0]=elements;
+    while (i>=0)
+    {
+        L=beg[i];
+        R=end[i]-1;
+        if (L<R)
+        {
             piv=arr[L];
-            while (L<R) {
-                while (arr[R]>=piv && L<R) R--; if (L<R) arr[L++]=arr[R];
-                while (arr[L]<=piv && L<R) L++; if (L<R) arr[R--]=arr[L];
+            while (L<R)
+            {
+                while (arr[R]>=piv && L<R) R--;
+                if (L<R) arr[L++]=arr[R];
+                while (arr[L]<=piv && L<R) L++;
+                if (L<R) arr[R--]=arr[L];
             }
-            arr[L]=piv; beg[i+1]=L+1; end[i+1]=end[i]; end[i++]=L;
-            if (end[i]-beg[i]>end[i-1]-beg[i-1]) {
+            arr[L]=piv;
+            beg[i+1]=L+1;
+            end[i+1]=end[i];
+            end[i++]=L;
+            if (end[i]-beg[i]>end[i-1]-beg[i-1])
+            {
                 swap=beg[i];
                 beg[i]=beg[i-1];
                 beg[i-1]=swap;
@@ -3245,39 +3790,8 @@ int quickSort(int *arr, int elements) {
                 end[i-1]=swap;
             }
         }
-        else {
-            i--;
-        }
-    }
-    return 1;}
-
-
-int quickSort(float *arr, int elements) {
-
-    float  piv;
-    int beg[300], end[300], i=0, L, R, swap ;
-
-    beg[0]=0; end[0]=elements;
-
-    while (i>=0) {
-        L=beg[i]; R=end[i]-1;
-        if (L<R) {
-            piv=arr[L];
-            while (L<R) {
-                while (arr[R]>=piv && L<R) R--; if (L<R) arr[L++]=arr[R];
-                while (arr[L]<=piv && L<R) L++; if (L<R) arr[R--]=arr[L];
-            }
-            arr[L]=piv; beg[i+1]=L+1; end[i+1]=end[i]; end[i++]=L;
-            if (end[i]-beg[i]>end[i-1]-beg[i-1]) {
-                swap=beg[i];
-                beg[i]=beg[i-1];
-                beg[i-1]=swap;
-                swap=end[i];
-                end[i]=end[i-1];
-                end[i-1]=swap;
-            }
-        }
-        else {
+        else
+        {
             i--;
         }
     }
@@ -3285,36 +3799,96 @@ int quickSort(float *arr, int elements) {
 }
 
 
-int * quickSort_order(int *arr, int elements) {
+int quickSort(float *arr, int elements)
+{
+
+    float  piv;
+    int beg[300], end[300], i=0, L, R, swap ;
+
+    beg[0]=0;
+    end[0]=elements;
+
+    while (i>=0)
+    {
+        L=beg[i];
+        R=end[i]-1;
+        if (L<R)
+        {
+            piv=arr[L];
+            while (L<R)
+            {
+                while (arr[R]>=piv && L<R) R--;
+                if (L<R) arr[L++]=arr[R];
+                while (arr[L]<=piv && L<R) L++;
+                if (L<R) arr[R--]=arr[L];
+            }
+            arr[L]=piv;
+            beg[i+1]=L+1;
+            end[i+1]=end[i];
+            end[i++]=L;
+            if (end[i]-beg[i]>end[i-1]-beg[i-1])
+            {
+                swap=beg[i];
+                beg[i]=beg[i-1];
+                beg[i-1]=swap;
+                swap=end[i];
+                end[i]=end[i-1];
+                end[i-1]=swap;
+            }
+        }
+        else
+        {
+            i--;
+        }
+    }
+    return 1;
+}
+
+
+int * quickSort_order(int *arr, int elements)
+{
 
     int  piv,piv_index, beg[300], end[300], i=0, L, R, swap ;
 
     int * order=new int [elements];
-    for(i=0;i<elements; i++){
+    for(i=0; i<elements; i++)
+    {
         order[i]=i;
     }
 
-    beg[0]=0; end[0]=elements;
-    while (i>=0) {
-        L=beg[i]; R=end[i]-1;
-        if (L<R) {
+    beg[0]=0;
+    end[0]=elements;
+    while (i>=0)
+    {
+        L=beg[i];
+        R=end[i]-1;
+        if (L<R)
+        {
             piv=arr[L];
             piv_index=order[L];
-            while (L<R) {
+            while (L<R)
+            {
                 while (arr[R]>=piv && L<R) R--;
-                if (L<R) {
+                if (L<R)
+                {
                     arr[L]=arr[R];
                     order[L++]=order[R];
                 }
                 while (arr[L]<=piv && L<R) L++;
-                if (L<R) {
+                if (L<R)
+                {
                     arr[R]=arr[L];
                     order[R--]=order[L];
                 }
             }
 
-            arr[L]=piv;order[L]=piv_index; beg[i+1]=L+1; end[i+1]=end[i]; end[i++]=L;
-            if (end[i]-beg[i]>end[i-1]-beg[i-1]) {
+            arr[L]=piv;
+            order[L]=piv_index;
+            beg[i+1]=L+1;
+            end[i+1]=end[i];
+            end[i++]=L;
+            if (end[i]-beg[i]>end[i-1]-beg[i-1])
+            {
                 swap=beg[i];
                 beg[i]=beg[i-1];
                 beg[i-1]=swap;
@@ -3323,46 +3897,64 @@ int * quickSort_order(int *arr, int elements) {
                 end[i-1]=swap;
             }
         }
-        else {
+        else
+        {
             i--;
         }
     }
     delete [] order;
-    return order;}
+    return order;
+}
 
 
-int * quickSort_order(float *arr, int elements) {
+int * quickSort_order(float *arr, int elements)
+{
 
     float  piv;
     int piv_index, beg[300], end[300], i=0, L, R, swap ;
     int * order = new int [elements];
-    for(long index=0;index<elements; index++){
+    for(long index=0; index<elements; index++)
+    {
         order[index]=index;
     }
-    beg[0]=0; end[0]=elements;
-    while (i>=0) {
-        L=beg[i]; R=end[i]-1;
-        if (L<R) {
+    beg[0]=0;
+    end[0]=elements;
+    while (i>=0)
+    {
+        L=beg[i];
+        R=end[i]-1;
+        if (L<R)
+        {
             piv=arr[L];
             piv_index=order[L];
-            while (L<R) {
-                while (arr[R]>=piv && L<R){
+            while (L<R)
+            {
+                while (arr[R]>=piv && L<R)
+                {
                     R--;
                 }
-                if (L<R) {
+                if (L<R)
+                {
                     arr[L]=arr[R];
                     order[L++]=order[R];
                 }
-                while (arr[L]<=piv && L<R){
+                while (arr[L]<=piv && L<R)
+                {
                     L++;
                 }
-                if (L<R) {
+                if (L<R)
+                {
                     arr[R]=arr[L];
                     order[R--]=order[L];
                 }
             }
-            arr[L]=piv;order[L]=piv_index; beg[i+1]=L+1; end[i+1]=end[i]; end[i++]=L;
-            if (end[i]-beg[i]>end[i-1]-beg[i-1]) {
+            arr[L]=piv;
+            order[L]=piv_index;
+            beg[i+1]=L+1;
+            end[i+1]=end[i];
+            end[i++]=L;
+            if (end[i]-beg[i]>end[i-1]-beg[i-1])
+            {
                 swap=beg[i];
                 beg[i]=beg[i-1];
                 beg[i-1]=swap;
@@ -3371,7 +3963,8 @@ int * quickSort_order(float *arr, int elements) {
                 end[i-1]=swap;
             }
         }
-        else {
+        else
+        {
             i--;
         }
     }
@@ -3402,7 +3995,7 @@ void MaxHeapify(float * a,int i,int n)
 void BuildMaxHeap(float * a,int n)
 {
     int i;
-    for(i=(n/2);i>=0;i--)
+    for(i=(n/2); i>=0; i--)
         MaxHeapify(a,i,n);
 }
 
@@ -3411,7 +4004,7 @@ void HeapSort(float * a,int n)
     int i;
     float t;
     BuildMaxHeap(a,n);
-    for(i=n;i>0;i--)
+    for(i=n; i>0; i--)
     {
         t=a[0];
         a[0]=a[i];
@@ -3426,7 +4019,8 @@ void HeapSort(float * a,int n)
 nifti_image * Get_Bias_Corrected(float * BiasField,
                                  nifti_image * T1,
                                  char * filename,
-                                 ImageSize * CurrSizes){
+                                 ImageSize * CurrSizes)
+{
 
     nifti_image * BiasCorrected = nifti_copy_nim_info(T1);
     BiasCorrected->dim[0]=4;
@@ -3445,7 +4039,8 @@ nifti_image * Get_Bias_Corrected(float * BiasField,
     BiasCorrected->data = (void *) calloc(BiasCorrected->nvox, sizeof(SegPrecisionTYPE));
     SegPrecisionTYPE * BiasCorrected_PTR = static_cast<SegPrecisionTYPE *>(BiasCorrected->data);
 
-    for(long multispec=0;multispec<CurrSizes->usize;multispec++){
+    for(long multispec=0; multispec<CurrSizes->usize; multispec++)
+    {
 
         BiasCorrected_PTR = static_cast<SegPrecisionTYPE *>(BiasCorrected->data);
         BiasCorrected_PTR = &BiasCorrected_PTR[multispec*BiasCorrected->nvox];
@@ -3453,13 +4048,15 @@ nifti_image * Get_Bias_Corrected(float * BiasField,
         T1data = static_cast<SegPrecisionTYPE *>(T1->data);
         T1data = &T1data[multispec*BiasCorrected->nvox];
 
-        for( unsigned int i=0; i<BiasCorrected->nvox; i++){
+        for( unsigned int i=0; i<BiasCorrected->nvox; i++)
+        {
             BiasCorrected_PTR[i]=0;
         }
 
         float to_resize=0;
 
-        for(long i=0; i<(long)CurrSizes->numel; i++){
+        for(long i=0; i<(long)CurrSizes->numel; i++)
+        {
             to_resize=exp((BiasField[i]+T1data[i])*0.693147181)-1;
             BiasCorrected_PTR[i]=(to_resize*(CurrSizes->rescale_max[multispec]-CurrSizes->rescale_min[multispec])+CurrSizes->rescale_min[multispec]);
         }
@@ -3472,7 +4069,8 @@ nifti_image * Get_Bias_Corrected_mask(float * BiasFieldCoefs,
                                       nifti_image * T1,
                                       char * filename,
                                       ImageSize * CurrSizes,
-                                      int biasOrder){
+                                      int biasOrder)
+{
 
     int UsedBasisFunctions=(int)((biasOrder+1) * (biasOrder+2)/2 *(biasOrder+3)/3);
     SegPrecisionTYPE * T1data = static_cast<SegPrecisionTYPE *>(T1->data);
@@ -3486,7 +4084,8 @@ nifti_image * Get_Bias_Corrected_mask(float * BiasFieldCoefs,
     BiasCorrected->scl_slope=1;
 
     float * brainmask= new float [CurrSizes->numel];
-    for(long i=0;i<(long)CurrSizes->numel;i++){
+    for(long i=0; i<(long)CurrSizes->numel; i++)
+    {
         brainmask[i]=T1data[i];
     }
     otsu(brainmask,NULL,CurrSizes);
@@ -3516,7 +4115,8 @@ nifti_image * Get_Bias_Corrected_mask(float * BiasFieldCoefs,
     SegPrecisionTYPE inv_not_point_five_times_dims_z=1.0f/(0.5f*(SegPrecisionTYPE)CurrSizes->zsize);
     int ind=0;
 
-    for(long multispec=0;multispec<CurrSizes->usize;multispec++){
+    for(long multispec=0; multispec<CurrSizes->usize; multispec++)
+    {
 
         BiasCorrected_PTR = static_cast<SegPrecisionTYPE *>(BiasCorrected->data);
         BiasCorrected_PTR = &BiasCorrected_PTR[multispec*CurrSizes->numel];
@@ -3526,24 +4126,31 @@ nifti_image * Get_Bias_Corrected_mask(float * BiasFieldCoefs,
         float * BiasFieldCoefs_multispec = &BiasFieldCoefs[multispec*UsedBasisFunctions];
 
 
-        for(long i=0; i<(long)CurrSizes->numel; i++){
+        for(long i=0; i<(long)CurrSizes->numel; i++)
+        {
             BiasCorrected_PTR[i]=0;
         }
 
         float to_resize=0;
         int index_full=0;
-        for (int iz=0; iz<CurrSizes->zsize; iz++) {
-            for (int iy=0; iy<CurrSizes->ysize; iy++) {
-                for (int ix=0; ix<CurrSizes->xsize; ix++) {
+        for (int iz=0; iz<CurrSizes->zsize; iz++)
+        {
+            for (int iy=0; iy<CurrSizes->ysize; iy++)
+            {
+                for (int ix=0; ix<CurrSizes->xsize; ix++)
+                {
                     BiasField=0.0f;
                     xpos=(((SegPrecisionTYPE)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x);
                     ypos=(((SegPrecisionTYPE)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y);
                     zpos=(((SegPrecisionTYPE)iz-not_point_five_times_dims_z)*inv_not_point_five_times_dims_z);
                     get_xyz_pow_int(xpos, ypos, zpos, currxpower, currypower, currzpower, biasOrder);
                     ind=0;
-                    for(long order=0; order<=biasOrder; order++){
-                        for(long xorder=0; xorder<=order; xorder++){
-                            for(long yorder=0; yorder<=(order-xorder); yorder++){
+                    for(long order=0; order<=biasOrder; order++)
+                    {
+                        for(long xorder=0; xorder<=order; xorder++)
+                        {
+                            for(long yorder=0; yorder<=(order-xorder); yorder++)
+                            {
                                 int zorder=order-yorder-xorder;
                                 BiasField-=BiasFieldCoefs_multispec[ind]*currxpower[xorder]*currypower[yorder]*currzpower[zorder];
                                 ind++;
@@ -3562,7 +4169,8 @@ nifti_image * Get_Bias_Corrected_mask(float * BiasFieldCoefs,
     return BiasCorrected;
 }
 
-unsigned char * seg_norm_4D_GNCC(nifti_image * BaseImage,nifti_image * NCC,int numberordered,ImageSize * CurrSizes,int verbose){
+unsigned char * seg_norm_4D_GNCC(nifti_image * BaseImage,nifti_image * NCC,int numberordered,ImageSize * CurrSizes,int verbose)
+{
 
     LabFusion_datatype * NCCptr = static_cast<LabFusion_datatype *>(NCC->data);
     LabFusion_datatype * BaseImageptr = static_cast<LabFusion_datatype *>(BaseImage->data);
@@ -3576,17 +4184,20 @@ unsigned char * seg_norm_4D_GNCC(nifti_image * BaseImage,nifti_image * NCC,int n
 
 
     // CALC MEAN AND STD OF THE BASE
-    if (verbose>0){
+    if (verbose>0)
+    {
         cout << "Calculating NCC"<<endl;
         cout << "Local Mean and STD of the base image"<<endl;
         flush(cout);
     }
-    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
+    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+    {
         BaseMean+=BaseImageptr[i];
 
     }
     BaseMean=BaseMean/(BaseImage->nx*BaseImage->ny*BaseImage->nz);
-    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
+    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+    {
         BaseSTD+=(BaseImageptr[i]-BaseMean)*(BaseImageptr[i]-BaseMean);
     }
     BaseSTD=sqrtf(BaseSTD/(BaseImage->nx*BaseImage->ny*BaseImage->nz));
@@ -3595,32 +4206,38 @@ unsigned char * seg_norm_4D_GNCC(nifti_image * BaseImage,nifti_image * NCC,int n
 
 
     // CALC NCC FOR EACH
-    if (verbose>0){
+    if (verbose>0)
+    {
         cout << "Local Mean and STD of the Template images"<<endl;
         flush(cout);
     }
 
     LabFusion_datatype * NCCval= new LabFusion_datatype [NCC->nt];
-    for(long currlable=0;currlable<NCC->nt; currlable++){
+    for(long currlable=0; currlable<NCC->nt; currlable++)
+    {
         NCCval[currlable]=0;
         bufferMean=0;
         bufferSTD=0;
         float * currNCCptr=&NCCptr[currlable*BaseImage->nx*BaseImage->ny*BaseImage->nz];
 
-        for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
+        for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+        {
             bufferMean+=currNCCptr[i];
         }
         bufferMean=bufferMean/(BaseImage->nx*BaseImage->ny*BaseImage->nz);
-        for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
+        for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+        {
             bufferSTD+=(currNCCptr[i]-bufferMean)*(currNCCptr[i]-bufferMean);
         }
         bufferSTD=sqrtf(bufferSTD/(BaseImage->nx*BaseImage->ny*BaseImage->nz));
         NCCval[currlable]=0;
-        for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
+        for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+        {
             NCCval[currlable]+=((currNCCptr[i]-bufferMean)*(BaseImageptr[i]-BaseMean));
         }
         NCCval[currlable]=NCCval[currlable]/((bufferSTD*BaseSTD)+0.0000001)/(BaseImage->nx*BaseImage->ny*BaseImage->nz);
-        if (verbose>0){
+        if (verbose>0)
+        {
             cout << currlable+1 << "/" << NCC->nt<<" - GNCC= "<< NCCval[currlable]<<endl;
             flush(cout);
         }
@@ -3631,14 +4248,17 @@ unsigned char * seg_norm_4D_GNCC(nifti_image * BaseImage,nifti_image * NCC,int n
 
     unsigned char * NCC_ordered=new unsigned char [numberordered];
 
-    if (verbose>0){
+    if (verbose>0)
+    {
         cout << "Used Labels after sorting the GNCC"<<endl;
     }
 
     int * ordertmp=quickSort_order(&NCCval[0],NCC->nt);
-    for(long lable_order=0;lable_order<numberordered;lable_order++){
+    for(long lable_order=0; lable_order<numberordered; lable_order++)
+    {
         NCC_ordered[lable_order]=(char)ordertmp[NCC->nt-lable_order-1];
-        if (verbose>0){
+        if (verbose>0)
+        {
             cout << (int)NCC_ordered[lable_order]+1 << "/" << numberordered<<endl;
         }
     }
@@ -3648,7 +4268,8 @@ unsigned char * seg_norm_4D_GNCC(nifti_image * BaseImage,nifti_image * NCC,int n
 }
 
 
-float seg_norm3GNCC(nifti_image * BaseImage,nifti_image * Template,nifti_image * Mask,int verbose){
+float seg_norm3GNCC(nifti_image * BaseImage,nifti_image * Template,nifti_image * Mask,int verbose)
+{
 
     LabFusion_datatype * Templateptr = static_cast<LabFusion_datatype *>(Template->data);
     LabFusion_datatype * BaseImageptr = static_cast<LabFusion_datatype *>(BaseImage->data);
@@ -3656,10 +4277,12 @@ float seg_norm3GNCC(nifti_image * BaseImage,nifti_image * Template,nifti_image *
     bool * Maskptr=NULL;
     int Maskcount=0;
     bool usemask=false;
-    if (Mask!=NULL){
+    if (Mask!=NULL)
+    {
         Maskptr = static_cast<bool * >(Mask->data);
         usemask=true;
-        for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
+        for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+        {
             Maskcount+=Maskptr[i];
         }
     }
@@ -3673,28 +4296,56 @@ float seg_norm3GNCC(nifti_image * BaseImage,nifti_image * Template,nifti_image *
 
 
     // CALC MEAN AND STD OF THE BASE
-    if (verbose>0){
+    if (verbose>0)
+    {
         cout << "Calculating NCC"<<endl;
     }
 
 
-    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
+    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+    {
 
-        if(usemask){BaseMean+=(Maskptr[i])?BaseImageptr[i]:0;}
-        else{BaseMean+=BaseImageptr[i];}
+        if(usemask)
+        {
+            BaseMean+=(Maskptr[i])?BaseImageptr[i]:0;
+        }
+        else
+        {
+            BaseMean+=BaseImageptr[i];
+        }
     }
 
-    if(usemask){BaseMean=BaseMean/Maskcount;}
-    else{BaseMean=BaseMean/(BaseImage->nx*BaseImage->ny*BaseImage->nz);}
-
-    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
-        if(usemask){BaseSTD+=(Maskptr[i])?((BaseImageptr[i]-BaseMean)*(BaseImageptr[i]-BaseMean)):0;}
-        else{BaseSTD+=(BaseImageptr[i]-BaseMean)*(BaseImageptr[i]-BaseMean);}
+    if(usemask)
+    {
+        BaseMean=BaseMean/Maskcount;
     }
-    if(usemask){BaseSTD=sqrtf(BaseSTD/Maskcount);}
-    else{BaseSTD=sqrtf(BaseSTD/(BaseImage->nx*BaseImage->ny*BaseImage->nz));}
+    else
+    {
+        BaseMean=BaseMean/(BaseImage->nx*BaseImage->ny*BaseImage->nz);
+    }
 
-    if (verbose>0){
+    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+    {
+        if(usemask)
+        {
+            BaseSTD+=(Maskptr[i])?((BaseImageptr[i]-BaseMean)*(BaseImageptr[i]-BaseMean)):0;
+        }
+        else
+        {
+            BaseSTD+=(BaseImageptr[i]-BaseMean)*(BaseImageptr[i]-BaseMean);
+        }
+    }
+    if(usemask)
+    {
+        BaseSTD=sqrtf(BaseSTD/Maskcount);
+    }
+    else
+    {
+        BaseSTD=sqrtf(BaseSTD/(BaseImage->nx*BaseImage->ny*BaseImage->nz));
+    }
+
+    if (verbose>0)
+    {
         cout << "Local Mean and STD of the base image = "<<BaseMean << "( " << BaseSTD<< " )"<<endl;
         flush(cout);
     }
@@ -3708,33 +4359,73 @@ float seg_norm3GNCC(nifti_image * BaseImage,nifti_image * Template,nifti_image *
     bufferMean=0;
     bufferSTD=0;
 
-    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
-        if(usemask){bufferMean+=(Maskptr[i])?Templateptr[i]:0;}
-        else{bufferMean+=Templateptr[i];}
+    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+    {
+        if(usemask)
+        {
+            bufferMean+=(Maskptr[i])?Templateptr[i]:0;
+        }
+        else
+        {
+            bufferMean+=Templateptr[i];
+        }
     }
-    if(usemask){bufferMean=bufferMean/Maskcount;}
-    else{bufferMean=bufferMean/(BaseImage->nx*BaseImage->ny*BaseImage->nz);}
-    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
-        if(usemask){bufferSTD+=(Maskptr[i])?((Templateptr[i]-bufferMean)*(Templateptr[i]-bufferMean)):0;}
-        else{bufferSTD+=(Templateptr[i]-bufferMean)*(Templateptr[i]-bufferMean);}
+    if(usemask)
+    {
+        bufferMean=bufferMean/Maskcount;
     }
-    if(usemask){bufferSTD=sqrtf(bufferSTD/Maskcount);}
-    else{bufferSTD=sqrtf(bufferSTD/(BaseImage->nx*BaseImage->ny*BaseImage->nz));}
+    else
+    {
+        bufferMean=bufferMean/(BaseImage->nx*BaseImage->ny*BaseImage->nz);
+    }
+    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+    {
+        if(usemask)
+        {
+            bufferSTD+=(Maskptr[i])?((Templateptr[i]-bufferMean)*(Templateptr[i]-bufferMean)):0;
+        }
+        else
+        {
+            bufferSTD+=(Templateptr[i]-bufferMean)*(Templateptr[i]-bufferMean);
+        }
+    }
+    if(usemask)
+    {
+        bufferSTD=sqrtf(bufferSTD/Maskcount);
+    }
+    else
+    {
+        bufferSTD=sqrtf(bufferSTD/(BaseImage->nx*BaseImage->ny*BaseImage->nz));
+    }
 
-    if (verbose>0){
+    if (verbose>0)
+    {
         cout << "Local Mean and STD of the Template image = "<<bufferMean << "( " << bufferSTD<< " )"<<endl;
         flush(cout);
     }
 
     NCCval=0;
-    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
-        if(usemask){NCCval+=(Maskptr[i])?((Templateptr[i]-bufferMean)*(BaseImageptr[i]-BaseMean)):0;}
-        else{NCCval+=((Templateptr[i]-bufferMean)*(BaseImageptr[i]-BaseMean));}
+    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+    {
+        if(usemask)
+        {
+            NCCval+=(Maskptr[i])?((Templateptr[i]-bufferMean)*(BaseImageptr[i]-BaseMean)):0;
+        }
+        else
+        {
+            NCCval+=((Templateptr[i]-bufferMean)*(BaseImageptr[i]-BaseMean));
+        }
 
     }
 
-    if(usemask){NCCval=NCCval/((bufferSTD*BaseSTD)+0.0000001)/(Maskcount);}
-    else{NCCval=NCCval/((bufferSTD*BaseSTD)+0.0000001)/(BaseImage->nx*BaseImage->ny*BaseImage->nz);}
+    if(usemask)
+    {
+        NCCval=NCCval/((bufferSTD*BaseSTD)+0.0000001)/(Maskcount);
+    }
+    else
+    {
+        NCCval=NCCval/((bufferSTD*BaseSTD)+0.0000001)/(BaseImage->nx*BaseImage->ny*BaseImage->nz);
+    }
 
     return NCCval;
 }
@@ -3743,7 +4434,8 @@ float seg_norm3GNCC(nifti_image * BaseImage,nifti_image * Template,nifti_image *
 
 
 
-unsigned char * seg_norm4ROINCC(nifti_image * LableImage,nifti_image * BaseImage,nifti_image * NCC,int numberordered,ImageSize * CurrSizes,int DilSize, int verbose){
+unsigned char * seg_norm4ROINCC(nifti_image * LableImage,nifti_image * BaseImage,nifti_image * NCC,int numberordered,ImageSize * CurrSizes,int DilSize, int verbose)
+{
 
     LabFusion_datatype * NCCptr = static_cast<LabFusion_datatype *>(NCC->data);
     bool * LableImageptr = static_cast<bool *>(LableImage->data);
@@ -3756,25 +4448,31 @@ unsigned char * seg_norm4ROINCC(nifti_image * LableImage,nifti_image * BaseImage
     LabFusion_datatype bufferSTD=0.0f;
 
     // CALC MEAN AND STD OF THE BASE
-    if (verbose>0){
+    if (verbose>0)
+    {
         cout << "Calculating ROI from Lables"<<endl;
         flush(cout);
     }
-    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
+    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+    {
         ROIarea[i]=false;
     }
 
 
 
     int ROIsize=0;
-    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
+    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+    {
         bool ROItmp=false;
-        for(long currlable=0;currlable<NCC->nt; currlable++){
-            if(LableImageptr[i+currlable*BaseImage->nx*BaseImage->ny*BaseImage->nz]){
+        for(long currlable=0; currlable<NCC->nt; currlable++)
+        {
+            if(LableImageptr[i+currlable*BaseImage->nx*BaseImage->ny*BaseImage->nz])
+            {
                 ROItmp=true;
             }
         }
-        if(ROItmp==true){
+        if(ROItmp==true)
+        {
             ROIsize++;
             ROIarea[i]=true;
         }
@@ -3788,19 +4486,24 @@ unsigned char * seg_norm4ROINCC(nifti_image * LableImage,nifti_image * BaseImage
 
 
     // CALC MEAN AND STD OF THE BASE
-    if (verbose>0){
+    if (verbose>0)
+    {
         cout << "Calculating NCC"<<endl;
         cout << "Local Mean and STD of the base image"<<endl;
         flush(cout);
     }
-    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
-        if(ROIarea[i]){
+    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+    {
+        if(ROIarea[i])
+        {
             BaseMean+=BaseImageptr[i];
         }
     }
     BaseMean=BaseMean/(ROIsize);
-    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
-        if(ROIarea[i]){
+    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+    {
+        if(ROIarea[i])
+        {
             BaseSTD+=(BaseImageptr[i]-BaseMean)*(BaseImageptr[i]-BaseMean);
         }
     }
@@ -3810,37 +4513,46 @@ unsigned char * seg_norm4ROINCC(nifti_image * LableImage,nifti_image * BaseImage
 
 
     // CALC NCC FOR EACH
-    if (verbose>0){
+    if (verbose>0)
+    {
         cout << "Local Mean and STD of the Template images"<<endl;
         flush(cout);
     }
 
     LabFusion_datatype * NCCval= new LabFusion_datatype [NCC->nt];
-    for(long currlable=0;currlable<NCC->nt; currlable++){
+    for(long currlable=0; currlable<NCC->nt; currlable++)
+    {
         NCCval[currlable]=0;
         float * currNCCptr=&NCCptr[currlable*BaseImage->nx*BaseImage->ny*BaseImage->nz];
         bufferMean=0;
         bufferSTD=0;
-        for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
-            if(ROIarea[i]){
+        for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+        {
+            if(ROIarea[i])
+            {
                 bufferMean+=currNCCptr[i];
             }
         }
         bufferMean=bufferMean/(ROIsize);
-        for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
-            if(ROIarea[i]){
+        for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+        {
+            if(ROIarea[i])
+            {
                 bufferSTD+=(currNCCptr[i]-bufferMean)*(currNCCptr[i]-bufferMean);
             }
         }
         bufferSTD=sqrtf(bufferSTD/(ROIsize));
         NCCval[currlable]=0;
-        for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
-            if(ROIarea[i]){
+        for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+        {
+            if(ROIarea[i])
+            {
                 NCCval[currlable]+=((currNCCptr[i]-bufferMean)*(BaseImageptr[i]-BaseMean));
             }
         }
         NCCval[currlable]=NCCval[currlable]/((bufferSTD*BaseSTD)+0.0000001)/(ROIsize);
-        if (verbose>0){
+        if (verbose>0)
+        {
             cout << currlable+1 << "/" << NCC->nt<<" - ROINCC= "<< NCCval[currlable]<<endl;
             flush(cout);
         }
@@ -3851,14 +4563,17 @@ unsigned char * seg_norm4ROINCC(nifti_image * LableImage,nifti_image * BaseImage
 
     unsigned char * NCC_ordered=new unsigned char [numberordered];
 
-    if (verbose>0){
+    if (verbose>0)
+    {
         cout << "Used Labels after sorting the ROINCC"<<endl;
     }
 
     int * ordertmp=quickSort_order(&NCCval[0],NCC->nt);
-    for(long lable_order=0;lable_order<numberordered;lable_order++){
+    for(long lable_order=0; lable_order<numberordered; lable_order++)
+    {
         NCC_ordered[lable_order]=(char)ordertmp[NCC->nt-lable_order-1];
-        if (verbose>0){
+        if (verbose>0)
+        {
             cout << (int)NCC_ordered[lable_order]+1 << "/" << numberordered<<endl;
         }
     }
@@ -3868,7 +4583,8 @@ unsigned char * seg_norm4ROINCC(nifti_image * LableImage,nifti_image * BaseImage
 }
 
 
-unsigned char * seg_norm4MLLNCC(nifti_image * BaseImage, nifti_image * LNCC,float distance,int levels, int numberordered,ImageSize * CurrSizes,int verbose){
+unsigned char * seg_norm4MLLNCC(nifti_image * BaseImage, nifti_image * LNCC,float distance,int levels, int numberordered,ImageSize * CurrSizes,int verbose)
+{
 
     LabFusion_datatype * LNCCptr = static_cast<LabFusion_datatype *>(LNCC->data);
     LabFusion_datatype * BaseImageptr = static_cast<LabFusion_datatype *>(BaseImage->data);
@@ -3878,17 +4594,22 @@ unsigned char * seg_norm4MLLNCC(nifti_image * BaseImage, nifti_image * LNCC,floa
 
     int numbordered_level_old=LNCC->nt;
 
-    for(long curlevel=levels; curlevel;curlevel--){
+    for(long curlevel=levels; curlevel; curlevel--)
+    {
 
-        if(curlevel==levels){
+        if(curlevel==levels)
+        {
             LNCC_ordered_save=new unsigned char [numbordered_level_old*BaseImage->nx*BaseImage->ny*BaseImage->nz];
-            if(LNCC_ordered_save == NULL){
+            if(LNCC_ordered_save == NULL)
+            {
                 fprintf(stderr,"* Error when alocating LNCC_ordered_save in function seg_norm4MLLNCC");
                 exit(-1);
             }
 
-            for(long cl=0;cl<numbordered_level_old; cl++){
-                for(long cl_index=0;cl_index<BaseImage->nx*BaseImage->ny*BaseImage->nz; cl_index++){
+            for(long cl=0; cl<numbordered_level_old; cl++)
+            {
+                for(long cl_index=0; cl_index<BaseImage->nx*BaseImage->ny*BaseImage->nz; cl_index++)
+                {
                     LNCC_ordered_save[cl_index+cl*(BaseImage->nx*BaseImage->ny*BaseImage->nz)]=cl;
                 }
             }
@@ -3900,23 +4621,27 @@ unsigned char * seg_norm4MLLNCC(nifti_image * BaseImage, nifti_image * LNCC,floa
 
 
         LabFusion_datatype * BaseMean=new LabFusion_datatype [BaseImage->nx*BaseImage->ny*BaseImage->nz];
-        if(BaseMean == NULL){
+        if(BaseMean == NULL)
+        {
             fprintf(stderr,"* Error when alocating BaseMean in function seg_norm4LNCC");
             exit(-1);
         }
         LabFusion_datatype * BaseSTD=new LabFusion_datatype [BaseImage->nx*BaseImage->ny*BaseImage->nz];
-        if(BaseSTD == NULL){
+        if(BaseSTD == NULL)
+        {
             fprintf(stderr,"* Error when alocating BaseSTD in function seg_norm4LNCC");
             exit(-1);
         }
 
         // CALC MEAN AND STD OF THE BASE
-        if (verbose>0){
+        if (verbose>0)
+        {
             cout << "Calculating LNCC at level "<<curlevel<< " ( kernel size = "<<distance_level<<" , number templates = "<<numbordered_level<<" )"<<endl;
             cout << "Local Mean and STD of the base image"<<endl;
             flush(cout);
         }
-        for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
+        for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+        {
             BaseMean[i]=BaseImageptr[i];
             BaseSTD[i]=BaseImageptr[i]*BaseImageptr[i];
         }
@@ -3926,12 +4651,14 @@ unsigned char * seg_norm4MLLNCC(nifti_image * BaseImage, nifti_image * LNCC,floa
         Gaussian_Filter_4D(BaseMean,(float)(distance_level),CurrSizes);
         Gaussian_Filter_4D(BaseSTD,(float)(distance_level),CurrSizes);
 
-        for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
+        for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+        {
             BaseSTD[i]=BaseSTD[i]-BaseMean[i]*BaseMean[i];
         }
 
         // CALC LNCC FOR EACH
-        if (verbose>0){
+        if (verbose>0)
+        {
             cout << "Local Mean and STD of the Template images"<<endl;
             flush(cout);
         }
@@ -3941,29 +4668,35 @@ unsigned char * seg_norm4MLLNCC(nifti_image * BaseImage, nifti_image * LNCC,floa
         //#pragma omp parallel for shared(BaseImageptr, BaseSTD, BaseMean, LNCC,BaseImage,stderr, verbose,cout,LNCCptr,CurrSizes,distance_level)
         //#endif
 
-        for(currlable=0;currlable<LNCC->nt; currlable++){
+        for(currlable=0; currlable<LNCC->nt; currlable++)
+        {
             LabFusion_datatype * bufferMean=new LabFusion_datatype [BaseImage->nx*BaseImage->ny*BaseImage->nz];
-            if(bufferMean == NULL){
+            if(bufferMean == NULL)
+            {
                 fprintf(stderr,"* Error when alocating bufferMean in function seg_norm4LNCC");
                 exit(-1);
             }
             LabFusion_datatype * bufferSTD=new LabFusion_datatype [ BaseImage->nx * BaseImage->ny * BaseImage->nz ];
-            if(bufferSTD == NULL){
+            if(bufferSTD == NULL)
+            {
                 fprintf(stderr,"* Error when alocating bufferSTD in function seg_norm4LNCC");
                 exit(-1);
             }
             LabFusion_datatype * bufferDATA=new LabFusion_datatype [BaseImage->nx*BaseImage->ny*BaseImage->nz];
-            if(bufferDATA == NULL){
+            if(bufferDATA == NULL)
+            {
                 fprintf(stderr,"* Error when alocating bufferDATA in function seg_norm4LNCC");
                 exit(-1);
             }
 
-            if (verbose>0){
+            if (verbose>0)
+            {
                 cout << currlable+1 << "/" << LNCC->nt<<"\n";
                 flush(cout);
             }
             LabFusion_datatype * currLNCCptr=&LNCCptr[currlable*BaseImage->nx*BaseImage->ny*BaseImage->nz];
-            for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
+            for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+            {
                 bufferDATA[i]=currLNCCptr[i]*BaseImageptr[i];
                 bufferMean[i]=currLNCCptr[i];
                 bufferSTD[i]=currLNCCptr[i]*currLNCCptr[i];
@@ -3973,7 +4706,8 @@ unsigned char * seg_norm4MLLNCC(nifti_image * BaseImage, nifti_image * LNCC,floa
             Gaussian_Filter_4D(bufferMean,(float)(distance_level),CurrSizes);
             Gaussian_Filter_4D(bufferSTD,(float)(distance_level),CurrSizes);
             Gaussian_Filter_4D(bufferDATA,(float)(distance_level),CurrSizes);
-            for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
+            for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+            {
                 bufferSTD[i]=bufferSTD[i]-bufferMean[i]*bufferMean[i];
                 currLNCCptr[i]=(bufferDATA[i]-BaseMean[i]*bufferMean[i])/(sqrt(bufferSTD[i]*BaseSTD[i])+0.0000001);
                 currLNCCptr[i]=currLNCCptr[i]>0?currLNCCptr[i]:0;
@@ -3988,44 +4722,53 @@ unsigned char * seg_norm4MLLNCC(nifti_image * BaseImage, nifti_image * LNCC,floa
 
         CurrSizes->numclass=realt;
         LNCC_ordered=new unsigned char [numbordered_level*BaseImage->nx*BaseImage->ny*BaseImage->nz];
-        if(LNCC_ordered == NULL){
+        if(LNCC_ordered == NULL)
+        {
             fprintf(stderr,"* Error when alocating LNCC_ordered in function seg_norm4LNCC");
             exit(-1);
         }
 
 
-        if (verbose>0){
+        if (verbose>0)
+        {
             cout << "Sorting"<<endl;
         }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    shared(LNCC,LNCCptr,CurrSizes,numbordered_level,LNCC_ordered,numbordered_level_old,LNCC_ordered_save)
+        #pragma omp parallel for default(none) \
+        shared(LNCC,LNCCptr,CurrSizes,numbordered_level,LNCC_ordered,numbordered_level_old,LNCC_ordered_save)
 #endif
-        for(long i=0; i<LNCC->nx*LNCC->ny*LNCC->nz;i++){
+        for(long i=0; i<LNCC->nx*LNCC->ny*LNCC->nz; i++)
+        {
             LabFusion_datatype LNCCvalue_tmp[1000];
             char old_sort[1000];;
-            for(long currlable=0;currlable<LNCC->nt; currlable++){
+            for(long currlable=0; currlable<LNCC->nt; currlable++)
+            {
                 LNCCvalue_tmp[currlable]=LNCCptr[i+currlable*LNCC->nx*LNCC->ny*LNCC->nz];
             }
 
-            for(long currlable=0;currlable<numbordered_level_old; currlable++){
+            for(long currlable=0; currlable<numbordered_level_old; currlable++)
+            {
                 old_sort[currlable]=LNCC_ordered_save[i+currlable*LNCC->nx*LNCC->ny*LNCC->nz];
             }
 
             int * ordertmp=quickSort_order(&LNCCvalue_tmp[0],LNCC->nt);
 
             int label_order_index=0;
-            for(long lable_order=0;lable_order<LNCC->nt;lable_order++){
+            for(long lable_order=0; lable_order<LNCC->nt; lable_order++)
+            {
                 char cur_LNCC_ordered_label=(char)ordertmp[LNCC->nt-lable_order-1];
-                for(long currlable=0;currlable<numbordered_level_old; currlable++){
-                    if(cur_LNCC_ordered_label==old_sort[currlable]){
+                for(long currlable=0; currlable<numbordered_level_old; currlable++)
+                {
+                    if(cur_LNCC_ordered_label==old_sort[currlable])
+                    {
                         LNCC_ordered[i+label_order_index*LNCC->nx*LNCC->ny*LNCC->nz]=cur_LNCC_ordered_label;
                         label_order_index++;
                         currlable=numbordered_level_old;
                     }
                 }
-                if((label_order_index)>=numbordered_level){
+                if((label_order_index)>=numbordered_level)
+                {
                     lable_order=LNCC->nt;
                 }
 
@@ -4034,21 +4777,25 @@ unsigned char * seg_norm4MLLNCC(nifti_image * BaseImage, nifti_image * LNCC,floa
 
         }
 
-        if(curlevel>1){
+        if(curlevel>1)
+        {
             numbordered_level_old=numbordered_level;
             delete [] LNCC_ordered_save;
             LNCC_ordered_save=new unsigned char [numbordered_level_old*LNCC->nx*LNCC->ny*LNCC->nz];
-            if(LNCC_ordered_save == NULL){
+            if(LNCC_ordered_save == NULL)
+            {
                 fprintf(stderr,"* Error when alocating LNCC_ordered_save in function seg_norm4MLLNCC");
                 exit(-1);
             }
-            for(long cl=0;cl<numbordered_level_old*LNCC->nx*LNCC->ny*LNCC->nz; cl++){
+            for(long cl=0; cl<numbordered_level_old*LNCC->nx*LNCC->ny*LNCC->nz; cl++)
+            {
                 LNCC_ordered_save[cl]=LNCC_ordered[cl];
             }
             delete [] LNCC_ordered;
         }
 
-        if (verbose>0){
+        if (verbose>0)
+        {
             cout << "Finished sorting"<< endl;
             flush(cout);
         }
@@ -4060,29 +4807,34 @@ unsigned char * seg_norm4MLLNCC(nifti_image * BaseImage, nifti_image * LNCC,floa
 /* *************************************************************** */
 
 
-unsigned char * seg_norm4LNCC(nifti_image * BaseImage, nifti_image * LNCC,float distance,int numberordered,ImageSize * CurrSizes,int verbose){
+unsigned char * seg_norm4LNCC(nifti_image * BaseImage, nifti_image * LNCC,float distance,int numberordered,ImageSize * CurrSizes,int verbose)
+{
 
     LabFusion_datatype * LNCCptr = static_cast<LabFusion_datatype *>(LNCC->data);
     LabFusion_datatype * BaseImageptr = static_cast<LabFusion_datatype *>(BaseImage->data);
     unsigned char * LNCC_ordered=NULL;
     LabFusion_datatype * BaseMean=new LabFusion_datatype [BaseImage->nx*BaseImage->ny*BaseImage->nz];
-    if(BaseMean == NULL){
+    if(BaseMean == NULL)
+    {
         fprintf(stderr,"* Error when alocating BaseMean in function seg_norm4LNCC");
         exit(-1);
     }
     LabFusion_datatype * BaseSTD=new LabFusion_datatype [BaseImage->nx*BaseImage->ny*BaseImage->nz];
-    if(BaseSTD == NULL){
+    if(BaseSTD == NULL)
+    {
         fprintf(stderr,"* Error when alocating BaseSTD in function seg_norm4LNCC");
         exit(-1);
     }
 
     // CALC MEAN AND STD OF THE BASE
-    if (verbose>0){
+    if (verbose>0)
+    {
         cout << "Calculating LNCC"<<endl;
         cout << "Local Mean and STD of the base image"<<endl;
         flush(cout);
     }
-    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
+    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+    {
         BaseMean[i]=BaseImageptr[i];
         BaseSTD[i]=BaseImageptr[i]*BaseImageptr[i];
     }
@@ -4092,43 +4844,51 @@ unsigned char * seg_norm4LNCC(nifti_image * BaseImage, nifti_image * LNCC,float 
     Gaussian_Filter_4D(BaseMean,(float)(distance),CurrSizes);
     Gaussian_Filter_4D(BaseSTD,(float)(distance),CurrSizes);
 
-    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
+    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+    {
         BaseSTD[i]=BaseSTD[i]-BaseMean[i]*BaseMean[i];
     }
 
     // CALC LNCC FOR EACH
-    if (verbose>0){
+    if (verbose>0)
+    {
         cout << "Local Mean and STD of the Template images"<<endl;
         flush(cout);
     }
 
 #ifdef _OPENMP
-#pragma omp parallel for shared(BaseImageptr, BaseSTD, BaseMean, LNCC, BaseImage, verbose, cout, LNCCptr, CurrSizes, distance)
+    #pragma omp parallel for shared(BaseImageptr, BaseSTD, BaseMean, LNCC, BaseImage, verbose, cout, LNCCptr, CurrSizes, distance)
 #endif
 
-    for(long currlable=0;currlable<LNCC->nt; currlable++){
+    for(long currlable=0; currlable<LNCC->nt; currlable++)
+    {
         LabFusion_datatype * bufferMean=new LabFusion_datatype [BaseImage->nx*BaseImage->ny*BaseImage->nz];
-        if(bufferMean == NULL){
+        if(bufferMean == NULL)
+        {
             fprintf(stderr,"* Error when alocating bufferMean in function seg_norm4LNCC");
             exit(-1);
         }
         LabFusion_datatype * bufferSTD=new LabFusion_datatype [ BaseImage->nx * BaseImage->ny * BaseImage->nz ];
-        if(bufferSTD == NULL){
+        if(bufferSTD == NULL)
+        {
             fprintf(stderr,"* Error when alocating bufferSTD in function seg_norm4LNCC");
             exit(-1);
         }
         LabFusion_datatype * bufferDATA=new LabFusion_datatype [BaseImage->nx*BaseImage->ny*BaseImage->nz];
-        if(bufferDATA == NULL){
+        if(bufferDATA == NULL)
+        {
             fprintf(stderr,"* Error when alocating bufferDATA in function seg_norm4LNCC");
             exit(-1);
         }
         //for(long currlable=0;currlable<3; currlable++){
-        if (verbose>0){
+        if (verbose>0)
+        {
             cout << currlable+1 << "/" << LNCC->nt<<"\n";
             flush(cout);
         }
         LabFusion_datatype * currLNCCptr=&LNCCptr[currlable*BaseImage->nx*BaseImage->ny*BaseImage->nz];
-        for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
+        for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+        {
             bufferDATA[i]=currLNCCptr[i]*BaseImageptr[i];
             bufferMean[i]=currLNCCptr[i];
             bufferSTD[i]=currLNCCptr[i]*currLNCCptr[i];
@@ -4138,7 +4898,8 @@ unsigned char * seg_norm4LNCC(nifti_image * BaseImage, nifti_image * LNCC,float 
         Gaussian_Filter_4D(bufferMean,(float)(distance),CurrSizes);
         Gaussian_Filter_4D(bufferSTD,(float)(distance),CurrSizes);
         Gaussian_Filter_4D(bufferDATA,(float)(distance),CurrSizes);
-        for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
+        for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+        {
             bufferSTD[i]=bufferSTD[i]-bufferMean[i]*bufferMean[i];
             currLNCCptr[i]=(bufferDATA[i]-BaseMean[i]*bufferMean[i])/(sqrt(bufferSTD[i]*BaseSTD[i])+0.0000001);
             currLNCCptr[i]=currLNCCptr[i]>0?currLNCCptr[i]:0;
@@ -4156,33 +4917,39 @@ unsigned char * seg_norm4LNCC(nifti_image * BaseImage, nifti_image * LNCC,float 
     //  Gaussian_Filter_4D(LNCCptr,(float)(distance),CurrSizes);
 
     LNCC_ordered=new unsigned char [numberordered*BaseImage->nx*BaseImage->ny*BaseImage->nz];
-    if(LNCC_ordered == NULL){
+    if(LNCC_ordered == NULL)
+    {
         fprintf(stderr,"* Error when alocating LNCC_ordered in function seg_norm4LNCC");
         exit(-1);
     }
 
 
-    if (verbose>0){
+    if (verbose>0)
+    {
         cout << "Sorting LNCC"<<endl;
     }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
+    #pragma omp parallel for default(none) \
     shared(LNCC,BaseImage,LNCCptr,CurrSizes,numberordered,LNCC_ordered)
 #endif
-    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz;i++){
+    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
+    {
         LabFusion_datatype * LNCCvalue_tmp = new LabFusion_datatype [LNCC->nt];
-        for(long currlable=0;currlable<LNCC->nt; currlable++){
+        for(long currlable=0; currlable<LNCC->nt; currlable++)
+        {
             LNCCvalue_tmp[currlable]=LNCCptr[i+currlable*BaseImage->nx*BaseImage->ny*BaseImage->nz];
         }
         int * ordertmp=quickSort_order(&LNCCvalue_tmp[0],LNCC->nt);
-        for(long lable_order=0;lable_order<numberordered;lable_order++){
+        for(long lable_order=0; lable_order<numberordered; lable_order++)
+        {
             LNCC_ordered[i+lable_order*BaseImage->nx*BaseImage->ny*BaseImage->nz]=(unsigned char)ordertmp[LNCC->nt-lable_order-1];
         }
         delete [] ordertmp;
         delete [] LNCCvalue_tmp;
     }
-    if (verbose>0){
+    if (verbose>0)
+    {
         cout << "Finished sorting LNCC"<< endl;
         flush(cout);
     }
@@ -4195,8 +4962,10 @@ unsigned char * seg_norm4LNCC(nifti_image * BaseImage, nifti_image * LNCC,float 
 
 
 template <class NewTYPE, class DTYPE>
-int seg_changeDatatype1(nifti_image *image)
+void seg_changeDatatype1(nifti_image *image)
 {
+
+
     // the initial array is saved and freeed
     DTYPE *initialValue = (DTYPE *)malloc(image->nvox*sizeof(DTYPE));
     memcpy(initialValue, image->data, image->nvox*sizeof(DTYPE));
@@ -4205,30 +4974,27 @@ int seg_changeDatatype1(nifti_image *image)
     if(sizeof(NewTYPE)==sizeof(unsigned char)) image->datatype = NIFTI_TYPE_UINT8;
     else if(sizeof(NewTYPE)==sizeof(float)) image->datatype = NIFTI_TYPE_FLOAT32;
     else if(sizeof(NewTYPE)==sizeof(double)) image->datatype = NIFTI_TYPE_FLOAT64;
-    else{
-        fprintf(stderr,"[NiftyReg ERROR] seg_changeDatatype\tOnly change to unsigned char, float or double are supported\n");
+    else
+    {
+        fprintf(stderr,"[NiftyReg ERROR] reg_tools_changeDatatype\tOnly change to unsigned char, float or double are supported\n");
         exit(1);
     }
     free(image->data);
     image->nbyper = sizeof(NewTYPE);
     image->data = (void *)calloc(image->nvox,sizeof(NewTYPE));
     NewTYPE *dataPtr = static_cast<NewTYPE *>(image->data);
-    if(sizeof(NewTYPE)==sizeof(unsigned char)){
-        for(unsigned int i=0; i<image->nvox; i++) dataPtr[i] = (unsigned char)(round(initialValue[i]));
-    }
-    else{
-        for(unsigned int i=0; i<image->nvox; i++) dataPtr[i] = (NewTYPE)(initialValue[i]);
-    }
-
+    for(size_t i=0; i<image->nvox; i++)
+        dataPtr[i] = (NewTYPE)(initialValue[i]);
 
     free(initialValue);
-    return 1;
+    return;
 }
 /* *************************************************************** */
 template <class NewTYPE>
 int seg_changeDatatype(nifti_image *image)
 {
-    switch(image->datatype){
+    switch(image->datatype)
+    {
     case DT_BINARY:
         seg_changeDatatype1<NewTYPE,bool>(image);
         break;
@@ -4321,22 +5087,25 @@ void Resample_NN_with_weights(  nifti_image *sourceImage,
     SourceTYPE *zPointer, *xyzPointer;
     FieldTYPE world[3], position[3];
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
+    #pragma omp parallel for default(none) \
     private(index, world, position, previous, xBasis, yBasis, zBasis, relative, \
-    a, b, c, Y, Z, zPointer, xyzPointer) \
+            a, b, c, Y, Z, zPointer, xyzPointer) \
     shared(sourceIntensity, resultIntensity,resultWeights, targetVoxelNumber, \
-    deformationFieldPtrX, deformationFieldPtrY, deformationFieldPtrZ, maskPtr, \
-    sourceIJKMatrix, sourceImage, bgValue)
+           deformationFieldPtrX, deformationFieldPtrY, deformationFieldPtrZ, maskPtr, \
+           sourceIJKMatrix, sourceImage, bgValue)
 #endif // _OPENMP
-    for(index=0;index<targetVoxelNumber; index++){
-        if(maskPtr==NULL || maskPtr[index]>-1){
+    for(index=0; index<targetVoxelNumber; index++)
+    {
+        if(maskPtr==NULL || maskPtr[index]>-1)
+        {
             world[0]=(FieldTYPE) deformationFieldPtrX[index];
             world[1]=(FieldTYPE) deformationFieldPtrY[index];
             world[2]=(FieldTYPE) deformationFieldPtrZ[index];
 
             /* real -> voxel; source space */
             seg_mat44_mul(sourceIJKMatrix, world, position);
-            if( position[0]>=0.f && position[0]<(FieldTYPE)(sourceImage->nx-1) && position[1]>=0.f && position[1]<(FieldTYPE)(sourceImage->ny-1) && position[2]>=0.f && position[2]<(FieldTYPE)(sourceImage->nz-1) ){
+            if( position[0]>=0.f && position[0]<(FieldTYPE)(sourceImage->nx-1) && position[1]>=0.f && position[1]<(FieldTYPE)(sourceImage->ny-1) && position[2]>=0.f && position[2]<(FieldTYPE)(sourceImage->nz-1) )
+            {
                 previous[0] = (int)position[0];
                 previous[1] = (int)position[1];
                 previous[2] = (int)position[2];
@@ -4357,15 +5126,20 @@ void Resample_NN_with_weights(  nifti_image *sourceImage,
                 zBasis[1]= relative;
                 int neighindex=0;
                 float resultWeightsSum=0;
-                if(resultIntensity!=NULL && resultWeights!=NULL){
-                    for(c=0; c<2; c++){
+                if(resultIntensity!=NULL && resultWeights!=NULL)
+                {
+                    for(c=0; c<2; c++)
+                    {
                         Z= previous[2]+c;
                         zPointer = &sourceIntensity[Z*sourceImage->nx*sourceImage->ny];
-                        for(b=0; b<2; b++){
+                        for(b=0; b<2; b++)
+                        {
                             Y= previous[1]+b;
                             xyzPointer = &zPointer[Y*sourceImage->nx+previous[0]];
-                            for(a=0; a<2; a++){
-                                if((SourceTYPE)(*xyzPointer)==(SourceTYPE)(*xyzPointer)){
+                            for(a=0; a<2; a++)
+                            {
+                                if((SourceTYPE)(*xyzPointer)==(SourceTYPE)(*xyzPointer))
+                                {
 
                                     resultIntensity[index+targetVoxelNumber*neighindex]=(SourceTYPE)(*xyzPointer);
                                     resultWeights[index+targetVoxelNumber*neighindex]=(float)(xBasis[a]*yBasis[b]*zBasis[c]);
@@ -4377,15 +5151,20 @@ void Resample_NN_with_weights(  nifti_image *sourceImage,
                         }
                     }
                 }
-                if(resultIntensity!=NULL && resultWeights!=NULL && resultWeightsSum<0.99f && resultWeightsSum>0.0f){
-                    for(c=0; c<2; c++){
+                if(resultIntensity!=NULL && resultWeights!=NULL && resultWeightsSum<0.99f && resultWeightsSum>0.0f)
+                {
+                    for(c=0; c<2; c++)
+                    {
                         Z= previous[2]+c;
                         zPointer = &sourceIntensity[Z*sourceImage->nx*sourceImage->ny];
-                        for(b=0; b<2; b++){
+                        for(b=0; b<2; b++)
+                        {
                             Y= previous[1]+b;
                             xyzPointer = &zPointer[Y*sourceImage->nx+previous[0]];
-                            for(a=0; a<2; a++){
-                                if(resultWeights!=NULL){
+                            for(a=0; a<2; a++)
+                            {
+                                if(resultWeights!=NULL)
+                                {
                                     resultWeights[index+targetVoxelNumber*neighindex]=(float)(xBasis[a]*yBasis[b]*zBasis[c])/resultWeightsSum;
                                     xyzPointer++;
                                     neighindex++;
@@ -4396,8 +5175,10 @@ void Resample_NN_with_weights(  nifti_image *sourceImage,
                 }
 
             }
-            else {
-                for(long neighindex=0; neighindex<8; neighindex++){
+            else
+            {
+                for(long neighindex=0; neighindex<8; neighindex++)
+                {
                     if(resultIntensity!=NULL)
                         resultIntensity[index+targetVoxelNumber*neighindex]=(SourceTYPE)(round(bgValue));
                     if(resultWeights!=NULL)
@@ -4416,10 +5197,10 @@ template void Resample_NN_with_weights<unsigned char,float>(nifti_image *sourceI
 /* *************************************************************** */
 template<class SourceTYPE, class FieldTYPE>
 void TrilinearResampleSourceImage_for_GIF(  nifti_image *sourceImage,
-                                            nifti_image *deformationField,
-                                            nifti_image *resultImage,
-                                            int *mask,
-                                            FieldTYPE bgValue)
+        nifti_image *deformationField,
+        nifti_image *resultImage,
+        int *mask,
+        FieldTYPE bgValue)
 {
     // The resampling scheme is applied along each time
     SourceTYPE *sourceIntensityPtr = static_cast<SourceTYPE *>(sourceImage->data);
@@ -4436,7 +5217,8 @@ void TrilinearResampleSourceImage_for_GIF(  nifti_image *sourceImage,
         sourceIJKMatrix=&(sourceImage->sto_ijk);
     else sourceIJKMatrix=&(sourceImage->qto_ijk);
 
-    for(long t=0; t<resultImage->nt;t++){
+    for(long t=0; t<resultImage->nt; t++)
+    {
 #ifndef NDEBUG
         printf("[NiftyReg DEBUG] 3D linear resampling of volume number %i\n",t);
 #endif
@@ -4449,19 +5231,21 @@ void TrilinearResampleSourceImage_for_GIF(  nifti_image *sourceImage,
         SourceTYPE *zPointer, *xyzPointer;
         FieldTYPE xTempNewValue, yTempNewValue, xTempNewBasis, yTempNewBasis, intensity, basis, world[3], position[3];
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    private(index, intensity, world, position, previous, xBasis, yBasis, zBasis, relative, \
-    a, b, c, Y, Z, zPointer, xyzPointer, xTempNewValue, yTempNewValue) \
-    shared(sourceIntensity, resultIntensity, targetVoxelNumber, sourceVoxelNumber, \
-    deformationFieldPtrX, deformationFieldPtrY, deformationFieldPtrZ, maskPtr, \
-    sourceIJKMatrix, sourceImage, bgValue)
+        #pragma omp parallel for default(none) \
+        private(index, intensity, world, position, previous, xBasis, yBasis, zBasis, relative, \
+                a, b, c, Y, Z, zPointer, xyzPointer, xTempNewValue, yTempNewValue) \
+        shared(sourceIntensity, resultIntensity, targetVoxelNumber, sourceVoxelNumber, \
+               deformationFieldPtrX, deformationFieldPtrY, deformationFieldPtrZ, maskPtr, \
+               sourceIJKMatrix, sourceImage, bgValue)
 #endif // _OPENMP
-        for(index=0;index<targetVoxelNumber; index++){
+        for(index=0; index<targetVoxelNumber; index++)
+        {
 
             intensity=0.0;
             basis=0.0;
 
-            if(maskPtr[index]>-1){
+            if(maskPtr[index]>-1)
+            {
 
                 world[0]=(FieldTYPE) deformationFieldPtrX[index];
                 world[1]=(FieldTYPE) deformationFieldPtrY[index];
@@ -4472,7 +5256,8 @@ void TrilinearResampleSourceImage_for_GIF(  nifti_image *sourceImage,
 
                 if( position[0]>=0.f && position[0]<(FieldTYPE)(sourceImage->nx-1) &&
                         position[1]>=0.f && position[1]<(FieldTYPE)(sourceImage->ny-1) &&
-                        position[2]>=0.f && position[2]<(FieldTYPE)(sourceImage->nz-1) ){
+                        position[2]>=0.f && position[2]<(FieldTYPE)(sourceImage->nz-1) )
+                {
 
                     previous[0] = (int)position[0];
                     previous[1] = (int)position[1];
@@ -4493,18 +5278,22 @@ void TrilinearResampleSourceImage_for_GIF(  nifti_image *sourceImage,
                     zBasis[0]= (FieldTYPE)(1.0-relative);
                     zBasis[1]= relative;
 
-                    for(c=0; c<2; c++){
+                    for(c=0; c<2; c++)
+                    {
                         Z= previous[2]+c;
                         zPointer = &sourceIntensity[Z*sourceImage->nx*sourceImage->ny];
                         yTempNewValue=0.0;
                         yTempNewBasis=0.0;
-                        for(b=0; b<2; b++){
+                        for(b=0; b<2; b++)
+                        {
                             Y= previous[1]+b;
                             xyzPointer = &zPointer[Y*sourceImage->nx+previous[0]];
                             xTempNewValue=0.0;
                             xTempNewBasis=0.0;
-                            for(a=0; a<2; a++){
-                                if((FieldTYPE)*xyzPointer>=0){
+                            for(a=0; a<2; a++)
+                            {
+                                if((FieldTYPE)*xyzPointer>=0)
+                                {
                                     xTempNewValue +=  (FieldTYPE)*xyzPointer * xBasis[a];
                                     xTempNewBasis += xBasis[a];
                                 }
@@ -4523,7 +5312,8 @@ void TrilinearResampleSourceImage_for_GIF(  nifti_image *sourceImage,
                 else intensity = -1.0f;
             }
 
-            switch(sourceImage->datatype){
+            switch(sourceImage->datatype)
+            {
             case NIFTI_TYPE_FLOAT32:
                 resultIntensity[index]=(SourceTYPE)intensity;
                 break;
@@ -4552,23 +5342,30 @@ int get_all_files_and_folders_in_dir (string dir, vector<string> &files , vector
 {
     DIR *dp;
     struct dirent *dirp;
-    if((dp  = opendir(dir.c_str())) == NULL) {
+    if((dp  = opendir(dir.c_str())) == NULL)
+    {
         cout << "Error(" << errno << ") opening " << dir << endl;
         return errno;
     }
 
-    while ((dirp = readdir(dp)) != NULL) {
-        if(dirp->d_name[0]!='.'){
-            if(dirp->d_type==8){
-                if((&files)!=NULL){
+    while ((dirp = readdir(dp)) != NULL)
+    {
+        if(dirp->d_name[0]!='.')
+        {
+            if(dirp->d_type==8)
+            {
+                if((&files)!=NULL)
+                {
                     string curstring=dir;
                     curstring.append(SEP);
                     curstring.append(dirp->d_name);
                     files.push_back(curstring);
                 }
             }
-            else{
-                if((&folders)!=NULL){
+            else
+            {
+                if((&folders)!=NULL)
+                {
                     string curstring=dir;
                     curstring.append(SEP);
                     curstring.append(dirp->d_name);
@@ -4584,16 +5381,21 @@ int get_all_files_that_match_string (string dir, vector<string> &files , string 
 {
     DIR *dp;
     struct dirent *dirp;
-    if((dp  = opendir(dir.c_str())) == NULL) {
+    if((dp  = opendir(dir.c_str())) == NULL)
+    {
         cout << "Error(" << errno << ") opening " << dir << endl;
         return errno;
     }
 
-    while ((dirp = readdir(dp)) != NULL) {
-        if(dirp->d_name[0]!='.'){
-            if(dirp->d_type==8){
+    while ((dirp = readdir(dp)) != NULL)
+    {
+        if(dirp->d_name[0]!='.')
+        {
+            if(dirp->d_type==8)
+            {
                 string curstring=dirp->d_name;
-                if(curstring.find(string_to_match)!=string::npos){
+                if(curstring.find(string_to_match)!=string::npos)
+                {
                     files.push_back(dir+string(SEP)+string(dirp->d_name));
                 }
             }
@@ -4606,15 +5408,20 @@ int get_all_files_that_match_2_strings(string dir, vector<string> &files , strin
 {
     DIR *dp;
     struct dirent *dirp;
-    if((dp  = opendir(dir.c_str())) == NULL) {
+    if((dp  = opendir(dir.c_str())) == NULL)
+    {
         cout << "Error(" << errno << ") opening " << dir << endl;
         return errno;
     }
-    while ((dirp = readdir(dp)) != NULL) {
+    while ((dirp = readdir(dp)) != NULL)
+    {
         string curstring=dirp->d_name;
-        if(dirp->d_name[0]!='.' ||  curstring.size()>2){
-            if(dirp->d_type==8 || dirp->d_type==0){
-                if((bool)(curstring.find(string_to_match)!=string::npos) && (bool)(curstring.find(string_to_match2)!=string::npos)){
+        if(dirp->d_name[0]!='.' ||  curstring.size()>2)
+        {
+            if(dirp->d_type==8 || dirp->d_type==0)
+            {
+                if((bool)(curstring.find(string_to_match)!=string::npos) && (bool)(curstring.find(string_to_match2)!=string::npos))
+                {
                     files.push_back(dir+string(SEP)+string(dirp->d_name));
                 }
             }
@@ -4630,13 +5437,17 @@ int get_all_files_in_dir_without_extension(string dir, vector<string> &files)
 {
     DIR *dp;
     struct dirent *dirp;
-    if((dp  = opendir(dir.c_str())) == NULL) {
+    if((dp  = opendir(dir.c_str())) == NULL)
+    {
         cout << "Error(" << errno << ") opening " << dir << endl;
         return errno;
     }
-    while ((dirp = readdir(dp)) != NULL) {
-        if(dirp->d_name[0]!='.'){
-            if(dirp->d_type==8){
+    while ((dirp = readdir(dp)) != NULL)
+    {
+        if(dirp->d_name[0]!='.')
+        {
+            if(dirp->d_type==8)
+            {
                 string tmpstring=dir+string(SEP)+string(dirp->d_name);
                 tmpstring.erase(tmpstring.find_first_of(".",tmpstring.find_last_of(SEP)),tmpstring.length());
                 files.push_back(tmpstring);
@@ -4646,30 +5457,39 @@ int get_all_files_in_dir_without_extension(string dir, vector<string> &files)
     closedir(dp);
     return 0;
 }
-float * getHeatWij(float * DistanceMatrix,int size_matrix, float temperature){
+float * getHeatWij(float * DistanceMatrix,int size_matrix, float temperature)
+{
     float * UpdatedDistanceMatrix= new float [size_matrix*size_matrix];
 
-    for(long i=0; i<size_matrix; i++){
-        for(long j=0; j<size_matrix; j++){
+    for(long i=0; i<size_matrix; i++)
+    {
+        for(long j=0; j<size_matrix; j++)
+        {
             UpdatedDistanceMatrix[i*size_matrix+j]=expf(-((float)DistanceMatrix[i*size_matrix+j])/temperature);
         }
     }
     return UpdatedDistanceMatrix;
 }
-float * getNN(float * DistanceMatrix,int size_matrix,int sizeneig){
+float * getNN(float * DistanceMatrix,int size_matrix,int sizeneig)
+{
     float * UpdatedDistanceMatrix= new float [size_matrix*size_matrix];
     float * currcosts= new float [size_matrix];
     int * ranking;
-    for(long i=0; i<size_matrix; i++){
-        for(long j=0; j<size_matrix; j++){
+    for(long i=0; i<size_matrix; i++)
+    {
+        for(long j=0; j<size_matrix; j++)
+        {
             currcosts[j]=(float)DistanceMatrix[j+i*size_matrix];
         }
         ranking=quickSort_order(currcosts,size_matrix);
-        for(long j=0; j<((sizeneig+1)>size_matrix?size_matrix:(sizeneig+1)); j++){
+        for(long j=0; j<((sizeneig+1)>size_matrix?size_matrix:(sizeneig+1)); j++)
+        {
             UpdatedDistanceMatrix[i*size_matrix+ranking[j]]=(float)currcosts[j];
         }
-        if((sizeneig+1)<size_matrix){
-            for(long j=(sizeneig); j<size_matrix; j++){
+        if((sizeneig+1)<size_matrix)
+        {
+            for(long j=(sizeneig); j<size_matrix; j++)
+            {
                 UpdatedDistanceMatrix[i*size_matrix+ranking[j]]=(float)100000.0f;
             }
         }
@@ -4679,7 +5499,8 @@ float * getNN(float * DistanceMatrix,int size_matrix,int sizeneig){
 }
 
 
-void LTS_Vecs(float * Y, float * X,int * mask, float percentOutliers,int maxNumbIter, float convergenceRatio, unsigned int size, float *a, float *b){
+void LTS_Vecs(float * Y, float * X,int * mask, float percentOutliers,int maxNumbIter, float convergenceRatio, unsigned int size, float *a, float *b)
+{
 
     percentOutliers=percentOutliers<0?0:(percentOutliers>0.499)?0.499:percentOutliers;
     float distance_threshold=std::numeric_limits<float>::max();
@@ -4689,7 +5510,8 @@ void LTS_Vecs(float * Y, float * X,int * mask, float percentOutliers,int maxNumb
     float olddistance_threshold=distance_threshold;
 
 
-    while(iteration){
+    while(iteration)
+    {
         float sumX=0;
         float sumY=0;
         float sumXY=0;
@@ -4698,14 +5520,17 @@ void LTS_Vecs(float * Y, float * X,int * mask, float percentOutliers,int maxNumb
 
 
 
-        for(unsigned int i=0; i<size; i++){
-            if(mask==NULL || (mask!=NULL && mask[i]==true)){
-                if( distance_threshold > fabs(Y[i]-Aval*X[i]+Bval) ){
-                sumX+=X[i];
-                sumY+=Y[i];
-                sumXY+=X[i]*Y[i];
-                sumXsquared+=X[i]*X[i];
-                sizefloat++;
+        for(unsigned int i=0; i<size; i++)
+        {
+            if(mask==NULL || (mask!=NULL && mask[i]==true))
+            {
+                if( distance_threshold > fabs(Y[i]-Aval*X[i]+Bval) )
+                {
+                    sumX+=X[i];
+                    sumY+=Y[i];
+                    sumXY+=X[i]*Y[i];
+                    sumXsquared+=X[i]*X[i];
+                    sizefloat++;
                 }
             }
         }
@@ -4718,8 +5543,10 @@ void LTS_Vecs(float * Y, float * X,int * mask, float percentOutliers,int maxNumb
         float * distance=new float [(int)(sizefloat)];
         float maxdistance=0;
         int indexmask=0;
-        for(unsigned int i=0; i<size; i++){
-            if(mask==NULL || (mask!=NULL && mask[i]==true)){
+        for(unsigned int i=0; i<size; i++)
+        {
+            if(mask==NULL || (mask!=NULL && mask[i]==true))
+            {
                 distance[indexmask]=fabs(Y[i]-Aval*X[i]+Bval);
                 maxdistance=(maxdistance<distance[indexmask])?distance[indexmask]:maxdistance;
                 indexmask++;
@@ -4729,10 +5556,11 @@ void LTS_Vecs(float * Y, float * X,int * mask, float percentOutliers,int maxNumb
 
         // Fill histogram
         float histsize=200.0f;
-        float histo[201]={0};
+        float histo[201]= {0};
         for(long i=0; i<(int)histsize; i++) histo[i]=0;
 
-        for(long i=0; i<indexmask; i++){
+        for(long i=0; i<indexmask; i++)
+        {
             float location=histsize*distance[i]/maxdistance;
             float weight=location-floorf(location);
             histo[(int)floor(location)]+=(1-weight);
@@ -4752,10 +5580,12 @@ void LTS_Vecs(float * Y, float * X,int * mask, float percentOutliers,int maxNumb
         float after_currentcount=0;
         float before_currentcount=0;
         float index_count=histsize;
-        for(long i=0; i<(int)histsize; i++){
+        for(long i=0; i<(int)histsize; i++)
+        {
             before_currentcount=after_currentcount;
             after_currentcount+=histo[i];
-            if(after_currentcount>targetcount){
+            if(after_currentcount>targetcount)
+            {
                 index_count=i;
                 i=(int)histsize;
             }
@@ -4770,12 +5600,14 @@ void LTS_Vecs(float * Y, float * X,int * mask, float percentOutliers,int maxNumb
         distance_threshold=valafter*InterpWeight+(1-InterpWeight)*valbefore;
         delete [] distance;
         iteration--;
-        if( (((olddistance_threshold-distance_threshold)/distance_threshold)<convergenceRatio) && ( fabs(maxNumbIter-iteration)>3 || maxNumbIter<=3)){
+        if( (((olddistance_threshold-distance_threshold)/distance_threshold)<convergenceRatio) && ( fabs(maxNumbIter-iteration)>3 || maxNumbIter<=3))
+        {
             iteration=0;
             a[0]=Aval;
             b[0]=Bval;
         }
-        else{
+        else
+        {
             a[0]=Aval;
             b[0]=Bval;
         }
@@ -4783,15 +5615,18 @@ void LTS_Vecs(float * Y, float * X,int * mask, float percentOutliers,int maxNumb
     }
 }
 
-void LS_Vecs(float * Y, float * X,int * mask, unsigned int size, float *a, float *b){
+void LS_Vecs(float * Y, float * X,int * mask, unsigned int size, float *a, float *b)
+{
 
     float sumX=0;
     float sumY=0;
     float sumXY=0;
     float sumXsquared=0;
     float sizefloat=0;
-    for(unsigned int i=0; i<size; i++){
-        if(mask==NULL || (mask!=NULL && mask[i]==true)){
+    for(unsigned int i=0; i<size; i++)
+    {
+        if(mask==NULL || (mask!=NULL && mask[i]==true))
+        {
             sumX+=X[i];
             sumY+=Y[i];
             sumXY+=X[i]*Y[i];
@@ -4810,18 +5645,23 @@ void LS_Vecs(float * Y, float * X,int * mask, unsigned int size, float *a, float
 
 void otsu(float * Image,
           int * mask,
-          ImageSize *Currentsize ){
+          ImageSize *Currentsize )
+{
 
     //find image max and min
     float tempmax=-(1e32);
     float tempmin=1e32;
 
-    for (int i=0; i<Currentsize->numel; i++) {
-        if(mask==NULL || mask[i]>0){
-            if (Image[i]<tempmin) {
+    for (int i=0; i<Currentsize->numel; i++)
+    {
+        if(mask==NULL || mask[i]>0)
+        {
+            if (Image[i]<tempmin)
+            {
                 tempmin=Image[i];
             }
-            if (Image[i]>tempmax) {
+            if (Image[i]>tempmax)
+            {
                 tempmax=Image[i];
             }
         }
@@ -4830,10 +5670,11 @@ void otsu(float * Image,
 
     // Fill histogram
     float histsize=1002.0f;
-    float histo[1002]={0};
+    float histo[1002]= {0};
     for(long i=0; i<(int)histsize; i++) histo[i]=0;
 
-    for(long i=0; i<Currentsize->numel; i++){
+    for(long i=0; i<Currentsize->numel; i++)
+    {
         float location=(histsize-2)*(Image[i]-tempmin)/(tempmax-tempmin)+1;
         float weight=location-floorf(location);
         histo[(int)floor(location)]+=(1-weight);
@@ -4862,7 +5703,8 @@ void otsu(float * Image,
 
 
     // Find optimal threshold value
-    for (int i=1; i<histsize; i++) {
+    for (int i=1; i<histsize; i++)
+    {
         w+=histo[i-1];
         u+=(i*histo[i-1]);
         work1 = (uT * w - u);
@@ -4874,7 +5716,8 @@ void otsu(float * Image,
 
     //cout<< "threshold = "<<threshold<<endl;
     // Convert the final value to an integer
-    for(long i=0; i<Currentsize->numel; i++){
+    for(long i=0; i<Currentsize->numel; i++)
+    {
         Image[i]=Image[i]>threshold;
     }
     return;
@@ -4891,7 +5734,8 @@ void BiasCorrect(float * Image,
     float * BiasCorrected = new float [Currentsize->numel];
 //    float * BiasCorrected2 = new float [Currentsize->numel];
 
-    for(long i=0; i<Currentsize->numel; i++){
+    for(long i=0; i<Currentsize->numel; i++)
+    {
         TmpMask[i]=Image[i];
     }
 
@@ -4904,42 +5748,52 @@ void BiasCorrect(float * Image,
     Erosion(Mask,3,Currentsize);
 
     int * MaskInt = new int [Currentsize->numel];
-    for(long i=0; i<Currentsize->numel; i++){
+    for(long i=0; i<Currentsize->numel; i++)
+    {
         MaskInt[i]=Mask[i];
     }
     delete [] Mask;
 
-    for(long i=0; i<Currentsize->numel; i++){
+    for(long i=0; i<Currentsize->numel; i++)
+    {
         BiasCorrected[i]=0;
 //        BiasCorrected2[i]=0;
     }
 
-    for(long iteration=0;iteration<1;iteration++){
+    for(long iteration=0; iteration<1; iteration++)
+    {
         cout << iteration<<endl;
 
-        for(long i=0; i<Currentsize->numel; i++){
+        for(long i=0; i<Currentsize->numel; i++)
+        {
             BiasCorrected[i]=log(Image[i]+1.0f);
         }
         GaussianSmoothing_carray(BiasCorrected,MaskInt,10.0f,Currentsize);
 
 
-        for(long i=0; i<Currentsize->numel; i++){
-            if(MaskInt[i]){
+        for(long i=0; i<Currentsize->numel; i++)
+        {
+            if(MaskInt[i])
+            {
                 BiasCorrected[i]=log(Image[i]+1.0f)-BiasCorrected[i];
             }
-            else{
+            else
+            {
                 BiasCorrected[i]=0;
             }
         }
 
         //GaussianSmoothing_carray(BiasCorrected,MaskInt,20.0f,Currentsize);
 
-        for(long i=0; i<Currentsize->numel; i++){
-            if(MaskInt[i]){
+        for(long i=0; i<Currentsize->numel; i++)
+        {
+            if(MaskInt[i])
+            {
                 //Image[i]=(Image[i]+(exp(log(Image[i]+1.0f)-BiasCorrected[i])-1.0f))/2.0f;
                 Image[i]=exp(BiasCorrected[i])-1;
             }
-            else{
+            else
+            {
                 Image[i]=0;
             }
         }

@@ -1,14 +1,17 @@
 #-----------------------------------------------------------------------------
-ADD_DEFINITIONS(-DHAVE_ZLIB)
-SET(NAME _seg_nifti)
-ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} nifti1.h nifti1_io.c nifti1_io.h znzlib.c znzlib.h)
-TARGET_LINK_LIBRARIES(${NAME} z)
-INSTALL(TARGETS ${NAME}
-	RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
-	LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-	ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+option(USE_NII_NAN "To enable NaN support with nifti images" ON)
+mark_as_advanced(FORCE USE_NII_NAN)
+if(USE_NII_NAN)
+    add_definitions(-DUSE_NII_NAN)
+endif(USE_NII_NAN)
+add_definitions(-DHAVE_ZLIB)
+set(NAME _seg_nifti)
+add_library(${NAME}  ${LIBRARY_TYPE} nifti1.h nifti1_io.c nifti1_io.h znzlib.c znzlib.h)
+target_link_libraries(${NAME} z)
+install(TARGETS ${NAME}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
 )
-INSTALL(FILES znzlib.h DESTINATION include)
-INSTALL(FILES nifti1_io.h DESTINATION include)
-INSTALL(FILES nifti1.h DESTINATION include)
+install(FILES nifti1_io.h znzlib.h nifti1.h DESTINATION include COMPONENT Development)
 #-----------------------------------------------------------------------------
