@@ -2560,6 +2560,134 @@ void GaussianSmoothing(nifti_image * Data,int * mask,float gauss_std_in)
 }
 
 
+void BlockSmoothing(nifti_image * Data,int * mask,int side_size)
+{
+
+    int nx=Data->nx;
+    int ny=Data->ny;
+    int nz=Data->nz;
+
+    float * ImageBuffer= new float [nx*ny*nz]();
+    float * Density= new float [nx*ny*nz]();
+    float * DensityBuffer= new float [nx*ny*nz]();
+
+    float * DataPTR=static_cast<float *>(Data->data);
+
+    int shiftdirection[3]= {1,nx,nx*ny};
+    int dim_array[3]= {nx,ny,nz};
+
+    int numel=nx*ny*nz;
+    for(long curr4d=0; curr4d<(long)Data->nt; curr4d++)  //For Each TP
+    {
+        long current_4dShift_short=curr4d*nx*ny*nz;
+
+        // Masking density and area
+        int i=0;
+#ifdef _OPENMP
+        #pragma omp parallel for default(none) \
+        shared(DataPTR,mask,current_4dShift_short,nx,ny,nz,Density) \
+        private(i)
+#endif
+        for(i=0; i<nx*ny*nz; i++)
+        {
+            if(mask!=NULL){
+                Density[i]=(mask[i]>0 && isnan(DataPTR[i+current_4dShift_short])==0);
+            }
+            else{
+                Density[i]=(isnan(DataPTR[i+current_4dShift_short])==0);
+            }
+            DataPTR[i+current_4dShift_short]=(Density[i]>0)?DataPTR[i+current_4dShift_short]:0;
+        }
+
+        //Blur Buffer and density along each direction
+        for(long currentdirection=0; currentdirection<3; currentdirection++)
+        {
+
+            // Setup kernel
+            int kernelshift=(floor)((float)(side_size)/2.0f);
+
+            // Updating buffers
+            int index;
+#ifdef _OPENMP
+            #pragma omp parallel for default(none) \
+            shared(DataPTR,Density,ImageBuffer,DensityBuffer,current_4dShift_short,numel) \
+            private(i)
+#endif
+            for(index=0; index<numel; index++)
+            {
+                ImageBuffer[index]=DataPTR[index+current_4dShift_short];
+                DensityBuffer[index]=Density[index];
+            }
+
+            // openmp defines
+
+            float TmpDataConvolution=0;
+            float TmpMaskConvolution=0;
+            int shiftstart=0;
+            int shiftstop=0;
+            int shift=0;
+            int xyzpos[3];
+            int xyzpos2;
+            // For every pixel
+#ifdef _OPENMP
+            #pragma omp parallel for default(none) \
+            shared(DataPTR,ImageBuffer,DensityBuffer,nx,ny,nz,kernelshift,Density,dim_array,currentdirection,shiftdirection,current_4dShift_short) \
+            private(xyzpos2,TmpDataConvolution,TmpMaskConvolution,index,shiftstart,shiftstop,shift,xyzpos)
+#endif
+            for(xyzpos2=0; xyzpos2<nz; xyzpos2++)
+            {
+                xyzpos[2]=xyzpos2;
+                for(xyzpos[1]=0; xyzpos[1]<ny; xyzpos[1]++)
+                {
+                    for(xyzpos[0]=0; xyzpos[0]<nx; xyzpos[0]++)
+                    {
+
+                        TmpDataConvolution=0;
+                        TmpMaskConvolution=0;
+                        index=xyzpos[0]+(xyzpos[1]+xyzpos[2]*ny)*nx;
+                        // Calculate allowed kernel shifts
+                        shiftstart=((xyzpos[currentdirection]<kernelshift)?-xyzpos[currentdirection]:-kernelshift);
+                        shiftstop=((xyzpos[currentdirection]>=(dim_array[currentdirection]-kernelshift))?(int)dim_array[currentdirection]-xyzpos[currentdirection]-1:kernelshift);
+
+                        for(shift=shiftstart; shift<=shiftstop; shift++)
+                        {
+                            // Data Blur
+                            TmpDataConvolution+=ImageBuffer[index+shift*shiftdirection[currentdirection]];
+                            // Mask Blur
+                            TmpMaskConvolution+=DensityBuffer[index+shift*shiftdirection[currentdirection]];
+                        }
+                        // Devide convolutions by the kernel density
+                        DataPTR[index+current_4dShift_short]=TmpDataConvolution;
+                        Density[index]=TmpMaskConvolution;
+
+                    }
+                }
+            }
+        }
+        int index=0;
+#ifdef _OPENMP
+        #pragma omp parallel for default(none) \
+        shared(DataPTR, mask, Density,current_4dShift_short,numel) \
+        private(index)
+#endif
+        for(index=0; index<numel; index++)
+        {
+            if(mask!=NULL){
+                DataPTR[index+current_4dShift_short]=(mask[index]>0)?DataPTR[index+current_4dShift_short]/Density[index]:0;
+            }
+            else{
+                DataPTR[index+current_4dShift_short]=DataPTR[index+current_4dShift_short]/Density[index];
+            }
+        }
+    }
+
+    delete [] ImageBuffer;
+    delete [] Density;
+    delete [] DensityBuffer;
+    return;
+}
+
+
 void GaussianSmoothing_carray(float * DataPTR,int * mask,float gauss_std_in, ImageSize *Currentsize)
 {
 

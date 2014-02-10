@@ -1161,7 +1161,7 @@ void BiasCorrection2D(SegPrecisionTYPE * BiasField,
     // Precompute Powers depending on the current BiasOrder
     int PowerOrder [((maxallowedpowerorder+1)*(maxallowedpowerorder+2)/2)]= {0};
     int ind=0;
-    for(int order=0; order<=biasOrder; order++)
+    for(int order=0; order<=min(biasOrder,maxallowedpowerorder); order++)
     {
         for(int xorder=0; xorder<=order; xorder++)
         {

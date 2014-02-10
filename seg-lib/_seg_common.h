@@ -45,7 +45,7 @@ inline int fabs(int _x)
 #include <dirent.h>
 #endif
 
-
+#define _USE_MATH_DEFINES
 
 #include <errno.h>
 #include <vector>
