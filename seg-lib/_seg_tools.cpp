@@ -629,7 +629,7 @@ int Normalize_T1_and_MV(nifti_image * T1,
 }
 
 int * Create_Short_2_Long_Matrix_from_NII(nifti_image * Mask,
-        long * shortsize)
+                                          long * shortsize)
 {
     int numel_masked=0;
     int numel = Mask->nvox;
@@ -702,8 +702,8 @@ int *  Create_Long_2_Short_Matrix_from_NII(nifti_image * Mask)
 
 
 int * Create_Short_2_Long_Matrix_from_Carray(bool * Mask,
-        int * shortsize,
-        int nvox)
+                                             int * shortsize,
+                                             int nvox)
 {
     int numel_masked=0;
     int numel = nvox;
@@ -731,7 +731,7 @@ int * Create_Short_2_Long_Matrix_from_Carray(bool * Mask,
 }
 
 int *  Create_Long_2_Short_Matrix_from_Carray(bool * Mask,
-        int nvox)
+                                              int nvox)
 {
     int * Long_2_Short_Indices= new int [nvox]();
     int * Long_2_Short_Indices_PTR = (int *) Long_2_Short_Indices;
@@ -753,9 +753,9 @@ int *  Create_Long_2_Short_Matrix_from_Carray(bool * Mask,
 }
 
 SegPrecisionTYPE * Create_cArray_from_Prior_mask(nifti_image * Mask,
-        nifti_image * Priors,
-        long numclass,
-        bool PV_ON)
+                                                 nifti_image * Priors,
+                                                 long numclass,
+                                                 bool PV_ON)
 {
     register long numel=(int)(rowsize(Mask)*colsize(Mask)*depth(Mask));
     register long numel_masked=0;
@@ -787,8 +787,8 @@ SegPrecisionTYPE * Create_cArray_from_Prior_mask(nifti_image * Mask,
 }
 
 SegPrecisionTYPE * Create_cArray_from_Prior(nifti_image * Priors,
-        long numclass,
-        bool PV_ON)
+                                            long numclass,
+                                            bool PV_ON)
 {
     register long numel=(int)(rowsize(Priors)*colsize(Priors)*depth(Priors));
     long pluspv=(int)(PV_ON)*2;
@@ -806,7 +806,7 @@ SegPrecisionTYPE * Create_cArray_from_Prior(nifti_image * Priors,
 }
 
 SegPrecisionTYPE * Create_cArray_from_3D_image(nifti_image * Mask,
-        nifti_image * SourceImage)
+                                               nifti_image * SourceImage)
 {
     register int numel=(int)(rowsize(Mask)*colsize(Mask)*depth(Mask));
     register int numel_masked=0;
@@ -930,7 +930,7 @@ int calcE_mask(nifti_image * T1,
     for(long i=0; i<(long)omp_get_max_threads(); i++)
         loglikthread[i]=0;
 
-    #pragma omp parallel for shared(Expec,loglikthread,T1,BiasField,Outlierness,IterPrior)
+#pragma omp parallel for shared(Expec,loglikthread,T1,BiasField,Outlierness,IterPrior)
 #endif
     for (int i=0; i<numel_masked; i++)
     {
@@ -1098,7 +1098,7 @@ int calcE(nifti_image * T1,
     for(long i=0; i<(long)omp_get_max_threads(); i++)
         loglikthread[i]=0;
 
-    #pragma omp parallel for shared(Expec,loglikthread,T1,BiasField,Outlierness,IterPrior)
+#pragma omp parallel for shared(Expec,loglikthread,T1,BiasField,Outlierness,IterPrior)
 #endif
     for (int i=0; i<numel; i++)
     {
@@ -1708,7 +1708,7 @@ int calcM_mask(nifti_image * T1,
     }
 
 #ifdef _OPENMP
-    #pragma omp parallel for shared(T1,BiasField,Outlierness)
+#pragma omp parallel for shared(T1,BiasField,Outlierness)
 #endif
     // ***********
     for (int cl=0; cl<num_class; cl++)
@@ -2440,9 +2440,9 @@ void GaussianSmoothing(nifti_image * Data,int * mask,float gauss_std_in)
         // Masking density and area
         int i=0;
 #ifdef _OPENMP
-        #pragma omp parallel for default(none) \
-        shared(DataPTR,mask,current_4dShift_short,nx,ny,nz,Density) \
-        private(i)
+#pragma omp parallel for default(none) \
+    shared(DataPTR,mask,current_4dShift_short,nx,ny,nz,Density) \
+    private(i)
 #endif
         for(i=0; i<nx*ny*nz; i++)
         {
@@ -2477,9 +2477,9 @@ void GaussianSmoothing(nifti_image * Data,int * mask,float gauss_std_in)
             // Updating buffers
             int index;
 #ifdef _OPENMP
-            #pragma omp parallel for default(none) \
-            shared(DataPTR,Density,ImageBuffer,DensityBuffer,current_4dShift_short,numel) \
-            private(i)
+#pragma omp parallel for default(none) \
+    shared(DataPTR,Density,ImageBuffer,DensityBuffer,current_4dShift_short,numel) \
+    private(i)
 #endif
             for(index=0; index<numel; index++)
             {
@@ -2499,9 +2499,9 @@ void GaussianSmoothing(nifti_image * Data,int * mask,float gauss_std_in)
             int xyzpos2;
             // For every pixel
 #ifdef _OPENMP
-            #pragma omp parallel for default(none) \
-            shared(DataPTR,GaussKernel,ImageBuffer,DensityBuffer,nx,ny,nz,kernelshift,Density,dim_array,currentdirection,shiftdirection,current_4dShift_short) \
-            private(xyzpos2,TmpDataConvolution,TmpMaskConvolution,TmpKernDensity,index,shiftstart,shiftstop,shift,xyzpos)
+#pragma omp parallel for default(none) \
+    shared(DataPTR,GaussKernel,ImageBuffer,DensityBuffer,nx,ny,nz,kernelshift,Density,dim_array,currentdirection,shiftdirection,current_4dShift_short) \
+    private(xyzpos2,TmpDataConvolution,TmpMaskConvolution,TmpKernDensity,index,shiftstart,shiftstop,shift,xyzpos)
 #endif
             for(xyzpos2=0; xyzpos2<nz; xyzpos2++)
             {
@@ -2538,9 +2538,9 @@ void GaussianSmoothing(nifti_image * Data,int * mask,float gauss_std_in)
         }
         int index=0;
 #ifdef _OPENMP
-        #pragma omp parallel for default(none) \
-        shared(DataPTR, mask, Density,current_4dShift_short,numel) \
-        private(index)
+#pragma omp parallel for default(none) \
+    shared(DataPTR, mask, Density,current_4dShift_short,numel) \
+    private(index)
 #endif
         for(index=0; index<numel; index++)
         {
@@ -2584,9 +2584,9 @@ void BlockSmoothing(nifti_image * Data,int * mask,int side_size)
         // Masking density and area
         int i=0;
 #ifdef _OPENMP
-        #pragma omp parallel for default(none) \
-        shared(DataPTR,mask,current_4dShift_short,nx,ny,nz,Density) \
-        private(i)
+#pragma omp parallel for default(none) \
+    shared(DataPTR,mask,current_4dShift_short,nx,ny,nz,Density) \
+    private(i)
 #endif
         for(i=0; i<nx*ny*nz; i++)
         {
@@ -2609,9 +2609,9 @@ void BlockSmoothing(nifti_image * Data,int * mask,int side_size)
             // Updating buffers
             int index;
 #ifdef _OPENMP
-            #pragma omp parallel for default(none) \
-            shared(DataPTR,Density,ImageBuffer,DensityBuffer,current_4dShift_short,numel) \
-            private(i)
+#pragma omp parallel for default(none) \
+    shared(DataPTR,Density,ImageBuffer,DensityBuffer,current_4dShift_short,numel) \
+    private(i)
 #endif
             for(index=0; index<numel; index++)
             {
@@ -2630,9 +2630,9 @@ void BlockSmoothing(nifti_image * Data,int * mask,int side_size)
             int xyzpos2;
             // For every pixel
 #ifdef _OPENMP
-            #pragma omp parallel for default(none) \
-            shared(DataPTR,ImageBuffer,DensityBuffer,nx,ny,nz,kernelshift,Density,dim_array,currentdirection,shiftdirection,current_4dShift_short) \
-            private(xyzpos2,TmpDataConvolution,TmpMaskConvolution,index,shiftstart,shiftstop,shift,xyzpos)
+#pragma omp parallel for default(none) \
+    shared(DataPTR,ImageBuffer,DensityBuffer,nx,ny,nz,kernelshift,Density,dim_array,currentdirection,shiftdirection,current_4dShift_short) \
+    private(xyzpos2,TmpDataConvolution,TmpMaskConvolution,index,shiftstart,shiftstop,shift,xyzpos)
 #endif
             for(xyzpos2=0; xyzpos2<nz; xyzpos2++)
             {
@@ -2666,9 +2666,9 @@ void BlockSmoothing(nifti_image * Data,int * mask,int side_size)
         }
         int index=0;
 #ifdef _OPENMP
-        #pragma omp parallel for default(none) \
-        shared(DataPTR, mask, Density,current_4dShift_short,numel) \
-        private(index)
+#pragma omp parallel for default(none) \
+    shared(DataPTR, mask, Density,current_4dShift_short,numel) \
+    private(index)
 #endif
         for(index=0; index<numel; index++)
         {
@@ -2712,9 +2712,9 @@ void GaussianSmoothing_carray(float * DataPTR,int * mask,float gauss_std_in, Ima
         // Masking density and area
         int i=0;
 #ifdef _OPENMP
-        #pragma omp parallel for default(none) \
-        shared(DataPTR,mask,current_4dShift_short,nx,ny,nz,Density) \
-        private(i)
+#pragma omp parallel for default(none) \
+    shared(DataPTR,mask,current_4dShift_short,nx,ny,nz,Density) \
+    private(i)
 #endif
         for(i=0; i<nx*ny*nz; i++)
         {
@@ -2744,9 +2744,9 @@ void GaussianSmoothing_carray(float * DataPTR,int * mask,float gauss_std_in, Ima
             // Updating buffers
             int index;
 #ifdef _OPENMP
-            #pragma omp parallel for default(none) \
-            shared(DataPTR,Density,ImageBuffer,DensityBuffer,current_4dShift_short,numel) \
-            private(i)
+#pragma omp parallel for default(none) \
+    shared(DataPTR,Density,ImageBuffer,DensityBuffer,current_4dShift_short,numel) \
+    private(i)
 #endif
             for(index=0; index<numel; index++)
             {
@@ -2766,9 +2766,9 @@ void GaussianSmoothing_carray(float * DataPTR,int * mask,float gauss_std_in, Ima
             int xyzpos2;
             // For every pixel
 #ifdef _OPENMP
-            #pragma omp parallel for default(none) \
-            shared(DataPTR,GaussKernel,ImageBuffer,DensityBuffer,nx,ny,nz,kernelshift,Density,dim_array,currentdirection,shiftdirection,current_4dShift_short) \
-            private(xyzpos2,TmpDataConvolution,TmpMaskConvolution,TmpKernDensity,index,shiftstart,shiftstop,shift,xyzpos)
+#pragma omp parallel for default(none) \
+    shared(DataPTR,GaussKernel,ImageBuffer,DensityBuffer,nx,ny,nz,kernelshift,Density,dim_array,currentdirection,shiftdirection,current_4dShift_short) \
+    private(xyzpos2,TmpDataConvolution,TmpMaskConvolution,TmpKernDensity,index,shiftstart,shiftstop,shift,xyzpos)
 #endif
             for(xyzpos2=0; xyzpos2<nz; xyzpos2++)
             {
@@ -2805,9 +2805,9 @@ void GaussianSmoothing_carray(float * DataPTR,int * mask,float gauss_std_in, Ima
         }
         int index=0;
 #ifdef _OPENMP
-        #pragma omp parallel for default(none) \
-        shared(DataPTR, mask, Density,current_4dShift_short,numel) \
-        private(index)
+#pragma omp parallel for default(none) \
+    shared(DataPTR, mask, Density,current_4dShift_short,numel) \
+    private(index)
 #endif
         for(index=0; index<numel; index++)
         {
@@ -2823,9 +2823,9 @@ void GaussianSmoothing_carray(float * DataPTR,int * mask,float gauss_std_in, Ima
 
 
 SegPrecisionTYPE * Gaussian_Filter_4D_inside_mask(SegPrecisionTYPE * LongData,
-        bool * mask,
-        SegPrecisionTYPE gauss_std,
-        ImageSize * CurrSizes)
+                                                  bool * mask,
+                                                  SegPrecisionTYPE gauss_std,
+                                                  ImageSize * CurrSizes)
 {
 
     int kernelsize=0;
@@ -2927,6 +2927,189 @@ SegPrecisionTYPE * Gaussian_Filter_4D_inside_mask(SegPrecisionTYPE * LongData,
     return Buffer;
 }
 
+float patchsym(nifti_image * Image, unsigned char  * MaskPtr, int location1, int location2, int patchsize){
+
+    float * ImgPrt = static_cast<float *>(Image->data);
+    int numvox=Image->nx*Image->ny*Image->nz;
+
+    float distance=0;
+    float count=0;
+    for(int shiftx=-patchsize; shiftx<=patchsize; shiftx++){
+        for(int shifty=-patchsize; shifty<=patchsize; shifty++){
+            for(int shiftz=-patchsize; shiftz<=patchsize; shiftz++){
+
+                int shift=(shiftx)+Image->nx*(shifty+(Image->ny*shiftz));
+                int index1=location1+shift;
+                int index2=location2+shift;
+
+                if(index1<(long)(numvox)   && // Is within the index bounds (also checks z)
+                        index1>=0               && // Is within the index bounds (also checks z)
+
+                        index2<(long)(numvox)   && // Is within the index bounds (also checks z)
+                        index2>=0               && // Is within the index bounds (also checks z)
+
+                        MaskPtr[index1]==0   && // Is within the mask
+                        MaskPtr[index2]==0) // Is within the mask)         // Does it flip around the image
+                {
+                    distance+=(ImgPrt[index1]-ImgPrt[index2])*(ImgPrt[index1]-ImgPrt[index2]);
+                    count++;
+
+                }
+            }
+        }
+    }
+
+    return count==0?std::numeric_limits<float>::quiet_NaN():sqrtf(distance/count);
+}
+
+
+void fillmask(nifti_image * Image ,nifti_image * Mask){
+
+
+    //GaussianSmoothing(Image,static_cast<int *>(Mask->data),3.0f);
+
+    size_t index=0;
+    float * ImgPrt = static_cast<float *>(Image->data);
+    float * MaskPtr =  static_cast<float *>(Mask->data);
+    int shiftsize=20;
+    int shiftspacing=2;
+    int numvox=Image->nx*Image->ny*Image->nz;
+
+    int countvox=1;
+    int curcountvox=0;
+    int vox3d=Image->nx*Image->ny*Image->nz;
+
+    unsigned char * tmpmask= new unsigned char [Image->nx*Image->ny*Image->nz];
+    float * tmpimg= new float [Image->nx*Image->ny*Image->nz];
+    for(int index=0; index<Image->nx*Image->ny*Image->nz; index++)
+    {
+        tmpmask[index]=MaskPtr[index];
+        countvox+=MaskPtr[index];
+        tmpimg[index]=ImgPrt[index];
+    }
+
+
+    int count=1;
+    //    int iteration=0;
+    while(count!=0){
+
+        count=0;
+        for(int inz=0; inz<Image->nz; inz++)
+        {
+            for(int iny=0; iny<Image->ny; iny++)
+            {
+                float mindistance=0;
+                float curdist=0;
+                int inx=0;
+                int shiftx=0;
+                int shifty=0;
+                int shiftz=0;
+                int index2=0;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+    shared(vox3d,inz,iny,Image,tmpmask,shiftsize,shiftspacing,numvox,ImgPrt,countvox,std::cout)\
+    private(index,inx,mindistance,shiftx,shifty,shiftz,index2,curdist)\
+    reduction(+:count) \
+    reduction(+:curcountvox)
+#endif
+                for(inx=0; inx<Image->nx; inx++)
+                {
+                    index=inx+Image->nx*(iny+(Image->ny*inz));
+
+                    if(tmpmask[index]==1 &&
+                            (index+1)<vox3d &&
+                            (index-1)>0 &&
+                            (index+Image->nx)<vox3d &&
+                            (index-Image->nx)>0 &&
+                            (index+Image->nx*Image->ny)<vox3d &&
+                            (index-Image->nx*Image->ny)>0 &&
+                            (tmpmask[index+1]==0 ||
+                             tmpmask[index-1]==0 ||
+                             tmpmask[index+Image->nx]==0 ||
+                             tmpmask[index-Image->nx]==0 ||
+                             tmpmask[index+Image->nx*Image->ny]==0 ||
+                             tmpmask[index-Image->nx*Image->ny]==0))
+                    {
+                        //cout<<index<<" . "<<count<<" . "<<MaskPtr[index]<<" . "<<ImgPrt[index]<<endl;
+                        count++;
+                        curcountvox++;
+                        // If it is a lesion, then search
+                        mindistance=std::numeric_limits<float>::max();
+                        for(shiftx=-shiftsize; shiftx<=shiftsize; shiftx++){
+                            for(shifty=-shiftsize; shifty<=shiftsize; shifty++){
+                                for(shiftz=-shiftsize; shiftz<=shiftsize; shiftz++){
+                                    index2=(inx+shiftx*shiftspacing)+Image->nx*((iny+shifty*shiftspacing)+(Image->ny*(inz+shiftz*shiftspacing)));
+                                    if(index2<(long)(numvox) && // Is within the index bounds (also checks z)
+                                            index2>=0 && // Is within the index bounds (also checks z)
+                                            index!=index2 &&
+                                            tmpmask[index2]==0 && // Is outside the mask
+                                            (inx+shiftx) < Image->nx && // Does it flip around the image
+                                            (inx+shiftx) >= 0 && // Does it flip around the image
+                                            (iny+shifty) < Image->nz && // Does it flip around the image
+                                            (iny+shifty) >= 0 )         // Does it flip around the image
+                                    {
+
+                                        curdist=patchsym( Image, tmpmask, index, index2, 3);
+                                        if( mindistance > curdist && isnan(curdist)==0)
+                                        {
+                                            mindistance=curdist;
+                                            ImgPrt[index]=ImgPrt[index2];
+                                            tmpmask[index]=2;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if( floor(  floor((float)(curcountvox)/(float)(countvox)*100.0f)/100.0f *(float)(countvox)) == (curcountvox-1) ){
+                            std::cout<<floor((float)(curcountvox)/(float)(countvox)*100.0f)<<"%"<<endl;
+                        }
+                    }
+                }
+            }
+        }
+
+        for(int index=0; index<Image->nx*Image->ny*Image->nz; index++)
+        {
+            if(tmpmask[index]==2){
+                tmpmask[index]=0;
+            }
+        }
+        //iteration++;
+        //cout<<"Finished iteration "<<iteration<<endl;
+    }
+
+
+    for(int index=0; index<Image->nx*Image->ny*Image->nz; index++)
+    {
+        tmpimg[index]=ImgPrt[index];
+    }
+    for(int index=0; index<Image->nx*Image->ny*Image->nz; index++)
+    {
+        float mult=0.3;
+        if(MaskPtr[index]==1 &&
+                (index+1)<vox3d &&
+                (index-1)>0 &&
+                (index+Image->nx)<vox3d &&
+                (index-Image->nx)>0 &&
+                (index+Image->nx*Image->ny)<vox3d &&
+                (index-Image->nx*Image->ny)>0){ // If the voxel is within the bounds
+            ImgPrt[index]=(tmpimg[index]+
+                           (mult*tmpimg[index+1]+
+                           mult*tmpimg[index-1]+
+                    mult*tmpimg[index+Image->nx]+
+                    mult*tmpimg[index-Image->nx]+
+                    mult*tmpimg[index+Image->nx*Image->ny]+
+                    mult*tmpimg[index-Image->nx*Image->ny]))/(1.0f+mult*6.0f);
+        }
+    }
+
+
+
+    return;
+
+}
+
 int Convert_to_PV(nifti_image * T1,
                   SegPrecisionTYPE * BiasField,
                   SegPrecisionTYPE * ShortPrior,
@@ -2973,11 +3156,11 @@ int Sulci_and_gyri_correction(SegPrecisionTYPE * MRF_Beta,
     for(long i=0; i<(long)CurrSizes->numelmasked; i++)
     {
         Seed_Mask[i]=(Expec[i+WMclass*CurrSizes->numelmasked]+
-                      Expec[i+WMGMpvclass*CurrSizes->numelmasked]+
-                      Expec[i+dGMclass*CurrSizes->numelmasked]+
-                      Expec[i+iCSFclass*CurrSizes->numelmasked])>0.5f;
+                Expec[i+WMGMpvclass*CurrSizes->numelmasked]+
+                Expec[i+dGMclass*CurrSizes->numelmasked]+
+                Expec[i+iCSFclass*CurrSizes->numelmasked])>0.5f;
         SpeedFunc[i]=(Expec[i+CSFclass*CurrSizes->numelmasked]+
-                      Expec[i+GMCSFpvclass*CurrSizes->numelmasked])*2;
+                Expec[i+GMCSFpvclass*CurrSizes->numelmasked])*2;
     }
 
     FMM(Seed_Mask, SpeedFunc, wSulci,30, L2S, S2L, CurrSizes);
@@ -2986,11 +3169,11 @@ int Sulci_and_gyri_correction(SegPrecisionTYPE * MRF_Beta,
     for(long i=0; i<(long)CurrSizes->numelmasked; i++)
     {
         Seed_Mask[i]=(Expec[i+CSFclass*CurrSizes->numelmasked]+
-                      Expec[i+GMCSFpvclass*CurrSizes->numelmasked])>0.5f;
+                Expec[i+GMCSFpvclass*CurrSizes->numelmasked])>0.5f;
         SpeedFunc[i]=(Expec[i+WMclass*CurrSizes->numelmasked]+
-                      Expec[i+WMGMpvclass*CurrSizes->numelmasked]+
-                      Expec[i+dGMclass*CurrSizes->numelmasked]+
-                      Expec[i+iCSFclass*CurrSizes->numelmasked])*2;
+                Expec[i+WMGMpvclass*CurrSizes->numelmasked]+
+                Expec[i+dGMclass*CurrSizes->numelmasked]+
+                Expec[i+iCSFclass*CurrSizes->numelmasked])*2;
     }
 
     FMM(Seed_Mask, SpeedFunc, wGyri,30, L2S, S2L, CurrSizes);
@@ -3397,10 +3580,10 @@ bool * binarise_image(SegPrecisionTYPE * SingleImage,
 }
 
 nifti_image * Copy_Single_ShortImage_to_Result(SegPrecisionTYPE * SingleImage,
-        int * Short_2_Long_Indices,
-        nifti_image * Sourceimage,
-        char * filename,
-        ImageSize * CurrSizes)
+                                               int * Short_2_Long_Indices,
+                                               nifti_image * Sourceimage,
+                                               char * filename,
+                                               ImageSize * CurrSizes)
 {
 
     nifti_image * Result = nifti_copy_nim_info(Sourceimage);
@@ -3428,10 +3611,10 @@ nifti_image * Copy_Single_ShortImage_to_Result(SegPrecisionTYPE * SingleImage,
 
 
 nifti_image * Copy_BiasCorrected_to_Result_mask(SegPrecisionTYPE * BiasField,
-        int * Short_2_Long_Indices,
-        nifti_image * T1,
-        char * filename,
-        ImageSize * CurrSizes)
+                                                int * Short_2_Long_Indices,
+                                                nifti_image * T1,
+                                                char * filename,
+                                                ImageSize * CurrSizes)
 {
 
     nifti_image * Result = nifti_copy_nim_info(T1);
@@ -3474,9 +3657,9 @@ nifti_image * Copy_BiasCorrected_to_Result_mask(SegPrecisionTYPE * BiasField,
 }
 
 nifti_image * Copy_BiasCorrected_to_Result(SegPrecisionTYPE * BiasField,
-        nifti_image * T1,
-        char * filename,
-        ImageSize * CurrSizes)
+                                           nifti_image * T1,
+                                           char * filename,
+                                           ImageSize * CurrSizes)
 {
 
     nifti_image * Result = nifti_copy_nim_info(T1);
@@ -3517,13 +3700,13 @@ nifti_image * Copy_BiasCorrected_to_Result(SegPrecisionTYPE * BiasField,
 
 
 nifti_image * Copy_Expec_to_Result_Neonate_mask(SegPrecisionTYPE * Expec,
-        int * Short_2_Long_Indices,
-        int * Long_2_Short_Indices,
-        nifti_image * T1,
-        float * BiasField,
-        float * M,
-        char * filename,
-        ImageSize * CurrSizes)
+                                                int * Short_2_Long_Indices,
+                                                int * Long_2_Short_Indices,
+                                                nifti_image * T1,
+                                                float * BiasField,
+                                                float * M,
+                                                char * filename,
+                                                ImageSize * CurrSizes)
 {
 
     nifti_image * Result = nifti_copy_nim_info(T1);
@@ -3762,8 +3945,8 @@ nifti_image * Copy_Expec_to_Result(SegPrecisionTYPE * Expec,
 
 
 nifti_image * Copy_single_image_to_Result(bool * Mask,
-        nifti_image * Original,
-        char * filename)
+                                          nifti_image * Original,
+                                          char * filename)
 {
 
     nifti_image * Result = nifti_copy_nim_info(Original);
@@ -3793,8 +3976,8 @@ nifti_image * Copy_single_image_to_Result(bool * Mask,
 
 
 nifti_image * Copy_single_image_to_Result(float * W,
-        nifti_image * Original,
-        char * filename)
+                                          nifti_image * Original,
+                                          char * filename)
 {
 
     nifti_image * Result = nifti_copy_nim_info(Original);
@@ -3823,8 +4006,8 @@ nifti_image * Copy_single_image_to_Result(float * W,
 }
 
 nifti_image * Copy_single_image_to_Result(double * W,
-        nifti_image * Original,
-        char * filename)
+                                          nifti_image * Original,
+                                          char * filename)
 {
 
     nifti_image * Result = nifti_copy_nim_info(Original);
@@ -3853,8 +4036,8 @@ nifti_image * Copy_single_image_to_Result(double * W,
 }
 
 nifti_image * Copy_single_image_to_Result(int * Image,
-        nifti_image * Original,
-        char * filename)
+                                          nifti_image * Original,
+                                          char * filename)
 {
 
     nifti_image * Result = nifti_copy_nim_info(Original);
@@ -4863,8 +5046,8 @@ unsigned char * seg_norm4MLLNCC(nifti_image * BaseImage, nifti_image * LNCC,floa
         }
 
 #ifdef _OPENMP
-        #pragma omp parallel for default(none) \
-        shared(LNCC,LNCCptr,CurrSizes,numbordered_level,LNCC_ordered,numbordered_level_old,LNCC_ordered_save)
+#pragma omp parallel for default(none) \
+    shared(LNCC,LNCCptr,CurrSizes,numbordered_level,LNCC_ordered,numbordered_level_old,LNCC_ordered_save)
 #endif
         for(long i=0; i<LNCC->nx*LNCC->ny*LNCC->nz; i++)
         {
@@ -4985,7 +5168,7 @@ unsigned char * seg_norm4LNCC(nifti_image * BaseImage, nifti_image * LNCC,float 
     }
 
 #ifdef _OPENMP
-    #pragma omp parallel for shared(BaseImageptr, BaseSTD, BaseMean, LNCC, BaseImage, verbose, cout, LNCCptr, CurrSizes, distance)
+#pragma omp parallel for shared(BaseImageptr, BaseSTD, BaseMean, LNCC, BaseImage, verbose, cout, LNCCptr, CurrSizes, distance)
 #endif
 
     for(long currlable=0; currlable<LNCC->nt; currlable++)
@@ -5058,7 +5241,7 @@ unsigned char * seg_norm4LNCC(nifti_image * BaseImage, nifti_image * LNCC,float 
     }
 
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) \
+#pragma omp parallel for default(none) \
     shared(LNCC,BaseImage,LNCCptr,CurrSizes,numberordered,LNCC_ordered)
 #endif
     for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
@@ -5215,12 +5398,12 @@ void Resample_NN_with_weights(  nifti_image *sourceImage,
     SourceTYPE *zPointer, *xyzPointer;
     FieldTYPE world[3], position[3];
 #ifdef _OPENMP
-    #pragma omp parallel for default(none) \
+#pragma omp parallel for default(none) \
     private(index, world, position, previous, xBasis, yBasis, zBasis, relative, \
-            a, b, c, Y, Z, zPointer, xyzPointer) \
+    a, b, c, Y, Z, zPointer, xyzPointer) \
     shared(sourceIntensity, resultIntensity,resultWeights, targetVoxelNumber, \
-           deformationFieldPtrX, deformationFieldPtrY, deformationFieldPtrZ, maskPtr, \
-           sourceIJKMatrix, sourceImage, bgValue)
+    deformationFieldPtrX, deformationFieldPtrY, deformationFieldPtrZ, maskPtr, \
+    sourceIJKMatrix, sourceImage, bgValue)
 #endif // _OPENMP
     for(index=0; index<targetVoxelNumber; index++)
     {
@@ -5325,10 +5508,10 @@ template void Resample_NN_with_weights<unsigned char,float>(nifti_image *sourceI
 /* *************************************************************** */
 template<class SourceTYPE, class FieldTYPE>
 void TrilinearResampleSourceImage_for_GIF(  nifti_image *sourceImage,
-        nifti_image *deformationField,
-        nifti_image *resultImage,
-        int *mask,
-        FieldTYPE bgValue)
+                                            nifti_image *deformationField,
+                                            nifti_image *resultImage,
+                                            int *mask,
+                                            FieldTYPE bgValue)
 {
     // The resampling scheme is applied along each time
     SourceTYPE *sourceIntensityPtr = static_cast<SourceTYPE *>(sourceImage->data);
@@ -5359,12 +5542,12 @@ void TrilinearResampleSourceImage_for_GIF(  nifti_image *sourceImage,
         SourceTYPE *zPointer, *xyzPointer;
         FieldTYPE xTempNewValue, yTempNewValue, xTempNewBasis, yTempNewBasis, intensity, basis, world[3], position[3];
 #ifdef _OPENMP
-        #pragma omp parallel for default(none) \
-        private(index, intensity, world, position, previous, xBasis, yBasis, zBasis, relative, \
-                a, b, c, Y, Z, zPointer, xyzPointer, xTempNewValue, yTempNewValue) \
-        shared(sourceIntensity, resultIntensity, targetVoxelNumber, sourceVoxelNumber, \
-               deformationFieldPtrX, deformationFieldPtrY, deformationFieldPtrZ, maskPtr, \
-               sourceIJKMatrix, sourceImage, bgValue)
+#pragma omp parallel for default(none) \
+    private(index, intensity, world, position, previous, xBasis, yBasis, zBasis, relative, \
+    a, b, c, Y, Z, zPointer, xyzPointer, xTempNewValue, yTempNewValue) \
+    shared(sourceIntensity, resultIntensity, targetVoxelNumber, sourceVoxelNumber, \
+    deformationFieldPtrX, deformationFieldPtrY, deformationFieldPtrZ, maskPtr, \
+    sourceIJKMatrix, sourceImage, bgValue)
 #endif // _OPENMP
         for(index=0; index<targetVoxelNumber; index++)
         {
@@ -5860,7 +6043,7 @@ void BiasCorrect(float * Image,
     float * Mask = new float [Currentsize->numel];
     float * TmpMask = new float [Currentsize->numel];
     float * BiasCorrected = new float [Currentsize->numel];
-//    float * BiasCorrected2 = new float [Currentsize->numel];
+    //    float * BiasCorrected2 = new float [Currentsize->numel];
 
     for(long i=0; i<Currentsize->numel; i++)
     {
@@ -5885,7 +6068,7 @@ void BiasCorrect(float * Image,
     for(long i=0; i<Currentsize->numel; i++)
     {
         BiasCorrected[i]=0;
-//        BiasCorrected2[i]=0;
+        //        BiasCorrected2[i]=0;
     }
 
     for(long iteration=0; iteration<1; iteration++)

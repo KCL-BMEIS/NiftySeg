@@ -282,39 +282,77 @@ int main(int argc, char **argv)
             {
                 string parser=argv[++i];
 
-                    nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
-                    NewImage->nu=(NewImage->nu>1)?NewImage->nu:1;
-                    NewImage->nt=(NewImage->nt>1)?NewImage->nt:1;
-                    if(NewImage->datatype!=DT_FLOAT32)
-                    {
-                        seg_changeDatatype<SegPrecisionTYPE>(NewImage);
-                    }
-                    SegPrecisionTYPE * NewImagePtr = static_cast<SegPrecisionTYPE *>(NewImage->data);
-                    if(NewImage->nx==CurrSize->xsize&&NewImage->ny==CurrSize->ysize&&NewImage->nz==CurrSize->zsize&&NewImage->nt==CurrSize->tsize&&NewImage->nu==CurrSize->usize)
-                    {
-                        for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
-                            bufferImages[current_buffer?0:1][i]=(NewImagePtr[i]>0)?bufferImages[current_buffer][i]:std::numeric_limits<float>::quiet_NaN();
-                        current_buffer=current_buffer?0:1;
-                    }
-                    else
-                    {
-                        cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
-                             <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" )  New image = ( "<<NewImage->nx<<","
-                            <<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<" )"<<endl;
-                        i=argc;
-                    }
-                    nifti_image_free(NewImage);
+                nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
+                NewImage->nu=(NewImage->nu>1)?NewImage->nu:1;
+                NewImage->nt=(NewImage->nt>1)?NewImage->nt:1;
+                if(NewImage->datatype!=DT_FLOAT32)
+                {
+                    seg_changeDatatype<SegPrecisionTYPE>(NewImage);
+                }
+                SegPrecisionTYPE * NewImagePtr = static_cast<SegPrecisionTYPE *>(NewImage->data);
+                if(NewImage->nx==CurrSize->xsize&&NewImage->ny==CurrSize->ysize&&NewImage->nz==CurrSize->zsize&&NewImage->nt==CurrSize->tsize&&NewImage->nu==CurrSize->usize)
+                {
+                    for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
+                        bufferImages[current_buffer?0:1][i]=(NewImagePtr[i]>0)?bufferImages[current_buffer][i]:std::numeric_limits<float>::quiet_NaN();
+                    current_buffer=current_buffer?0:1;
+                }
+                else
+                {
+                    cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
+                         <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" )  New image = ( "<<NewImage->nx<<","
+                        <<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<" )"<<endl;
+                    i=argc;
+                }
+                nifti_image_free(NewImage);
 
             }
+            // *********************  mask  *************************
+            else if(strcmp(argv[i], "-maskfill") == 0)
+            {
+                string parser=argv[++i];
+
+                nifti_image * MaskImg=nifti_image_read(parser.c_str(),true);
+                MaskImg->nu=(MaskImg->nu>1)?MaskImg->nu:1;
+                MaskImg->nt=(MaskImg->nt>1)?MaskImg->nt:1;
+                seg_changeDatatype<float>(MaskImg);
+
+                nifti_image * TMPnii = nifti_copy_nim_info(InputImage);
+                TMPnii->dim[1]=CurrSize->xsize;
+                TMPnii->dim[2]=CurrSize->ysize;
+                TMPnii->dim[3]=CurrSize->zsize;
+                TMPnii->dim[4]=TMPnii->nt=1;
+                TMPnii->dim[5]=TMPnii->nu=1;
+                nifti_update_dims_from_array(TMPnii);
+                TMPnii->data=static_cast<void*>(&bufferImages[current_buffer][0]);
+
+                if(MaskImg->nx==CurrSize->xsize&&MaskImg->ny==CurrSize->ysize&&MaskImg->nz==CurrSize->zsize)
+                {
+
+                    fillmask(TMPnii,MaskImg);
+                }
+                else
+                {
+                    cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
+                         <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" )  New image = ( "<<MaskImg->nx<<","
+                        <<MaskImg->ny<<","<<MaskImg->nz<<","<<MaskImg->nt<<","<<MaskImg->nu<<" )"<<endl;
+                    i=argc;
+                }
+                TMPnii->data=NULL;
+                //As TMPnii->data=NULL, the free will not cause any harm
+                nifti_image_free(TMPnii);
+                nifti_image_free(MaskImg);
+
+            }
+
             // *********************  ADD  *************************
-            else if( strcmp(argv[i], "-add") == 0)
+            else if( strcmp(argv[i], "-div") == 0)
             {
                 string parser=argv[++i];
                 if(parser.find_first_not_of("1234567890.-+")== string::npos)
                 {
-                    double addfactor=strtod(parser.c_str(),NULL);
+                    double divfactor=strtod(parser.c_str(),NULL);
                     for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
-                        bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]+addfactor;
+                        bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]/divfactor;
                     current_buffer=current_buffer?0:1;
                 }
                 else
@@ -330,7 +368,7 @@ int main(int argc, char **argv)
                     if(NewImage->nx==CurrSize->xsize&&NewImage->ny==CurrSize->ysize&&NewImage->nz==CurrSize->zsize&&NewImage->nt==CurrSize->tsize&&NewImage->nu==CurrSize->usize)
                     {
                         for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
-                            bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]+NewImagePtr[i];
+                            bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i]/NewImagePtr[i];
                         current_buffer=current_buffer?0:1;
                     }
                     else
@@ -364,9 +402,9 @@ int main(int argc, char **argv)
             else if(strcmp(argv[i], "-isnan") == 0)
             {
 
-                    for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
-                        bufferImages[current_buffer?0:1][i]=isnan(bufferImages[current_buffer][i]);
-                    current_buffer=current_buffer?0:1;
+                for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
+                    bufferImages[current_buffer?0:1][i]=isnan(bufferImages[current_buffer][i]);
+                current_buffer=current_buffer?0:1;
             }
             // *********************  square_root  *************************
             else if(strcmp(argv[i], "-sqrt") == 0)
@@ -913,7 +951,7 @@ int main(int argc, char **argv)
 
                 for(size_t index=0; index<img3Dsize; index++){
                     if(isnan(NewImagePtr[index])==0&&isnan(bufferImages[current_buffer][index])==0&&MaskImagePtr[index]>0){
-                    countnan++;
+                        countnan++;
                     }
                 }
                 float * imgsort=new float [countnan];
@@ -930,7 +968,7 @@ int main(int argc, char **argv)
                 Eigen::VectorXf Img2(numbsamples,1);
                 for(size_t percentile=0; percentile<numbsamples; percentile++){
                     Img2(percentile)=imgsort[(long)(floor(( (float)(percentile) / (float)(numbsamples) ) * (float)( countnan-1 )))];
-                   // cout<<percentile<<" - "<<Img2(percentile)<<endl;
+                    // cout<<percentile<<" - "<<Img2(percentile)<<endl;
                 }
 
 
@@ -952,7 +990,7 @@ int main(int argc, char **argv)
                         Img1(percentile,j)=pow(imgsort[(long)(floor(( (float)(percentile) / (float)(numbsamples) ) * (float)( countnan-1 )))] , j );
 
                     }
-                   // cout<<percentile<<" - "<<Img1(percentile,1)<<endl;
+                    // cout<<percentile<<" - "<<Img1(percentile,1)<<endl;
                 }
                 delete [] imgsort;
 
