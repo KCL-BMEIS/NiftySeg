@@ -2990,12 +2990,17 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
 
 
     int count=1;
-    //    int iteration=0;
+    int iteration=0;
+    int lastpercent=-1;
     while(count!=0){
-
+        iteration++;
         count=0;
         for(int inz=0; inz<Image->nz; inz++)
         {
+            if(lastpercent!=floor((float)(curcountvox)/(float)(countvox)*100.0f)){
+            std::cout<<"Progress: "<<floor((float)(curcountvox)/(float)(countvox)*100.0f)<<"%"<<endl;
+            lastpercent=floor((float)(curcountvox)/(float)(countvox)*100.0f);
+            }
             for(int iny=0; iny<Image->ny; iny++)
             {
                 float mindistance=0;
@@ -3059,10 +3064,6 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
                                     }
                                 }
                             }
-                        }
-
-                        if( floor(  floor((float)(curcountvox)/(float)(countvox)*100.0f)/100.0f *(float)(countvox)) == (curcountvox-1) ){
-                            std::cout<<floor((float)(curcountvox)/(float)(countvox)*100.0f)<<"%"<<endl;
                         }
                     }
                 }
