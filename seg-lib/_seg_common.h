@@ -95,6 +95,10 @@ inline int fabs(int _x)
 
 using namespace std;
 
+#if ( defined ( __FreeBSD__ ) || !defined(_LARGEFILE64_SOURCE) )
+     #define readdir64 readdir
+     #define dirent64 dirent
+ #endif
 
 
 typedef struct

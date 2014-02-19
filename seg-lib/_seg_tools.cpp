@@ -2933,7 +2933,7 @@ float patchsym(nifti_image * Image, unsigned char  * MaskPtr, int location1, int
     int numvox=Image->nx*Image->ny*Image->nz;
 
     float distance=0;
-    float count=0;
+    unsigned char count=0;
     for(int shiftx=-patchsize; shiftx<=patchsize; shiftx++){
         for(int shifty=-patchsize; shifty<=patchsize; shifty++){
             for(int shiftz=-patchsize; shiftz<=patchsize; shiftz++){
@@ -2942,14 +2942,14 @@ float patchsym(nifti_image * Image, unsigned char  * MaskPtr, int location1, int
                 int index1=location1+shift;
                 int index2=location2+shift;
 
-                if(index1<(long)(numvox)   && // Is within the index bounds (also checks z)
-                        index1>=0               && // Is within the index bounds (also checks z)
+                if(     index1<(long)(numvox)   &&  // Is within the index bounds (also checks z)
+                        index1>=0               &&  // Is within the index bounds (also checks z)
 
-                        index2<(long)(numvox)   && // Is within the index bounds (also checks z)
-                        index2>=0               && // Is within the index bounds (also checks z)
+                        index2<(long)(numvox)   &&  // Is within the index bounds (also checks z)
+                        index2>=0               &&  // Is within the index bounds (also checks z)
 
-                        MaskPtr[index1]==0   && // Is within the mask
-                        MaskPtr[index2]==0) // Is within the mask)         // Does it flip around the image
+                        MaskPtr[index1]==0      &&  // Is within the mask
+                        MaskPtr[index2]==0      )   // Is within the mask)
                 {
                     distance+=(ImgPrt[index1]-ImgPrt[index2])*(ImgPrt[index1]-ImgPrt[index2]);
                     count++;
@@ -2959,7 +2959,7 @@ float patchsym(nifti_image * Image, unsigned char  * MaskPtr, int location1, int
         }
     }
 
-    return count==0?std::numeric_limits<float>::quiet_NaN():sqrtf(distance/count);
+    return (count==0) ? std::numeric_limits<float>::quiet_NaN() : (distance/(float)count);
 }
 
 
@@ -2971,13 +2971,15 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
     size_t index=0;
     float * ImgPrt = static_cast<float *>(Image->data);
     float * MaskPtr =  static_cast<float *>(Mask->data);
-    int shiftsize=20;
-    int shiftspacing=2;
-    int numvox=Image->nx*Image->ny*Image->nz;
+    int shiftsize=15;
+    int shiftspacing=3;
+
+    int shiftrealsize=shiftsize*shiftspacing;
 
     int countvox=1;
     int curcountvox=0;
-    int vox3d=Image->nx*Image->ny*Image->nz;
+    size_t vox3d=Image->nx*Image->ny*Image->nz;
+    const int imgsize[4]={Image->nx,Image->ny,Image->nz,Image->nx*Image->ny};
 
     unsigned char * tmpmask= new unsigned char [Image->nx*Image->ny*Image->nz];
     float * tmpimg= new float [Image->nx*Image->ny*Image->nz];
@@ -3009,52 +3011,53 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
                 int shiftx=0;
                 int shifty=0;
                 int shiftz=0;
-                int index2=0;
+                size_t index2=0;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    shared(vox3d,inz,iny,Image,tmpmask,shiftsize,shiftspacing,numvox,ImgPrt,countvox,std::cout)\
+    shared(vox3d,inz,iny,Image,tmpmask,shiftrealsize,shiftspacing,ImgPrt,countvox,std::cout,curcountvox,imgsize)\
     private(index,inx,mindistance,shiftx,shifty,shiftz,index2,curdist)\
-    reduction(+:count) \
-    reduction(+:curcountvox)
+    reduction(+:count)
 #endif
-                for(inx=0; inx<Image->nx; inx++)
+                for(inx=0; inx<imgsize[0]; inx++)
                 {
-                    index=inx+Image->nx*(iny+(Image->ny*inz));
+                    index=inx+imgsize[0]*(iny+(imgsize[1]*inz));
 
                     if(tmpmask[index]==1 &&
-                            (index+1)<vox3d &&
-                            (index-1)>0 &&
-                            (index+Image->nx)<vox3d &&
-                            (index-Image->nx)>0 &&
-                            (index+Image->nx*Image->ny)<vox3d &&
-                            (index-Image->nx*Image->ny)>0 &&
+                            (size_t)(index+1)<vox3d &&
+                            (size_t)(index-1)>0 &&
+                            (size_t)(index+imgsize[0])<vox3d &&
+                            (size_t)(index-imgsize[0])>0 &&
+                            (size_t)(index+imgsize[3])<vox3d &&
+                            (size_t)(index-imgsize[3])>0 &&
                             (tmpmask[index+1]==0 ||
                              tmpmask[index-1]==0 ||
-                             tmpmask[index+Image->nx]==0 ||
-                             tmpmask[index-Image->nx]==0 ||
-                             tmpmask[index+Image->nx*Image->ny]==0 ||
-                             tmpmask[index-Image->nx*Image->ny]==0))
+                             tmpmask[index+imgsize[0]]==0 ||
+                             tmpmask[index-imgsize[0]]==0 ||
+                             tmpmask[index+imgsize[3]]==0 ||
+                             tmpmask[index-imgsize[3]]==0))
                     {
                         //cout<<index<<" . "<<count<<" . "<<MaskPtr[index]<<" . "<<ImgPrt[index]<<endl;
-                        count++;
                         curcountvox++;
+                        count++;
                         // If it is a lesion, then search
                         mindistance=std::numeric_limits<float>::max();
-                        for(shiftx=-shiftsize; shiftx<=shiftsize; shiftx++){
-                            for(shifty=-shiftsize; shifty<=shiftsize; shifty++){
-                                for(shiftz=-shiftsize; shiftz<=shiftsize; shiftz++){
-                                    index2=(inx+shiftx*shiftspacing)+Image->nx*((iny+shifty*shiftspacing)+(Image->ny*(inz+shiftz*shiftspacing)));
-                                    if(index2<(long)(numvox) && // Is within the index bounds (also checks z)
-                                            index2>=0 && // Is within the index bounds (also checks z)
+                        for(shiftx=-shiftrealsize; shiftx<=shiftrealsize; shiftx+=shiftspacing){
+                            for(shifty=-shiftrealsize; shifty<=shiftrealsize; shifty+=shiftspacing){
+                                for(shiftz=-shiftrealsize; shiftz<=shiftrealsize; shiftz+=shiftspacing){
+
+                                    index2=(inx+shiftx)+imgsize[0]*((iny+shifty)+(imgsize[1]*(inz+shiftz)));
+
+                                    if(index2<(size_t)(vox3d) && // Is within the index bounds (also checks z)
+                                            index2>=(size_t)0 && // Is within the index bounds (also checks z)
                                             index!=index2 &&
                                             tmpmask[index2]==0 && // Is outside the mask
-                                            (inx+shiftx) < Image->nx && // Does it flip around the image
-                                            (inx+shiftx) >= 0 && // Does it flip around the image
-                                            (iny+shifty) < Image->nz && // Does it flip around the image
-                                            (iny+shifty) >= 0 )         // Does it flip around the image
+                                            (size_t)(inx+shiftx) < (size_t)Image->nx && // Does it flip around the image
+                                            (size_t)(inx+shiftx) >= 0 && // Does it flip around the image
+                                            (size_t)(iny+shifty) < (size_t)Image->nz && // Does it flip around the image
+                                            (size_t)(iny+shifty) >= 0 )         // Does it flip around the image
                                     {
 
-                                        curdist=patchsym( Image, tmpmask, index, index2, 3);
+                                        curdist=patchsym( Image, tmpmask, index, index2, 2);
                                         if( mindistance > curdist && isnan(curdist)==0)
                                         {
                                             mindistance=curdist;
@@ -3089,12 +3092,12 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
     {
         float mult=0.3;
         if(MaskPtr[index]==1 &&
-                (index+1)<vox3d &&
-                (index-1)>0 &&
-                (index+Image->nx)<vox3d &&
-                (index-Image->nx)>0 &&
-                (index+Image->nx*Image->ny)<vox3d &&
-                (index-Image->nx*Image->ny)>0){ // If the voxel is within the bounds
+                (size_t)(index+1)<(size_t)vox3d &&
+                (size_t)(index-1)>(size_t)0 &&
+                (size_t)(index+Image->nx)<(size_t)vox3d &&
+                (size_t)(index-Image->nx)>(size_t)0 &&
+                (size_t)(index+Image->nx*Image->ny)<(size_t)vox3d &&
+                (size_t)(index-Image->nx*Image->ny)>(size_t)0){ // If the voxel is within the bounds
             ImgPrt[index]=(tmpimg[index]+
                            (mult*tmpimg[index+1]+
                            mult*tmpimg[index-1]+
@@ -5653,18 +5656,18 @@ void TrilinearResampleSourceImage_for_GIF(  nifti_image *sourceImage,
 int get_all_files_and_folders_in_dir (string dir, vector<string> &files , vector<string> &folders)
 {
     DIR *dp;
-    struct dirent *dirp;
+    struct dirent64 *dirp;
     if((dp  = opendir(dir.c_str())) == NULL)
     {
         cout << "Error(" << errno << ") opening " << dir << endl;
         return errno;
     }
 
-    while ((dirp = readdir(dp)) != NULL)
+    while ((dirp = readdir64(dp)) != NULL)
     {
         if(dirp->d_name[0]!='.')
         {
-            if(dirp->d_type==8)
+            if(dirp->d_type==8 ||dirp->d_type==10 ||dirp->d_type==0 )
             {
                 if((&files)!=NULL)
                 {
@@ -5692,18 +5695,18 @@ int get_all_files_and_folders_in_dir (string dir, vector<string> &files , vector
 int get_all_files_that_match_string (string dir, vector<string> &files , string string_to_match)
 {
     DIR *dp;
-    struct dirent *dirp;
+    struct dirent64 *dirp;
     if((dp  = opendir(dir.c_str())) == NULL)
     {
         cout << "Error(" << errno << ") opening " << dir << endl;
         return errno;
     }
 
-    while ((dirp = readdir(dp)) != NULL)
+    while ((dirp = readdir64(dp)) != NULL)
     {
         if(dirp->d_name[0]!='.')
         {
-            if(dirp->d_type==8)
+            if(dirp->d_type==8 ||dirp->d_type==10 ||dirp->d_type==0 )
             {
                 string curstring=dirp->d_name;
                 if(curstring.find(string_to_match)!=string::npos)
@@ -5719,18 +5722,18 @@ int get_all_files_that_match_string (string dir, vector<string> &files , string 
 int get_all_files_that_match_2_strings(string dir, vector<string> &files , string string_to_match, string string_to_match2)
 {
     DIR *dp;
-    struct dirent *dirp;
+    struct dirent64 *dirp;
     if((dp  = opendir(dir.c_str())) == NULL)
     {
         cout << "Error(" << errno << ") opening " << dir << endl;
         return errno;
     }
-    while ((dirp = readdir(dp)) != NULL)
+    while ((dirp = readdir64(dp)) != NULL)
     {
         string curstring=dirp->d_name;
         if(dirp->d_name[0]!='.' ||  curstring.size()>2)
         {
-            if(dirp->d_type==8 || dirp->d_type==0)
+            if(dirp->d_type==8 ||dirp->d_type==10 ||dirp->d_type==0 )
             {
                 if((bool)(curstring.find(string_to_match)!=string::npos) && (bool)(curstring.find(string_to_match2)!=string::npos))
                 {
@@ -5748,17 +5751,17 @@ int get_all_files_that_match_2_strings(string dir, vector<string> &files , strin
 int get_all_files_in_dir_without_extension(string dir, vector<string> &files)
 {
     DIR *dp;
-    struct dirent *dirp;
+    struct dirent64 *dirp;
     if((dp  = opendir(dir.c_str())) == NULL)
     {
         cout << "Error(" << errno << ") opening " << dir << endl;
         return errno;
     }
-    while ((dirp = readdir(dp)) != NULL)
+    while ((dirp = readdir64(dp)) != NULL)
     {
         if(dirp->d_name[0]!='.')
         {
-            if(dirp->d_type==8)
+            if(dirp->d_type==8 ||dirp->d_type==10 ||dirp->d_type==0 )
             {
                 string tmpstring=dir+string(SEP)+string(dirp->d_name);
                 tmpstring.erase(tmpstring.find_first_of(".",tmpstring.find_last_of(SEP)),tmpstring.length());
