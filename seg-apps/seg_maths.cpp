@@ -1051,7 +1051,7 @@ int main(int argc, char **argv)
                     i=argc;
                 }
             }
-            // *********************  GAUSSIAN sharpening *************************
+            // *********************  GAUSSIAN sharpening  (NOT WORKING) *************************
             else if(strcmp(argv[i], "-sharp") == 0)
             {
                 string parser=argv[++i];
@@ -1073,7 +1073,7 @@ int main(int argc, char **argv)
                     i=argc;
                 }
             }
-            // *********************  GAUSSIAN sharpening *************************
+            // *********************  Otsu thresholding *************************
             else if(strcmp(argv[i], "-otsu") == 0)
             {
 
@@ -1084,7 +1084,7 @@ int main(int argc, char **argv)
                 current_buffer=current_buffer?0:1;
             }
 
-            // *********************  GAUSSIAN sharpening ************************
+            // *********************  Bias Correct (NOT WORKING) ************************
             else if(strcmp(argv[i], "-bc") == 0)
             {
 
@@ -1688,7 +1688,7 @@ int main(int argc, char **argv)
                 }
             }
 
-            else if(strcmp(argv[i], "-fliplab") == 0)
+            else if(strcmp(argv[i], "-fliplab") == 0) // Neuromorphometric Lab Flip
             {
                 for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize); i++)
                 {
@@ -1849,7 +1849,7 @@ int main(int argc, char **argv)
                 current_buffer=current_buffer?0:1;
 
             }
-            else if(strcmp(argv[i], "-flipimg") == 0)
+            else if(strcmp(argv[i], "-flipimg") == 0) // LR flip image
             {
 
                 for(long indexZ=0; indexZ<CurrSize->zsize; indexZ++)
@@ -1857,6 +1857,22 @@ int main(int argc, char **argv)
                         for(long indexX=0; indexX<CurrSize->xsize; indexX++)
                             bufferImages[current_buffer?0:1][((CurrSize->xsize-1-indexX)+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize)]=bufferImages[current_buffer][indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize];
 
+                current_buffer=current_buffer?0:1;
+
+            }
+            else if(strcmp(argv[i], "-outlierseg") == 0)
+            {
+                string parser=argv[++i];
+                nifti_image * BrainPrior=nifti_image_read(parser.c_str(),true);
+                BrainPrior->nu=(BrainPrior->nu>1)?BrainPrior->nu:1;
+                BrainPrior->nt=(BrainPrior->nt>1)?BrainPrior->nt:1;
+                if(BrainPrior->datatype!=DT_FLOAT32)
+                {
+                    seg_changeDatatype<float>(BrainPrior);
+                }
+                SegPrecisionTYPE * BrainPriorPtr = static_cast<SegPrecisionTYPE *>(BrainPrior->data);
+
+                outlierseg(bufferImages[current_buffer],bufferImages[current_buffer?0:1],BrainPriorPtr,CurrSize);
                 current_buffer=current_buffer?0:1;
 
             }

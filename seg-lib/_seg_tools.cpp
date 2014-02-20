@@ -3000,8 +3000,8 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
         for(int inz=0; inz<Image->nz; inz++)
         {
             if(lastpercent!=floor((float)(curcountvox)/(float)(countvox)*100.0f)){
-            std::cout<<"Progress: "<<floor((float)(curcountvox)/(float)(countvox)*100.0f)<<"%"<<endl;
-            lastpercent=floor((float)(curcountvox)/(float)(countvox)*100.0f);
+                std::cout<<"Progress: "<<floor((float)(curcountvox)/(float)(countvox)*100.0f)<<"%"<<endl;
+                lastpercent=floor((float)(curcountvox)/(float)(countvox)*100.0f);
             }
             for(int iny=0; iny<Image->ny; iny++)
             {
@@ -6119,6 +6119,119 @@ void BiasCorrect(float * Image,
     delete [] MaskInt;
 
     delete [] BiasCorrected;
+    return;
+}
+
+void outlierseg(float * Input, float * Output, float * BrainPrior, ImageSize *Currentsize )
+{
+
+    double Weight[2]={0,0};
+    float MRF_Beta=0.25f;
+
+    Weight[0]=0.1f;
+    Weight[1]=1.0f-Weight[0];
+    int volsize=Currentsize->xsize*Currentsize->ysize*Currentsize->zsize;
+
+    bool stop=1;
+    float NewLik=0.000001;
+    float OldLik=0.000001;
+    float * MRF=new float [volsize];
+    for(int i=0; i<volsize; i++){
+        MRF[i]=0.5;
+    }
+
+    while(stop==1){
+        double WeightTmp[2]={0,0};
+
+        for(long nx=0; nx<(long)Currentsize->xsize; nx++)
+        {
+            for(long ny=0; ny<(long)Currentsize->ysize; ny++)
+            {
+                for(long nz=0; nz<(long)Currentsize->zsize; nz++)
+                {
+
+                    long index=nx+Currentsize->xsize*(ny+(Currentsize->ysize*nz));
+
+                    if(isnan(BrainPrior[index])==0){
+                        float outlierLik=MRF[index]*(Weight[0]*1.0f)*(0.5f*BrainPrior[index]);
+                        float inlierLik=(1.0f-MRF[index])*(Weight[1]*Input[index])*(1.0f-0.5f*BrainPrior[index]);
+
+                        Output[index]=outlierLik/(outlierLik+inlierLik);
+
+                        WeightTmp[0]+=outlierLik;
+                        WeightTmp[1]+=inlierLik;
+                    }
+                    else{
+                        Output[index]=0;
+                    }
+                    //index++;
+                }
+            }
+        }
+
+
+        WeightTmp[0]=WeightTmp[0]/(double)(volsize) +0.005;
+        WeightTmp[1]=WeightTmp[1]/(double)(volsize) +0.005;
+        NewLik=WeightTmp[1]+WeightTmp[0];
+        float weightsum=WeightTmp[0]+WeightTmp[1];
+        WeightTmp[0]/=weightsum;
+        WeightTmp[1]/=weightsum;
+
+        cout << "LikRat = "<<((NewLik-OldLik)/(OldLik))<<endl;
+        cout << "Weights = "<<WeightTmp[0]<<" , "<< WeightTmp[1]<<endl;
+
+
+        for(long nx=0; nx<(long)Currentsize->xsize; nx++)
+        {
+            for(long ny=0; ny<(long)Currentsize->ysize; ny++)
+            {
+                for(long nz=0; nz<(long)Currentsize->zsize; nz++)
+                {
+
+                    long index=nx+Currentsize->xsize*(ny+(Currentsize->ysize*nz));
+
+                    if(isnan(BrainPrior[index])==0 &&
+                            (size_t)(index+1)<(size_t)volsize &&
+                            (size_t)(index-1)>(size_t)0 &&
+                            (size_t)(index+Currentsize->xsize)<(size_t)volsize &&
+                            (size_t)(index-Currentsize->xsize)>(size_t)0 &&
+                            (size_t)(index+Currentsize->xsize*Currentsize->ysize)<(size_t)volsize &&
+                            (size_t)(index-Currentsize->xsize*Currentsize->ysize)>(size_t)0)
+                    {
+
+                        float outMRF=(MRF_Beta*Output[index+1]+
+                                MRF_Beta*Output[index-1]+
+                                MRF_Beta*Output[index+Currentsize->xsize]+
+                                MRF_Beta*Output[index-Currentsize->xsize]+
+                                MRF_Beta*Output[index+Currentsize->xsize*Currentsize->ysize]+
+                                MRF_Beta*Output[index-Currentsize->xsize*Currentsize->ysize]);
+                        float intMRF=(MRF_Beta*(1-Output[index+1])+
+                                MRF_Beta*(1-Output[index-1])+
+                                MRF_Beta*(1-Output[index+Currentsize->xsize])+
+                                MRF_Beta*(1-Output[index-Currentsize->xsize])+
+                                MRF_Beta*(1-Output[index+Currentsize->xsize*Currentsize->ysize])+
+                                MRF_Beta*(1-Output[index-Currentsize->xsize*Currentsize->ysize]));
+                        MRF[index]=exp(-intMRF)/(exp(-intMRF)+exp(-outMRF));
+                    }
+                }
+            }
+        }
+
+
+
+
+        if(  ((NewLik-OldLik)/(OldLik)) > 0.0001 ){
+            Weight[0]=WeightTmp[0];
+            Weight[1]=WeightTmp[1];
+            OldLik=NewLik;
+
+        }
+        else{
+            stop=0;
+        }
+    }
+
+
     return;
 }
 

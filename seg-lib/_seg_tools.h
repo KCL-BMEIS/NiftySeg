@@ -384,3 +384,4 @@ void LS_Vecs(float * Y, float * X,int * mask, unsigned int size, float *a, float
 
 void otsu(float * Image, int * mask, ImageSize *Currentsize );
 void BiasCorrect(float * Image,ImageSize *Currentsize);
+void outlierseg(float * Input, float * Output, float *BrainPrior, ImageSize *Currentsize );
