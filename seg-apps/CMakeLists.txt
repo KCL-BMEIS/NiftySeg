@@ -20,5 +20,8 @@
         TARGET_LINK_LIBRARIES(seg_maths _seg_tools _seg_Topo _seg_MRF _seg_FMM _seg_BiasCorrection _seg_nifti ${ZLIB})
     INSTALL_TARGETS(/bin seg_maths)
 
+    ADD_EXECUTABLE(seg_CalcTopNCC seg_CalcTopNCC.cpp)
+        TARGET_LINK_LIBRARIES(seg_CalcTopNCC _seg_tools _seg_MRF _seg_BiasCorrection _seg_FMM _seg_nifti ${ZLIB})
+    INSTALL_TARGETS(/bin seg_CalcTopNCC)
 
 #-----------------------------------------------------------------------------
