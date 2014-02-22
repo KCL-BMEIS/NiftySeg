@@ -2968,25 +2968,24 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
 
     //GaussianSmoothing(Image,static_cast<int *>(Mask->data),3.0f);
 
-    size_t index=0;
+    long index=0;
     float * ImgPrt = static_cast<float *>(Image->data);
     float * MaskPtr =  static_cast<float *>(Mask->data);
     int shiftsize=15;
-    int shiftspacing=3;
+    int shiftspacing=2;
 
     int shiftrealsize=shiftsize*shiftspacing;
 
     int countvox=1;
     int curcountvox=0;
-    size_t vox3d=Image->nx*Image->ny*Image->nz;
-    const int imgsize[4]={Image->nx,Image->ny,Image->nz,Image->nx*Image->ny};
+    const int imgsize[5]={Image->nx,Image->ny,Image->nz,Image->nx*Image->ny,Image->nx*Image->ny*Image->nz};
 
     unsigned char * tmpmask= new unsigned char [Image->nx*Image->ny*Image->nz];
     float * tmpimg= new float [Image->nx*Image->ny*Image->nz];
-    for(int index=0; index<Image->nx*Image->ny*Image->nz; index++)
+    for(int index=0; index<imgsize[4]; index++)
     {
-        tmpmask[index]=MaskPtr[index];
-        countvox+=MaskPtr[index];
+        tmpmask[index]=MaskPtr[index]>0;
+        countvox+=MaskPtr[index]>0;
         tmpimg[index]=ImgPrt[index];
     }
 
@@ -3000,7 +2999,7 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
         for(int inz=0; inz<Image->nz; inz++)
         {
             if(lastpercent!=floor((float)(curcountvox)/(float)(countvox)*100.0f)){
-                std::cout<<"Progress: "<<floor((float)(curcountvox)/(float)(countvox)*100.0f)<<"%"<<endl;
+                std::cout<<"Progress: "<<(float)(curcountvox)<<"/"<<(float)(countvox)<<" - "<<count<<endl;
                 lastpercent=floor((float)(curcountvox)/(float)(countvox)*100.0f);
             }
             for(int iny=0; iny<Image->ny; iny++)
@@ -3011,7 +3010,7 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
                 int shiftx=0;
                 int shifty=0;
                 int shiftz=0;
-                size_t index2=0;
+                long index2=0;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
     shared(vox3d,inz,iny,Image,tmpmask,shiftrealsize,shiftspacing,ImgPrt,countvox,std::cout,curcountvox,imgsize)\
@@ -3020,54 +3019,60 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
 #endif
                 for(inx=0; inx<imgsize[0]; inx++)
                 {
-                    index=inx+imgsize[0]*(iny+(imgsize[1]*inz));
+                    index=(inx)+imgsize[0]*(iny)+imgsize[3]*(inz);
 
                     if(tmpmask[index]==1 &&
-                            (size_t)(index+1)<vox3d &&
-                            (size_t)(index-1)>0 &&
-                            (size_t)(index+imgsize[0])<vox3d &&
-                            (size_t)(index-imgsize[0])>0 &&
-                            (size_t)(index+imgsize[3])<vox3d &&
-                            (size_t)(index-imgsize[3])>0 &&
-                            (tmpmask[index+1]==0 ||
-                             tmpmask[index-1]==0 ||
-                             tmpmask[index+imgsize[0]]==0 ||
-                             tmpmask[index-imgsize[0]]==0 ||
-                             tmpmask[index+imgsize[3]]==0 ||
-                             tmpmask[index-imgsize[3]]==0))
+                            (long)(index+1)<imgsize[4] &&
+                            (long)(index-1)>0 &&
+                            (long)(index+imgsize[0])<imgsize[4] &&
+                            (long)(index-imgsize[0])>0 &&
+                            (long)(index+imgsize[3])<imgsize[4] &&
+                            (long)(index-imgsize[3])>0)
+
                     {
-                        //cout<<index<<" . "<<count<<" . "<<MaskPtr[index]<<" . "<<ImgPrt[index]<<endl;
-                        curcountvox++;
-                        count++;
-                        // If it is a lesion, then search
-                        mindistance=std::numeric_limits<float>::max();
-                        for(shiftx=-shiftrealsize; shiftx<=shiftrealsize; shiftx+=shiftspacing){
-                            for(shifty=-shiftrealsize; shifty<=shiftrealsize; shifty+=shiftspacing){
-                                for(shiftz=-shiftrealsize; shiftz<=shiftrealsize; shiftz+=shiftspacing){
+                        if((tmpmask[index+1]==0 ||
+                            tmpmask[index-1]==0 ||
+                            tmpmask[index+imgsize[0]]==0 ||
+                            tmpmask[index-imgsize[0]]==0 ||
+                            tmpmask[index+imgsize[1]]==0 ||
+                            tmpmask[index-imgsize[1]]==0)
+                                ){
+                            curcountvox++;
+                            count++;
+                            // If it is a lesion, then search
+                            mindistance=std::numeric_limits<float>::max();
+                            for(shiftx=-shiftrealsize; shiftx<=shiftrealsize; shiftx+=shiftspacing){
+                                for(shifty=-shiftrealsize; shifty<=shiftrealsize; shifty+=shiftspacing){
+                                    for(shiftz=-shiftrealsize; shiftz<=shiftrealsize; shiftz+=shiftspacing){
 
-                                    index2=(inx+shiftx)+imgsize[0]*((iny+shifty)+(imgsize[1]*(inz+shiftz)));
 
-                                    if(index2<(size_t)(vox3d) && // Is within the index bounds (also checks z)
-                                            index2>=(size_t)0 && // Is within the index bounds (also checks z)
-                                            index!=index2 &&
-                                            tmpmask[index2]==0 && // Is outside the mask
-                                            (size_t)(inx+shiftx) < (size_t)Image->nx && // Does it flip around the image
-                                            (size_t)(inx+shiftx) >= 0 && // Does it flip around the image
-                                            (size_t)(iny+shifty) < (size_t)Image->nz && // Does it flip around the image
-                                            (size_t)(iny+shifty) >= 0 )         // Does it flip around the image
-                                    {
-
-                                        curdist=patchsym( Image, tmpmask, index, index2, 2);
-                                        if( mindistance > curdist && isnan(curdist)==0)
+                                        index2=(inx+shiftx)+imgsize[0]*(iny+shifty)+imgsize[3]*(inz+shiftz);
+                                        //cout<<shiftz<<"\t"<<shifty<<"\t"<<shiftx<<endl;
+                                        if(index2<(long)(imgsize[4]) && // Is within the index bounds (also checks z)
+                                                index2>(long)0 && // Is within the index bounds (also checks z)
+                                                index!=index2 &&
+                                                tmpmask[index2]==0 && // Is outside the mask
+                                                (long)(inx+shiftx) < (long)imgsize[0] && // Does it flip around the image
+                                                (long)(inx+shiftx) >= 0 && // Does it flip around the image
+                                                (long)(iny+shifty) < (long)imgsize[1] && // Does it flip around the image
+                                                (long)(iny+shifty) >= 0 )         // Does it flip around the image
                                         {
-                                            mindistance=curdist;
-                                            ImgPrt[index]=ImgPrt[index2];
-                                            tmpmask[index]=2;
+                                            curdist=patchsym( Image, tmpmask, index, index2, 2);
+                                            if( mindistance > curdist && isnan(curdist)==0)
+                                            {
+                                                mindistance=curdist;
+                                                ImgPrt[index]=ImgPrt[index2];
+                                                tmpmask[index]=2;
+                                            }
                                         }
                                     }
                                 }
+
                             }
                         }
+                    }
+                    else{
+                        tmpmask[index]=0;
                     }
                 }
             }
@@ -3079,25 +3084,26 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
                 tmpmask[index]=0;
             }
         }
+        //count=0;
         //iteration++;
         //cout<<"Finished iteration "<<iteration<<endl;
     }
 
 
-    for(int index=0; index<Image->nx*Image->ny*Image->nz; index++)
+    for(int index=0; index<imgsize[4]; index++)
     {
         tmpimg[index]=ImgPrt[index];
     }
-    for(int index=0; index<Image->nx*Image->ny*Image->nz; index++)
+    for(int index=0; index<imgsize[4]; index++)
     {
-        float mult=0.3;
-        if(MaskPtr[index]==1 &&
-                (size_t)(index+1)<(size_t)vox3d &&
-                (size_t)(index-1)>(size_t)0 &&
-                (size_t)(index+Image->nx)<(size_t)vox3d &&
-                (size_t)(index-Image->nx)>(size_t)0 &&
-                (size_t)(index+Image->nx*Image->ny)<(size_t)vox3d &&
-                (size_t)(index-Image->nx*Image->ny)>(size_t)0){ // If the voxel is within the bounds
+        float mult=0.4;
+        if(MaskPtr[index]>0 &&
+                (long)(index+1)<(long)imgsize[4] &&
+                (long)(index-1)>=(long)0 &&
+                (long)(index+Image->nx)<(long)imgsize[4] &&
+                (long)(index-Image->nx)>=(long)0 &&
+                (long)(index+Image->nx*Image->ny)<(long)imgsize[4] &&
+                (long)(index-Image->nx*Image->ny)>=(long)0){ // If the voxel is within the bounds
             ImgPrt[index]=(tmpimg[index]+
                            (mult*tmpimg[index+1]+
                            mult*tmpimg[index-1]+
