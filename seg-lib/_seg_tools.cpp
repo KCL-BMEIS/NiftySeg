@@ -2930,28 +2930,30 @@ SegPrecisionTYPE * Gaussian_Filter_4D_inside_mask(SegPrecisionTYPE * LongData,
 float patchsym(nifti_image * Image, unsigned char  * MaskPtr, int location1, int location2, int patchsize){
 
     float * ImgPrt = static_cast<float *>(Image->data);
-    int numvox=Image->nx*Image->ny*Image->nz;
+    const int numvox=Image->nx*Image->ny*Image->nz;
 
+    float diff=0;
     float distance=0;
-    unsigned char count=0;
+    int count=0;
     for(int shiftx=-patchsize; shiftx<=patchsize; shiftx++){
         for(int shifty=-patchsize; shifty<=patchsize; shifty++){
             for(int shiftz=-patchsize; shiftz<=patchsize; shiftz++){
 
-                int shift=(shiftx)+Image->nx*(shifty+(Image->ny*shiftz));
+                const int shift=(shiftx)+Image->nx*(shifty+(Image->ny*shiftz));
                 int index1=location1+shift;
                 int index2=location2+shift;
 
-                if(     index1<(long)(numvox)   &&  // Is within the index bounds (also checks z)
+                if(     index1<numvox   &&  // Is within the index bounds (also checks z)
                         index1>=0               &&  // Is within the index bounds (also checks z)
 
-                        index2<(long)(numvox)   &&  // Is within the index bounds (also checks z)
+                        index2<numvox   &&  // Is within the index bounds (also checks z)
                         index2>=0               &&  // Is within the index bounds (also checks z)
 
                         MaskPtr[index1]==0      &&  // Is within the mask
                         MaskPtr[index2]==0      )   // Is within the mask)
                 {
-                    distance+=(ImgPrt[index1]-ImgPrt[index2])*(ImgPrt[index1]-ImgPrt[index2]);
+                    diff=fabs(ImgPrt[index1]-ImgPrt[index2]);
+                    distance+=diff*diff;
                     count++;
 
                 }
@@ -2959,7 +2961,7 @@ float patchsym(nifti_image * Image, unsigned char  * MaskPtr, int location1, int
         }
     }
 
-    return (count==0) ? std::numeric_limits<float>::quiet_NaN() : (distance/(float)count);
+    return (count<4) ? std::numeric_limits<float>::quiet_NaN() : (distance/(float)(count*count));
 }
 
 
@@ -2971,8 +2973,8 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
     long index=0;
     float * ImgPrt = static_cast<float *>(Image->data);
     float * MaskPtr =  static_cast<float *>(Mask->data);
-    int shiftsize=15;
-    int shiftspacing=2;
+    int shiftsize=20;
+    int shiftspacing=1;
 
     int shiftrealsize=shiftsize*shiftspacing;
 
@@ -2999,7 +3001,7 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
         for(int inz=0; inz<Image->nz; inz++)
         {
             if(lastpercent!=floor((float)(curcountvox)/(float)(countvox)*100.0f)){
-                std::cout<<"Progress: "<<(float)(curcountvox)<<"/"<<(float)(countvox)<<" - "<<count<<endl;
+                std::cout<<"Progress: "<<(float)(curcountvox)<<"/"<<(float)(countvox)<<endl;
                 lastpercent=floor((float)(curcountvox)/(float)(countvox)*100.0f);
             }
             for(int iny=0; iny<Image->ny; iny++)
@@ -3013,7 +3015,7 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
                 long index2=0;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    shared(vox3d,inz,iny,Image,tmpmask,shiftrealsize,shiftspacing,ImgPrt,countvox,std::cout,curcountvox,imgsize)\
+    shared(inz,iny,Image,tmpmask,shiftrealsize,shiftspacing,ImgPrt,countvox,std::cout,curcountvox,imgsize)\
     private(index,inx,mindistance,shiftx,shifty,shiftz,index2,curdist)\
     reduction(+:count)
 #endif
@@ -3047,7 +3049,8 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
 
 
                                         index2=(inx+shiftx)+imgsize[0]*(iny+shifty)+imgsize[3]*(inz+shiftz);
-                                        //cout<<shiftz<<"\t"<<shifty<<"\t"<<shiftx<<endl;
+
+
                                         if(index2<(long)(imgsize[4]) && // Is within the index bounds (also checks z)
                                                 index2>(long)0 && // Is within the index bounds (also checks z)
                                                 index!=index2 &&
@@ -3058,6 +3061,10 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
                                                 (long)(iny+shifty) >= 0 )         // Does it flip around the image
                                         {
                                             curdist=patchsym( Image, tmpmask, index, index2, 2);
+//                                            if( ((129)+imgsize[0]*(162)+imgsize[3]*(80))==index ){
+//                                                cout<<curdist<<"\t"<<ImgPrt[index2]<<"\t"<<ImgPrt[index]<<endl;
+//                                            }
+
                                             if( mindistance > curdist && isnan(curdist)==0)
                                             {
                                                 mindistance=curdist;
@@ -6128,13 +6135,13 @@ void BiasCorrect(float * Image,
     return;
 }
 
-void outlierseg(float * Input, float * Output, float * BrainPrior, ImageSize *Currentsize )
+void outlierseg(float * Input, float * Output, float * BrainROI, ImageSize *Currentsize )
 {
 
     double Weight[2]={0,0};
     float MRF_Beta=0.25f;
 
-    Weight[0]=0.1f;
+    Weight[0]=0.05f;
     Weight[1]=1.0f-Weight[0];
     int volsize=Currentsize->xsize*Currentsize->ysize*Currentsize->zsize;
 
@@ -6145,7 +6152,7 @@ void outlierseg(float * Input, float * Output, float * BrainPrior, ImageSize *Cu
     for(int i=0; i<volsize; i++){
         MRF[i]=0.5;
     }
-
+    int iter=0;
     while(stop==1){
         double WeightTmp[2]={0,0};
 
@@ -6158,9 +6165,9 @@ void outlierseg(float * Input, float * Output, float * BrainPrior, ImageSize *Cu
 
                     long index=nx+Currentsize->xsize*(ny+(Currentsize->ysize*nz));
 
-                    if(isnan(BrainPrior[index])==0){
-                        float outlierLik=MRF[index]*(Weight[0]*1.0f)*(0.5f*BrainPrior[index]);
-                        float inlierLik=(1.0f-MRF[index])*(Weight[1]*Input[index])*(1.0f-0.5f*BrainPrior[index]);
+                    if(BrainROI[index]>0){
+                        float outlierLik=MRF[index]*(Weight[0]*1.0f);
+                        float inlierLik=(1.0f-MRF[index])*(Weight[1]*Input[index]);
 
                         Output[index]=outlierLik/(outlierLik+inlierLik);
 
@@ -6196,7 +6203,7 @@ void outlierseg(float * Input, float * Output, float * BrainPrior, ImageSize *Cu
 
                     long index=nx+Currentsize->xsize*(ny+(Currentsize->ysize*nz));
 
-                    if(isnan(BrainPrior[index])==0 &&
+                    if(BrainROI[index]>0 &&
                             (size_t)(index+1)<(size_t)volsize &&
                             (size_t)(index-1)>(size_t)0 &&
                             (size_t)(index+Currentsize->xsize)<(size_t)volsize &&
@@ -6227,14 +6234,18 @@ void outlierseg(float * Input, float * Output, float * BrainPrior, ImageSize *Cu
 
 
         if(  ((NewLik-OldLik)/(OldLik)) > 0.0001 ){
-            Weight[0]=WeightTmp[0];
-            Weight[1]=WeightTmp[1];
+           // Weight[0]=WeightTmp[0];
+          //  Weight[1]=WeightTmp[1];
             OldLik=NewLik;
 
         }
         else{
             stop=0;
         }
+        if(iter>3){
+            stop=0;
+        }
+        iter++;
     }
 
 

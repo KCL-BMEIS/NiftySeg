@@ -307,6 +307,15 @@ int main(int argc, char **argv)
 
             }
             // *********************  mask  *************************
+            else if(strcmp(argv[i], "-removenan") == 0)
+            {
+
+                    for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
+                        bufferImages[current_buffer?0:1][i]=isnan(bufferImages[current_buffer][i])==1?0:bufferImages[current_buffer][i];
+                    current_buffer=current_buffer?0:1;
+
+            }
+            // *********************  mask  *************************
             else if(strcmp(argv[i], "-maskfill") == 0)
             {
                 string parser=argv[++i];
