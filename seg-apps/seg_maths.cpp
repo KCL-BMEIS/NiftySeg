@@ -1854,8 +1854,8 @@ int main(int argc, char **argv)
 
                 for(long indexZ=0; indexZ<CurrSize->zsize; indexZ++)
                     for(long indexY=0; indexY<CurrSize->ysize; indexY++)
-                        for(long indexX=0; indexX<CurrSize->xsize; indexX++)
-                            bufferImages[current_buffer?0:1][((CurrSize->xsize-1-indexX)+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize)]=bufferImages[current_buffer][indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize];
+                        for(long indexX=1; indexX<(CurrSize->xsize-1); indexX++)
+                            bufferImages[current_buffer?0:1][((CurrSize->xsize-2-indexX)+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize)]=bufferImages[current_buffer][indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize];
 
                 current_buffer=current_buffer?0:1;
 
