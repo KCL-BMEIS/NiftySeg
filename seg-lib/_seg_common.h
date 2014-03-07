@@ -59,6 +59,7 @@ inline int fabs(int _x)
 #include <iostream>
 #include <iomanip>
 #include "nifti1_io.h"
+#include <alloca.h>
 #include <new>
 #include <exception>
 

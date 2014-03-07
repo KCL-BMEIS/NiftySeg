@@ -211,6 +211,7 @@ void BlockSmoothing(nifti_image * Data,int * mask,int side_size);
 void GaussianSmoothing_carray(float * DataPTR,int * mask,float gauss_std_in, ImageSize *Currentsize);
 
 float patchsym(nifti_image * Image,unsigned char * Mask, int location1, int location2, int patchsize);
+
 void fillmask(nifti_image *Image , nifti_image *Mask);
 
 int Create_diagonal_GH_Nclass(SegPrecisionTYPE * G,

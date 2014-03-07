@@ -2927,41 +2927,76 @@ SegPrecisionTYPE * Gaussian_Filter_4D_inside_mask(SegPrecisionTYPE * LongData,
     return Buffer;
 }
 
-float patchsym(nifti_image * Image, unsigned char  * MaskPtr, int location1, int location2, int patchsize){
+float patchsym(nifti_image * Image, int  * MaskPtr, int location1, int location2, int patchsize, float curmin){
 
     float * ImgPrt = static_cast<float *>(Image->data);
     const int numvox=Image->nx*Image->ny*Image->nz;
 
-    float diff=0;
+    int patchshiftx=(patchsize*2+1);
+    float totalpatchsize=patchshiftx*patchshiftx*patchshiftx;
+
     float distance=0;
     int count=0;
-    for(int shiftx=-patchsize; shiftx<=patchsize; shiftx++){
-        for(int shifty=-patchsize; shifty<=patchsize; shifty++){
-            for(int shiftz=-patchsize; shiftz<=patchsize; shiftz++){
+    int shiftx=0;
+    int shifty=0;
+    int shiftz=0;
 
-                const int shift=(shiftx)+Image->nx*(shifty+(Image->ny*shiftz));
+    int maxshift=(patchsize)+Image->nx*(patchsize+(Image->ny*(patchsize)));
+
+
+    bool WillTouchBorder=1;
+    if( (location1+maxshift)<numvox &&
+            (location1-maxshift)>0 &&
+            (location2+maxshift)<numvox &&
+            (location2-maxshift)>0){
+        WillTouchBorder=0;
+    }
+
+    for(shiftx=-patchsize; shiftx<=patchsize; shiftx++){
+        for(shifty=-patchsize; shifty<=patchsize; shifty++){
+            for(shiftz=-patchsize; shiftz<=patchsize; shiftz++){
+
+                int shift=(shiftx)+Image->nx*(shifty+(Image->ny*shiftz));
                 int index1=location1+shift;
                 int index2=location2+shift;
 
-                if(     index1<numvox   &&  // Is within the index bounds (also checks z)
-                        index1>=0               &&  // Is within the index bounds (also checks z)
-
-                        index2<numvox   &&  // Is within the index bounds (also checks z)
-                        index2>=0               &&  // Is within the index bounds (also checks z)
-
-                        MaskPtr[index1]==0      &&  // Is within the mask
-                        MaskPtr[index2]==0      )   // Is within the mask)
+                if(WillTouchBorder)
                 {
-                    diff=fabs(ImgPrt[index1]-ImgPrt[index2]);
-                    distance+=diff*diff;
-                    count++;
+                    if(index1<numvox   &&  // Is within the index bounds (also checks z)
+                            index1>=0  &&  // Is within the index bounds (also checks z)
 
+                            index2<numvox   &&  // Is within the index bounds (also checks z)
+                            index2>=0       &&  // Is within the index bounds (also checks z)
+
+                            MaskPtr[index1]==0 &&  // Is within the mask
+                            MaskPtr[index2]==0 )   // Is within the mask)
+                    {
+                        distance+=(ImgPrt[index1]-ImgPrt[index2])*(ImgPrt[index1]-ImgPrt[index2]);
+                        count++;
+                        if(count>5 && distance/(float)(count*count)>curmin*2)
+                        {
+                            return std::numeric_limits<float>::quiet_NaN();
+                        }
+                    }
+
+                }
+                else{
+                    if(MaskPtr[index1]==0     &&  // Is within the mask
+                            MaskPtr[index2]==0)   // Is within the mask)
+                    {
+                        distance+=(ImgPrt[index1]-ImgPrt[index2])*(ImgPrt[index1]-ImgPrt[index2]);
+                        count++;
+                        if(count>5 && distance/(float)(count*count)>curmin*2)
+                        {
+                            return std::numeric_limits<float>::quiet_NaN();
+                        }
+                    }
                 }
             }
         }
     }
 
-    return (count<4) ? std::numeric_limits<float>::quiet_NaN() : (distance/(float)(count*count));
+    return (count< round(0.1f*totalpatchsize)) ? std::numeric_limits<float>::quiet_NaN() : (distance/(float)(count*count));
 }
 
 
@@ -2973,22 +3008,40 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
     long index=0;
     float * ImgPrt = static_cast<float *>(Image->data);
     float * MaskPtr =  static_cast<float *>(Mask->data);
-    int shiftsize=20;
+    int shiftsize=40;
     int shiftspacing=1;
-
+    int patchsize=3; // cannot be larger than 3
+    float mult=0.5f;
     int shiftrealsize=shiftsize*shiftspacing;
+
+
+
+    nifti_image * MeanImg = nifti_copy_nim_info(Image);
+    MeanImg->data = (void *) calloc(MeanImg->nvox, sizeof(SegPrecisionTYPE));
+    SegPrecisionTYPE * MeanImgPtr = static_cast<SegPrecisionTYPE *>(MeanImg->data);
 
     int countvox=1;
     int curcountvox=0;
     const int imgsize[5]={Image->nx,Image->ny,Image->nz,Image->nx*Image->ny,Image->nx*Image->ny*Image->nz};
 
-    unsigned char * tmpmask= new unsigned char [Image->nx*Image->ny*Image->nz];
+    int * tmpmask= new int [Image->nx*Image->ny*Image->nz];
     float * tmpimg= new float [Image->nx*Image->ny*Image->nz];
     for(int index=0; index<imgsize[4]; index++)
     {
         tmpmask[index]=MaskPtr[index]>0;
         countvox+=MaskPtr[index]>0;
         tmpimg[index]=ImgPrt[index];
+        MeanImgPtr[index]=MaskPtr[index]>0?std::numeric_limits<float>::quiet_NaN():ImgPrt[index];
+    }
+
+    BlockSmoothing(MeanImg,NULL,patchsize*2+1);
+
+    float maxinten=std::numeric_limits<float>::min();
+    float mininten=std::numeric_limits<float>::max();
+    for(int index=0; index<imgsize[4]; index++)
+    {
+        maxinten=(MeanImgPtr[index]>maxinten)?MeanImgPtr[index]:maxinten;
+        mininten=(MeanImgPtr[index]<mininten)?MeanImgPtr[index]:mininten;
     }
 
 
@@ -3000,25 +3053,27 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
         count=0;
         for(int inz=0; inz<Image->nz; inz++)
         {
+
             if(lastpercent!=floor((float)(curcountvox)/(float)(countvox)*100.0f)){
                 std::cout<<"Progress: "<<(float)(curcountvox)<<"/"<<(float)(countvox)<<endl;
                 lastpercent=floor((float)(curcountvox)/(float)(countvox)*100.0f);
             }
-            for(int iny=0; iny<Image->ny; iny++)
-            {
-                float mindistance=0;
-                float curdist=0;
-                int inx=0;
-                int shiftx=0;
-                int shifty=0;
-                int shiftz=0;
-                long index2=0;
+            float mindistance=0;
+            float curdist=0;
+            int inx=0;
+            int iny=0;
+            int shiftx=0;
+            int shifty=0;
+            int shiftz=0;
+            long index2=0;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    shared(inz,iny,Image,tmpmask,shiftrealsize,shiftspacing,ImgPrt,countvox,std::cout,curcountvox,imgsize)\
-    private(index,inx,mindistance,shiftx,shifty,shiftz,index2,curdist)\
+#pragma omp parallel for default(none) schedule(auto)\
+    shared(inz,Image,tmpmask,shiftrealsize,shiftspacing,ImgPrt,countvox,std::cout,curcountvox,imgsize,patchsize,maxinten,mininten,MeanImgPtr,MaskPtr)\
+    private(index,inx,iny,mindistance,shiftx,shifty,shiftz,index2,curdist)\
     reduction(+:count)
 #endif
+            for(iny=0; iny<Image->ny; iny++)
+            {
                 for(inx=0; inx<imgsize[0]; inx++)
                 {
                     index=(inx)+imgsize[0]*(iny)+imgsize[3]*(inz);
@@ -3043,33 +3098,32 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
                             count++;
                             // If it is a lesion, then search
                             mindistance=std::numeric_limits<float>::max();
-                            for(shiftx=-shiftrealsize; shiftx<=shiftrealsize; shiftx+=shiftspacing){
+
+
+                            for(shiftz=-shiftrealsize; shiftz<=shiftrealsize; shiftz+=shiftspacing){
                                 for(shifty=-shiftrealsize; shifty<=shiftrealsize; shifty+=shiftspacing){
-                                    for(shiftz=-shiftrealsize; shiftz<=shiftrealsize; shiftz+=shiftspacing){
+                                    index2=(inx-shiftrealsize)+imgsize[0]*(iny+shifty)+imgsize[3]*(inz+shiftz);
+                                    for(shiftx=-shiftrealsize; shiftx<=shiftrealsize; shiftx+=shiftspacing,index2++){
 
-
-                                        index2=(inx+shiftx)+imgsize[0]*(iny+shifty)+imgsize[3]*(inz+shiftz);
-
-
-                                        if(index2<(long)(imgsize[4]) && // Is within the index bounds (also checks z)
-                                                index2>(long)0 && // Is within the index bounds (also checks z)
+                                        if(index2<(imgsize[4]) && // Is within the index bounds (also checks z)
+                                                index2>0 && // Is within the index bounds (also checks z)
                                                 index!=index2 &&
                                                 tmpmask[index2]==0 && // Is outside the mask
-                                                (long)(inx+shiftx) < (long)imgsize[0] && // Does it flip around the image
-                                                (long)(inx+shiftx) >= 0 && // Does it flip around the image
-                                                (long)(iny+shifty) < (long)imgsize[1] && // Does it flip around the image
-                                                (long)(iny+shifty) >= 0 )         // Does it flip around the image
+                                                (inx+shiftx) < imgsize[0] && // Does it flip around the image
+                                                (inx+shiftx) >= 0 && // Does it flip around the image
+                                                (iny+shifty) < imgsize[1] && // Does it flip around the image
+                                                (iny+shifty) >= 0     &&     // Does it flip around the image
+                                                fabs(0.1f*(maxinten-mininten))>fabs(MeanImgPtr[index]-MeanImgPtr[index2])
+                                                )
+
                                         {
-                                            curdist=patchsym( Image, tmpmask, index, index2, 2);
-//                                            if( ((129)+imgsize[0]*(162)+imgsize[3]*(80))==index ){
-//                                                cout<<curdist<<"\t"<<ImgPrt[index2]<<"\t"<<ImgPrt[index]<<endl;
-//                                            }
+                                            curdist=patchsym(Image,tmpmask,index, index2, patchsize,mindistance);
 
                                             if( mindistance > curdist && isnan(curdist)==0)
                                             {
                                                 mindistance=curdist;
                                                 ImgPrt[index]=ImgPrt[index2];
-                                                tmpmask[index]=2;
+                                                MaskPtr[index]=2;
                                             }
                                         }
                                     }
@@ -3085,15 +3139,56 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
             }
         }
 
+        for(int index=0; index<imgsize[4]; index++)
+        {
+            tmpmask[index]=MaskPtr[index];
+            tmpimg[index]=ImgPrt[index];
+        }
         for(int index=0; index<Image->nx*Image->ny*Image->nz; index++)
         {
             if(tmpmask[index]==2){
-                tmpmask[index]=0;
+                float intensity=tmpimg[index];
+                float density=1;
+
+                if((index-1)>0 && tmpmask[index-1]!=1 ){
+                    intensity+=mult*tmpimg[index-1];
+                    density+=mult;
+                }
+                if((index+1)<imgsize[4] && tmpmask[index+1]!=1 ){
+                    intensity+=mult*tmpimg[index+1];
+                    density+=mult;
+                }
+
+                if((index-imgsize[0])>0 && tmpmask[index-imgsize[0]]!=1 ){
+                    intensity+=mult*tmpimg[index-imgsize[0]];
+                    density+=mult;
+                }
+                if((index+imgsize[0])<imgsize[4] && tmpmask[index+imgsize[0]]!=1 ){
+                    intensity+=mult*tmpimg[index+imgsize[0]];
+                    density+=mult;
+                }
+
+                if((index-imgsize[3])>0 && tmpmask[index-imgsize[3]]!=1 ){
+                    intensity+=mult*tmpimg[index-imgsize[3]];
+                    density+=mult;
+                }
+                if((index+imgsize[3])<imgsize[4] && tmpmask[index+imgsize[3]]!=1 ){
+                    intensity+=mult*tmpimg[index+imgsize[3]];
+                    density+=mult;
+                }
+
+                ImgPrt[index]=intensity/density;
+                MaskPtr[index]=0;
             }
         }
-        //count=0;
-        //iteration++;
-        //cout<<"Finished iteration "<<iteration<<endl;
+
+        for(int index=0; index<imgsize[4]; index++)
+        {
+            tmpmask[index]=MaskPtr[index];
+            MeanImgPtr[index]=MaskPtr[index]>0?std::numeric_limits<float>::quiet_NaN():ImgPrt[index];
+        }
+        BlockSmoothing(MeanImg,NULL,patchsize*2+1);
+
     }
 
 
@@ -3101,27 +3196,28 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
     {
         tmpimg[index]=ImgPrt[index];
     }
-    for(int index=0; index<imgsize[4]; index++)
-    {
-        float mult=0.4;
-        if(MaskPtr[index]>0 &&
-                (long)(index+1)<(long)imgsize[4] &&
-                (long)(index-1)>=(long)0 &&
-                (long)(index+Image->nx)<(long)imgsize[4] &&
-                (long)(index-Image->nx)>=(long)0 &&
-                (long)(index+Image->nx*Image->ny)<(long)imgsize[4] &&
-                (long)(index-Image->nx*Image->ny)>=(long)0){ // If the voxel is within the bounds
-            ImgPrt[index]=(tmpimg[index]+
-                           (mult*tmpimg[index+1]+
-                           mult*tmpimg[index-1]+
-                    mult*tmpimg[index+Image->nx]+
-                    mult*tmpimg[index-Image->nx]+
-                    mult*tmpimg[index+Image->nx*Image->ny]+
-                    mult*tmpimg[index-Image->nx*Image->ny]))/(1.0f+mult*6.0f);
-        }
-    }
+    //    for(int index=0; index<imgsize[4]; index++)
+    //    {
+    //        if(MaskPtr[index]>0 &&
+    //                (index+1)<imgsize[4] &&
+    //                (index-1)>=0 &&
+    //                (index+imgsize[0])<imgsize[4] &&
+    //                (index-imgsize[0])>=0 &&
+    //                (index+imgsize[3])<imgsize[4] &&
+    //                (index-imgsize[3])>=0){ // If the voxel is within the bounds
+    //            ImgPrt[index]=(tmpimg[index]+
+    //                           (mult*tmpimg[index+1]+
+    //                           mult*tmpimg[index-1]+
+    //                    mult*tmpimg[index+imgsize[0]]+
+    //                    mult*tmpimg[index-imgsize[0]]+
+    //                    mult*tmpimg[index+imgsize[3]]+
+    //                    mult*tmpimg[index-imgsize[3]]))/(1.0f+mult*6.0f);
+    //        }
+    //    }
 
-
+    nifti_image_free(MeanImg);
+    delete [] tmpmask;
+    delete [] tmpimg;
 
     return;
 
@@ -6234,8 +6330,8 @@ void outlierseg(float * Input, float * Output, float * BrainROI, ImageSize *Curr
 
 
         if(  ((NewLik-OldLik)/(OldLik)) > 0.0001 ){
-           // Weight[0]=WeightTmp[0];
-          //  Weight[1]=WeightTmp[1];
+            // Weight[0]=WeightTmp[0];
+            //  Weight[1]=WeightTmp[1];
             OldLik=NewLik;
 
         }
