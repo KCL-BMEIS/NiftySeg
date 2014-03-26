@@ -310,9 +310,9 @@ int main(int argc, char **argv)
             else if(strcmp(argv[i], "-removenan") == 0)
             {
 
-                    for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
-                        bufferImages[current_buffer?0:1][i]=isnan(bufferImages[current_buffer][i])==1?0:bufferImages[current_buffer][i];
-                    current_buffer=current_buffer?0:1;
+                for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
+                    bufferImages[current_buffer?0:1][i]=isnan(bufferImages[current_buffer][i])==1?0:bufferImages[current_buffer][i];
+                current_buffer=current_buffer?0:1;
 
             }
             // *********************  mask  *************************
@@ -1699,161 +1699,90 @@ int main(int argc, char **argv)
 
             else if(strcmp(argv[i], "-fliplab") == 0) // Neuromorphometric Lab Flip
             {
-                for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize); i++)
-                {
-                    switch((int)floor(bufferImages[current_buffer][i])){
-                    case 0: bufferImages[current_buffer?0:1][i]=0; break; break; // Background and skull
-                    case 1: bufferImages[current_buffer?0:1][i]=1; break; // Non-ventricular CSF
-                    case 5: bufferImages[current_buffer?0:1][i]=5; break; // 3rd Ventricle
-                    case 12: bufferImages[current_buffer?0:1][i]=12; break; // 4th Ventricle
-                    case 16: bufferImages[current_buffer?0:1][i]=16; break; // 5th Ventricle
-                    case 24: bufferImages[current_buffer?0:1][i]=31; break; // Right to Left Accumbens Area
-                    case 31: bufferImages[current_buffer?0:1][i]=24; break; // Left to Right Accumbens Area
-                    case 32: bufferImages[current_buffer?0:1][i]=33; break; // Right to Left Amygdala
-                    case 33: bufferImages[current_buffer?0:1][i]=32; break; // Left to Right Amygdala
-                    case 36: bufferImages[current_buffer?0:1][i]=36; break; // Brain Stem
-                    case 37: bufferImages[current_buffer?0:1][i]=38; break; // Right to Left Caudate
-                    case 38: bufferImages[current_buffer?0:1][i]=37; break; // Left to Right Caudate
-                    case 39: bufferImages[current_buffer?0:1][i]=40; break; // Right to Left Cerebellum Exterior
-                    case 40: bufferImages[current_buffer?0:1][i]=39; break; // Left to Right Cerebellum Exterior
-                    case 41: bufferImages[current_buffer?0:1][i]=42; break; // Right to Left Cerebellum White Matter
-                    case 42: bufferImages[current_buffer?0:1][i]=41; break; // Left to Right Cerebellum White Matter
-                    case 43: bufferImages[current_buffer?0:1][i]=44; break; // Right to Left Cerebral Exterior
-                    case 44: bufferImages[current_buffer?0:1][i]=43; break; // Left to Right Cerebral Exterior
-                    case 45: bufferImages[current_buffer?0:1][i]=46; break; // Right to Left Cerebral White Matter
-                    case 46: bufferImages[current_buffer?0:1][i]=45; break; // Left to Right Cerebral White Matter
-                    case 47: bufferImages[current_buffer?0:1][i]=47; break; // 3rd Ventricle (Posterior part)
-                    case 48: bufferImages[current_buffer?0:1][i]=49; break; // Right to Left Hippocampus
-                    case 49: bufferImages[current_buffer?0:1][i]=48; break; // Left to Right Hippocampus
-                    case 50: bufferImages[current_buffer?0:1][i]=51; break; // Right to Left Inf Lat Vent
-                    case 51: bufferImages[current_buffer?0:1][i]=50; break; // Left to Right Inf Lat Vent
-                    case 52: bufferImages[current_buffer?0:1][i]=53; break; // Right to Left Lateral Ventricle
-                    case 53: bufferImages[current_buffer?0:1][i]=52; break; // Left to Right Lateral Ventricle
-                    case 54: bufferImages[current_buffer?0:1][i]=55; break; // Right to Left Lesion
-                    case 55: bufferImages[current_buffer?0:1][i]=54; break; // Left to Right Lesion
-                    case 56: bufferImages[current_buffer?0:1][i]=57; break; // Right to Left Pallidum
-                    case 57: bufferImages[current_buffer?0:1][i]=56; break; // Left to Right Pallidum
-                    case 58: bufferImages[current_buffer?0:1][i]=59; break; // Right to Left Putamen
-                    case 59: bufferImages[current_buffer?0:1][i]=58; break; // Left to Right Putamen
-                    case 60: bufferImages[current_buffer?0:1][i]=61; break; // Right to Left Thalamus Proper
-                    case 61: bufferImages[current_buffer?0:1][i]=60; break; // Left to Right Thalamus Proper
-                    case 62: bufferImages[current_buffer?0:1][i]=63; break; // Right to Left Ventral DC
-                    case 63: bufferImages[current_buffer?0:1][i]=62; break; // Left to Right Ventral DC
-                    case 64: bufferImages[current_buffer?0:1][i]=65; break; // Right to Left vessel
-                    case 65: bufferImages[current_buffer?0:1][i]=64; break; // Left to Right vessel
-                    case 70: bufferImages[current_buffer?0:1][i]=70; break; // Optic Chiasm
-                    case 72: bufferImages[current_buffer?0:1][i]=72; break; // Cerebellar Vermal Lobules I-V
-                    case 73: bufferImages[current_buffer?0:1][i]=73; break; // Cerebellar Vermal Lobules VI-VII
-                    case 74: bufferImages[current_buffer?0:1][i]=74; break; // Cerebellar Vermal Lobules VIII-X
-                    case 77: bufferImages[current_buffer?0:1][i]=76; break; // Right to Left Basal Forebrain
-                    case 76: bufferImages[current_buffer?0:1][i]=77; break; // Left to Right Basal Forebrain
-                    case 101: bufferImages[current_buffer?0:1][i]=102; break; // Right to Left ACgG anterior cingulate gyrus
-                    case 102: bufferImages[current_buffer?0:1][i]=101; break; // Left to Right ACgG anterior cingulate gyrus
-                    case 103: bufferImages[current_buffer?0:1][i]=104; break; // Right to Left AIns anterior insula
-                    case 104: bufferImages[current_buffer?0:1][i]=103; break; // Left to Right AIns anterior insula
-                    case 105: bufferImages[current_buffer?0:1][i]=106; break; // Right to Left AOrG anterior orbital gyrus
-                    case 106: bufferImages[current_buffer?0:1][i]=105; break; // Left to Right AOrG anterior orbital gyrus
-                    case 107: bufferImages[current_buffer?0:1][i]=108; break; // Right to Left AnG angular gyrus
-                    case 108: bufferImages[current_buffer?0:1][i]=107; break; // Left to Right AnG angular gyrus
-                    case 109: bufferImages[current_buffer?0:1][i]=110; break; // Right to Left Calc calcarine cortex
-                    case 110: bufferImages[current_buffer?0:1][i]=109; break; // Left to Right Calc calcarine cortex
-                    case 113: bufferImages[current_buffer?0:1][i]=114; break; // Right to Left CO central operculum
-                    case 114: bufferImages[current_buffer?0:1][i]=113; break; // Left to Right CO central operculum
-                    case 115: bufferImages[current_buffer?0:1][i]=116; break; // Right to Left Cun cuneus
-                    case 116: bufferImages[current_buffer?0:1][i]=115; break; // Left to Right Cun cuneus
-                    case 117: bufferImages[current_buffer?0:1][i]=118; break; // Right to Left Ent entorhinal area
-                    case 118: bufferImages[current_buffer?0:1][i]=117; break; // Left to Right Ent entorhinal area
-                    case 119: bufferImages[current_buffer?0:1][i]=120; break; // Right to Left FO frontal operculum
-                    case 120: bufferImages[current_buffer?0:1][i]=119; break; // Left to Right FO frontal operculum
-                    case 121: bufferImages[current_buffer?0:1][i]=122; break; // Right to Left FRP frontal pole
-                    case 122: bufferImages[current_buffer?0:1][i]=121; break; // Left to Right FRP frontal pole
-                    case 123: bufferImages[current_buffer?0:1][i]=124; break; // Right to Left FuG fusiform gyrus
-                    case 124: bufferImages[current_buffer?0:1][i]=123; break; // Left to Right FuG fusiform gyrus
-                    case 125: bufferImages[current_buffer?0:1][i]=126; break; // Right to Left GRe gyrus rectus
-                    case 126: bufferImages[current_buffer?0:1][i]=125; break; // Left to Right GRe gyrus rectus
-                    case 129: bufferImages[current_buffer?0:1][i]=130; break; // Right to Left IOG inferior occipital gyrus
-                    case 130: bufferImages[current_buffer?0:1][i]=129; break; // Left to Right IOG inferior occipital gyrus
-                    case 133: bufferImages[current_buffer?0:1][i]=134; break; // Right to Left ITG inferior temporal gyrus
-                    case 134: bufferImages[current_buffer?0:1][i]=133; break; // Left to Right ITG inferior temporal gyrus
-                    case 135: bufferImages[current_buffer?0:1][i]=136; break; // Right to Left LiG lingual gyrus
-                    case 136: bufferImages[current_buffer?0:1][i]=135; break; // Left to Right LiG lingual gyrus
-                    case 137: bufferImages[current_buffer?0:1][i]=138; break; // Right to Left LOrG lateral orbital gyrus
-                    case 138: bufferImages[current_buffer?0:1][i]=137; break; // Left to Right LOrG lateral orbital gyrus
-                    case 139: bufferImages[current_buffer?0:1][i]=140; break; // Right to Left MCgG middle cingulate gyrus
-                    case 140: bufferImages[current_buffer?0:1][i]=139; break; // Left to Right MCgG middle cingulate gyrus
-                    case 141: bufferImages[current_buffer?0:1][i]=142; break; // Right to Left MFC medial frontal cortex
-                    case 142: bufferImages[current_buffer?0:1][i]=141; break; // Left to Right MFC medial frontal cortex
-                    case 143: bufferImages[current_buffer?0:1][i]=144; break; // Right to Left MFG middle frontal gyrus
-                    case 144: bufferImages[current_buffer?0:1][i]=143; break; // Left to Right MFG middle frontal gyrus
-                    case 145: bufferImages[current_buffer?0:1][i]=146; break; // Right to Left MOG middle occipital gyrus
-                    case 146: bufferImages[current_buffer?0:1][i]=145; break; // Left to Right MOG middle occipital gyrus
-                    case 147: bufferImages[current_buffer?0:1][i]=148; break; // Right to Left MOrG medial orbital gyrus
-                    case 148: bufferImages[current_buffer?0:1][i]=147; break; // Left to Right MOrG medial orbital gyrus
-                    case 149: bufferImages[current_buffer?0:1][i]=150; break; // Right to Left MPoG postcentral gyrus medial segment
-                    case 150: bufferImages[current_buffer?0:1][i]=149; break; // Left to Right MPoG postcentral gyrus medial segment
-                    case 151: bufferImages[current_buffer?0:1][i]=152; break; // Right to Left MPrG precentral gyrus medial segment
-                    case 152: bufferImages[current_buffer?0:1][i]=151; break; // Left to Right MPrG precentral gyrus medial segment
-                    case 153: bufferImages[current_buffer?0:1][i]=154; break; // Right to Left MSFG superior frontal gyrus medial segment
-                    case 154: bufferImages[current_buffer?0:1][i]=153; break; // Left to Right MSFG superior frontal gyrus medial segment
-                    case 155: bufferImages[current_buffer?0:1][i]=156; break; // Right to Left MTG middle temporal gyrus
-                    case 156: bufferImages[current_buffer?0:1][i]=155; break; // Left to Right MTG middle temporal gyrus
-                    case 157: bufferImages[current_buffer?0:1][i]=158; break; // Right to Left OCP occipital pole
-                    case 158: bufferImages[current_buffer?0:1][i]=157; break; // Left to Right OCP occipital pole
-                    case 161: bufferImages[current_buffer?0:1][i]=162; break; // Right to Left OFuG occipital fusiform gyrus
-                    case 162: bufferImages[current_buffer?0:1][i]=161; break; // Left to Right OFuG occipital fusiform gyrus
-                    case 163: bufferImages[current_buffer?0:1][i]=164; break; // Right to Left OpIFG opercular part of the inferior frontal gyrus
-                    case 164: bufferImages[current_buffer?0:1][i]=163; break; // Left to Right OpIFG opercular part of the inferior frontal gyrus
-                    case 165: bufferImages[current_buffer?0:1][i]=166; break; // Right to Left OrIFG orbital part of the inferior frontal gyrus
-                    case 166: bufferImages[current_buffer?0:1][i]=165; break; // Left to Right OrIFG orbital part of the inferior frontal gyrus
-                    case 167: bufferImages[current_buffer?0:1][i]=168; break; // Right to Left PCgG posterior cingulate gyrus
-                    case 168: bufferImages[current_buffer?0:1][i]=167; break; // Left to Right PCgG posterior cingulate gyrus
-                    case 169: bufferImages[current_buffer?0:1][i]=170; break; // Right to Left PCu precuneus
-                    case 170: bufferImages[current_buffer?0:1][i]=169; break; // Left to Right PCu precuneus
-                    case 171: bufferImages[current_buffer?0:1][i]=172; break; // Right to Left PHG parahippocampal gyrus
-                    case 172: bufferImages[current_buffer?0:1][i]=171; break; // Left to Right PHG parahippocampal gyrus
-                    case 173: bufferImages[current_buffer?0:1][i]=174; break; // Right to Left PIns posterior insula
-                    case 174: bufferImages[current_buffer?0:1][i]=173; break; // Left to Right PIns posterior insula
-                    case 175: bufferImages[current_buffer?0:1][i]=176; break; // Right to Left PO parietal operculum
-                    case 176: bufferImages[current_buffer?0:1][i]=175; break; // Left to Right PO parietal operculum
-                    case 177: bufferImages[current_buffer?0:1][i]=178; break; // Right to Left PoG postcentral gyrus
-                    case 178: bufferImages[current_buffer?0:1][i]=177; break; // Left to Right PoG postcentral gyrus
-                    case 179: bufferImages[current_buffer?0:1][i]=180; break; // Right to Left POrG posterior orbital gyrus
-                    case 180: bufferImages[current_buffer?0:1][i]=179; break; // Left to Right POrG posterior orbital gyrus
-                    case 181: bufferImages[current_buffer?0:1][i]=182; break; // Right to Left PP planum polare
-                    case 182: bufferImages[current_buffer?0:1][i]=181; break; // Left to Right PP planum polare
-                    case 183: bufferImages[current_buffer?0:1][i]=184; break; // Right to Left PrG precentral gyrus
-                    case 184: bufferImages[current_buffer?0:1][i]=183; break; // Left to Right PrG precentral gyrus
-                    case 185: bufferImages[current_buffer?0:1][i]=186; break; // Right to Left PT planum temporale
-                    case 186: bufferImages[current_buffer?0:1][i]=185; break; // Left to Right PT planum temporale
-                    case 187: bufferImages[current_buffer?0:1][i]=188; break; // Right to Left SCA subcallosal area
-                    case 188: bufferImages[current_buffer?0:1][i]=187; break; // Left to Right SCA subcallosal area
-                    case 191: bufferImages[current_buffer?0:1][i]=192; break; // Right to Left SFG superior frontal gyrus
-                    case 192: bufferImages[current_buffer?0:1][i]=191; break; // Left to Right SFG superior frontal gyrus
-                    case 193: bufferImages[current_buffer?0:1][i]=194; break; // Right to Left SMC supplementary motor cortex
-                    case 194: bufferImages[current_buffer?0:1][i]=193; break; // Left to Right SMC supplementary motor cortex
-                    case 195: bufferImages[current_buffer?0:1][i]=196; break; // Right to Left SMG supramarginal gyrus
-                    case 196: bufferImages[current_buffer?0:1][i]=195; break; // Left to Right SMG supramarginal gyrus
-                    case 197: bufferImages[current_buffer?0:1][i]=198; break; // Right to Left SOG superior occipital gyrus
-                    case 198: bufferImages[current_buffer?0:1][i]=197; break; // Left to Right SOG superior occipital gyrus
-                    case 199: bufferImages[current_buffer?0:1][i]=200; break; // Right to Left SPL superior parietal lobule
-                    case 200: bufferImages[current_buffer?0:1][i]=199; break; // Left to Right SPL superior parietal lobule
-                    case 201: bufferImages[current_buffer?0:1][i]=202; break; // Right to Left STG superior temporal gyrus
-                    case 202: bufferImages[current_buffer?0:1][i]=201; break; // Left to Right STG superior temporal gyrus
-                    case 203: bufferImages[current_buffer?0:1][i]=204; break; // Right to Left TMP temporal pole
-                    case 204: bufferImages[current_buffer?0:1][i]=203; break; // Left to Right TMP temporal pole
-                    case 205: bufferImages[current_buffer?0:1][i]=206; break; // Right to Left TrIFG triangular part of the inferior frontal gyrus
-                    case 206: bufferImages[current_buffer?0:1][i]=205; break; // Left to Right TrIFG triangular part of the inferior frontal gyrus
-                    case 207: bufferImages[current_buffer?0:1][i]=208; break; // Right to Left TTG transverse temporal gyrus
-                    case 208: bufferImages[current_buffer?0:1][i]=207; break; // Left to Right TTG transverse temporal gyrus
+                for(long indexZ=1; indexZ<(CurrSize->zsize-1); indexZ++){
+                    for(long indexY=1; indexY<(CurrSize->ysize-1); indexY++){
+                        for(long indexX=1; indexX<(CurrSize->xsize-1); indexX++){
+                            int indexcur=indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize;
+                            float curval=bufferImages[current_buffer][indexcur];
+                            if(curval!= 52 &&
+                                    curval!= 53 &&
+                                    curval!= 47 &&
 
+                                    curval!= 46 &&
+                                    curval!= 45){
+                                int shiftrealsize=1;
+                                int shiftspacing=1;
+
+                                int stop=0;
+                                for(int shiftz=-shiftrealsize; shiftz<=shiftrealsize; shiftz+=shiftspacing){
+                                    for(int shifty=-shiftrealsize; shifty<=shiftrealsize; shifty+=shiftspacing){
+                                        for(int shiftx=-shiftrealsize; shiftx<=shiftrealsize; shiftx+=shiftspacing){
+                                            int index1=(indexX+shiftx)+CurrSize->xsize*(indexY+shifty)+CurrSize->xsize*CurrSize->ysize*(indexZ+shiftz);
+                                            int index2=(indexX-shiftx)+CurrSize->xsize*(indexY-shifty)+CurrSize->xsize*CurrSize->ysize*(indexZ-shiftz);
+                                            float curval1=bufferImages[current_buffer][index1];
+                                            float curval2=bufferImages[current_buffer][index2];
+                                            if(stop==0 && (fabs(shiftx)+fabs(shifty)+fabs(shiftz))<2 ){
+                                                if(curval1==46){
+                                                    if(curval2==52 || curval2==53|| curval2==47 ){
+                                                        bufferImages[current_buffer?0:1][indexcur]=46;
+                                                        stop=1;
+                                                    }
+                                                    else{
+                                                        bufferImages[current_buffer?0:1][indexcur]=bufferImages[current_buffer][indexcur];
+
+                                                    }
+
+                                                }
+                                                else if(curval1==45 ){
+                                                    if(curval2==52 || curval2==53|| curval2==47 ){
+                                                        bufferImages[current_buffer?0:1][indexcur]=45;
+                                                        stop=1;
+                                                    }
+                                                    else{
+                                                        bufferImages[current_buffer?0:1][indexcur]=bufferImages[current_buffer][indexcur];
+
+                                                    }
+
+                                                }
+                                                else  if(curval1==52 || curval1==53|| curval1==47 ){
+                                                    if(curval2==46 ){
+                                                        bufferImages[current_buffer?0:1][indexcur]=45;
+                                                        stop=1;
+                                                    }
+                                                    else{
+                                                        bufferImages[current_buffer?0:1][indexcur]=bufferImages[current_buffer][indexcur];
+
+                                                    }
+
+                                                }
+                                                else if(curval1==52 || curval1==53|| curval1==47 ){
+                                                    if(curval2==45 ){
+                                                        bufferImages[current_buffer?0:1][indexcur]=45;
+                                                        stop=1;
+                                                    }
+                                                    else{
+                                                        bufferImages[current_buffer?0:1][indexcur]=bufferImages[current_buffer][indexcur];
+                                                    }
+
+                                                }
+                                                else{
+                                                    bufferImages[current_buffer?0:1][indexcur]=bufferImages[current_buffer][indexcur];
+
+                                                }
+                                            }
+
+                                        }
+                                    }
+                                }
+
+                            }
+                            else{
+                                bufferImages[current_buffer?0:1][indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize]=bufferImages[current_buffer][indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize];
+
+                            }
+                        }
                     }
                 }
-
-                current_buffer=current_buffer?0:1;
-                for(long indexZ=0; indexZ<CurrSize->zsize; indexZ++)
-                    for(long indexY=0; indexY<CurrSize->ysize; indexY++)
-                        for(long indexX=0; indexX<CurrSize->xsize; indexX++)
-                            bufferImages[current_buffer?0:1][((CurrSize->xsize-1-indexX)+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize)]=bufferImages[current_buffer][indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize];
 
                 current_buffer=current_buffer?0:1;
 

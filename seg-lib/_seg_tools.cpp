@@ -6090,12 +6090,14 @@ void otsu(float * Image,
             }
         }
     }
+    //cout<< "min/max = "<<tempmin<<"/"<<tempmax<<endl;
 
 
     // Fill histogram
     float histsize=1002.0f;
-    float histo[1002]= {0};
+    float histo[1000]= {0};
     for(long i=0; i<(int)histsize; i++) histo[i]=0;
+
 
     for(long i=0; i<Currentsize->numel; i++)
     {
@@ -6118,6 +6120,7 @@ void otsu(float * Image,
     float  uT = 0;               // total mean level
     float  work1, work2;		// working variables
     double work3 = 0.0;
+    float threshold=0;
 
 
 
@@ -6133,12 +6136,17 @@ void otsu(float * Image,
         u+=(i*histo[i-1]);
         work1 = (uT * w - u);
         work2 = (work1 * work1) / ( w * (1.0f-w) );
-        if (work2>work3 && work2==work2 && isinf(work2)==0 ) work3=work2;
+        if (work2>work3 && work2==work2 && isinf(work2)==0 ){
+            work3=work2;
+            threshold=(i-1)/(histsize-2)*(tempmax-tempmin)+tempmin;
+        }
+        cout << work2 <<" = "<< work1 <<" = "<< u <<" = "<< w<<" = "<<(i-1)/(histsize-2)*(tempmax-tempmin)+tempmin << " = "<<(sqrt(work3)-1)/(histsize-2)*(tempmax-tempmin)+tempmin<< endl;
+    cout<< "threshold "<<i<<" = "<<threshold<<endl;
     }
 
-    float threshold=(sqrt(work3)-1)/(histsize-2)*(tempmax-tempmin)+tempmin;
+    //float threshold=(sqrt(work3)-1)/(histsize-2)*(tempmax-tempmin)+tempmin;
 
-    //cout<< "threshold = "<<threshold<<endl;
+    cout<< "threshold = "<<threshold<<endl;
     // Convert the final value to an integer
     for(long i=0; i<Currentsize->numel; i++)
     {
