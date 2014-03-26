@@ -6140,13 +6140,13 @@ void otsu(float * Image,
             work3=work2;
             threshold=(i-1)/(histsize-2)*(tempmax-tempmin)+tempmin;
         }
-        cout << work2 <<" = "<< work1 <<" = "<< u <<" = "<< w<<" = "<<(i-1)/(histsize-2)*(tempmax-tempmin)+tempmin << " = "<<(sqrt(work3)-1)/(histsize-2)*(tempmax-tempmin)+tempmin<< endl;
-    cout<< "threshold "<<i<<" = "<<threshold<<endl;
+        //cout << work2 <<" = "<< work1 <<" = "<< u <<" = "<< w<<" = "<<(i-1)/(histsize-2)*(tempmax-tempmin)+tempmin << " = "<<(sqrt(work3)-1)/(histsize-2)*(tempmax-tempmin)+tempmin<< endl;
+    //cout<< "threshold "<<i<<" = "<<threshold<<endl;
     }
 
     //float threshold=(sqrt(work3)-1)/(histsize-2)*(tempmax-tempmin)+tempmin;
 
-    cout<< "threshold = "<<threshold<<endl;
+    //cout<< "threshold = "<<threshold<<endl;
     // Convert the final value to an integer
     for(long i=0; i<Currentsize->numel; i++)
     {
