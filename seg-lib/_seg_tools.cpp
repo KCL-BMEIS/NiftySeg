@@ -2604,7 +2604,7 @@ void BlockSmoothing(nifti_image * Data,int * mask,int side_size)
         {
 
             // Setup kernel
-            int kernelshift=(floor)((float)(side_size)/2.0f);
+            int kernelshift=(int)floor((float)(side_size)/2.0f);
 
             // Updating buffers
             int index;
@@ -3056,7 +3056,7 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
 
             if(lastpercent!=floor((float)(curcountvox)/(float)(countvox)*100.0f)){
                 std::cout<<"Progress: "<<(float)(curcountvox)<<"/"<<(float)(countvox)<<endl;
-                lastpercent=floor((float)(curcountvox)/(float)(countvox)*100.0f);
+                lastpercent=(int)floor((float)(curcountvox)/(float)(countvox)*100.0f);
             }
             float mindistance=0;
             float curdist=0;
@@ -3067,7 +3067,7 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
             int shiftz=0;
             long index2=0;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(auto)\
+#pragma omp parallel for default(none)\
     shared(inz,Image,tmpmask,shiftrealsize,shiftspacing,ImgPrt,countvox,std::cout,curcountvox,imgsize,patchsize,maxinten,mininten,MeanImgPtr,MaskPtr)\
     private(index,inx,iny,mindistance,shiftx,shifty,shiftz,index2,curdist)\
     reduction(+:count)
@@ -3141,7 +3141,7 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
 
         for(int index=0; index<imgsize[4]; index++)
         {
-            tmpmask[index]=MaskPtr[index];
+            tmpmask[index]=(int)(MaskPtr[index]>0);
             tmpimg[index]=ImgPrt[index];
         }
         for(int index=0; index<Image->nx*Image->ny*Image->nz; index++)
@@ -3184,7 +3184,7 @@ void fillmask(nifti_image * Image ,nifti_image * Mask){
 
         for(int index=0; index<imgsize[4]; index++)
         {
-            tmpmask[index]=MaskPtr[index];
+            tmpmask[index]=(int)(MaskPtr[index]>0);
             MeanImgPtr[index]=MaskPtr[index]>0?std::numeric_limits<float>::quiet_NaN():ImgPrt[index];
         }
         BlockSmoothing(MeanImg,NULL,patchsize*2+1);
@@ -6185,7 +6185,7 @@ void BiasCorrect(float * Image,
     int * MaskInt = new int [Currentsize->numel];
     for(long i=0; i<Currentsize->numel; i++)
     {
-        MaskInt[i]=Mask[i];
+        MaskInt[i]=(int)(Mask[i]>0);
     }
     delete [] Mask;
 
