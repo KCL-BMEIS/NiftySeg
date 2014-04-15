@@ -677,7 +677,7 @@ int main(int argc, char **argv)
             {
 
                 string order_str=argv[++i];
-                int order=round(strtod(order_str.c_str(),NULL));
+                int order=(int)round(strtod(order_str.c_str(),NULL));
 
                 if(order>4){
                     cout << "ERROR: Order is too high... using order 5"<<endl;
@@ -737,7 +737,7 @@ int main(int argc, char **argv)
             {
 
                 string order_str=argv[++i];
-                int order=round(strtod(order_str.c_str(),NULL));
+                int order=(int)round(strtod(order_str.c_str(),NULL));
 
                 if(order>4){
                     cout << "ERROR: Order is too high... using order 5"<<endl;
