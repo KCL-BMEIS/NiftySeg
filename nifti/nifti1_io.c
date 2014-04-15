@@ -617,7 +617,7 @@ int nifti_update_dims_from_array( nifti_image * nim )
    int c, ndim;
 
    if( !nim ){
-      //fprintf(stderr,"** update_dims: missing nim\n");
+      /*fprintf(stderr,"** update_dims: missing nim\n");*/
       return 1;
    }
 

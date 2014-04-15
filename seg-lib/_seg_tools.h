@@ -342,6 +342,7 @@ nifti_image * Get_Bias_Corrected(float * BiasField,
 
 nifti_image * Get_Bias_Corrected_mask(float * BiasFieldCoefs,
                                       nifti_image * T1,
+                                      nifti_image *Mask,
                                       char * filename,
                                       ImageSize * CurrSizes,
                                       int biasOrder);

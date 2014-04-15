@@ -1707,7 +1707,8 @@ int main(int argc, char **argv)
                             if(curval!= 52 &&
                                     curval!= 53 &&
                                     curval!= 47 &&
-
+                                    curval!= 50 &&
+                                    curval!= 51 &&
                                     curval!= 46 &&
                                     curval!= 45){
                                 int shiftrealsize=1;
@@ -1723,7 +1724,7 @@ int main(int argc, char **argv)
                                             float curval2=bufferImages[current_buffer][index2];
                                             if(stop==0 && (fabs(shiftx)+fabs(shifty)+fabs(shiftz))<2 ){
                                                 if(curval1==46){
-                                                    if(curval2==52 || curval2==53|| curval2==47 ){
+                                                    if(curval2==52 || curval2==50 || curval2==51 || curval2==53|| curval2==47 ){
                                                         bufferImages[current_buffer?0:1][indexcur]=46;
                                                         stop=1;
                                                     }
@@ -1734,7 +1735,7 @@ int main(int argc, char **argv)
 
                                                 }
                                                 else if(curval1==45 ){
-                                                    if(curval2==52 || curval2==53|| curval2==47 ){
+                                                    if(curval2==52 || curval2==50 || curval2==51 ||curval2==53|| curval2==47 ){
                                                         bufferImages[current_buffer?0:1][indexcur]=45;
                                                         stop=1;
                                                     }
@@ -1744,7 +1745,7 @@ int main(int argc, char **argv)
                                                     }
 
                                                 }
-                                                else  if(curval1==52 || curval1==53|| curval1==47 ){
+                                                else  if(curval1==52 ||curval1==50 || curval1==51 || curval1==53|| curval1==47 ){
                                                     if(curval2==46 ){
                                                         bufferImages[current_buffer?0:1][indexcur]=45;
                                                         stop=1;
@@ -1755,7 +1756,7 @@ int main(int argc, char **argv)
                                                     }
 
                                                 }
-                                                else if(curval1==52 || curval1==53|| curval1==47 ){
+                                                else if(curval1==52 || curval1==50 || curval1==51 || curval1==53|| curval1==47 ){
                                                     if(curval2==45 ){
                                                         bufferImages[current_buffer?0:1][indexcur]=45;
                                                         stop=1;

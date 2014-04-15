@@ -906,7 +906,7 @@ nifti_image * seg_EM::GetBiasCorrected(char * filename)
 
     if(this->maskImage_status)
     {
-        Result = Get_Bias_Corrected_mask(this->BiasField_coeficients,this->inputImage,filename,this->CurrSizes,this->BiasField_order);
+        Result = Get_Bias_Corrected_mask(this->BiasField_coeficients,this->inputImage,this->Mask,filename,this->CurrSizes,this->BiasField_order);
     }
     else
     {

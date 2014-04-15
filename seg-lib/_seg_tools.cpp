@@ -366,7 +366,7 @@ int Normalize_NaN_Priors_mask(nifti_image * Priors,
                               nifti_image * Mask,
                               bool verbose)
 {
-    register int numel = Mask->nvox;
+    register int numel = Mask->nx*Mask->ny*Mask->nz;
     register int ups=0;
     register int good=0;
     if(verbose>0)
@@ -4491,6 +4491,7 @@ nifti_image * Get_Bias_Corrected(float * BiasField,
 
 nifti_image * Get_Bias_Corrected_mask(float * BiasFieldCoefs,
                                       nifti_image * T1,
+                                      nifti_image * Mask,
                                       char * filename,
                                       ImageSize * CurrSizes,
                                       int biasOrder)
@@ -4515,6 +4516,11 @@ nifti_image * Get_Bias_Corrected_mask(float * BiasFieldCoefs,
     otsu(brainmask,NULL,CurrSizes);
     Dillate(brainmask,5,CurrSizes);
     Erosion(brainmask,4,CurrSizes);
+    bool* Maskptr = static_cast<bool * >(Mask->data);
+    for(long i=0; i<(long)CurrSizes->numel; i++)
+    {
+        brainmask[i]*=Maskptr[i];
+    }
     Gaussian_Filter_4D(brainmask, 3.0f, CurrSizes);
 
 
@@ -6095,7 +6101,7 @@ void otsu(float * Image,
 
     // Fill histogram
     float histsize=1002.0f;
-    float histo[1000]= {0};
+    float histo[1003]= {0};
     for(long i=0; i<(int)histsize; i++) histo[i]=0;
 
 
@@ -6140,13 +6146,10 @@ void otsu(float * Image,
             work3=work2;
             threshold=(i-1)/(histsize-2)*(tempmax-tempmin)+tempmin;
         }
-        //cout << work2 <<" = "<< work1 <<" = "<< u <<" = "<< w<<" = "<<(i-1)/(histsize-2)*(tempmax-tempmin)+tempmin << " = "<<(sqrt(work3)-1)/(histsize-2)*(tempmax-tempmin)+tempmin<< endl;
-    //cout<< "threshold "<<i<<" = "<<threshold<<endl;
+
     }
 
-    //float threshold=(sqrt(work3)-1)/(histsize-2)*(tempmax-tempmin)+tempmin;
 
-    //cout<< "threshold = "<<threshold<<endl;
     // Convert the final value to an integer
     for(long i=0; i<Currentsize->numel; i++)
     {
