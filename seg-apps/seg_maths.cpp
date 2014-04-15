@@ -832,7 +832,7 @@ int main(int argc, char **argv)
             {
 
                 string order_str=argv[++i];
-                int order=round(strtod(order_str.c_str(),NULL));
+                int order=(int)round(strtod(order_str.c_str(),NULL));
 
                 if(order>5){
                     cout << "ERROR: Order is too high... using order 5"<<endl;
@@ -919,7 +919,7 @@ int main(int argc, char **argv)
             {
 
                 string order_str=argv[++i];
-                int order=round(strtod(order_str.c_str(),NULL));
+                int order=(int)round(strtod(order_str.c_str(),NULL));
 
                 if(order>4){
                     cout << "ERROR: Order is too high... using order 5"<<endl;
@@ -1280,9 +1280,9 @@ int main(int argc, char **argv)
             else if(strcmp(argv[i], "-subsamp2") == 0)
             {
 
-                int newx=floor(CurrSize->xsize/2.0f);
-                int newy=floor(CurrSize->ysize/2.0f);
-                int newz=floor(CurrSize->zsize/2.0f);
+                int newx=(int)floor(CurrSize->xsize/2.0f);
+                int newy=(int)floor(CurrSize->ysize/2.0f);
+                int newz=(int)floor(CurrSize->zsize/2.0f);
                 int newnumel=newx*newy*newz;
 
 
@@ -1313,9 +1313,9 @@ int main(int argc, char **argv)
             else if(strcmp(argv[i], "-subsamp2xy") == 0)
             {
 
-                int newx=floor(CurrSize->xsize/2.0f);
-                int newy=floor(CurrSize->ysize/2.0f);
-                int newz=floor(CurrSize->zsize);
+                int newx=(int)floor(CurrSize->xsize/2.0f);
+                int newy=(int)floor(CurrSize->ysize/2.0f);
+                int newz=(int)floor(CurrSize->zsize);
                 int newnumel=newx*newy*newz;
 
 

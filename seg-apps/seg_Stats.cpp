@@ -423,7 +423,7 @@ int main(int argc, char **argv)
                     }
                     else
                     {
-                        curlab=(round(Img1prt[index]));
+                        curlab=(int)(round(Img1prt[index]));
                     }
 
                     CountIMG1[curlab]++;
