@@ -24,24 +24,24 @@ void Usage(char *exec)
     printf("\t  -R \t\t| The robust range (assuming 2%% outliers on both sides) of all voxels\n");
     printf("\t  -p <float> \t| The <float>th percentile of all voxels intensity (float=[0,100])\n");
     printf("\n\tClassical operations (datatype: all)\n");
-    printf("\t  -a \t\t| Average of all voxels \n");
-    printf("\t  -s \t\t| Standard deviation of all voxels \n");
-    printf("\t  -v \t\t| Volume of all binarized voxels (<# voxels> * <volume per voxel>)\n");
+    printf("\t  -a  \t\t| Average of all voxels \n");
+    printf("\t  -s  \t\t| Standard deviation of all voxels \n");
+    printf("\t  -v  \t\t| Volume of all voxels above 0 (<# voxels> * <volume per voxel>)\n");
     printf("\t  -vl \t\t| Volume of each integer label (<# voxels per label> * <volume per voxel>)\n");
-    printf("\t  -V \t\t| Volume of all probabilsitic voxels (sum(<in>) * <volume per voxel>)\n");
-    printf("\t  -n \t\t| Sum of all binarized voxels (<# voxels>)\n");
-    printf("\t  -N \t\t| Sum of all probabilsitic voxels (sum(<in>))\n");
+    printf("\t  -vp \t\t| Volume of all probabilsitic voxels (sum(<in>) * <volume per voxel>)\n");
+    printf("\t  -n  \t\t| Count of all voxels above 0 (<# voxels>)\n");
+    printf("\t  -np \t\t| Sum of all fuzzy voxels (sum(<in>))\n");
     printf("\n\tCoordinates operations (datatype: all)\n");
     printf("\t  -x \t\t| Location (in vox) of the smallest value in the image\n");
     printf("\t  -X \t\t| Location (in vox) of the largest value in the image\n");
     printf("\t  -c \t\t| Location (in vox) of the centre of mass of the object\n");
-    //printf("\t  -C \t\t| Location (in mm) of the centre of mass of the object (using sform)\n");
     printf("\t  -B \t\t| Bounding box of all nonzero voxels [ xmin xsize ymin ysize zmin zsize ]\n");
     printf("\n\tLabel attribute operations (datatype: char or uchar)\n");
+    printf("\t  -Vl <csv> \t\t| Volume of each integer label <in>. Save to <csv> file.\n");
+    printf("\t  -Nl <csv> \t\t| Count of each label <in>. Save to <csv> file.\n");
     printf("\t  -al <in2> \t\t| Average value in <in> for each label in <in2> \n");
     printf("\t  -Al <in2> <csv>\t| Average value in <in> for each label in <in2>. Save to <csv> file\n");
     printf("\t  -d <in2>\t\t| Calculate the Dice score between all classes in <in> and <in2>\n");
-    printf("\t  -di <float> <in2>\t| Same as above but ingnoring areas with Dice above <float> for the Mean\n");
     printf("\t  -D <in2> <csv>\t| Calculate the Dice score between all classes in <in> and <in2>. Save to <csv> file\n");
     printf("\t\n");
     return;
@@ -218,7 +218,7 @@ int main(int argc, char **argv)
                 }
                 float meanDice=0;
                 int meanDiceCount=0;
-                for(int curtclass=1; curtclass<=maxclass; curtclass++)
+                for(int curtclass=0; curtclass<=maxclass; curtclass++)
                 {
                     float curval=(float)2.0*(float)CountINTERSECT[curtclass]/((float)CountIMG1[curtclass]+(float)CountIMG2[curtclass]);
                     cout<< "Label["<<curtclass<<"] = "<< curval<<endl;
@@ -280,7 +280,7 @@ int main(int argc, char **argv)
                 }
                 float meanDice=0;
                 int meanDiceCount=0;
-                for(int curtclass=1; curtclass<=maxclass; curtclass++)
+                for(int curtclass=0; curtclass<=maxclass; curtclass++)
                 {
                     float curval=(float)2.0*(float)CountINTERSECT[curtclass]/((float)CountIMG1[curtclass]+(float)CountIMG2[curtclass]);
                     cout<< "Label["<<curtclass<<"] = "<< curval<<endl;
@@ -305,8 +305,8 @@ int main(int argc, char **argv)
 
                 int oldnumbimg=numbimg;
                 numbimg=numbimg+1;
-                filenames[oldnumbimg+1] = argv[++i];
                 filenames[oldnumbimg] = argv[++i];
+                filenames[oldnumbimg+1] = argv[++i];
 
                 if(Images[0]->datatype!=NIFTI_TYPE_UINT8)
                 {
@@ -345,11 +345,12 @@ int main(int argc, char **argv)
                         }
                     }
                 }
+                filenames[oldnumbimg+1] = argv[++i];
                 ofstream myfile;
                 myfile.open(filenames[oldnumbimg]);
 
                 flush(cout);
-                for(int curtclass=1; curtclass<=maxclass; curtclass++)
+                for(int curtclass=0; curtclass<=maxclass; curtclass++)
                 {
                     myfile<< (float)2.0*(float)CountINTERSECT[curtclass]/((float)CountIMG1[curtclass]+(float)CountIMG2[curtclass]);
 
@@ -398,7 +399,7 @@ int main(int argc, char **argv)
                     Count2[(int)(Img2prt[index])]+=1;
                     maxclass=(int)(Img2prt[index])>maxclass?(int)(Img2prt[index]):maxclass;
                 }
-                for(int curtclass=1; curtclass<=maxclass; curtclass++)
+                for(int curtclass=0; curtclass<=maxclass; curtclass++)
                 {
                     cout<< "Label["<<curtclass<<"] = "<<Count1[curtclass]/Count2[curtclass]<<endl;
                 }
@@ -452,7 +453,7 @@ int main(int argc, char **argv)
                 myfile.open(filenames[oldnumbimg+1]);
 
                 flush(cout);
-                for(int curtclass=1; curtclass<=maxclass; curtclass++)
+                for(int curtclass=0; curtclass<=maxclass; curtclass++)
                 {
                     myfile<<(float)(Count1[curtclass]/Count2[curtclass]);
 
@@ -468,7 +469,7 @@ int main(int argc, char **argv)
             // **************************            Fuzzy Vol          *****************************
             // **************************            ---------          *****************************
 
-            else if(strcmp(argv[i], "-V") == 0 && (i)<argc)
+            else if(strcmp(argv[i], "-vp") == 0 && (i)<argc)
             {
                 if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
                 {
@@ -542,6 +543,103 @@ int main(int argc, char **argv)
                 {
                     cout<< "Label["<<curtclass<<"] = "<< (double)CountIMG1[curtclass]*(double)(Images[0]->dx)*(double)(Images[0]->dy)*(double)(Images[0]->dz) <<endl;
                 }
+
+                flush(cout);
+            }
+            // **************************            ---------          *****************************
+            // **************************            Bin l Vol          *****************************
+            // **************************            ---------          *****************************
+            else if(strcmp(argv[i], "-Vl") == 0 && (i+1)<argc)
+            {
+                int oldnumbimg=numbimg;
+                numbimg=numbimg+1;
+                filenames[oldnumbimg] = argv[++i];
+                if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
+                {
+                    seg_changeDatatype<float>(Images[0]);
+                }
+                float * Img1prt = static_cast<float *>(Images[0]->data);
+                int  CountIMG1[1024]= {0};
+                int maxclass=0;
+                int curlab=0;
+                for(unsigned int index=0; index<Images[0]->nvox; index++)
+                {
+                    if((round(Img1prt[index]))>1024  || (round(Img1prt[index]))<0)
+                    {
+                        cout<<"Too many labels... the code only handles up to 1024 labels"<<endl;
+                        exit(0);
+                    }
+                    else
+                    {
+                        curlab=(int)(round(Img1prt[index]));
+                    }
+
+                    CountIMG1[curlab]++;
+                    maxclass=curlab>maxclass?curlab:maxclass;
+                }
+                ofstream myfile;
+                myfile.open(filenames[oldnumbimg]);
+
+                flush(cout);
+                for(int curtclass=0; curtclass<=maxclass; curtclass++)
+                {
+                    myfile<< (double)CountIMG1[curtclass]*(double)(Images[0]->dx)*(double)(Images[0]->dy)*(double)(Images[0]->dz);
+
+                    if(curtclass!=maxclass)
+                    {
+                        myfile<<",";
+                    }
+                }
+                myfile.close();
+
+                flush(cout);
+            }
+
+            // **************************            ---------          *****************************
+            // **************************            Bin l count          *****************************
+            // **************************            ---------          *****************************
+            else if(strcmp(argv[i], "-Nl") == 0 && (i+1)<argc)
+            {
+                int oldnumbimg=numbimg;
+                numbimg=numbimg+1;
+                filenames[oldnumbimg] = argv[++i];
+                if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
+                {
+                    seg_changeDatatype<float>(Images[0]);
+                }
+                float * Img1prt = static_cast<float *>(Images[0]->data);
+                int  CountIMG1[1024]= {0};
+                int maxclass=0;
+                int curlab=0;
+                for(unsigned int index=0; index<Images[0]->nvox; index++)
+                {
+                    if((round(Img1prt[index]))>1024  || (round(Img1prt[index]))<0)
+                    {
+                        cout<<"Too many labels... the code only handles up to 1024 labels"<<endl;
+                        exit(0);
+                    }
+                    else
+                    {
+                        curlab=(int)(round(Img1prt[index]));
+                    }
+
+                    CountIMG1[curlab]++;
+                    maxclass=curlab>maxclass?curlab:maxclass;
+                }
+                ofstream myfile;
+                myfile.open(filenames[oldnumbimg]);
+
+                flush(cout);
+                for(int curtclass=0; curtclass<=maxclass; curtclass++)
+                {
+                    myfile<< (double)CountIMG1[curtclass];
+
+                    if(curtclass!=maxclass)
+                    {
+                        myfile<<",";
+                    }
+                }
+                myfile.close();
 
                 flush(cout);
             }
@@ -895,7 +993,31 @@ int main(int argc, char **argv)
             // **************************            Fuzzy Numb          *****************************
             // **************************            ---------          *****************************
 
-            else if(strcmp(argv[i], "-N") == 0 && (i)<argc)
+            else if(strcmp(argv[i], "-np") == 0 && (i)<argc)
+            {
+                if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
+                {
+                    seg_changeDatatype<float>(Images[0]);
+                }
+                float * Img1prt = static_cast<float *>(Images[0]->data);
+                float calcvol=0;
+                for(unsigned int index=0; index<Images[0]->nvox; index++)
+                {
+                    if(mask[index])
+                    {
+                        calcvol += Img1prt[index];
+                    }
+                }
+
+                cout << (double)(calcvol)<<endl;
+                flush(cout);
+            }
+
+            // **************************            ---------          *****************************
+            // **************************            Fuzzy Numb          *****************************
+            // **************************            ---------          *****************************
+
+            else if(strcmp(argv[i], "-Np") == 0 && (i)<argc)
             {
                 if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
                 {
@@ -936,6 +1058,44 @@ int main(int argc, char **argv)
                 cout <<(double)(calcvol)<<endl;
                 flush(cout);
             }
+
+            // **************************            ---------          *****************************
+            // **************************            Bin l count          *****************************
+            // **************************            ---------          *****************************
+            else if(strcmp(argv[i], "-nl") == 0 && (i)<argc)
+            {
+                if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
+                {
+                    seg_changeDatatype<float>(Images[0]);
+                }
+                float * Img1prt = static_cast<float *>(Images[0]->data);
+                int  CountIMG1[1024]= {0};
+                int maxclass=0;
+                int curlab=0;
+                for(unsigned int index=0; index<Images[0]->nvox; index++)
+                {
+                    if((round(Img1prt[index]))>1024  || (round(Img1prt[index]))<0)
+                    {
+                        cout<<"Too many labels... the code only handles up to 1024 labels"<<endl;
+                        exit(0);
+                    }
+                    else
+                    {
+                        curlab=(int)(round(Img1prt[index]));
+                    }
+
+                    CountIMG1[curlab]++;
+                    maxclass=curlab>maxclass?curlab:maxclass;
+                }
+                cout<< "Label counts:"<<endl;
+                for(int curtclass=0; curtclass<=maxclass; curtclass++)
+                {
+                    cout<< "Label["<<curtclass<<"] = "<< (double)CountIMG1[curtclass]<<endl;
+                }
+
+                flush(cout);
+            }
+
             // **************************            ---------          *****************************
             // **************************               HELP            *****************************
             // **************************            ---------          *****************************

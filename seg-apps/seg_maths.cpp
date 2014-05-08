@@ -23,6 +23,7 @@ void Usage(char *exec)
     printf("\t-thr\t<float>\t\tThreshold the image below <float>.\n");
     printf("\t-uthr\t<float>\t\tThreshold image above <float>.\n");
     printf("\t-smo\t<float>\t\tGaussian smoothing by std <float> (in voxels and up to 4-D).\n");
+    printf("\t-equal\t<int>\t\tGet voxels equal to <int>\n");
     printf("\t-sqrt \t\t\tSquare root of the image.\n");
     printf("\t-exp \t\t\tExponential root of the image.\n");
     printf("\t-log \t\t\tLog of the image.\n");
@@ -467,6 +468,23 @@ int main(int argc, char **argv)
                     double factor=strtod(parser.c_str(),NULL);
                     for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                         bufferImages[current_buffer?0:1][i]=(bufferImages[current_buffer][i]>factor)?bufferImages[current_buffer][i]:0;
+                    current_buffer=current_buffer?0:1;
+                }
+                else
+                {
+                    cout << "ERROR: "<< parser << " is not a valid number"<<endl;
+                    i=argc;
+                }
+            }
+            // *********************  THRESHOLD below  *************************
+            else if(strcmp(argv[i], "-equal") == 0)
+            {
+                string parser=argv[++i];
+                if(((strtod(parser.c_str(),NULL)!=0 ) || (parser.length()==1 && parser.find("0")!=string::npos)))
+                {
+                    double factor=strtod(parser.c_str(),NULL);
+                    for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
+                        bufferImages[current_buffer?0:1][i]=(bufferImages[current_buffer][i]==factor)?1:0;
                     current_buffer=current_buffer?0:1;
                 }
                 else
