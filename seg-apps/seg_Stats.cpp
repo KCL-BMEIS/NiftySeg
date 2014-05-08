@@ -38,9 +38,11 @@ void Usage(char *exec)
     //printf("\t  -C \t\t| Location (in mm) of the centre of mass of the object (using sform)\n");
     printf("\t  -B \t\t| Bounding box of all nonzero voxels [ xmin xsize ymin ysize zmin zsize ]\n");
     printf("\n\tLabel attribute operations (datatype: char or uchar)\n");
-    printf("\t  -d <in2>\t| Calculate the Dice score between all classes in <in> and <in2>\n");
+    printf("\t  -al <in2> \t\t| Average value in <in> for each label in <in2> \n");
+    printf("\t  -Al <in2> <csv>\t| Average value in <in> for each label in <in2>. Save to <csv> file\n");
+    printf("\t  -d <in2>\t\t| Calculate the Dice score between all classes in <in> and <in2>\n");
     printf("\t  -di <float> <in2>\t| Same as above but ingnoring areas with Dice above <float> for the Mean\n");
-    printf("\t  -D <in2> <csv>| Calculate the Dice score between all classes in <in> and <in2>. Save to <csv> file\n");
+    printf("\t  -D <in2> <csv>\t| Calculate the Dice score between all classes in <in> and <in2>. Save to <csv> file\n");
     printf("\t\n");
     return;
 }
@@ -90,6 +92,9 @@ int main(int argc, char **argv)
             mask[index]=1;
             maskcount++;
             }
+            else{
+                mask[index]=0;
+            }
         }
 
 
@@ -122,11 +127,11 @@ int main(int argc, char **argv)
                     cout<<"ERROR: The mask is not the same size as the image <in>."<<endl;
                     return 0;
                 }
-                if(Images[oldnumbimg]->datatype!=NIFTI_TYPE_UINT8)
+                if(Images[oldnumbimg]->datatype!=NIFTI_TYPE_FLOAT32)
                 {
-                    seg_changeDatatype<unsigned char>(Images[oldnumbimg]);
+                    seg_changeDatatype<float>(Images[oldnumbimg]);
                 }
-                unsigned char * maskptr = static_cast<unsigned char *>(Images[oldnumbimg]->data);
+                float * maskptr = static_cast<float *>(Images[oldnumbimg]->data);
                 maskcount=0;
                 for(unsigned int index=0; index<Images[0]->nvox; index++)
                 {
@@ -347,6 +352,109 @@ int main(int argc, char **argv)
                 for(int curtclass=1; curtclass<=maxclass; curtclass++)
                 {
                     myfile<< (float)2.0*(float)CountINTERSECT[curtclass]/((float)CountIMG1[curtclass]+(float)CountIMG2[curtclass]);
+
+                    if(curtclass!=maxclass)
+                    {
+                        myfile<<",";
+                    }
+                }
+                myfile.close();
+
+            }
+            // **************************            ---------          *****************************
+            // **************************            Lab Mean          *****************************
+            // **************************            ---------          *****************************
+            else if(strcmp(argv[i], "-al") == 0 && (i+1)<argc)
+            {
+                int oldnumbimg=numbimg;
+                numbimg=numbimg+1;
+                filenames[oldnumbimg] = argv[++i];
+                for(int j=oldnumbimg; j<numbimg; j++)
+                {
+                    Images[j]=nifti_image_read(filenames[j],true);
+                    if(Images[j]==NULL)
+                    {
+                        fprintf(stderr, "This image can not be read: %s\n", filenames[j]);
+                        return 0;
+                    }
+                    if(Images[j]->datatype!=NIFTI_TYPE_UINT8)
+                    {
+                        seg_changeDatatype<unsigned char>(Images[j]);
+                    }
+                }
+
+                float * Img1prt = static_cast<float *>(Images[0]->data);
+                float  Count1[1000]= {0};
+                float  Count2[1000]= {0};
+                for(unsigned int index=0; index<1000; index++){
+                   Count1[i]=0;
+                   Count2[i]=0;
+                }
+                unsigned char * Img2prt = static_cast<unsigned char *>(Images[oldnumbimg]->data);
+                int maxclass=0;
+                for(unsigned int index=0; index<Images[0]->nvox; index++)
+                {
+                    Count1[(int)(Img2prt[index])]+=float(Img1prt[index]);
+                    Count2[(int)(Img2prt[index])]+=1;
+                    maxclass=(int)(Img2prt[index])>maxclass?(int)(Img2prt[index]):maxclass;
+                }
+                for(int curtclass=1; curtclass<=maxclass; curtclass++)
+                {
+                    cout<< "Label["<<curtclass<<"] = "<<Count1[curtclass]/Count2[curtclass]<<endl;
+                }
+                if(maxclass>1)
+                {
+                    flush(cout);
+                }
+            }
+            // **************************            ---------          *****************************
+            // **************************           CSV  Lab Mean       *****************************
+            // **************************            ---------          *****************************
+            else if(strcmp(argv[i], "-Al") == 0 && (i+2)<argc)
+            {
+
+                int oldnumbimg=numbimg;
+                numbimg=numbimg+1;
+                filenames[oldnumbimg] = argv[++i];
+                filenames[oldnumbimg+1] = argv[++i];
+
+                for(int j=oldnumbimg; j<numbimg; j++)
+                {
+                    Images[j]=nifti_image_read(filenames[j],true);
+                    if(Images[j]==NULL)
+                    {
+                        fprintf(stderr, "This image can not be read: %s\n", filenames[j]);
+                        return 0;
+                    }
+                    if(Images[j]->datatype!=NIFTI_TYPE_UINT8)
+                    {
+                        seg_changeDatatype<unsigned char>(Images[j]);
+                    }
+                }
+
+                float * Img1prt = static_cast<float *>(Images[0]->data);
+                float Count1[1000]= {0};
+                float  Count2[1000]= {0};
+                for(unsigned int index=0; index<1000; index++){
+                   Count1[i]=0;
+                   Count2[i]=0;
+                }
+                unsigned char * Img2prt = static_cast<unsigned char *>(Images[oldnumbimg]->data);
+                int maxclass=0;
+                for(unsigned int index=0; index<Images[0]->nvox; index++)
+                {
+                    Count1[(int)(Img2prt[index])]+=(Img1prt[index]);
+                    Count2[(int)(Img2prt[index])]+=1;
+                    maxclass=(int)(Img2prt[index])>maxclass?(int)(Img2prt[index]):maxclass;
+                }
+
+                ofstream myfile;
+                myfile.open(filenames[oldnumbimg+1]);
+
+                flush(cout);
+                for(int curtclass=1; curtclass<=maxclass; curtclass++)
+                {
+                    myfile<<(float)(Count1[curtclass]/Count2[curtclass]);
 
                     if(curtclass!=maxclass)
                     {
@@ -626,6 +734,32 @@ int main(int argc, char **argv)
             }
 
             // **************************            ---------          *****************************
+            // **************************           Average Lab         *****************************
+            // **************************            ---------          *****************************
+
+            else if(strcmp(argv[i], "-a") == 0 && (i)<argc)
+            {
+                if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
+                {
+                    seg_changeDatatype<float>(Images[0]);
+                }
+                float * Img1prt = static_cast<float *>(Images[0]->data);
+                float calcvol=0;
+                float calcvolcount=0;
+                for(unsigned int index=0; index<Images[0]->nvox; index++)
+                {
+                    if(mask[index])
+                    {
+                        calcvol += Img1prt[index];
+                        calcvolcount+=1;
+                    }
+                }
+
+                cout << (double)(calcvol)/(double)(calcvolcount)<<endl;
+                flush(cout);
+            }
+
+            // **************************            ---------          *****************************
             // **************************             Max/min           *****************************
             // **************************            ---------          *****************************
 
@@ -836,3 +970,4 @@ int main(int argc, char **argv)
 
     return 0;
 }
+
