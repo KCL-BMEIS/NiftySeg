@@ -2847,12 +2847,11 @@ void SmoothLab(float * DataPTR,float factor, ImageSize * Currentsize){
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    shared(DataPTR,ImageBuffer,nx,ny,nz,Density,dim_array,shiftdirection,current_4dShift_short) \
+    shared(DataPTR,ImageBuffer,nx,ny,nz,dim_array,shiftdirection,current_4dShift_short) \
     private(xyzpos2,index,xyzpos)
 #endif
         for(xyzpos2=0; xyzpos2<nz; xyzpos2++)
         {
-            cout << "Complete: "<<(float)xyzpos2/(float)nz*100.0f<<"\%"<<endl;
             xyzpos[2]=xyzpos2;
             for(xyzpos[1]=0; xyzpos[1]<ny; xyzpos[1]++)
             {
@@ -2910,10 +2909,6 @@ void SmoothLab(float * DataPTR,float factor, ImageSize * Currentsize){
                         currIterator++;
                     }
                     ImageBuffer[index]=maxindex;
-
-                    //if(maxindex>0){
-                    //cout << "lab: "<<(float)maxindex<<endl;
-                    //}
                 }
             }
         }
