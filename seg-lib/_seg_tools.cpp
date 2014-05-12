@@ -2847,8 +2847,8 @@ void SmoothLab(float * DataPTR,float factor, ImageSize * Currentsize){
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    shared(DataPTR,GaussKernel,ImageBuffer,DensityBuffer,nx,ny,nz,kernelshift,Density,dim_array,currentdirection,shiftdirection,current_4dShift_short) \
-    private(xyzpos2,TmpDataConvolution,TmpMaskConvolution,TmpKernDensity,index,shiftstart,shiftstop,shift,xyzpos)
+    shared(DataPTR,ImageBuffer,nx,ny,nz,Density,dim_array,shiftdirection,current_4dShift_short) \
+    private(xyzpos2,index,xyzpos)
 #endif
         for(xyzpos2=0; xyzpos2<nz; xyzpos2++)
         {
@@ -2918,12 +2918,7 @@ void SmoothLab(float * DataPTR,float factor, ImageSize * Currentsize){
             }
         }
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    shared(DataPTR, mask, Density,current_4dShift_short,numel) \
-    private(index)
-#endif
-            for(index=0; index<numel; index++)
+        for(index=0; index<numel; index++)
             {
                     DataPTR[index+current_4dShift_short]=ImageBuffer[index];
             }
