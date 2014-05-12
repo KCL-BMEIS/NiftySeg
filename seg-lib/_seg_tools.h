@@ -209,6 +209,7 @@ SegPrecisionTYPE * Gaussian_Filter_4D_inside_mask(SegPrecisionTYPE * LongData,
 void GaussianSmoothing(nifti_image * Data,int * mask,float gauss_std);
 void BlockSmoothing(nifti_image * Data,int * mask,int side_size);
 void GaussianSmoothing_carray(float * DataPTR,int * mask,float gauss_std_in, ImageSize *Currentsize);
+void SmoothLab(float * DataPTR, float factor, ImageSize * CurrSizes);
 
 float patchsym(nifti_image * Image,unsigned char * Mask, int location1, int location2, int patchsize);
 

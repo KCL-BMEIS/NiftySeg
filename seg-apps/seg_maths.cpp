@@ -30,7 +30,9 @@ void Usage(char *exec)
     printf("\t-recip \t\t\tReciprocal (1/I) of the image.\n");
     printf("\t-abs \t\t\tAbsolute value of the image.\n");
     printf("\t-bin \t\t\tBinarise the image.\n");
+    printf("\t-otsu \t\t\tOtsu thresholding of the current image.\n");
     printf("\n\t* * Operations on 3-D images * *\n");
+    printf("\t-smol\t<float>\t\tGaussian smoothing of a 3D label image.\n");
     printf("\t-dil\t<int>\t\tDilate the image <int> times (in voxels).\n");
     printf("\t-ero\t<int>\t\tErode the image <int> times (in voxels).\n");
     printf("\n\t* * Operations binary 3-D images * *\n");
@@ -536,6 +538,25 @@ int main(int argc, char **argv)
                 {
                     double factor=strtod(parser.c_str(),NULL);
                     Erosion(bufferImages[current_buffer],(int)round(factor),CurrSize);
+                    for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
+                        bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i];
+                    current_buffer=current_buffer?0:1;
+                }
+                else
+                {
+                    cout << "ERROR: "<< parser << " has to be an integer > 0"<<endl;
+                    i=argc;
+                }
+            }
+
+            // *********************  Smooth Label   *************************
+            else if(strcmp(argv[i], "-smol") == 0)
+            {
+                string parser=argv[++i];
+                if(parser.find_first_not_of("1234567890.-+")== string::npos)
+                {
+                    double factor=strtod(parser.c_str(),NULL);
+                    SmoothLab(bufferImages[current_buffer],factor,CurrSize);
                     for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                         bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i];
                     current_buffer=current_buffer?0:1;
