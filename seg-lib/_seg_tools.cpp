@@ -2847,7 +2847,7 @@ void SmoothLab(float * DataPTR,float factor, ImageSize * Currentsize){
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    shared(DataPTR,ImageBuffer,nx,ny,nz,dim_array,shiftdirection,current_4dShift_short) \
+    shared(DataPTR,ImageBuffer,nx,ny,nz,dim_array,gauss_std,shiftdirection,current_4dShift_short) \
     private(xyzpos2,index,xyzpos)
 #endif
         for(xyzpos2=0; xyzpos2<nz; xyzpos2++)
