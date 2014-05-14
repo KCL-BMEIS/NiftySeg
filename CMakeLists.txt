@@ -93,7 +93,7 @@ ${CMAKE_MODULE_PATH}
 
 
 #-----------------------------------------------------------------------------
-# Optional Installation of NiftyReg packages
+# Optional installation of NiftyReg packages
 #-----------------------------------------------------------------------------
 
 OPTION(INSTALL_NIFTYREG "Install the NiftyReg package" OFF)
