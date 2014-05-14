@@ -98,13 +98,13 @@ ${CMAKE_MODULE_PATH}
 
 OPTION(INSTALL_NIFTYREG "Install the NiftyReg package" OFF)
 IF(INSTALL_NIFTYREG)
-   OPTION(USE_SSE "Use SSE in NiftyReg package" ON)
+   OPTION(USE_SSE "Use SSE in NiftyReg package" OFF)
    ExternalProject_Add(NiftyReg
-               SOURCE_DIR ${CMAKE_SOURCE_DIR}/niftyreg
+               SOURCE_DIR ${PROJECT_BINARY_DIR}/niftyreg/source
                PREFIX ${PROJECT_BINARY_DIR}/niftyreg
                STAMP_DIR ${PROJECT_BINARY_DIR}/niftyreg/stamps
                TMP_DIR ${PROJECT_BINARY_DIR}/niftyreg/tmp
-               DOWNLOAD_DIR ${CMAKE_SOURCE_DIR}/niftyreg
+               DOWNLOAD_DIR ${PROJECT_BINARY_DIR}/niftyreg
                BINARY_DIR ${PROJECT_BINARY_DIR}/niftyreg/build
                GIT_REPOSITORY git://git.code.sf.net/p/niftyreg/git
                TIMEOUT 100
