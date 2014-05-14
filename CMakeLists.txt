@@ -5,7 +5,8 @@ include(ExternalProject)
 
 
 #-----------------------------------------------------------------------------
-# Preflight Checks
+# Preflight Checks - CMake Version, InSource Build Type
+#-----------------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 2.8.0)
 if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" MATCHES "^2\\.8\\.0$")
@@ -15,28 +16,15 @@ else("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" MATC
 endif("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" MATCHES "^2\\.8\\.0$")
 
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
-        message("In-source builds not allowed by NiftySeg police.")
-        message("Please make a new directory (called a build directory) and run CMake from there.")
+        message("In-source builds not allowed by niftyseg.")
+        message("Please make a new directory (i.e. a build directory) and run CMake from there.")
         message(FATAL_ERROR "You may need to remove CMakeCache.txt.")
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 
-#-----------------------------------------------------------------------------
-if(COMMAND cmake_policy)
-      cmake_policy(SET CMP0003 NEW)
-endif(COMMAND cmake_policy)
-
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "Release")
-endif(NOT CMAKE_BUILD_TYPE)
-
-IF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")	
-	add_definitions(/W1)
-ELSE (${CMAKE_SYSTEM_NAME} MATCHES "Windows")	
-	add_definitions(-Wall -pedantic)
-ENDIF()	
 
 #-----------------------------------------------------------------------------
 # Overall Options
+#-----------------------------------------------------------------------------
 
 OPTION(BUILD_ALL "To build the LoAd segmentation tool" ON)
 OPTION(BUILD_SHARED "Build the libraries as shared." OFF)
@@ -45,9 +33,20 @@ OPTION(INSTALL_PRIORS "Install prior images. Turn this off if you are really sho
 
 #-----------------------------------------------------------------------------
 # Set build details - C flags, Build Type, Library_type, OpenMP
+#-----------------------------------------------------------------------------
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -DFILE_OFFSETBITS=64 -DDIRENT=dirent64 -DREADDIR=readdir64")
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -DFILE_OFFSETBITS=64 -DDIRENT=dirent64 -DREADDIR=readdir64")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFILE_OFFSETBITS=64 -DDIRENT=dirent64 -DREADDIR=readdir64")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DFILE_OFFSETBITS=64 -DDIRENT=dirent64 -DREADDIR=readdir64")
+
+IF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+   add_definitions(/W1)
+ELSE (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+   add_definitions(-Wall -pedantic)
+ENDIF()
+
+if(NOT CMAKE_BUILD_TYPE)
+   set(CMAKE_BUILD_TYPE "Release")
+endif(NOT CMAKE_BUILD_TYPE)
 
 string(TOLOWER "${CMAKE_BUILD_TYPE}" cmake_build_type_tolower)
 if(NOT cmake_build_type_tolower STREQUAL "debug"
@@ -76,8 +75,10 @@ if(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
   endif(OPENMP_FOUND)
 endif(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
 
+
 #-----------------------------------------------------------------------------
 # Include Dirs and Module Paths
+#-----------------------------------------------------------------------------
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/seg-lib)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/nifti)
@@ -91,33 +92,34 @@ ${CMAKE_MODULE_PATH}
 )
 
 
-
-
 #-----------------------------------------------------------------------------
 # Optional Installation of NiftyReg packages
+#-----------------------------------------------------------------------------
+
 OPTION(INSTALL_NIFTYREG "Install the NiftyReg package" OFF)
 IF(INSTALL_NIFTYREG)
-ExternalProject_Add(NiftyReg
-            SOURCE_DIR ${CMAKE_SOURCE_DIR}/niftyreg
-            PREFIX ${PROJECT_BINARY_DIR}/niftyreg
-            STAMP_DIR ${PROJECT_BINARY_DIR}/niftyreg/stamps
-            TMP_DIR ${PROJECT_BINARY_DIR}/niftyreg/tmp
-            DOWNLOAD_DIR ${CMAKE_SOURCE_DIR}/niftyreg
-            BINARY_DIR ${PROJECT_BINARY_DIR}/niftyreg/build
-            GIT_REPOSITORY git://git.code.sf.net/p/niftyreg/git
-            TIMEOUT 100
-            UPDATE_COMMAND ""
-            CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -DUSE_SSE=${USE_SSE} -DUSE_OPENMP=${USE_OPENMP}
-            BUILD_COMMAND ${CMAKE_BUILD_TOOL}
-            INSTALL_COMMAND ${CMAKE_BUILD_TOOL} install
-            )
+   OPTION(USE_SSE "Use SSE in NiftyReg package" ON)
+   ExternalProject_Add(NiftyReg
+               SOURCE_DIR ${CMAKE_SOURCE_DIR}/niftyreg
+               PREFIX ${PROJECT_BINARY_DIR}/niftyreg
+               STAMP_DIR ${PROJECT_BINARY_DIR}/niftyreg/stamps
+               TMP_DIR ${PROJECT_BINARY_DIR}/niftyreg/tmp
+               DOWNLOAD_DIR ${CMAKE_SOURCE_DIR}/niftyreg
+               BINARY_DIR ${PROJECT_BINARY_DIR}/niftyreg/build
+               GIT_REPOSITORY git://git.code.sf.net/p/niftyreg/git
+               TIMEOUT 100
+               UPDATE_COMMAND ""
+               CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -DUSE_SSE=${USE_SSE} -DUSE_OPENMP=${USE_OPENMP}
+               BUILD_COMMAND ${CMAKE_BUILD_TOOL}
+               INSTALL_COMMAND ${CMAKE_BUILD_TOOL} install
+               )
 ENDIF(INSTALL_NIFTYREG)
-
-
 
 
 #-----------------------------------------------------------------------------
 # Search for Eigen. Download and install if not found
+#-----------------------------------------------------------------------------
+
 find_package(EIGEN)
 IF(EIGEN_FOUND)
     # if EIGEN is found, then just set its include dir
@@ -140,10 +142,10 @@ ELSE(EIGEN_FOUND)
 ENDIF(EIGEN_FOUND)
 
 
-
-
 #-----------------------------------------------------------------------------
 # Actually install NiftySeg
+#-----------------------------------------------------------------------------
+
 include_directories(${EIGEN_INCLUDE_DIR})
 SET(ZLIB "z")
 SUBDIRS(zlib)
@@ -164,4 +166,3 @@ IF(INSTALL_PRIORS)
 ENDIF(INSTALL_PRIORS)
 
 #-----------------------------------------------------------------------------
-
