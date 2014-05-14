@@ -6,5 +6,6 @@ INSTALL(TARGETS ${NAME}
 	LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
 	ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
 )
+add_dependencies(${NAME} Eigen)
 
 #-----------------------------------------------------------------------------

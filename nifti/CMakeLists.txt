@@ -5,6 +5,7 @@ if(USE_NII_NAN)
     add_definitions(-DUSE_NII_NAN)
 endif(USE_NII_NAN)
 add_definitions(-DHAVE_ZLIB)
+
 set(NAME _seg_nifti)
 add_library(${NAME}  ${LIBRARY_TYPE} nifti1.h nifti1_io.c nifti1_io.h znzlib.c znzlib.h)
 target_link_libraries(${NAME} z)

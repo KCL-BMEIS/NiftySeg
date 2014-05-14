@@ -9,6 +9,7 @@
         ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
     INSTALL(FILES ${NAME}.h _seg_matrix.h DESTINATION include)
+   add_dependencies(_seg_tools Eigen)
 
     SET(NAME _seg_MRF)
     ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} ${NAME}.h ${NAME}.cpp _seg_common.h )
@@ -18,6 +19,7 @@
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
     INSTALL(FILES ${NAME}.h _seg_common.h DESTINATION include)
+    add_dependencies(_seg_MRF Eigen)
 
     SET(NAME _seg_BiasCorrection)
     ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} ${NAME}.h ${NAME}.cpp)
@@ -27,6 +29,7 @@
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
     INSTALL(FILES ${NAME}.h DESTINATION include)
+    add_dependencies(_seg_BiasCorrection Eigen)
 
     SET(NAME _seg_FMM)
     ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} ${NAME}.h ${NAME}.cpp)
@@ -36,6 +39,7 @@
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
     INSTALL(FILES ${NAME}.h DESTINATION include)
+    add_dependencies(_seg_FMM Eigen)
 
     SET(NAME _seg_LoAd)
     ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} ${NAME}.h ${NAME}.cpp)
@@ -46,6 +50,7 @@
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
     INSTALL(FILES ${NAME}.h DESTINATION include)
+    add_dependencies(_seg_LoAd Eigen)
 
     SET(NAME _seg_EM)
     ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} ${NAME}.h ${NAME}.cpp)
@@ -56,6 +61,7 @@
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
     INSTALL(FILES ${NAME}.h DESTINATION include)
+    add_dependencies(_seg_EM Eigen)
 
     SET(NAME _seg_LabFusion)
     ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} ${NAME}.h ${NAME}.cpp _seg_tools)
@@ -66,6 +72,7 @@
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
     INSTALL(FILES ${NAME}.h DESTINATION include)
+    add_dependencies(_seg_LabFusion Eigen)
 
     SET(NAME _seg_Topo)
     ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} ${NAME}.h ${NAME}.cpp)
@@ -75,5 +82,6 @@
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
     INSTALL(FILES ${NAME}.h DESTINATION include)
+    add_dependencies(_seg_Topo Eigen)
 
 
