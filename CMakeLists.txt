@@ -30,7 +30,6 @@ OPTION(BUILD_ALL "To build the LoAd segmentation tool" ON)
 OPTION(BUILD_SHARED "Build the libraries as shared." OFF)
 OPTION(INSTALL_PRIORS "Install prior images. Turn this off if you are really short on disk space" ON)
 
-
 #-----------------------------------------------------------------------------
 # Set build details - C flags, Build Type, Library_type, OpenMP
 #-----------------------------------------------------------------------------
@@ -57,9 +56,16 @@ if(NOT cmake_build_type_tolower STREQUAL "debug"
 endif()
 
 if(USE_OPENMP)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+      find_package(OpenMP)
+      if(NOT OPENMP_FOUND)
+            set(USE_OPENMP OFF CACHE BOOL "To use openMP for multi-CPU processing" FORCE)
+            message(WARNING "OpenMP does not appear to be supported by your compiler, forcing USE_OPENMP to OFF")
+      else(NOT OPENMP_FOUND)
+            set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+      endif(NOT OPENMP_FOUND)
 endif(USE_OPENMP)
+
 
 IF(BUILD_SHARED)
   SET(LIBRARY_TYPE SHARED)
