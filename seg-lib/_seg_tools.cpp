@@ -501,6 +501,7 @@ int Normalize_Image_mask(nifti_image * input,
         }
         Inputptr=&Inputptrtmp[numel*udir];
         brainmaskptr = static_cast<bool *> (Mask->data);
+        bool nanflag=false;
         for (int i=0; i<numel; i++)
         {
             //if(brainmaskptr[i]>0){
@@ -508,7 +509,10 @@ int Normalize_Image_mask(nifti_image * input,
             Inputptr[i]=logf((((Inputptr[i])-tempmin)/(tempmax-tempmin))+1)/0.693147181;
             if(Inputptr[i]!=Inputptr[i])
             {
-                cout<< "Image has NaNs" << endl;
+                if(nanflag==0){
+                    cout<< "Warning: The image at timepoint="<<udir<<" has NaNs. This can cause problems." << endl;
+                    nanflag=true;
+                }
             }
             /*}
             else{
@@ -557,13 +561,17 @@ int Normalize_Image(nifti_image * input,
             CurrSizes->rescale_max[udir]=tempmax;
             CurrSizes->rescale_min[udir]=tempmin;
             Inputptr=&Inputptrtmp[numel*udir];
+            bool nanflag=false;
             for (int i=0; i<numel; i++)
             {
                 //log(number_between_0_and_1 + 1)/log(2)
                 *Inputptr=logf((((*Inputptr)-tempmin)/(tempmax-tempmin))+1)/0.693147181;
                 if(*Inputptr!=*Inputptr)
                 {
-                    cout<< "Image has NaNs" << endl;
+                    if(nanflag==0){
+                        cout<< "Warning: The image at timepoint="<<udir<<" has NaNs. This can cause problems." << endl;
+                        nanflag=true;
+                    }
                 }
                 Inputptr++;
             }
@@ -4613,7 +4621,8 @@ void SmoothLab(float * DataPTR,float factor, ImageSize * Currentsize){
         float * brainmask= new float [CurrSizes->numel];
         for(long i=0; i<(long)CurrSizes->numel; i++)
         {
-            brainmask[i]=T1data[i];
+
+            brainmask[i]=(T1data[i]!=T1data[i])?0:T1data[i];
         }
         otsu(brainmask,NULL,CurrSizes);
         Dillate(brainmask,5,CurrSizes);
