@@ -127,7 +127,7 @@ IF(EIGEN_FOUND)
     MARK_AS_ADVANCED(EIGEN_INCLUDE_DIR)
 ELSE(EIGEN_FOUND)
     # Else, download, install, and set the include dir
-    set(eigen_url http://bitbucket.org/eigen/eigen/get/3.2.1.tar.bz2)
+    set(eigen_url http://cmictig.cs.ucl.ac.uk/images/eigen-eigen-6b38706d90a9.tar.bz2)
     set(eigen_md5 ece1dbf64a49753218ce951624f4c487)
     ExternalProject_Add(Eigen
         SOURCE_DIR ${PROJECT_BINARY_DIR}/Eigen
