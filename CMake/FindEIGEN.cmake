@@ -75,7 +75,7 @@ if(NOT EIGEN_FOUND)
     )
 
   if(EIGEN_INCLUDE_DIR)
-    if(EXISTS ${EIGEN_INCLUDE_DIR}/signature_of_eigen3_matrix_library)
+    if(EXISTS ${EIGEN_INCLUDE_DIR}/Eigen)
       set(EIGEN_FOUND 1)
     else()
       set(EIGEN_INCLUDE_DIR "EIGEN_INCLUDE_DIR-NOTFOUND" CACHE PATH "The ${EIGEN_DIR_DESCRIPTION}" FORCE)
