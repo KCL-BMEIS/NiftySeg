@@ -31,12 +31,12 @@ endif(NOT Eigen_FIND_VERSION)
 
 
 # Construct consistent error messages for use below.
-set(EIGEN_DIR_DESCRIPTION "directory containing the file 'signature_of_eigen3_matrix_library'.  This is either the root of the build tree, or PREFIX/include/eigen3 for an installation.")
+set(EIGEN_DIR_DESCRIPTION "directory containing the file 'EIGEN'.  This is either the root of the build tree, or PREFIX/include/eigen3 for an installation.")
 set(EIGEN_DIR_MESSAGE "EIGEN not found.  Set the EIGEN_INCLUDE_DIR cmake cache entry to the ${EIGEN_DIR_DESCRIPTION}")
 
 macro(_eigen3_check_version)
   
-  file(READ "${EIGEN_INCLUDE_DIR}/Eigen/src/Core/util/Macros.h" _eigen3_version_header)
+  file(READ "${EIGEN_INCLUDE_DIR}/src/Core/util/Macros.h" _eigen3_version_header)
 
   string(REGEX MATCH "define[ \t]+EIGEN_WORLD_VERSION[ \t]+([0-9]+)" _eigen3_world_version_match "${_eigen3_version_header}")
   set(EIGEN_WORLD_VERSION "${CMAKE_MATCH_1}")
@@ -64,8 +64,8 @@ if(NOT EIGEN_FOUND)
   
   # Look for signature_of_eigen3_matrix_library in build trees or under <prefix>/include/eigen3.
   find_path(EIGEN_INCLUDE_DIR
-    NAMES signature_of_eigen3_matrix_library
-    PATH_SUFFIXES eigen3 Eigen
+    NAMES Core
+    PATH_SUFFIXES eigen3
     HINTS ENV EIGEN_DIR
 
     PATHS
@@ -75,7 +75,7 @@ if(NOT EIGEN_FOUND)
     )
 
   if(EIGEN_INCLUDE_DIR)
-    if(EXISTS ${EIGEN_INCLUDE_DIR}/Eigen)
+    if(EXISTS ${EIGEN_INCLUDE_DIR}/Core)
       set(EIGEN_FOUND 1)
     else()
       set(EIGEN_INCLUDE_DIR "EIGEN_INCLUDE_DIR-NOTFOUND" CACHE PATH "The ${EIGEN_DIR_DESCRIPTION}" FORCE)
