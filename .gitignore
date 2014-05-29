@@ -1,3 +1,5 @@
 /.DS_Store
 /CMake/.DS_Store
 /nifti/CMakeLists.txt.autosave
+
+/CMakeLists.txt.user
