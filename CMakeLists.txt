@@ -91,18 +91,19 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/nifti)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/zlib)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/win32)
 
-SET(CMAKE_MODULE_PATH 
-${CMAKE_BINARY_DIR}
-${CMAKE_SOURCE_DIR}/CMake
-${CMAKE_MODULE_PATH}
-)
+set(CMAKE_MODULE_PATH
+  ${CMAKE_BINARY_DIR}
+  ${CMAKE_SOURCE_DIR}/CMake
+  ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals
+  ${CMAKE_MODULE_PATH}
+  )
 
 
 #-----------------------------------------------------------------------------
 # Optional installation of NiftyReg packages
 #-----------------------------------------------------------------------------
 
-OPTION(INSTALL_NIFTYREG "Install the NiftyReg package" OFF)
+OPTION(INSTALL_NIFTYREG "Download and Install the NiftyReg package" OFF)
 IF(INSTALL_NIFTYREG)
    OPTION(USE_SSE "Use SSE in NiftyReg package" OFF)
    ExternalProject_Add(NiftyReg
@@ -126,26 +127,32 @@ ENDIF(INSTALL_NIFTYREG)
 # Search for Eigen. Download and install if not found
 #-----------------------------------------------------------------------------
 
-find_package(EIGEN)
-IF(EIGEN_FOUND)
-    # if EIGEN is found, then just set its include dir
-    set(EIGEN_INCLUDE_DIR  ${CMAKE_INSTALL_PREFIX}/include)
-    MARK_AS_ADVANCED(EIGEN_INCLUDE_DIR)
-ELSE(EIGEN_FOUND)
-    # Else, download, install, and set the include dir
+OPTION(INSTALL_EIGEN "Download and install EIGEN" ON)
+IF(INSTALL_EIGEN)
+    # If INSTALL_EIGEN is on, download, install, and set the include dir
     set(eigen_url http://cmictig.cs.ucl.ac.uk/images/eigen-eigen-6b38706d90a9.tar.bz2)
     set(eigen_md5 ece1dbf64a49753218ce951624f4c487)
     ExternalProject_Add(Eigen
-        SOURCE_DIR ${PROJECT_BINARY_DIR}/Eigen
+        SOURCE_DIR ${PROJECT_BINARY_DIR}/eigen3
         URL ${eigen_url}
         URL_MD5 ${eigen_md5}
         CONFIGURE_COMMAND ""
         BUILD_COMMAND ""
-        INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/Eigen/Eigen" "${CMAKE_INSTALL_PREFIX}/include/eigen3"
+        INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/eigen3/Eigen" "${CMAKE_INSTALL_PREFIX}/include/eigen3"
     )
-    set(EIGEN_INCLUDE_DIR  ${CMAKE_INSTALL_PREFIX}/include)
-    MARK_AS_ADVANCED(EIGEN_INCLUDE_DIR)
-ENDIF(EIGEN_FOUND)
+    set(EIGEN_INCLUDE_DIR  ${CMAKE_INSTALL_PREFIX}/include/eigen3)
+    MARK_AS_ADVANCED(FORCE EIGEN_INCLUDE_DIR)
+ELSE(INSTALL_EIGEN)
+   # else find eigen
+   MARK_AS_ADVANCED(CLEAR EIGEN_INCLUDE_DIR)
+   find_package(EIGEN REQUIRED)
+
+ENDIF(INSTALL_EIGEN)
+
+include_directories(
+    ${${PROJECT_NAME}_INCLUDE_DIRS}
+    ${EIGEN_INCLUDE_DIR}
+)
 
 
 #-----------------------------------------------------------------------------

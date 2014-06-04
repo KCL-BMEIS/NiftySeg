@@ -3,9 +3,9 @@
 #include "_seg_common.h"
 #include "_seg_tools.h"
 #include "_seg_Topo.h"
-#include <eigen3/Core>
-#include <eigen3/LU>
-#include <eigen3/Cholesky>
+#include <Core>
+#include <LU>
+#include <Cholesky>
 
 using namespace std;
 #define SegPrecisionTYPE float
