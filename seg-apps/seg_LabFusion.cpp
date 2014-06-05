@@ -13,7 +13,7 @@ using namespace std;
 void SmallUsage(char *exec)
 {
     printf("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
-    printf(" Label Fusion:\n  Usage ->\t%s -in <filename> -<Type of Label Fusion> [OPTIONS]\n\n",exec);
+    printf("Label Fusion:\nUsage ->\t%s -in <filename> -<Type of Label Fusion> [OPTIONS]\n\n",exec);
     printf("\tSee the help for more details (-h).\n");
     printf("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
     return;
@@ -22,54 +22,57 @@ void SmallUsage(char *exec)
 void Usage(char *exec)
 {
 
-    printf("\n Label Fusion:\n  Usage ->\t%s -in <filename> -<Type of Label Fusion> [OPTIONS]\n\n",exec);
-    printf("  * * * * * * * * * * * * * * * * * * Mandatory * * * * * * * * * * * * * * * * *\n\n");
-    printf("  -in <filename>\t\t| Filename of the 4D integer label image\n\n");
-    printf("  \t\t- Type of Classifier Fusion (mutually exclusive) -\n\n");
-    printf("  -STEPS <k> <n> <i> <t> \t| STEPS algorithm\n");
-    printf("  \t\t\t\t| Size of the kernel (k), number of local labels to use (n),\n");
-    printf("  \t\t\t\t| Original image to segment (3D Image), registered templates (4D Image).\n");
-    printf("  -MLSTEPS <k> <l> <n> <i> <t>\t| Multi-level STEPS algorithm (Beta testing. Do not use!)\n");
-    printf("  \t\t\t\t| Size of the kernel (k), number of levels (l) and local labels to use (n),\n");
-    printf("  \t\t\t\t| Original image to segment (3D Image), registered templates (4D Image).\n");
-    printf("  -STAPLE \t\t\t| STAPLE algorithm\n");
-    printf("  -MV \t\t\t\t| Majority Vote algorithm\n");
-    printf("  -SBA \t\t\t\t| Shape Based Averaging algorithm (Beta)\n\n");
+    printf("\nLabel Fusion:\nUsage ->\t%s -in <filename> -<Type of Label Fusion> [OPTIONS]\n\n",exec);
+    printf("\t* * * * * * * * * * * * * * * * * * Mandatory * * * * * * * * * * * * * * * * *\n\n");
+    printf("\t-in <filename>\t\t\t| Filename of the 4D integer label image\n\n");
+    printf("\t\t* * * Type of Classifier Fusion (mutually exclusive) * * *\n\n");
+    printf("\t-STEPS <k> <n> <i> <t> \t\t| STEPS algorithm\n");
+    printf("\t\t\t\t\t| Size of the kernel (k), number of local labels to use (n),\n");
+    printf("\t\t\t\t\t| Original image to segment (3D Image), registered templates (4D Image).\n");
+    printf("\t-MLSTEPS <k> <l> <n> <i> <t>\t| Multi-level STEPS algorithm (Beta testing. Do not use!)\n");
+    printf("\t\t\t\t\t| Size of the kernel (k), number of levels (l) and local labels to use (n),\n");
+    printf("\t\t\t\t\t| Original image to segment (3D Image), registered templates (4D Image).\n");
+    printf("\t-STAPLE \t\t\t| STAPLE algorithm\n");
+    printf("\t-MV \t\t\t\t| Majority Vote algorithm\n");
+    printf("\t-SBA \t\t\t\t| Shape Based Averaging algorithm (Beta)\n\n");
 
-    printf("  * * * * * * * * * * * * * * * * General Options * * * * * * * * * * * * * * * * *\n\n");
-    printf("  -v <int>\t\t\t| Verbose level [0 = off, 1 = on, 2 = debug] (default = 0)\n");
-    printf("  -unc \t\t\t| Only consider non-consensus voxels to calculate statistics\n");
-    printf("  -out <filename>\t\t| Filename of the integer segmented image (default=LabFusion.nii.gz)\n");
-    printf("  -mask <filename>\t\t| Filename of the ROI for label fusion (greatly reduces memory requirements)\n");
-    printf("  -outProb \t\t\t| Probabilistic/Fuzzy segmented image (only for 1 label)\n\n");
+    printf("\t* * * * * * * * * * * * * * * * General Options * * * * * * * * * * * * * * * * *\n\n");
+    printf("\t-v <int>\t\t\t| Verbose level [0 = off, 1 = on, 2 = debug] (default = 0)\n");
+    printf("\t-unc \t\t\t\t| Only consider non-consensus voxels to calculate statistics\n");
+    printf("\t-out <filename>\t\t\t| Filename of the integer segmented image (default=LabFusion.nii.gz)\n");
+    printf("\t-mask <filename>\t\t| Filename of the ROI for label fusion (greatly reduces memory requirements)\n");
+    printf("\t-outProb \t\t\t| Probabilistic/Fuzzy segmented image (only for 1 label)\n");
+#ifdef _GIT_HASH
+    printf("\t--version\t\t\t|Print current source code git hash key and exit\n\t\t\t\t\t(%s)\n",_GIT_HASH);
+#endif
 
-    printf("  * * * * * * * * * * * * * * STAPLE and STEPS options * * * * * * * * * * * * * *\n\n");
-    printf("  -prop <proportion> \t\t| Proportion of the classifier (automatically estimated by default)\n");
-    printf("  -prop_update \t\t\t| Update label proportions at each iteration.\n");
-    //printf("  -dil_unc <int> \t\t\t| Dilate uncertainty region by <int>.\n");
-    printf("  -setPQ <P> <Q> \t\t| Value of P and Q [ 0 < (P,Q) < 1 ] (default = 0.99 0.99) \n");
-    printf("  -MRF_beta <float>\t\t| MRF prior strength [ 0 < beta < 5 ] \n");
-    printf("  -max_iter <int>\t\t| Maximum number of iterations (default = 15)\n");
-    printf("  -uncthres <float>\t\t| If <float> percent of labels agree, then area is not uncertain \n");
-    printf("  -conv <float>\t\t\t| Ratio for convergence (default epsilon = 10^-5)\n\n");
+    printf("\n\t* * * * * * * * * * * * * * STAPLE and STEPS options * * * * * * * * * * * * * *\n\n");
+    printf("\t-prop <proportion> \t\t| Proportion of the classifier (automatically estimated by default)\n");
+    printf("\t-prop_update \t\t\t| Update label proportions at each iteration.\n");
+    //printf("\t-dil_unc <int> \t\t\t| Dilate uncertainty region by <int>.\n");
+    printf("\t-setPQ <P> <Q> \t\t\t| Value of P and Q [ 0 < (P,Q) < 1 ] (default = 0.99 0.99) \n");
+    printf("\t-MRF_beta <float>\t\t| MRF prior strength [ 0 < beta < 5 ] \n");
+    printf("\t-max_iter <int>\t\t\t| Maximum number of iterations (default = 15)\n");
+    printf("\t-uncthres <float>\t\t| If <float> percent of labels agree, then area is not uncertain \n");
+    printf("\t-conv <float>\t\t\t| Ratio for convergence (default epsilon = 10^-5)\n\n");
 
-    printf("  * * * * * * * * Ranking for STAPLE and MV (mutually exclusive) * * * * * * * * *\n\n");
-    printf("  -ALL  (default)\t\t| Use all labels with no Ranking\n");
-    printf("  -GNCC <n> <img> <tmpl>\t| Global Normalized Cross Correlation Ranking (Calculated in the full image):\n");
-    printf("  \t\t\t\t| Number of sorted classifiers to use (n),\n");
-    printf("  \t\t\t\t| Original image to segment (3D image), registered templates (4D Image).\n");
-    printf("  -ROINCC <d> <n> <img> <tmpl>\t| ROI Normalized Cross Correlation Ranking (On the registered label ROI):\n");
-    printf("  \t\t\t\t| Dilation of the ROI ( <int> d>=1 ), Number of sorted classifiers to use (n),\n");
-    printf("  \t\t\t\t| Original image to segment (3D image), registered templates (4D Image).\n");
-    printf("  -LNCC <k> <n> <img> <tmpl>\t| Locally Normalized Cross Correlation Ranking (On a local gaussian kernel):\n");
-    printf("  \t\t\t\t| Size of the kernel (k), number of local classifiers to use (n),\n");
-    printf("  \t\t\t\t| Original image to segment (3D Image), registered templates (4D Image).\n");
-    printf("  \t\t\t\t| LNCC is only available for STAPLE and MV.\n\n");
-    printf("  \t\t\t\t| LNCC is only available for STAPLE and MV.\n\n");
-    //printf("  -LM <n> <metric> \t| Any voxelwise local metric (higher metric value is more similar):\n");
-    //printf("  \t\t\t\t| number of local classifiers to use (n), similarity <metric> as a 4D Image.\n");
+    printf("\t* * * * * * * * Ranking for STAPLE and MV (mutually exclusive) * * * * * * * * *\n\n");
+    printf("\t-ALL  (default)\t\t\t| Use all labels with no Ranking\n");
+    printf("\t-GNCC <n> <img> <tmpl>\t\t| Global Normalized Cross Correlation Ranking (Calculated in the full image):\n");
+    printf("\t\t\t\t\t| Number of sorted classifiers to use (n),\n");
+    printf("\t\t\t\t\t| Original image to segment (3D image), registered templates (4D Image).\n");
+    printf("\t-ROINCC <d> <n> <img> <tmpl>\t| ROI Normalized Cross Correlation Ranking (On the registered label ROI):\n");
+    printf("\t\t\t\t\t| Dilation of the ROI ( <int> d>=1 ), Number of sorted classifiers to use (n),\n");
+    printf("\t\t\t\t\t| Original image to segment (3D image), registered templates (4D Image).\n");
+    printf("\t-LNCC <k> <n> <img> <tmpl>\t| Locally Normalized Cross Correlation Ranking (On a local gaussian kernel):\n");
+    printf("\t\t\t\t\t| Size of the kernel (k), number of local classifiers to use (n),\n");
+    printf("\t\t\t\t\t| Original image to segment (3D Image), registered templates (4D Image).\n");
+    printf("\t\t\t\t\t| LNCC is only available for STAPLE and MV.\n\n");
+    printf("\t\t\t\t\t| LNCC is only available for STAPLE and MV.\n\n");
+    //printf("\t-LM <n> <metric> \t| Any voxelwise local metric (higher metric value is more similar):\n");
+    //printf("\t\t\t\t\t| number of local classifiers to use (n), similarity <metric> as a 4D Image.\n");
 
-    printf("  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n\n");
+    printf("\n\t* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n\n");
     return;
 }
 
@@ -385,6 +388,13 @@ int main(int argc, char **argv)
             {
                 maxIteration=atoi(argv[++i]);
             }
+#ifdef _GIT_HASH
+            else if( strcmp(argv[i], "--version")==0)
+            {
+                printf("%s\n",_GIT_HASH);
+                return 0;
+            }
+#endif
             else
             {
                 printf("Err:\tParameter %s unknown or incomplete\n\n",argv[i]);

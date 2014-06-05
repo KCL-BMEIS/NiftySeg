@@ -12,8 +12,8 @@ using namespace std;
 
 void Usage(char *exec)
 {
-    printf("\n  EM Statistical Segmentation:\n  Usage ->\t%s -in <filename> [OPTIONS]\n\n",exec);
-    printf("  * * * * * * * * * * * * * * * * * Mandatory * * * * * * * * * * * * * * * * * *\n\n");
+    printf("\nEM Statistical Segmentation:\nUsage ->\t%s -in <filename> [OPTIONS]\n\n",exec);
+    printf("\t* * * * * * * * * * * * * * * * * Mandatory * * * * * * * * * * * * * * * * * *\n\n");
     printf("\t-in <filename>\t\t| Filename of the input image\n");
     printf("\t-out <filename>\t\t| Filename of the segmented image\n");
     printf("\t\t\t\t| The input image should be 2D, 3D or 4D images. 2D images should be on the XY plane.\n");
@@ -22,7 +22,7 @@ void Usage(char *exec)
     printf("\t-priors <n> <fnames>\t| The number of priors (n>0) and their filenames. Priors should be registerd to the input image\n");
     printf("\t-priors4D <fname>\t| 4D image with the piors stacked in the 4th dimension. Priors should be registerd to the input image\n");
     printf("\t-nopriors <n>\t\t| The number of classes (n>0) \n\n");
-    printf("  * * * * * * * * * * * * * * * * General Options * * * * * * * * * * * * * * * * *\n\n");
+    printf("\t* * * * * * * * * * * * * * * * General Options * * * * * * * * * * * * * * * * *\n\n");
     printf("\t-mask <filename>\t| Filename of the brain-mask of the input image\n");
     printf("\t-max_iter <int>\t\t| Maximum number of iterations (default = 100)\n");
     printf("\t-min_iter <int>\t\t| Minimum number of iterations (default = 0)\n");
@@ -36,8 +36,11 @@ void Usage(char *exec)
     printf("\t\t\t\t| <fl2> is a convergence ratio below which the outlier detection is going to be done [recommended 0.01].\n");
     printf("\t-out_outlier <filename>\t| Output outlierness image \n");
     printf("\t-rf <rel> <gstd>\t| Relax Priors [relaxation factor: 0<rf<1 (recommended=0.5), gaussian regularization: gstd>0 (recommended=2.0)] /only 3D/\n");
-    printf("\t-MAP <M V M V ...> \t| MAP formulation: M and V are the parameters (mean & variance) of the semiconjugate prior over the class mean\n\n");
-    printf(" * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
+    printf("\t-MAP <M V M V ...> \t| MAP formulation: M and V are the parameters (mean & variance) of the semiconjugate prior over the class mean\n");
+#ifdef _GIT_HASH
+    printf("\t--version\t\t|Print current source code git hash key and exit\n\t\t\t\t(%s)\n",_GIT_HASH);
+#endif
+    printf("\n\t* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
     return;
 }
 
@@ -378,12 +381,20 @@ int main(int argc, char **argv)
             {
                 segment_param->minIteration=atoi(argv[++i]);
             }
+#ifdef _GIT_HASH
+            else if( strcmp(argv[i], "--version")==0)
+            {
+                printf("%s\n",_GIT_HASH);
+                return 0;
+            }
+#endif
             else
             {
                 fprintf(stderr,"Err:\tParameter %s unknown or incomplete \n",argv[i]);
                 Usage(argv[0]);
                 return 1;
             }
+
         }
         if(segment_param->MRF_strength<=0)
         {

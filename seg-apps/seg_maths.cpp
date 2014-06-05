@@ -13,7 +13,7 @@ using namespace std;
 void Usage(char *exec)
 {
     printf("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
-    printf("Usage:\t%s <input> <operation> <output>.\n\n",exec);
+    printf("\nMath tools:\nUsage:\t%s <input> <operation> <output>.\n\n",exec);
     printf("\t* * Operations on 3-D and 4-D images* *\n");
     printf("\t-mul\t<float/file>\tMultiply image <float> value or by other image.\n");
     printf("\t-div\t<float/file>\tDivide image by <float> or by other image.\n");
@@ -66,7 +66,10 @@ void Usage(char *exec)
     printf("\t-odt <datatype> \tSet output <datatype> (char, short, int, uchar, ushort, uint, float, double).\n");
     printf("\t-range\t\t\tReset the image range to the min max\n");
     printf("\t-v\t\t\tVerbose.\n");
-    printf("\n\n* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
+#ifdef _GIT_HASH
+    printf("\t--version\t\tPrint current source code git hash key and exit\n\t\t\t\t(%s)\n",_GIT_HASH);
+#endif
+    printf("\n\t* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
     return;
 }
 
@@ -1901,6 +1904,13 @@ int main(int argc, char **argv)
                     i=argc;
                 }
             }
+#ifdef _GIT_HASH
+            else if( strcmp(argv[i], "--version")==0)
+            {
+                printf("%s\n",_GIT_HASH);
+                return 0;
+            }
+#endif
             else
             {
                 cout << "Option "<< string(argv[i]) << " unkown"<<endl;

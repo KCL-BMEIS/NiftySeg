@@ -3,6 +3,11 @@ cmake_minimum_required(VERSION 2.8)
 cmake_policy(VERSION 2.8)
 include(ExternalProject)
 
+#-----------------------------------------------------------------------------
+set(NiftySeg_VERSION_MAJOR 0)
+set(NiftySeg_VERSION_MINOR 9)
+set(NiftySeg_VERSION_PATCH 4)
+
 
 #-----------------------------------------------------------------------------
 # Preflight Checks - CMake Version, InSource Build Type
@@ -154,10 +159,34 @@ include_directories(
     ${EIGEN_INCLUDE_DIR}
 )
 
+#-----------------------------------------------------------------------------
+# Get the GIT HASH if avaiable
+#-----------------------------------------------------------------------------
+
+find_package(Git)
+if(GIT_FOUND)
+      execute_process(
+            COMMAND git rev-parse HEAD
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_COMMIT_HASH
+            RESULT_VARIABLE GIT_FAILED
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+      )
+      if(NOT GIT_FAILED)
+             add_definitions(-D_GIT_HASH=\"${GIT_COMMIT_HASH}\")
+             message(STATUS "Found GIT - the hash is added to the source.")
+      else(NOT GIT_FAILED)
+             add_definitions(-D_GIT_HASH="${NiftySeg_VERSION_MAJOR}.${NiftySeg_VERSION_MINOR}.${NiftySeg_VERSION_PATCH}")
+      endif(NOT GIT_FAILED)
+else(GIT_FOUND)
+       add_definitions(-D_GIT_HASH="${NiftySeg_VERSION_MAJOR}.${NiftySeg_VERSION_MINOR}.${NiftySeg_VERSION_PATCH}")
+endif(GIT_FOUND)
+
 
 #-----------------------------------------------------------------------------
 # Actually install NiftySeg
 #-----------------------------------------------------------------------------
+
 
 include_directories(${EIGEN_INCLUDE_DIR})
 SET(ZLIB "z")

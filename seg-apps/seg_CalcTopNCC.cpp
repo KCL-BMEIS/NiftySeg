@@ -10,9 +10,12 @@ using namespace std;
 
 void Usage(char *exec)
 {
-    printf("\n\tUsage:\t%s -target <filename> -templates <Number of templates> <Template Names> -n <Number of Top Templates> -mask <optional_mask_file>\n\n",exec);
+    printf("\nUsage:\t%s -target <filename> -templates <Number of templates> <Template Names> -n <Number of Top Templates> <OPTIONS>\n\n",exec);
     printf("\t* * Options * *\n");
-    printf("\t-mask <filename>\t Filename of the ROI mask\n");
+    printf("\t-mask <filename>\tFilename of the ROI mask\n");
+#ifdef _GIT_HASH
+    printf("\t--version\t\tPrint current source code git hash key and exit\n\t\t\t\t(%s)\n",_GIT_HASH);
+#endif
     return;
 }
 
@@ -63,6 +66,13 @@ int main(int argc, char **argv)
         {
             filename_mask = argv[++i];
         }
+#ifdef _GIT_HASH
+            else if( strcmp(argv[i], "--version")==0)
+            {
+                printf("%s\n",_GIT_HASH);
+                return 0;
+            }
+#endif
         else
         {
             fprintf(stderr,"Err:\tParameter %s unknown->\n",argv[i]);

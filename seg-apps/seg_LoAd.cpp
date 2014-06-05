@@ -8,8 +8,7 @@ using namespace std;
 
 void Usage(char *exec)
 {
-    printf("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
-    printf("Usage:\t%s -in <filename> [OPTIONS].\n\n",exec);
+    printf("\nLOAD Statistical Segmentation:\nUsage:\t%s -in <filename> [OPTIONS].\n\n",exec);
     printf("\t* * Mandatory * *\n");
     printf("\t-in <filename>\t\tFilename of the input image image\n");
     printf("\t-mask <filename>\tFilename of the brainmask of the input image\n\n");
@@ -23,7 +22,10 @@ void Usage(char *exec)
     printf("\t-bc_order <int>\t\tPolinomial order for the bias field [off = 0, max = 6] (default = 5) \n");
     printf("\t-pv_off \t\tDo not preform the PV modeling \n");
     printf("\t-sg_off <int>\t\tDo not improve sulci and gyri deliniation\n");
-    printf("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
+#ifdef _GIT_HASH
+    printf("\t--version\t\t|Print current source code git hash key and exit\n\t\t\t\t(%s)\n",_GIT_HASH);
+#endif
+    printf("\n\t* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
     return;
 }
 
@@ -155,6 +157,13 @@ int main(int argc, char **argv)
             {
                 segment_param->relax_factor=atof(argv[++i]);
             }
+#ifdef _GIT_HASH
+            else if( strcmp(argv[i], "--version")==0)
+            {
+                printf("%s\n",_GIT_HASH);
+                return 0;
+            }
+#endif
             else
             {
                 fprintf(stderr,"Err:\tParameter %s unknown->\n",argv[i]);

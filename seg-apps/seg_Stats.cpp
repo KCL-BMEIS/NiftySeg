@@ -11,7 +11,7 @@ using namespace std;
 
 void Usage(char *exec)
 {
-    printf("\nUsage:\t%s <in> [constrains] [statistics]\n\n",exec);
+    printf("\nStat tools:\nUsage:\t%s <in> [constrains] [statistics]\n\n",exec);
 
     printf("\t* * Constrains (optional) * *\n");
     printf("\t  -m <mask> \t| Only estimate statistics within the masked area.\n");
@@ -43,7 +43,10 @@ void Usage(char *exec)
     printf("\t  -Al <in2> <csv>\t| Average value in <in> for each label in <in2>. Save to <csv> file\n");
     printf("\t  -d <in2>\t\t| Calculate the Dice score between all classes in <in> and <in2>\n");
     printf("\t  -D <in2> <csv>\t| Calculate the Dice score between all classes in <in> and <in2>. Save to <csv> file\n");
-    printf("\t\n");
+#ifdef _GIT_HASH
+    printf("\t--version\t\t|Print current source code git hash key and exit\n\t\t\t\t(%s)\n",_GIT_HASH);
+#endif
+    printf("\n\t* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
     return;
 }
 
@@ -1095,7 +1098,13 @@ int main(int argc, char **argv)
 
                 flush(cout);
             }
-
+#ifdef _GIT_HASH
+            else if( strcmp(argv[i], "--version")==0)
+            {
+                printf("%s\n",_GIT_HASH);
+                return 0;
+            }
+#endif
             // **************************            ---------          *****************************
             // **************************               HELP            *****************************
             // **************************            ---------          *****************************
