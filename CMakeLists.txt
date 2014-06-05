@@ -138,7 +138,7 @@ IF(INSTALL_EIGEN)
         URL_MD5 ${eigen_md5}
         CONFIGURE_COMMAND ""
         BUILD_COMMAND ""
-        INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/eigen3/Eigen" "${CMAKE_INSTALL_PREFIX}/include/eigen3"
+        INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/eigen3/Eigen" "${CMAKE_INSTALL_PREFIX}/include/eigen3/Eigen"
     )
     set(EIGEN_INCLUDE_DIR  ${CMAKE_INSTALL_PREFIX}/include/eigen3)
     MARK_AS_ADVANCED(FORCE EIGEN_INCLUDE_DIR)
