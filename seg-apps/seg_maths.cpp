@@ -1746,7 +1746,7 @@ int main(int argc, char **argv)
                         for(long indexX=1; indexX<(CurrSize->xsize-1); indexX++){
                             int indexcur=indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize;
                             float curval=bufferImages[current_buffer][indexcur];
-                            if(curval!= 52 &&
+                            if(     curval!= 52 &&
                                     curval!= 53 &&
                                     curval!= 47 &&
                                     curval!= 50 &&
@@ -1789,7 +1789,7 @@ int main(int argc, char **argv)
                                                 }
                                                 else  if(curval1==52 ||curval1==50 || curval1==51 || curval1==53|| curval1==47 ){
                                                     if(curval2==46 ){
-                                                        bufferImages[current_buffer?0:1][indexcur]=45;
+                                                        bufferImages[current_buffer?0:1][indexcur]=46;
                                                         stop=1;
                                                     }
                                                     else{
