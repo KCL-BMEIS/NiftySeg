@@ -47,7 +47,7 @@ void Usage(char *exec)
 #endif
 
     printf("\n\t* * * * * * * * * * * * * * STAPLE and STEPS options * * * * * * * * * * * * * *\n\n");
-    printf("\t-prop <proportion> \t\t| Proportion of the classifier (automatically estimated by default)\n");
+    printf("\t-prop <proportion> \t\t| Proportion of the label (only for single labels)\n");
     printf("\t-prop_update \t\t\t| Update label proportions at each iteration.\n");
     //printf("\t-dil_unc <int> \t\t\t| Dilate uncertainty region by <int>.\n");
     printf("\t-setPQ <P> <Q> \t\t\t| Value of P and Q [ 0 < (P,Q) < 1 ] (default = 0.99 0.99) \n");
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
         bool PropUpdate=false;
         float tmpP=0;
         float tmpQ=0;
-        float conv=0.001;
+        float conv=0.01;
         int dilunc=0;
         float uncthres=-1;
 

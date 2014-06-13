@@ -10,6 +10,8 @@ seg_LabFusion::seg_LabFusion(int _numb_classif, int numbclasses, int _Numb_Neigh
     inputCLASSIFIER = NULL; // pointer to external
     inputImage_status=0;
     verbose_level=0;
+    loglik=0.01;
+    oldloglik=0.001;
 
     // Size
     this->dimentions=4;
@@ -21,7 +23,7 @@ seg_LabFusion::seg_LabFusion(int _numb_classif, int numbclasses, int _Numb_Neigh
     this->dx=0;
     this->dy=0;
     this->dz=0;
-    this->Conv=0.0001;
+    this->Conv=0.01;
     this->numel=0;
     this->iter=0;
     this->CurrSizes=NULL;
@@ -52,11 +54,11 @@ seg_LabFusion::seg_LabFusion(int _numb_classif, int numbclasses, int _Numb_Neigh
             {
                 if(k==j)
                 {
-                    ConfusionMatrix[k+j*numbclasses+i*numbclasses*numbclasses]=0.80;
+                    ConfusionMatrix[k+j*numbclasses+i*numbclasses*numbclasses]=0.95;
                 }
                 else
                 {
-                    ConfusionMatrix[k+j*numbclasses+i*numbclasses*numbclasses]=0.2/(numbclasses-1);
+                    ConfusionMatrix[k+j*numbclasses+i*numbclasses*numbclasses]=0.05/(numbclasses-1);
                 }
             }
         }
@@ -599,7 +601,7 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
         exit(1);
     }
 
-    classifier_datatype * inputCLASSIFIERptr = static_cast<classifier_datatype *>(this->inputCLASSIFIER->data);
+    classifier_datatype * inputHumanRater = static_cast<classifier_datatype *>(this->inputCLASSIFIER->data);
 
     bool * nccexists_once= new bool [this->CurrSizes->numclass];
     if(nccexists_once == NULL)
@@ -608,7 +610,7 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
         exit(1);
     }
 
-    for(int classifier=0; classifier<this->CurrSizes->numclass; classifier++)nccexists_once[classifier]=false;
+    for(int humanRater=0; humanRater<this->CurrSizes->numclass; humanRater++)nccexists_once[humanRater]=false;
 
     LabFusion_datatype * ConfusionMatrix2=new LabFusion_datatype [this->numb_classif*this->NumberOfLabels*this->NumberOfLabels];
     if(ConfusionMatrix2 == NULL)
@@ -634,7 +636,7 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
     }
 
     this->tracePQ=0;
-    for(int classifier=0; classifier<this->CurrSizes->numclass; classifier++)nccexists_once[classifier]=false;
+    for(int humanRater=0; humanRater<this->CurrSizes->numclass; humanRater++)nccexists_once[humanRater]=false;
 
     for(int i=0; i<(this->numel); i++)
     {
@@ -645,46 +647,52 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                 // **************************
                 //   Expectation with MRF
                 // **************************
+                // Set all tmpW to 0. If the label exits at least once, then set to 1.
                 for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                 {
-                    tmpW[currlabelnumb]=1;
+                    tmpW[currlabelnumb]=0;
+                }
+                for(int humanRater=0; humanRater<this->Numb_Neigh; humanRater++)
+                {
+                    int LNCCvalue=(int)(this->LNCC[i+humanRater*this->CurrSizes->numel]);
+                    tmpW[(int)inputHumanRater[i+LNCCvalue*this->CurrSizes->numel]]=1;
                 }
 
                 if(this->LNCC_status)
                 {
-                    for(int classifier=0; classifier<this->Numb_Neigh; classifier++)
+                    for(int humanRater=0; humanRater<this->Numb_Neigh; humanRater++)
                     {
-                        int LNCCvalue=(int)(this->LNCC[i+classifier*this->CurrSizes->numel]);
+                        int LNCCvalue=(int)(this->LNCC[i+humanRater*this->CurrSizes->numel]);
                         if(LNCCvalue>=0 && LNCCvalue<this->CurrSizes->numclass)
                         {
                             for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                             {
-                                tmpW[currlabelnumb]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputCLASSIFIERptr[i+LNCCvalue*this->CurrSizes->numel]+currlabelnumb*this->NumberOfLabels+LNCCvalue*this->NumberOfLabels*this->NumberOfLabels]));
+                                tmpW[currlabelnumb]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputHumanRater[i+LNCCvalue*this->CurrSizes->numel]+currlabelnumb*this->NumberOfLabels+LNCCvalue*this->NumberOfLabels*this->NumberOfLabels]));
                             }
                         }
                     }
                 }
                 else if(this->NCC_status)
                 {
-                    for(int classifier=0; classifier<this->Numb_Neigh; classifier++)
+                    for(int humanater=0; humanater<this->Numb_Neigh; humanater++)
                     {
-                        int NCCvalue=(int)(this->NCC[classifier]);
+                        int NCCvalue=(int)(this->NCC[humanater]);
                         if(NCCvalue>=0 && NCCvalue<this->CurrSizes->numclass)
                         {
                             for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                             {
-                                tmpW[currlabelnumb]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputCLASSIFIERptr[i+NCCvalue*this->CurrSizes->numel]+currlabelnumb*this->NumberOfLabels+NCCvalue*this->NumberOfLabels*this->NumberOfLabels]));
+                                tmpW[currlabelnumb]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputHumanRater[i+NCCvalue*this->CurrSizes->numel]+currlabelnumb*this->NumberOfLabels+NCCvalue*this->NumberOfLabels*this->NumberOfLabels]));
                             }
                         }
                     }
                 }
                 else
                 {
-                    for(int classifier=0; classifier<this->CurrSizes->numclass; classifier++)
+                    for(int humanater=0; humanater<this->CurrSizes->numclass; humanater++)
                     {
                         for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                         {
-                            tmpW[currlabelnumb]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputCLASSIFIERptr[i+classifier*this->CurrSizes->numel]+currlabelnumb*this->NumberOfLabels+classifier*this->NumberOfLabels*this->NumberOfLabels]));
+                            tmpW[currlabelnumb]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputHumanRater[i+humanater*this->CurrSizes->numel]+currlabelnumb*this->NumberOfLabels+humanater*this->NumberOfLabels*this->NumberOfLabels]));
                         }
                     }
                 }
@@ -695,15 +703,12 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                     tmpW[currlabelnumb]=((LabFusion_datatype)this->Prop[currlabelnumb])*tmpW[currlabelnumb]*this->MRF[this->maskAndUncertainIndeces[i]+currlabelnumb*this->sizeAfterMaskingAndUncertainty];
                     sumW+=tmpW[currlabelnumb];
                 }
-                //cout << "2- " <<tmpW[0] << "  "  <<tmpW[1] <<endl;
-                //cout << this->MRF[this->maskAndUncertainIndeces[i]+0*this->sizeAfterMaskingAndUncertainty] << "  " << this->MRF[this->maskAndUncertainIndeces[i]+1*this->sizeAfterMaskingAndUncertainty]<< endl;
-
                 if(sumW<=0)
                 {
-                    if(verbose_level>1)cout << "Normalize by zero at voxel - "<<i<<endl;
-                    //                  for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++){
-                    //                      W[this->maskAndUncertainIndeces[i]+currlabelnumb*this->sizeAfterMaskingAndUncertainty]=1/this->NumberOfLabels;
-                    //                    }
+                    if(verbose_level>1)
+                    {
+                        cout << "Normalize by zero at voxel - "<<i<<endl;
+                    }
                 }
                 else
                 {
@@ -722,9 +727,7 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                     {
                         this->W[this->maskAndUncertainIndeces[i]+currlabelnumb*this->sizeAfterMaskingAndUncertainty]=1;
                     }
-                    //loglik+=W[this->maskAndUncertainIndeces[i]+currlabelnumb*this->sizeAfterMaskingAndUncertainty];
                 }
-                //loglik+=sumW;
             }
 
             else
@@ -734,44 +737,58 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                 // **************************
                 for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                 {
-                    tmpW[currlabelnumb]=1;
+                    tmpW[currlabelnumb]=0;
+                }
+                for(int humanRater=0; humanRater<this->Numb_Neigh; humanRater++)
+                {
+                    int LNCCvalue=(int)(this->LNCC[i+humanRater*this->CurrSizes->numel]);
+                    tmpW[(int)inputHumanRater[i+LNCCvalue*this->CurrSizes->numel]]=1;
                 }
 
                 if(this->LNCC_status)
                 {
-                    for(int classifier=0; classifier<this->Numb_Neigh; classifier++)
+
+                    for(int humanater=0; humanater<this->Numb_Neigh; humanater++)
                     {
-                        int LNCCvalue=(int)(this->LNCC[i+classifier*this->CurrSizes->numel]);
+
+                        int LNCCvalue=(int)(this->LNCC[i+humanater*this->CurrSizes->numel]);
                         if(LNCCvalue>=0 && LNCCvalue<this->CurrSizes->numclass)
                         {
                             for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                             {
-                                tmpW[currlabelnumb]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputCLASSIFIERptr[i+LNCCvalue*this->CurrSizes->numel]+currlabelnumb*this->NumberOfLabels+LNCCvalue*this->NumberOfLabels*this->NumberOfLabels]));
+
+                                tmpW[currlabelnumb]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputHumanRater[i+LNCCvalue*this->CurrSizes->numel]+currlabelnumb*this->NumberOfLabels+LNCCvalue*this->NumberOfLabels*this->NumberOfLabels]));
                             }
                         }
+
+
                     }
                 }
                 else if(this->NCC_status)
                 {
-                    for(int classifier=0; classifier<this->Numb_Neigh; classifier++)
+                    for(int humanater=0; humanater<this->Numb_Neigh; humanater++)
                     {
-                        int NCCvalue=(int)(this->NCC[classifier]);
+                        int NCCvalue=(int)(this->NCC[humanater]);
                         if(NCCvalue>=0 && NCCvalue<this->CurrSizes->numclass)
                         {
                             for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                             {
-                                tmpW[currlabelnumb]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputCLASSIFIERptr[i+NCCvalue*this->CurrSizes->numel]+currlabelnumb*this->NumberOfLabels+NCCvalue*this->NumberOfLabels*this->NumberOfLabels]));
+                                tmpW[currlabelnumb]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputHumanRater[i+NCCvalue*this->CurrSizes->numel]+
+                                        currlabelnumb*this->NumberOfLabels+
+                                        NCCvalue*this->NumberOfLabels*this->NumberOfLabels]));
                             }
                         }
                     }
                 }
                 else
                 {
-                    for(int classifier=0; classifier<this->CurrSizes->numclass; classifier++)
+                    for(int humanater=0; humanater<this->CurrSizes->numclass; humanater++)
                     {
                         for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                         {
-                            tmpW[currlabelnumb]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputCLASSIFIERptr[i+classifier*this->CurrSizes->numel]+currlabelnumb*this->NumberOfLabels+classifier*this->NumberOfLabels*this->NumberOfLabels]));
+                            tmpW[currlabelnumb]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputHumanRater[i+humanater*this->CurrSizes->numel]+
+                                    currlabelnumb*this->NumberOfLabels+
+                                    humanater*this->NumberOfLabels*this->NumberOfLabels]));
                         }
                     }
                 }
@@ -788,10 +805,13 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                 }
                 else
                 {
+
                     for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                     {
                         W[this->maskAndUncertainIndeces[i]+currlabelnumb*this->sizeAfterMaskingAndUncertainty]=tmpW[currlabelnumb]/sumW;
+
                     }
+
                 }
 
 
@@ -808,7 +828,7 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                     }
 
                 }
-                //loglik+=sumW;
+
             }
 
             // **************************
@@ -818,15 +838,15 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
             if(this->LNCC_status)
             {
 
-                for(int classifier=0; classifier<this->CurrSizes->numclass; classifier++)
+                for(int humanater=0; humanater<this->CurrSizes->numclass; humanater++)
                 {
                     bool lnccexists=false;
                     for(classifier_datatype lnccindex=0; lnccindex<this->Numb_Neigh; lnccindex++)
                     {
-                        if(classifier==(this->LNCC[i+lnccindex*this->CurrSizes->numel]))
+                        if(humanater==(this->LNCC[i+lnccindex*this->CurrSizes->numel]))
                         {
                             lnccexists=true;
-                            nccexists_once[classifier]=true;
+                            nccexists_once[humanater]=true;
                             lnccindex=this->Numb_Neigh;
                         }
                     }
@@ -836,10 +856,10 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                         for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                         {
 
-                            ConfusionMatrix2[(int)inputCLASSIFIERptr[i+this->CurrSizes->numel*classifier]
-                                             +currlabelnumb*this->NumberOfLabels+classifier*
-                                             this->NumberOfLabels*this->NumberOfLabels]+=
-                                                 W[this->maskAndUncertainIndeces[i]+currlabelnumb*this->sizeAfterMaskingAndUncertainty];
+                            ConfusionMatrix2[(int)inputHumanRater[i+this->CurrSizes->numel*humanater]
+                                    +currlabelnumb*this->NumberOfLabels+
+                                    humanater*this->NumberOfLabels*this->NumberOfLabels]+=
+                                    W[this->maskAndUncertainIndeces[i]+currlabelnumb*this->sizeAfterMaskingAndUncertainty];
                         }
                     }
                 }
@@ -847,15 +867,15 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
             else if(this->NCC_status)
             {
                 bool nccexists=false;
-                for(int classifier=0; classifier<this->CurrSizes->numclass; classifier++)
+                for(int humanater=0; humanater<this->CurrSizes->numclass; humanater++)
                 {
                     for(int nccindex=0; nccindex<this->Numb_Neigh; nccindex++)
                     {
-                        if(classifier==(this->NCC[nccindex]))
+                        if(humanater==(this->NCC[nccindex]))
                         {
                             nccexists=true;
                             nccindex=this->Numb_Neigh;
-                            nccexists_once[classifier]=true;
+                            nccexists_once[humanater]=true;
                         }
                     }
 
@@ -864,23 +884,23 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                         for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                         {
 
-                            ConfusionMatrix2[(int)inputCLASSIFIERptr[i+this->CurrSizes->numel*classifier]
-                                             +currlabelnumb*this->NumberOfLabels+classifier*
-                                             this->NumberOfLabels*this->NumberOfLabels]+=W[this->maskAndUncertainIndeces[i]+currlabelnumb*this->sizeAfterMaskingAndUncertainty];
+                            ConfusionMatrix2[(int)inputHumanRater[i+this->CurrSizes->numel*humanater]
+                                    +currlabelnumb*this->NumberOfLabels+humanater*
+                                    this->NumberOfLabels*this->NumberOfLabels]+=W[this->maskAndUncertainIndeces[i]+currlabelnumb*this->sizeAfterMaskingAndUncertainty];
                         }
                     }
                 }
             }
             else
             {
-                for(int classifier=0; classifier<this->CurrSizes->numclass; classifier++)
+                for(int humanater=0; humanater<this->CurrSizes->numclass; humanater++)
                 {
                     for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                     {
 
-                        ConfusionMatrix2[(int)inputCLASSIFIERptr[i+this->CurrSizes->numel*classifier]
-                                         +currlabelnumb*this->NumberOfLabels+classifier*
-                                         this->NumberOfLabels*this->NumberOfLabels]+=W[this->maskAndUncertainIndeces[i]+currlabelnumb*this->sizeAfterMaskingAndUncertainty];
+                        ConfusionMatrix2[(int)inputHumanRater[i+this->CurrSizes->numel*humanater]
+                                +currlabelnumb*this->NumberOfLabels+humanater*
+                                this->NumberOfLabels*this->NumberOfLabels]+=W[this->maskAndUncertainIndeces[i]+currlabelnumb*this->sizeAfterMaskingAndUncertainty];
                     }
                 }
             }
@@ -891,56 +911,58 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
     // Normalize Confusion Matrix
     // **************************
     this->tracePQ=0;
-    for(int classifier=0; classifier<this->CurrSizes->numclass; classifier++)
+    for(int humanater=0; humanater<this->CurrSizes->numclass; humanater++)
     {
+
         for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
         {
             double sumConf=0;
             for(int currlabelnumb2=0; currlabelnumb2<this->NumberOfLabels; currlabelnumb2++)
             {
-                sumConf+=ConfusionMatrix2[currlabelnumb2+currlabelnumb*this->NumberOfLabels+classifier*
-                                          this->NumberOfLabels*this->NumberOfLabels]+0.0001f; // the +0.0001 is an EPS to avoid a binary case
+                sumConf+=ConfusionMatrix2[currlabelnumb2+currlabelnumb*this->NumberOfLabels+humanater*
+                        this->NumberOfLabels*this->NumberOfLabels]+0.0001f; // the +0.0001 is an EPS to avoid a binary case
             }
 
             if(sumConf<=0)
             {
                 if(verbose_level>1)
                 {
-                    cout << "NOMALISE BY ZERO - "<<classifier<<" , "<< currlabelnumb<<endl;
+                    cout << "NOMALISE BY ZERO - "<<humanater<<" , "<< currlabelnumb<<endl;
                 }
                 for(int currlabelnumb2=0; currlabelnumb2<this->NumberOfLabels; currlabelnumb2++)
                 {
-                    ConfusionMatrix2[currlabelnumb2+currlabelnumb*this->NumberOfLabels+classifier*
-                                     this->NumberOfLabels*this->NumberOfLabels]=ConfusionMatrix[currlabelnumb2+currlabelnumb*this->NumberOfLabels+classifier*
-                                             this->NumberOfLabels*this->NumberOfLabels]+0.0001f; // same as above
+                    ConfusionMatrix2[currlabelnumb2+currlabelnumb*this->NumberOfLabels+humanater*
+                            this->NumberOfLabels*this->NumberOfLabels]=ConfusionMatrix[currlabelnumb2+currlabelnumb*this->NumberOfLabels+humanater*
+                            this->NumberOfLabels*this->NumberOfLabels]+0.0001f; // same as above
                 }
             }
             else
             {
                 for(int currlabelnumb2=0; currlabelnumb2<this->NumberOfLabels; currlabelnumb2++)
                 {
-                    ConfusionMatrix2[currlabelnumb2+currlabelnumb*this->NumberOfLabels+classifier*
-                                     this->NumberOfLabels*this->NumberOfLabels]=(
-                                                 ConfusionMatrix2[currlabelnumb2+currlabelnumb*this->NumberOfLabels+classifier*
-                                                         this->NumberOfLabels*this->NumberOfLabels]+0.0001f)/sumConf; // again, same as above
-                    this->tracePQ+=(currlabelnumb2==currlabelnumb)?ConfusionMatrix2[currlabelnumb2+currlabelnumb*this->NumberOfLabels+classifier*
-                                   this->NumberOfLabels*this->NumberOfLabels]:0;
+                    ConfusionMatrix2[currlabelnumb2+currlabelnumb*this->NumberOfLabels+humanater*
+                            this->NumberOfLabels*this->NumberOfLabels]=(
+                                ConfusionMatrix2[currlabelnumb2+currlabelnumb*this->NumberOfLabels+humanater*
+                            this->NumberOfLabels*this->NumberOfLabels]+0.0001f)/sumConf; // again, same as above
+                    this->tracePQ+=(currlabelnumb2==currlabelnumb)?ConfusionMatrix2[currlabelnumb2+currlabelnumb*this->NumberOfLabels+humanater*
+                            this->NumberOfLabels*this->NumberOfLabels]:0;
                 }
             }
         }
+
 
         if(this->verbose_level>1)
         {
             if(this->NCC_status)
             {
-                if(nccexists_once[classifier])
+                if(nccexists_once[humanater])
                 {
-                    cout <<endl<< "["<<classifier+1<<"]=";
+                    cout <<endl<< "["<<humanater+1<<"]=";
                     for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                     {
                         for(int currlabelnumb2=0; currlabelnumb2<this->NumberOfLabels; currlabelnumb2++)
                         {
-                            cout <<"\t"<< setprecision(4)<<((ConfusionMatrix2[currlabelnumb2+currlabelnumb*this->NumberOfLabels+classifier*this->NumberOfLabels*this->NumberOfLabels]<0.0001)?0:ConfusionMatrix2[currlabelnumb2+currlabelnumb*this->NumberOfLabels+classifier*this->NumberOfLabels*this->NumberOfLabels]);
+                            cout <<"\t"<< setprecision(4)<<((ConfusionMatrix2[currlabelnumb2+currlabelnumb*this->NumberOfLabels+humanater*this->NumberOfLabels*this->NumberOfLabels]<0.0001)?0:ConfusionMatrix2[currlabelnumb2+currlabelnumb*this->NumberOfLabels+humanater*this->NumberOfLabels*this->NumberOfLabels]);
                         }
                         cout << endl;
                     }
@@ -948,14 +970,14 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
             }
             else if(this->LNCC_status)
             {
-                if(nccexists_once[classifier])
+                if(nccexists_once[humanater])
                 {
-                    cout <<endl<< "["<<classifier+1<<"]=";
+                    cout <<endl<< "["<<humanater+1<<"]=";
                     for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                     {
                         for(int currlabelnumb2=0; currlabelnumb2<this->NumberOfLabels; currlabelnumb2++)
                         {
-                            cout <<"\t"<< setprecision(4)<<((ConfusionMatrix2[currlabelnumb2+currlabelnumb*this->NumberOfLabels+classifier*this->NumberOfLabels*this->NumberOfLabels]<0.0001)?0:ConfusionMatrix2[currlabelnumb2+currlabelnumb*this->NumberOfLabels+classifier*this->NumberOfLabels*this->NumberOfLabels]);
+                            cout <<"\t"<< setprecision(4)<<((ConfusionMatrix2[currlabelnumb2+currlabelnumb*this->NumberOfLabels+humanater*this->NumberOfLabels*this->NumberOfLabels]<0.0001)?0:ConfusionMatrix2[currlabelnumb2+currlabelnumb*this->NumberOfLabels+humanater*this->NumberOfLabels*this->NumberOfLabels]);
                         }
                         cout << endl;
                     }
@@ -963,16 +985,16 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
             }
             else
             {
-                cout <<endl<< "[ "<<classifier+1<<" ]  =  ";
+                cout <<endl<< "[ "<<humanater+1<<" ]  =  ";
                 cout << endl;
                 for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                 {
-                    cout << "["<<classifier+1<<"]=";
+                    cout << "["<<humanater+1<<"]=";
                     for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                     {
                         for(int currlabelnumb2=0; currlabelnumb2<this->NumberOfLabels; currlabelnumb2++)
                         {
-                            cout <<"\t"<< setprecision(4)<<((ConfusionMatrix2[currlabelnumb2+currlabelnumb*this->NumberOfLabels+classifier*this->NumberOfLabels*this->NumberOfLabels]<0.0001)?0:ConfusionMatrix2[currlabelnumb2+currlabelnumb*this->NumberOfLabels+classifier*this->NumberOfLabels*this->NumberOfLabels]);
+                            cout <<"\t"<< setprecision(4)<<((ConfusionMatrix2[currlabelnumb2+currlabelnumb*this->NumberOfLabels+humanater*this->NumberOfLabels*this->NumberOfLabels]<0.0001)?0:ConfusionMatrix2[currlabelnumb2+currlabelnumb*this->NumberOfLabels+humanater*this->NumberOfLabels*this->NumberOfLabels]);
                         }
                         cout << endl;
                     }
@@ -1253,7 +1275,7 @@ int seg_LabFusion::UpdateMRF()
         }
         int col_size, plane_size,indexCentre, indexWest, indexEast, indexSouth, indexNorth, indexTop, indexBottom;
         int indexWestSmall, indexEastSmall, indexSouthSmall, indexNorthSmall, indexTopSmall, indexBottomSmall;
-        int ix, iy, iz,maxiy, maxix, maxiz, neighbourclass;
+        int ix, iy, iz, maxiy, maxix, maxiz, neighbourclass;
         SegPrecisionTYPE Sum_Temp_MRF_Class_Expect;
         col_size = (int)(CurrSizes->xsize);
         plane_size = (int)(CurrSizes->xsize)*(CurrSizes->ysize);
@@ -1373,63 +1395,62 @@ int seg_LabFusion::UpdateMRF()
 
 int seg_LabFusion::EstimateInitialDensity()
 {
-    classifier_datatype * inputCLASSIFIERptr = static_cast<classifier_datatype *>(this->inputCLASSIFIER->data);
-
-
-    int tempsum=0;
-    int * propcount = new int [this->NumberOfLabels];
-    for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
-    {
-        propcount[currlabelnumb]=0;
-        this->Prop[currlabelnumb]=0;
-    }
-    for( int i=0; i<this->numel; i++)
-    {
-        if(this->maskAndUncertainIndeces[i]>=0)
-        {
-            tempsum+=1;
-            for(int classifier=0; classifier<this->numb_classif; classifier++)
-            {
-                propcount[inputCLASSIFIERptr[i+this->numel*classifier]]++;
-
-                //cout << (float)inputCLASSIFIERptr[i+this->numel*classifier];
-            }
-            //cout << "\n";
-        }
-    }
+//    classifier_datatype * inputCLASSIFIERptr = static_cast<classifier_datatype *>(this->inputCLASSIFIER->data);
+//    int tempsum=0;
+//    int * propcount = new int [this->NumberOfLabels];
+//    for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
+//    {
+//        propcount[currlabelnumb]=0;
+//        this->Prop[currlabelnumb]=0;
+//    }
+//    for( int i=0; i<this->numel; i++)
+//    {
+//        if(this->maskAndUncertainIndeces[i]>=0)
+//        {
+//            tempsum+=1;
+//            for(int classifier=0; classifier<this->numb_classif; classifier++)
+//            {
+//                propcount[inputCLASSIFIERptr[i+this->numel*classifier]]++;
+//
+//                //cout << (float)inputCLASSIFIERptr[i+this->numel*classifier];
+//            }
+//            //cout << "\n";
+//        }
+//   }
     for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
     {
         //cout<<"\tlabel["<<currlabelnumb<<"] - "<<propcount[currlabelnumb]<<" - "<<tempsum<<endl;
-        this->Prop[currlabelnumb]=propcount[currlabelnumb]/(LabFusion_datatype)((float)tempsum*(float)this->numb_classif);
+        //this->Prop[currlabelnumb]=propcount[currlabelnumb]/(LabFusion_datatype)((float)tempsum*(float)this->numb_classif);
+        this->Prop[currlabelnumb]=1.0f/this->NumberOfLabels;
     }
 
     // Adding the 0.0001 trace amount and renormalise works like an EPS for numerical precision.
-    float tempsum2=0.0f;
-    for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
-    {
-        this->Prop[currlabelnumb]=(this->Prop[currlabelnumb]+0.0001f);
-        tempsum2+=this->Prop[currlabelnumb];
-    }
-    for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
-    {
-        //cout<<"\tlabel["<<currlabelnumb<<"] - "<<this->Prop[currlabelnumb]<<endl;
-        this->Prop[currlabelnumb]=(this->Prop[currlabelnumb])/(LabFusion_datatype)(tempsum2);;
-    }
+//    float tempsum2=0.0f;
+//    for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
+//    {
+//        this->Prop[currlabelnumb]=(this->Prop[currlabelnumb]+0.0001f);
+//        tempsum2+=this->Prop[currlabelnumb];
+//    }
+//    for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
+//    {
+//        //cout<<"\tlabel["<<currlabelnumb<<"] - "<<this->Prop[currlabelnumb]<<endl;
+//        this->Prop[currlabelnumb]=(this->Prop[currlabelnumb])/(LabFusion_datatype)(tempsum2);;
+//    }
+//
+//    delete [] propcount;
+//    if(this->verbose_level>0)
+//    {
+//        cout << "Estimating initial proportion"<<endl;
+//        if(this->verbose_level>0)
+//        {
+//            for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
+//            {
+//                cout<<"\tlabel["<<currlabelnumb<<"] - "<<this->Prop[currlabelnumb]<<endl;
+//            }
+//        }
+//        flush(cout);
+//    }
 
-    delete [] propcount;
-    if(this->verbose_level>0)
-    {
-        cout << "Estimating initial proportion"<<endl;
-        if(this->verbose_level>0)
-        {
-            for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
-            {
-                cout<<"\tlabel["<<currlabelnumb<<"] - "<<this->Prop[currlabelnumb]<<endl;
-            }
-        }
-        flush(cout);
-
-    }
     return 1;
 
 }
@@ -2034,11 +2055,11 @@ int  seg_LabFusion::Run_MV()
         cout << "Majority Vote: Verbose level " << this->verbose_level << endl;
         if(this->NCC_status )
         {
-            cout << "Number of labels used = "<< this->Numb_Neigh<<endl;
+            cout << "Number of raters used = "<< this->Numb_Neigh<<endl;
         }
         else if(this->LNCC_status)
         {
-            cout << "Number of local labels used = "<< this->Numb_Neigh<<endl;
+            cout << "Number of local raters used = "<< this->Numb_Neigh<<endl;
         }
         else
         {
@@ -2090,12 +2111,12 @@ int  seg_LabFusion::Run_STAPLE_or_STEPS()
         cout << "STAPLE: Verbose level " << this->verbose_level << endl;
         if(this->NCC_status )
         {
-            cout << "Number of labels used = "<< this->Numb_Neigh<<endl;
+            cout << "Number of raters used = "<< this->Numb_Neigh<<endl;
             cout << "MRF_beta = " << this->MRF_strength<<endl;
         }
         else if(this->LNCC_status)
         {
-            cout << "Number of local labels used = "<< this->Numb_Neigh<<endl;
+            cout << "Number of local raters used = "<< this->Numb_Neigh<<endl;
             cout << "MRF_beta = " << this->MRF_strength<<endl;
         }
         else
@@ -2131,7 +2152,7 @@ int  seg_LabFusion::Run_STAPLE_or_STEPS()
     }
     this->iter=0;
     STAPLE_STEPS_Multiclass_Expectation_Maximization();
-    if(this->verbose_level>0)printloglik(this->iter,this->tracePQ,this->oldTracePQ);
+    //if(this->verbose_level>0)printloglik(this->iter,this->tracePQ,this->oldTracePQ);
     this->oldTracePQ=this->tracePQ;
 
     this->iter=1;
@@ -2154,13 +2175,13 @@ int  seg_LabFusion::Run_STAPLE_or_STEPS()
         UpdateMRF();
         //Update Density
         UpdateDensity();
-        //Expectation
-        //STAPLE_STEPS_Multiclass_Expectation();
-        //Maximization
-        //STAPLE_STEPS_Multiclass_Maximization();
+        //Expectation & Maximization
         STAPLE_STEPS_Multiclass_Expectation_Maximization();
-        // Print LogLik depending on the verbose level
-        if(this->verbose_level>0)printTrace(this->iter,this->tracePQ,this->oldTracePQ);
+        // Print Trace depending on the verbose level
+        if(this->verbose_level>0)
+        {
+            printTrace(this->iter,this->tracePQ,this->oldTracePQ);
+        }
 
         // EXIT CHECKS
         // Check convergence

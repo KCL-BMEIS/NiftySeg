@@ -47,6 +47,8 @@ protected:
     int     numb_classif;
     float   tracePQ;
     float   oldTracePQ;
+    float   loglik;
+    float   oldloglik;
     int     maxIteration;
     float   Conv;
 
