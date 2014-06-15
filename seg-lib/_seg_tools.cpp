@@ -5354,21 +5354,12 @@ unsigned char * seg_norm4LNCC(nifti_image * BaseImage, nifti_image * LNCC,float 
         //        nifti_image_free(TMPimg);
 
 
-        long i=0;
-        for(long nz=0; nz<(long)CurrSizes->zsize; nz++)
+        for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
         {
-            for(long ny=0; ny<(long)CurrSizes->ysize; ny++)
-            {
-                for(long nx=0; nx<(long)CurrSizes->xsize; nx++)
-                {
-
                     bufferSTD[i]=bufferSTD[i]-bufferMean[i]*bufferMean[i];
                     currLNCCptr[i]=(bufferDATA[i]-BaseMean[i]*bufferMean[i])/(sqrt(bufferSTD[i]*BaseSTD[i])+0.000001);
                     currLNCCptr[i]=currLNCCptr[i]>0?currLNCCptr[i]:0;
 
-                    i++;
-                }
-            }
         }
 
 
@@ -5402,31 +5393,23 @@ unsigned char * seg_norm4LNCC(nifti_image * BaseImage, nifti_image * LNCC,float 
     shared(LNCC,BaseImage,LNCCptr,CurrSizes,numberordered,LNCC_ordered)
 #endif
 
-    long i=0;
-    for(long nz=0; nz<(long)CurrSizes->zsize; nz++)
+    for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
     {
-        for(long ny=0; ny<(long)CurrSizes->ysize; ny++)
+        LabFusion_datatype * LNCCvalue_tmp = new LabFusion_datatype [LNCC->nt];
+        for(long currlable=0; currlable<LNCC->nt; currlable++)
         {
-            for(long nx=0; nx<(long)CurrSizes->xsize; nx++)
-            {
-                LabFusion_datatype * LNCCvalue_tmp = new LabFusion_datatype [LNCC->nt];
-                for(long currlable=0; currlable<LNCC->nt; currlable++)
-                {
-                    LNCCvalue_tmp[currlable]=LNCCptr[i+currlable*BaseImage->nx*BaseImage->ny*BaseImage->nz];
-                }
-
-                int * ordertmp=quickSort_order(&LNCCvalue_tmp[0],LNCC->nt);
-
-                for(long lable_order=0; lable_order<numberordered; lable_order++)
-                {
-                    LNCC_ordered[i+lable_order*BaseImage->nx*BaseImage->ny*BaseImage->nz]=(unsigned char)ordertmp[LNCC->nt-lable_order-1];
-                }
-
-                delete [] ordertmp;
-                delete [] LNCCvalue_tmp;
-                i++;
-            }
+            LNCCvalue_tmp[currlable]=LNCCptr[i+currlable*BaseImage->nx*BaseImage->ny*BaseImage->nz];
         }
+
+        int * ordertmp=quickSort_order(&LNCCvalue_tmp[0],LNCC->nt);
+
+        for(long lable_order=0; lable_order<numberordered; lable_order++)
+        {
+            LNCC_ordered[i+lable_order*BaseImage->nx*BaseImage->ny*BaseImage->nz]=(unsigned char)ordertmp[LNCC->nt-lable_order-1];
+        }
+
+        delete [] ordertmp;
+        delete [] LNCCvalue_tmp;
     }
     if (verbose>0)
     {
