@@ -134,24 +134,28 @@ ENDIF(INSTALL_NIFTYREG)
 
 OPTION(INSTALL_EIGEN "Download and install EIGEN" ON)
 IF(INSTALL_EIGEN)
-    # If INSTALL_EIGEN is on, download, install, and set the include dir
-    set(eigen_url http://cmictig.cs.ucl.ac.uk/images/eigen-eigen-6b38706d90a9.tar.bz2)
-    set(eigen_md5 ece1dbf64a49753218ce951624f4c487)
-    ExternalProject_Add(Eigen
-        SOURCE_DIR ${PROJECT_BINARY_DIR}/eigen3
-        URL ${eigen_url}
-        URL_MD5 ${eigen_md5}
-        CONFIGURE_COMMAND ""
-        BUILD_COMMAND ""
-        INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/eigen3/Eigen" "${CMAKE_INSTALL_PREFIX}/include/eigen3/Eigen"
-    )
-    set(EIGEN_INCLUDE_DIR  ${CMAKE_INSTALL_PREFIX}/include/eigen3)
-    MARK_AS_ADVANCED(FORCE EIGEN_INCLUDE_DIR)
-ELSE(INSTALL_EIGEN)
+   # If INSTALL_EIGEN is on, download, install, and set the include dir
+   set(eigen_url http://cmictig.cs.ucl.ac.uk/images/eigen-eigen-6b38706d90a9.tar.bz2)
+   set(eigen_md5 ece1dbf64a49753218ce951624f4c487)
+   ExternalProject_Add(Eigen
+            DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/Eigen/download
+            PREFIX ${PROJECT_BINARY_DIR}/Eigen
+            STAMP_DIR ${PROJECT_BINARY_DIR}/Eigen/stamps
+            TMP_DIR ${PROJECT_BINARY_DIR}/Eigen/tmp
+            SOURCE_DIR ${CMAKE_BINARY_DIR}/Eigen/source
+            BINARY_DIR ${PROJECT_BINARY_DIR}/Eigen/build
+            URL ${eigen_url}
+            UPDATE_COMMAND ""
+            CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -DBUILD_TESTING=1
+            BUILD_COMMAND ${CMAKE_BUILD_TOOL}
+            INSTALL_COMMAND ${CMAKE_BUILD_TOOL} install
+   )
+   set(EIGEN_INCLUDE_DIR  ${CMAKE_INSTALL_PREFIX}/include/eigen3)
+   MARK_AS_ADVANCED(FORCE EIGEN_INCLUDE_DIR)
+   ELSE(INSTALL_EIGEN)
    # else find eigen
    MARK_AS_ADVANCED(CLEAR EIGEN_INCLUDE_DIR)
    find_package(EIGEN REQUIRED)
-
 ENDIF(INSTALL_EIGEN)
 
 include_directories(
