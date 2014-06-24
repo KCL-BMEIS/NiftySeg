@@ -34,31 +34,6 @@ endif(NOT Eigen_FIND_VERSION)
 set(EIGEN_DIR_DESCRIPTION "directory containing the file 'Eigen/Core', i.e. the root of the build tree, or the PREFIX/include/eigen3 for an installation.")
 set(EIGEN_DIR_MESSAGE "EIGEN not found.  Set the EIGEN_INCLUDE_DIR cmake cache entry to the ${EIGEN_DIR_DESCRIPTION}")
 
-macro(_eigen3_check_version)
-
-  file(READ "${EIGEN_INCLUDE_DIR}/src/Core/util/Macros.h" _eigen3_version_header)
-
-  string(REGEX MATCH "define[ \t]+EIGEN_WORLD_VERSION[ \t]+([0-9]+)" _eigen3_world_version_match "${_eigen3_version_header}")
-  set(EIGEN_WORLD_VERSION "${CMAKE_MATCH_1}")
-  string(REGEX MATCH "define[ \t]+EIGEN_MAJOR_VERSION[ \t]+([0-9]+)" _eigen3_major_version_match "${_eigen3_version_header}")
-  set(EIGEN_MAJOR_VERSION "${CMAKE_MATCH_1}")
-  string(REGEX MATCH "define[ \t]+EIGEN_MINOR_VERSION[ \t]+([0-9]+)" _eigen3_minor_version_match "${_eigen3_version_header}")
-  set(EIGEN_MINOR_VERSION "${CMAKE_MATCH_1}")
-
-  set(EIGEN_VERSION ${EIGEN_WORLD_VERSION}.${EIGEN_MAJOR_VERSION}.${EIGEN_MINOR_VERSION})
-  if(${EIGEN_VERSION} VERSION_LESS ${Eigen_FIND_VERSION})
-    set(EIGEN_VERSION_OK FALSE)
-  else(${EIGEN_VERSION} VERSION_LESS ${Eigen_FIND_VERSION})
-    set(EIGEN_VERSION_OK TRUE)
-  endif(${EIGEN_VERSION} VERSION_LESS ${Eigen_FIND_VERSION})
-
-  if(NOT EIGEN_VERSION_OK)
-
-    message(STATUS "Eigen version ${EIGEN_VERSION} found in ${EIGEN_INCLUDE_DIR}, "
-                   "but at least version ${Eigen_FIND_VERSION} is required")
-  endif(NOT EIGEN_VERSION_OK)
-endmacro(_eigen3_check_version)
-
 if(NOT EIGEN_FOUND)
 
   # Look for signature_of_eigen3_matrix_library in build trees or under <prefix>/include/eigen3.
@@ -84,12 +59,7 @@ endif()
 
 
 
-if (EIGEN_FOUND)
-
-  _eigen3_check_version()
-  set(EIGEN_FOUND ${EIGEN_VERSION_OK})
-
-else ()
+if (NOT EIGEN_FOUND)
 
   # Eigen not found, explain to the user how to specify its location.
   if(EIGEN_FIND_REQUIRED)
