@@ -127,41 +127,33 @@ IF(INSTALL_NIFTYREG)
                )
 ENDIF(INSTALL_NIFTYREG)
 
-
 #-----------------------------------------------------------------------------
 # Search for Eigen. Download and install if not found
 #-----------------------------------------------------------------------------
-
-OPTION(INSTALL_EIGEN "Download and install EIGEN" ON)
-IF(INSTALL_EIGEN)
-   # If INSTALL_EIGEN is on, download, install, and set the include dir
-   set(eigen_url http://cmictig.cs.ucl.ac.uk/images/eigen-eigen-6b38706d90a9.tar.bz2)
-   set(eigen_md5 ece1dbf64a49753218ce951624f4c487)
-   ExternalProject_Add(Eigen
-            DOWNLOAD_DIR ${CMAKE_BINARY_DIR}/Eigen/download
-            PREFIX ${PROJECT_BINARY_DIR}/Eigen
-            STAMP_DIR ${PROJECT_BINARY_DIR}/Eigen/stamps
-            TMP_DIR ${PROJECT_BINARY_DIR}/Eigen/tmp
-            SOURCE_DIR ${CMAKE_BINARY_DIR}/Eigen/source
-            BINARY_DIR ${PROJECT_BINARY_DIR}/Eigen/build
-            URL ${eigen_url}
-            UPDATE_COMMAND ""
-            CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -DBUILD_TESTING=1
-            BUILD_COMMAND ${CMAKE_BUILD_TOOL}
-            INSTALL_COMMAND ${CMAKE_BUILD_TOOL} install
-   )
-   set(EIGEN_INCLUDE_DIR  ${CMAKE_INSTALL_PREFIX}/include/eigen3)
-   MARK_AS_ADVANCED(FORCE EIGEN_INCLUDE_DIR)
-   ELSE(INSTALL_EIGEN)
-   # else find eigen
-   MARK_AS_ADVANCED(CLEAR EIGEN_INCLUDE_DIR)
-   find_package(EIGEN REQUIRED)
-ENDIF(INSTALL_EIGEN)
-
-include_directories(
-    ${${PROJECT_NAME}_INCLUDE_DIRS}
-    ${EIGEN_INCLUDE_DIR}
-)
+option(USE_SYSTEM_EIGEN "Use an already installed version of the Eigen library" OFF)
+if(USE_SYSTEM_EIGEN)
+  find_package(EIGEN REQUIRED)
+else()
+  set(NIFTYSEG_VERSION_EIGEN "ffa86ffb5570" CACHE STRING "Version of EIGEN" FORCE)
+  set(NIFTYSEG_MD5_SUM_EIGEN 9559c34af203dde5f3f1d976d859c5b3)
+  set(NIFTYSEG_LOCATION_EIGEN "http://cmic.cs.ucl.ac.uk/platform/dependencies/eigen-eigen-${NIFTYSEG_VERSION_EIGEN}.tar.gz" CACHE STRING "Location of Eigen" FORCE)
+  mark_as_advanced(NIFTYSEG_LOCATION_EIGEN)
+  mark_as_advanced(NIFTYSEG_VERSION_EIGEN)
+  ExternalProject_Add(Eigen
+    URL ${NIFTYSEG_LOCATION_EIGEN}
+    URL_MD5 ${NIFTYSEG_MD5_SUM_EIGEN}
+    PREFIX ${PROJECT_BINARY_DIR}/Eigen
+    DOWNLOAD_DIR ${PROJECT_BINARY_DIR}/Eigen/download
+    SOURCE_DIR ${PROJECT_BINARY_DIR}/Eigen/source
+    STAMP_DIR ${PROJECT_BINARY_DIR}/Eigen/stamps
+    TMP_DIR ${PROJECT_BINARY_DIR}/Eigen/tmp
+    CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX:PATH=${PROJECT_BINARY_DIR}/Eigen/install -DBUILD_TESTING=1
+    )
+  set(EIGEN_INCLUDE_DIR ${PROJECT_BINARY_DIR}/Eigen/install/include/eigen3)
+  mark_as_advanced(FORCE EIGEN_INCLUDE_DIR)
+  install(DIRECTORY ${EIGEN_INCLUDE_DIR}/Eigen DESTINATION include)
+endif()
+include_directories(${EIGEN_INCLUDE_DIR})
 
 #-----------------------------------------------------------------------------
 # Get the GIT HASH if avaiable
