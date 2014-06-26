@@ -134,24 +134,29 @@ option(USE_SYSTEM_EIGEN "Use an already installed version of the Eigen library" 
 if(USE_SYSTEM_EIGEN)
   find_package(EIGEN REQUIRED)
 else()
-  set(NIFTYSEG_VERSION_EIGEN "ffa86ffb5570" CACHE STRING "Version of EIGEN" FORCE)
-  set(NIFTYSEG_MD5_SUM_EIGEN 9559c34af203dde5f3f1d976d859c5b3)
-  set(NIFTYSEG_LOCATION_EIGEN "http://cmic.cs.ucl.ac.uk/platform/dependencies/eigen-eigen-${NIFTYSEG_VERSION_EIGEN}.tar.gz" CACHE STRING "Location of Eigen" FORCE)
-  mark_as_advanced(NIFTYSEG_LOCATION_EIGEN)
-  mark_as_advanced(NIFTYSEG_VERSION_EIGEN)
+  set(${PROJECT_NAME}_VERSION_EIGEN "ffa86ffb5570" CACHE STRING "Version of EIGEN" FORCE)
+  set(${PROJECT_NAME}_MD5_SUM_EIGEN 9559c34af203dde5f3f1d976d859c5b3 CACHE STRING "MD5 check sum for EIGEN" FORCE)
+  set(${PROJECT_NAME}_LOCATION_EIGEN 
+    "http://cmic.cs.ucl.ac.uk/platform/dependencies/eigen-eigen-${${PROJECT_NAME}_VERSION_EIGEN}.tar.gz" 
+    CACHE STRING "Location of Eigen" FORCE)
+  mark_as_advanced(FORCE ${PROJECT_NAME}_VERSION_EIGEN)
+  mark_as_advanced(FORCE ${PROJECT_NAME}_MD5_SUM_EIGEN)
+  mark_as_advanced(FORCE ${PROJECT_NAME}_LOCATION_EIGEN)
   ExternalProject_Add(Eigen
-    URL ${NIFTYSEG_LOCATION_EIGEN}
-    URL_MD5 ${NIFTYSEG_MD5_SUM_EIGEN}
+    URL ${${PROJECT_NAME}_LOCATION_EIGEN}
+    URL_MD5 ${${PROJECT_NAME}_MD5_SUM_EIGEN}
     PREFIX ${PROJECT_BINARY_DIR}/Eigen
     DOWNLOAD_DIR ${PROJECT_BINARY_DIR}/Eigen/download
     SOURCE_DIR ${PROJECT_BINARY_DIR}/Eigen/source
     STAMP_DIR ${PROJECT_BINARY_DIR}/Eigen/stamps
     TMP_DIR ${PROJECT_BINARY_DIR}/Eigen/tmp
     BINARY_DIR ${PROJECT_BINARY_DIR}/Eigen/build
-    CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX:PATH=${PROJECT_BINARY_DIR}/Eigen/install -DBUILD_TESTING=1
+    CMAKE_ARGS 
+      ${CMAKE_PROPAGATED_VARIABLES} 
+      -DCMAKE_INSTALL_PREFIX:PATH=${PROJECT_BINARY_DIR}/Eigen/install 
+      -DBUILD_TESTING=1
     )
   set(EIGEN_INCLUDE_DIR ${PROJECT_BINARY_DIR}/Eigen/install/include/eigen3)
-  mark_as_advanced(FORCE EIGEN_INCLUDE_DIR)
   install(DIRECTORY ${EIGEN_INCLUDE_DIR}/Eigen DESTINATION include)
 endif()
 include_directories(${EIGEN_INCLUDE_DIR})
