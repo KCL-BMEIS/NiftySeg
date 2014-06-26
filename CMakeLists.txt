@@ -32,7 +32,7 @@ endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 #-----------------------------------------------------------------------------
 
 OPTION(BUILD_ALL "To build the LoAd segmentation tool" ON)
-OPTION(BUILD_SHARED "Build the libraries as shared." OFF)
+OPTION(BUILD_SHARED_LIBS "Build the libraries as shared." OFF)
 OPTION(INSTALL_PRIORS "Install prior images. Turn this off if you are really short on disk space" ON)
 
 #-----------------------------------------------------------------------------
@@ -72,11 +72,11 @@ if(USE_OPENMP)
 endif(USE_OPENMP)
 
 
-IF(BUILD_SHARED)
+IF(BUILD_SHARED_LIBS)
   SET(LIBRARY_TYPE SHARED)
-ELSE(BUILD_SHARED)
+ELSE(BUILD_SHARED_LIBS)
   SET(LIBRARY_TYPE STATIC)
-ENDIF(BUILD_SHARED)
+ENDIF(BUILD_SHARED_LIBS)
 
 if(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
   # OpenMP is disable when the compiler is based on Clang
@@ -147,6 +147,7 @@ else()
     SOURCE_DIR ${PROJECT_BINARY_DIR}/Eigen/source
     STAMP_DIR ${PROJECT_BINARY_DIR}/Eigen/stamps
     TMP_DIR ${PROJECT_BINARY_DIR}/Eigen/tmp
+    BINARY_DIR ${PROJECT_BINARY_DIR}/Eigen/build
     CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DCMAKE_INSTALL_PREFIX:PATH=${PROJECT_BINARY_DIR}/Eigen/install -DBUILD_TESTING=1
     )
   set(EIGEN_INCLUDE_DIR ${PROJECT_BINARY_DIR}/Eigen/install/include/eigen3)
