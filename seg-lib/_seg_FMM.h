@@ -4,9 +4,9 @@
 #include "_seg_common.h"
 
 void FMM(bool *Seeds,
-         SegPrecisionTYPE *SpeedI,
-         SegPrecisionTYPE * GeoTime,
-         SegPrecisionTYPE Max,
+         segPrecisionTYPE *SpeedI,
+         segPrecisionTYPE * GeoTime,
+         segPrecisionTYPE Max,
          int * Long_2_Short_Indices,
          int * Short_2_Long_Indices,
          ImageSize * CurrSizes);
@@ -14,21 +14,21 @@ void FMM(bool *Seeds,
 float * DoubleEuclideanDistance_3D(bool *Lable, float * speedptr,
                                    ImageSize * CurrSizes);
 
-SegPrecisionTYPE CalcGeoTime(int index,
-                             SegPrecisionTYPE *GeoTime,
-                             SegPrecisionTYPE * SpeedI,
+segPrecisionTYPE CalcGeoTime(int index,
+                             segPrecisionTYPE *GeoTime,
+                             segPrecisionTYPE * SpeedI,
                              int * neighbour,
                              int * Short_2_Long_Indices,
-                             SegPrecisionTYPE Max);
+                             segPrecisionTYPE Max);
 
-SegPrecisionTYPE CalcGeoTime_long(int index,
-                                  SegPrecisionTYPE *GeoTime,
-                                  SegPrecisionTYPE SpeedI,
+segPrecisionTYPE CalcGeoTime_long(int index,
+                                  segPrecisionTYPE *GeoTime,
+                                  segPrecisionTYPE SpeedI,
                                   int * neighbour,
-                                  SegPrecisionTYPE Max);
+                                  segPrecisionTYPE Max);
 
-void TransformGeoTime(SegPrecisionTYPE *GeoTime,
-                      SegPrecisionTYPE MaxGeoTime,
+void TransformGeoTime(segPrecisionTYPE *GeoTime,
+                      segPrecisionTYPE MaxGeoTime,
                       int * L2S,
                       int * S2L,
                       ImageSize * CurrSizes);

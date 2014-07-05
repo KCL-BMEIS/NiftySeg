@@ -1,3 +1,14 @@
+/**
+ * @file seg_Stats.cpp
+ * @author M. Jorge Cardoso
+ * @date 01/01/2014
+ *
+ * Copyright (c) 2014, University College London. All rights reserved.
+ * Centre for Medical Image Computing (CMIC)
+ * See the LICENSE.txt file in the nifty_seg root folder
+ *
+ */
+
 #include "_seg_tools.h"
 #include <iostream>
 #include <time.h>

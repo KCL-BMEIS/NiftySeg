@@ -1,8 +1,18 @@
+/**
+ * @file seg_maths.cpp
+ * @author M. Jorge Cardoso
+ * @date 01/01/2014
+ *
+ * Copyright (c) 2014, University College London. All rights reserved.
+ * Centre for Medical Image Computing (CMIC)
+ * See the LICENSE.txt file in the nifty_seg root folder
+ *
+ */
+
 #include <iostream>
 #include <time.h>
 #include "_seg_common.h"
 #include "_seg_tools.h"
-#include "_seg_Topo.h"
 #include <Eigen/Core>
 #include <Eigen/LU>
 #include <Eigen/Cholesky>
@@ -57,6 +67,10 @@ void Usage(char *exec)
     printf("\t-llsnorm\t<file_norm>\t Linear LS normalisation between current and <file_norm>\n");
     printf("\t-lltsnorm\t<file_norm> <float>\t Linear LTS normalisation assuming <float> percent outliers\n");
     printf("\t-qlsnorm\t<order> <file_norm>\t LS normalisation of <order> between current and <file_norm>\n");
+    printf("\n\t* * NaN handling * *\n");
+    printf("\t-removenan\t\t Remove all NaNs and replace then with 0\n");
+    printf("\t-isnan\t\t Binary image equal to 1 if the value is NaN and 0 otherwise\n");
+    printf("\t-masknan\t<file_norm>\t Assign everything outside the mask (mask==0) with NaNs \n");
     printf("\n\t* * Sampling * *\n");
     printf("\t-subsamp2\t\tSubsample the image by 2 using NN sampling (qform and sform scaled) \n");
     printf("\n\t* * Image header operations * *\n");
@@ -78,9 +92,7 @@ int isNumeric (const char *s)
     if(s==NULL || *s=='\0' || isspace(*s))
         return 0;
     char * p;
-    double a=strtod (s, &p);
-    a=a;
-    //a=a;
+    strtod (s, &p);
     return *p == '\0';
 }
 
@@ -319,43 +331,6 @@ int main(int argc, char **argv)
                 for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                     bufferImages[current_buffer?0:1][i]=isnan(bufferImages[current_buffer][i])==1?0:bufferImages[current_buffer][i];
                 current_buffer=current_buffer?0:1;
-
-            }
-            // *********************  mask  *************************
-            else if(strcmp(argv[i], "-maskfill") == 0)
-            {
-                string parser=argv[++i];
-
-                nifti_image * MaskImg=nifti_image_read(parser.c_str(),true);
-                MaskImg->nu=(MaskImg->nu>1)?MaskImg->nu:1;
-                MaskImg->nt=(MaskImg->nt>1)?MaskImg->nt:1;
-                seg_changeDatatype<float>(MaskImg);
-
-                nifti_image * TMPnii = nifti_copy_nim_info(InputImage);
-                TMPnii->dim[1]=CurrSize->xsize;
-                TMPnii->dim[2]=CurrSize->ysize;
-                TMPnii->dim[3]=CurrSize->zsize;
-                TMPnii->dim[4]=TMPnii->nt=1;
-                TMPnii->dim[5]=TMPnii->nu=1;
-                nifti_update_dims_from_array(TMPnii);
-                TMPnii->data=static_cast<void*>(&bufferImages[current_buffer][0]);
-
-                if(MaskImg->nx==CurrSize->xsize&&MaskImg->ny==CurrSize->ysize&&MaskImg->nz==CurrSize->zsize)
-                {
-
-                    fillmask(TMPnii,MaskImg);
-                }
-                else
-                {
-                    cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
-                         <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" )  New image = ( "<<MaskImg->nx<<","
-                        <<MaskImg->ny<<","<<MaskImg->nz<<","<<MaskImg->nt<<","<<MaskImg->nu<<" )"<<endl;
-                    i=argc;
-                }
-                TMPnii->data=NULL;
-                //As TMPnii->data=NULL, the free will not cause any harm
-                nifti_image_free(TMPnii);
-                nifti_image_free(MaskImg);
 
             }
 
@@ -1087,7 +1062,7 @@ int main(int argc, char **argv)
                         nifti_update_dims_from_array(TMPnii);
                         //copy pointer, run gaussian, and set to null
                         TMPnii->data=static_cast<void*>(&bufferImages[current_buffer][CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*tp]);
-                        GaussianSmoothing(TMPnii,NULL,factor);
+                        GaussianSmoothing4D_nifti(TMPnii,NULL,factor);
                         TMPnii->data=NULL;
                         //As TMPnii->data=NULL, the free will not cause any harm
                         nifti_image_free(TMPnii);
@@ -1112,7 +1087,7 @@ int main(int argc, char **argv)
                     for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                         bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i];
 
-                    Gaussian_Filter_4D(&bufferImages[current_buffer][0], factor, CurrSize);
+                    GaussianFilter4D_cArray(&bufferImages[current_buffer][0], factor, CurrSize);
                     for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                         bufferImages[current_buffer?0:1][i]=(bufferImages[current_buffer?0:1][i]-bufferImages[current_buffer][i]);
 
@@ -1135,16 +1110,6 @@ int main(int argc, char **argv)
                 current_buffer=current_buffer?0:1;
             }
 
-            // *********************  Bias Correct (NOT WORKING) ************************
-            else if(strcmp(argv[i], "-bc") == 0)
-            {
-
-                BiasCorrect(bufferImages[current_buffer],CurrSize);
-                for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
-                    bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i];
-
-                current_buffer=current_buffer?0:1;
-            }
             // *********************  Fill  *************************
             else if(strcmp(argv[i], "-fill") == 0)
             {
@@ -1533,10 +1498,10 @@ int main(int argc, char **argv)
                         allmeanNew=allmeanNew/(InputImage->nx*InputImage->ny*InputImage->nz);
                         allmeanInput=allmeanInput/(InputImage->nx*InputImage->ny*InputImage->nz);
 
-                        Gaussian_Filter_4D(NewImageMean,strtod(parserstd.c_str(),NULL),CurrSize);
-                        Gaussian_Filter_4D(NewImageStd,strtod(parserstd.c_str(),NULL),CurrSize);
-                        Gaussian_Filter_4D(InputImageMean,strtod(parserstd.c_str(),NULL),CurrSize);
-                        Gaussian_Filter_4D(InputImageStd,strtod(parserstd.c_str(),NULL),CurrSize);
+                        GaussianFilter4D_cArray(NewImageMean,strtod(parserstd.c_str(),NULL),CurrSize);
+                        GaussianFilter4D_cArray(NewImageStd,strtod(parserstd.c_str(),NULL),CurrSize);
+                        GaussianFilter4D_cArray(InputImageMean,strtod(parserstd.c_str(),NULL),CurrSize);
+                        GaussianFilter4D_cArray(InputImageStd,strtod(parserstd.c_str(),NULL),CurrSize);
                         for(long index=0; index<InputImage->nx*InputImage->ny*InputImage->nz; index++)
                         {
                             allstdNew+=(NewImagePtr[index]-allmeanNew)*(NewImagePtr[index]-allmeanNew);
@@ -1550,7 +1515,7 @@ int main(int argc, char **argv)
                             InputImageStd[index]=InputImageStd[index]-InputImageMean[index]*InputImageMean[index];
                             bufferImages[current_buffer?0:1][index]=(bufferImages[current_buffer][index]-InputImageMean[index])/(sqrt(InputImageStd[index]+0.01*allstdInput))-(NewImagePtr[index]-NewImageMean[index])/(sqrt(NewImageStd[index]+0.01*allstdNew));
                         }
-                        Gaussian_Filter_4D(bufferImages[current_buffer?0:1],strtod(parserstd.c_str(),NULL),CurrSize);
+                        GaussianFilter4D_cArray(bufferImages[current_buffer?0:1],strtod(parserstd.c_str(),NULL),CurrSize);
                         for(long index=0; index<InputImage->nx*InputImage->ny*InputImage->nz; index++)
                         {
                             bufferImages[current_buffer?0:1][index]=bufferImages[current_buffer?0:1][index]*bufferImages[current_buffer?0:1][index];
@@ -1617,11 +1582,11 @@ int main(int argc, char **argv)
                         allstdNew=allstdNew/(InputImage->nx*InputImage->ny*InputImage->nz);
                         allstdInput=allstdInput/(InputImage->nx*InputImage->ny*InputImage->nz);
                         //cout << allstdInput <<"  "<< allstdNew<<endl;
-                        Gaussian_Filter_4D(bufferImages[current_buffer],strtod(parserstd.c_str(),NULL),CurrSize);
-                        Gaussian_Filter_4D(NewImageMean,strtod(parserstd.c_str(),NULL),CurrSize);
-                        Gaussian_Filter_4D(NewImageStd,strtod(parserstd.c_str(),NULL),CurrSize);
-                        Gaussian_Filter_4D(InputImageMean,strtod(parserstd.c_str(),NULL),CurrSize);
-                        Gaussian_Filter_4D(InputImageStd,strtod(parserstd.c_str(),NULL),CurrSize);
+                        GaussianFilter4D_cArray(bufferImages[current_buffer],strtod(parserstd.c_str(),NULL),CurrSize);
+                        GaussianFilter4D_cArray(NewImageMean,strtod(parserstd.c_str(),NULL),CurrSize);
+                        GaussianFilter4D_cArray(NewImageStd,strtod(parserstd.c_str(),NULL),CurrSize);
+                        GaussianFilter4D_cArray(InputImageMean,strtod(parserstd.c_str(),NULL),CurrSize);
+                        GaussianFilter4D_cArray(InputImageStd,strtod(parserstd.c_str(),NULL),CurrSize);
                         for(long index=0; index<InputImage->nx*InputImage->ny*InputImage->nz; index++)
                         {
                             NewImageStd[index]=NewImageStd[index]-NewImageMean[index]*NewImageMean[index];
@@ -1838,22 +1803,6 @@ int main(int argc, char **argv)
                         for(long indexX=1; indexX<(CurrSize->xsize-1); indexX++)
                             bufferImages[current_buffer?0:1][((CurrSize->xsize-1-indexX)+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize)]=bufferImages[current_buffer][indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize];
 
-                current_buffer=current_buffer?0:1;
-
-            }
-            else if(strcmp(argv[i], "-outlierseg") == 0)
-            {
-                string parser=argv[++i];
-                nifti_image * BrainPrior=nifti_image_read(parser.c_str(),true);
-                BrainPrior->nu=(BrainPrior->nu>1)?BrainPrior->nu:1;
-                BrainPrior->nt=(BrainPrior->nt>1)?BrainPrior->nt:1;
-                if(BrainPrior->datatype!=DT_FLOAT32)
-                {
-                    seg_changeDatatype<float>(BrainPrior);
-                }
-                SegPrecisionTYPE * BrainPriorPtr = static_cast<SegPrecisionTYPE *>(BrainPrior->data);
-
-                outlierseg(bufferImages[current_buffer],bufferImages[current_buffer?0:1],BrainPriorPtr,CurrSize);
                 current_buffer=current_buffer?0:1;
 
             }

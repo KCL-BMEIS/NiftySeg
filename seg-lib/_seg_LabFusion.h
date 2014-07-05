@@ -33,10 +33,10 @@ protected:
     // SegParameters
     int LableCorrespondences_big_to_small[5000];
     int LableCorrespondences_small_to_big[5000];
-    LabFusion_datatype * ConfusionMatrix;
-    LabFusion_datatype * W;
-    LabFusion_datatype * FinalSeg;
-    LabFusion_datatype * Prop;
+    segPrecisionTYPE * ConfusionMatrix;
+    segPrecisionTYPE * W;
+    segPrecisionTYPE * FinalSeg;
+    segPrecisionTYPE * Prop;
     int * maskAndUncertainIndeces;
     int  sizeAfterMaskingAndUncertainty;
     bool    uncertainflag;
@@ -61,9 +61,9 @@ protected:
 
     // MRF
     bool    MRF_status;
-    LabFusion_datatype   MRF_strength;
-    LabFusion_datatype*  MRF;
-    LabFusion_datatype* MRF_matrix;
+    segPrecisionTYPE   MRF_strength;
+    segPrecisionTYPE*  MRF;
+    segPrecisionTYPE* MRF_matrix;
 
     // Private funcs
     int Create_CurrSizes();

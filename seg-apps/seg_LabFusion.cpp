@@ -1,3 +1,13 @@
+/**
+ * @file seg_LabFusion.cpp
+ * @author M. Jorge Cardoso
+ * @date 01/01/2014
+ *
+ * Copyright (c) 2014, University College London. All rights reserved.
+ * Centre for Medical Image Computing (CMIC)
+ * See the LICENSE.txt file in the nifty_seg root folder
+ *
+ */
 
 #include "_seg_LabFusion.h"
 #include "seg_LabFusion_CLIxml.h"
@@ -413,11 +423,11 @@ int main(int argc, char **argv)
             flush(cout);
             return 1;
         }
-        classifier_datatype MaxLab=0;
-        seg_changeDatatype<classifier_datatype>(CLASSIFIER);
+        categoricalLabelType MaxLab=0;
+        seg_changeDatatype<categoricalLabelType>(CLASSIFIER);
 
 
-        classifier_datatype * CLASSIFIERptr = static_cast<classifier_datatype *>(CLASSIFIER->data);
+        categoricalLabelType * CLASSIFIERptr = static_cast<categoricalLabelType *>(CLASSIFIER->data);
 
         int * NumberOfDifferentClassesHistogram=new int [10000];
         for(int i=0; i<10000; i++)

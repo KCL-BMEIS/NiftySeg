@@ -1,3 +1,14 @@
+/**
+ * @file seg_EM.cpp
+ * @author M. Jorge Cardoso
+ * @date 01/01/2014
+ * @brief The main EM segmentation tool of nifty_seg. This function replaces seg_LoAd (seg_LoAd is deprecated).
+ *
+ * Copyright (c) 2014, University College London. All rights reserved.
+ * Centre for Medical Image Computing (CMIC)
+ * See the LICENSE.txt file in the nifty_seg root folder
+ *
+ */
 
 #include "_seg_EM.h"
 #include "seg_EM_CLIxml.h"
@@ -9,7 +20,7 @@
 using namespace std;
 #define SegPrecisionTYPE float
 
-
+// Executable usage message
 void Usage(char *exec)
 {
     printf("\nEM Statistical Segmentation:\nUsage ->\t%s -in <filename> [OPTIONS]\n\n",exec);
@@ -44,7 +55,7 @@ void Usage(char *exec)
     return;
 }
 
-void Merge_Priors(nifti_image * Priors, nifti_image ** Priors_temp, SEG_PARAM * segment_param)
+void Merge_Priors(nifti_image * Priors, nifti_image ** Priors_temp, seg_EM_Params * segment_param)
 {
     long img_size= Priors->nx * Priors->ny * Priors->nz;
     SegPrecisionTYPE * Prior_ptr_start = static_cast<SegPrecisionTYPE *>(Priors->data);
@@ -146,7 +157,7 @@ int main(int argc, char **argv)
             return 0;
         }
 
-        SEG_PARAM * segment_param = new SEG_PARAM [1]();
+        seg_EM_Params * segment_param = new seg_EM_Params [1]();
 
         // Set defaults (SEG_PARAM constructor sets everything to zero)
         segment_param->MRF_strength=0.4f;
@@ -598,13 +609,13 @@ int main(int argc, char **argv)
         SEG.SetMinIterationNumber(segment_param->minIteration);
 
         if(segment_param->flag_Outlierness)
-            SEG.OutliernessON(segment_param->OutliernessThreshold,segment_param->OutliernessRatio);
+            SEG.SetOutlierness(segment_param->OutliernessThreshold,segment_param->OutliernessRatio);
         if(segment_param->flag_Bias)
-            SEG.Turn_BiasField_ON(segment_param->bias_order,segment_param->Bias_threshold);
+            SEG.SetBiasField(segment_param->bias_order,segment_param->Bias_threshold);
         if(segment_param->flag_MRF)
-            SEG.Turn_MRF_ON(segment_param->MRF_strength);
+            SEG.SetMRF(segment_param->MRF_strength);
         if(segment_param->relax_factor>0)
-            SEG.Turn_Relaxation_ON(segment_param->relax_factor,segment_param->relax_gauss_kernel);
+            SEG.SetRelaxation(segment_param->relax_factor,segment_param->relax_gauss_kernel);
         if(segment_param->flag_MAP)
             SEG.SetMAP(segment_param->MAP_M,segment_param->MAP_V);
         if(regularization_amount>0)

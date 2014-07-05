@@ -39,7 +39,7 @@ seg_LabFusion::seg_LabFusion(int _numb_classif, int numbclasses, int _Numb_Neigh
         LableCorrespondences_big_to_small[i]=0;
         LableCorrespondences_small_to_big[i]=0;
     }
-    ConfusionMatrix=new LabFusion_datatype [_numb_classif*numbclasses*numbclasses];
+    ConfusionMatrix=new segPrecisionTYPE [_numb_classif*numbclasses*numbclasses];
     if(ConfusionMatrix == NULL)
     {
         fprintf(stderr,"* Error when alocating ConfusionMatrix: Not enough memory\n");
@@ -71,7 +71,7 @@ seg_LabFusion::seg_LabFusion(int _numb_classif, int numbclasses, int _Numb_Neigh
     this->uncertainflag=false;
     this->uncertainthresh=0.999;
     this->dilunc=0;
-    this->Prop=new LabFusion_datatype [numbclasses];
+    this->Prop=new segPrecisionTYPE [numbclasses];
     this->Fixed_Prop_status=false;
     this->PropUpdate=false;
     this->numb_classif=_numb_classif;
@@ -88,7 +88,7 @@ seg_LabFusion::seg_LabFusion(int _numb_classif, int numbclasses, int _Numb_Neigh
     // MRF Specific
     this->MRF_status=0;
     this->MRF_strength=0.0f;
-    this->MRF_matrix=new LabFusion_datatype [numbclasses*numbclasses];
+    this->MRF_matrix=new segPrecisionTYPE [numbclasses*numbclasses];
     if(MRF_matrix == NULL)
     {
         fprintf(stderr,"* Error when alocating MRF_matrix: Not enough memory\n");
@@ -197,7 +197,7 @@ int seg_LabFusion::SetinputCLASSIFIER(nifti_image *r,bool UNCERTAINflag)
     this->numel=r->nz*r->ny*r->nx;
     if(this->CurrSizes==NULL) Create_CurrSizes();
 
-    classifier_datatype * CLASSIFIERptr = static_cast<classifier_datatype *>(this->inputCLASSIFIER->data);
+    categoricalLabelType * CLASSIFIERptr = static_cast<categoricalLabelType *>(this->inputCLASSIFIER->data);
     int * NumberOfDifferentClassesHistogram=new int [5000];
     if(NumberOfDifferentClassesHistogram == NULL)
     {
@@ -260,7 +260,7 @@ int seg_LabFusion::SetinputCLASSIFIER(nifti_image *r,bool UNCERTAINflag)
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 
-int seg_LabFusion::SetLNCC(nifti_image * _LNCC,nifti_image * BaseImage,LabFusion_datatype distance,int Numb_Neigh)
+int seg_LabFusion::SetLNCC(nifti_image * _LNCC,nifti_image * BaseImage,segPrecisionTYPE distance,int Numb_Neigh)
 {
     if((Numb_Neigh<_LNCC->nt) & (Numb_Neigh>0))
     {
@@ -286,7 +286,7 @@ int seg_LabFusion::SetLNCC(nifti_image * _LNCC,nifti_image * BaseImage,LabFusion
     {
         if(_LNCC->datatype==DT_FLOAT)
         {
-            this->LNCC=seg_norm4LNCC(BaseImage,_LNCC,distance,Numb_Neigh,CurrSizes,this->verbose_level);
+            this->LNCC=estimateLNCC4D(BaseImage,_LNCC,distance,Numb_Neigh,CurrSizes,this->verbose_level);
             this->LNCC_status = true;
 
         }
@@ -356,7 +356,7 @@ int seg_LabFusion::SetLNCC(nifti_image * _LNCC,nifti_image * BaseImage,LabFusion
 */
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
-int seg_LabFusion::SetMLLNCC(nifti_image * _LNCC,nifti_image * BaseImage,LabFusion_datatype distance,int levels,int Numb_Neigh)
+int seg_LabFusion::SetMLLNCC(nifti_image * _LNCC,nifti_image * BaseImage,segPrecisionTYPE distance,int levels,int Numb_Neigh)
 {
     if((Numb_Neigh<_LNCC->nt) & (Numb_Neigh>0))
     {
@@ -382,7 +382,7 @@ int seg_LabFusion::SetMLLNCC(nifti_image * _LNCC,nifti_image * BaseImage,LabFusi
     {
         if(_LNCC->datatype==DT_FLOAT)
         {
-            this->LNCC=seg_norm4MLLNCC(BaseImage,_LNCC,distance,levels,Numb_Neigh,CurrSizes,this->verbose_level);
+            this->LNCC=estimateMLNCC4D(BaseImage,_LNCC,distance,levels,Numb_Neigh,CurrSizes,this->verbose_level);
 
             this->LNCC_status = true;
 
@@ -422,7 +422,7 @@ int seg_LabFusion::SetGNCC(nifti_image * _GNCC,nifti_image * BaseImage,int Numb_
     {
         if(_GNCC->datatype==DT_FLOAT)
         {
-            this->NCC=seg_norm_4D_GNCC(BaseImage,_GNCC,Numb_Neigh,CurrSizes,this->verbose_level);
+            this->NCC=estimateNCC4D(BaseImage,_GNCC,Numb_Neigh,CurrSizes,this->verbose_level);
             this->NCC_status = true;
         }
         else
@@ -461,7 +461,7 @@ int seg_LabFusion::SetROINCC(nifti_image * _ROINCC,nifti_image * BaseImage,int N
     {
         if(_ROINCC->datatype==DT_FLOAT)
         {
-            this->NCC=seg_norm4ROINCC(this->inputCLASSIFIER,BaseImage,_ROINCC,Numb_Neigh,CurrSizes,DilSize,this->verbose_level);
+            this->NCC=estimateROINCC4D(this->inputCLASSIFIER,BaseImage,_ROINCC,Numb_Neigh,CurrSizes,DilSize,this->verbose_level);
             this->NCC_status = true;
         }
         else
@@ -473,26 +473,26 @@ int seg_LabFusion::SetROINCC(nifti_image * _ROINCC,nifti_image * BaseImage,int N
 }
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 
-int seg_LabFusion::SetProp(LabFusion_datatype r)
+int seg_LabFusion::SetProp(segPrecisionTYPE r)
 {
-    this->Prop[0] = (LabFusion_datatype)r;
+    this->Prop[0] = (segPrecisionTYPE)r;
     this->Fixed_Prop_status = true;
     return 0;
 }
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 
-int seg_LabFusion::SetConv(LabFusion_datatype r)
+int seg_LabFusion::SetConv(segPrecisionTYPE r)
 {
     if(this->verbose_level)
     {
         cout<< "Convergence Ratio = " << r <<endl;
         flush(cout);
     }
-    this->Conv = (LabFusion_datatype)r;
+    this->Conv = (segPrecisionTYPE)r;
     return 0;
 }
 
-int seg_LabFusion::SetImgThresh(LabFusion_datatype _Thresh_IMG_value)
+int seg_LabFusion::SetImgThresh(segPrecisionTYPE _Thresh_IMG_value)
 {
     this->Thresh_IMG_value=_Thresh_IMG_value;
     this->Thresh_IMG_DO=true;
@@ -557,10 +557,10 @@ int seg_LabFusion::SetMaximalIterationNumber(unsigned int numberiter)
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 
-int seg_LabFusion::Turn_MRF_ON(LabFusion_datatype strength)
+int seg_LabFusion::Turn_MRF_ON(segPrecisionTYPE strength)
 {
     this->MRF_status=true;
-    this->MRF_strength=(LabFusion_datatype)strength;
+    this->MRF_strength=(segPrecisionTYPE)strength;
     return 0;
 }
 
@@ -594,14 +594,14 @@ int seg_LabFusion::Create_CurrSizes()
 int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
 {
 
-    LabFusion_datatype *tmpW=new LabFusion_datatype [this->NumberOfLabels];
+    segPrecisionTYPE *tmpW=new segPrecisionTYPE [this->NumberOfLabels];
     if(tmpW == NULL)
     {
         fprintf(stderr,"* Error when alocating tmpW: Not enough memory\n");
         exit(1);
     }
 
-    classifier_datatype * inputHumanRater = static_cast<classifier_datatype *>(this->inputCLASSIFIER->data);
+    categoricalLabelType * inputHumanRater = static_cast<categoricalLabelType *>(this->inputCLASSIFIER->data);
 
     bool * nccexists_once= new bool [this->CurrSizes->numclass];
     if(nccexists_once == NULL)
@@ -612,7 +612,7 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
 
     for(int humanRater=0; humanRater<this->CurrSizes->numclass; humanRater++)nccexists_once[humanRater]=false;
 
-    LabFusion_datatype * ConfusionMatrix2=new LabFusion_datatype [this->numb_classif*this->NumberOfLabels*this->NumberOfLabels];
+    segPrecisionTYPE * ConfusionMatrix2=new segPrecisionTYPE [this->numb_classif*this->NumberOfLabels*this->NumberOfLabels];
     if(ConfusionMatrix2 == NULL)
     {
         fprintf(stderr,"* Error when alocating ConfusionMatrix2: Not enough memory\n");
@@ -667,7 +667,7 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                         {
                             for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                             {
-                                tmpW[currlabelnumb]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputHumanRater[i+LNCCvalue*this->CurrSizes->numel]+currlabelnumb*this->NumberOfLabels+LNCCvalue*this->NumberOfLabels*this->NumberOfLabels]));
+                                tmpW[currlabelnumb]*=((segPrecisionTYPE)(this->ConfusionMatrix[(int)inputHumanRater[i+LNCCvalue*this->CurrSizes->numel]+currlabelnumb*this->NumberOfLabels+LNCCvalue*this->NumberOfLabels*this->NumberOfLabels]));
                             }
                         }
                     }
@@ -681,7 +681,7 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                         {
                             for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                             {
-                                tmpW[currlabelnumb]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputHumanRater[i+NCCvalue*this->CurrSizes->numel]+currlabelnumb*this->NumberOfLabels+NCCvalue*this->NumberOfLabels*this->NumberOfLabels]));
+                                tmpW[currlabelnumb]*=((segPrecisionTYPE)(this->ConfusionMatrix[(int)inputHumanRater[i+NCCvalue*this->CurrSizes->numel]+currlabelnumb*this->NumberOfLabels+NCCvalue*this->NumberOfLabels*this->NumberOfLabels]));
                             }
                         }
                     }
@@ -692,15 +692,15 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                     {
                         for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                         {
-                            tmpW[currlabelnumb]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputHumanRater[i+humanater*this->CurrSizes->numel]+currlabelnumb*this->NumberOfLabels+humanater*this->NumberOfLabels*this->NumberOfLabels]));
+                            tmpW[currlabelnumb]*=((segPrecisionTYPE)(this->ConfusionMatrix[(int)inputHumanRater[i+humanater*this->CurrSizes->numel]+currlabelnumb*this->NumberOfLabels+humanater*this->NumberOfLabels*this->NumberOfLabels]));
                         }
                     }
                 }
                 //cout << "1- "<<this->0] << "  "  <<this->Prop[1] <<endl;
-                LabFusion_datatype sumW=0;
+                segPrecisionTYPE sumW=0;
                 for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                 {
-                    tmpW[currlabelnumb]=((LabFusion_datatype)this->Prop[currlabelnumb])*tmpW[currlabelnumb]*this->MRF[this->maskAndUncertainIndeces[i]+currlabelnumb*this->sizeAfterMaskingAndUncertainty];
+                    tmpW[currlabelnumb]=((segPrecisionTYPE)this->Prop[currlabelnumb])*tmpW[currlabelnumb]*this->MRF[this->maskAndUncertainIndeces[i]+currlabelnumb*this->sizeAfterMaskingAndUncertainty];
                     sumW+=tmpW[currlabelnumb];
                 }
                 if(sumW<=0)
@@ -757,7 +757,7 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                             for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                             {
 
-                                tmpW[currlabelnumb]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputHumanRater[i+LNCCvalue*this->CurrSizes->numel]+currlabelnumb*this->NumberOfLabels+LNCCvalue*this->NumberOfLabels*this->NumberOfLabels]));
+                                tmpW[currlabelnumb]*=((segPrecisionTYPE)(this->ConfusionMatrix[(int)inputHumanRater[i+LNCCvalue*this->CurrSizes->numel]+currlabelnumb*this->NumberOfLabels+LNCCvalue*this->NumberOfLabels*this->NumberOfLabels]));
                             }
                         }
 
@@ -773,7 +773,7 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                         {
                             for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                             {
-                                tmpW[currlabelnumb]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputHumanRater[i+NCCvalue*this->CurrSizes->numel]+
+                                tmpW[currlabelnumb]*=((segPrecisionTYPE)(this->ConfusionMatrix[(int)inputHumanRater[i+NCCvalue*this->CurrSizes->numel]+
                                         currlabelnumb*this->NumberOfLabels+
                                         NCCvalue*this->NumberOfLabels*this->NumberOfLabels]));
                             }
@@ -786,16 +786,16 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                     {
                         for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                         {
-                            tmpW[currlabelnumb]*=((LabFusion_datatype)(this->ConfusionMatrix[(int)inputHumanRater[i+humanater*this->CurrSizes->numel]+
+                            tmpW[currlabelnumb]*=((segPrecisionTYPE)(this->ConfusionMatrix[(int)inputHumanRater[i+humanater*this->CurrSizes->numel]+
                                     currlabelnumb*this->NumberOfLabels+
                                     humanater*this->NumberOfLabels*this->NumberOfLabels]));
                         }
                     }
                 }
-                LabFusion_datatype sumW=0;
+                segPrecisionTYPE sumW=0;
                 for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                 {
-                    tmpW[currlabelnumb]=((LabFusion_datatype)this->Prop[currlabelnumb])*tmpW[currlabelnumb];
+                    tmpW[currlabelnumb]=((segPrecisionTYPE)this->Prop[currlabelnumb])*tmpW[currlabelnumb];
                     sumW+=tmpW[currlabelnumb];
                 }
 
@@ -841,7 +841,7 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                 for(int humanater=0; humanater<this->CurrSizes->numclass; humanater++)
                 {
                     bool lnccexists=false;
-                    for(classifier_datatype lnccindex=0; lnccindex<this->Numb_Neigh; lnccindex++)
+                    for(categoricalLabelType lnccindex=0; lnccindex<this->Numb_Neigh; lnccindex++)
                     {
                         if(humanater==(this->LNCC[i+lnccindex*this->CurrSizes->numel]))
                         {
@@ -1019,7 +1019,7 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
 int seg_LabFusion::SBA_Estimate()
 {
 
-    classifier_datatype * inputCLASSIFIERptr = static_cast<classifier_datatype *>(this->inputCLASSIFIER->data);
+    categoricalLabelType * inputCLASSIFIERptr = static_cast<categoricalLabelType *>(this->inputCLASSIFIER->data);
     //LabFusion_datatype eps=0.1;
     bool * CurrLableImage=new bool [this->numel];
     if(CurrLableImage == NULL)
@@ -1038,22 +1038,22 @@ int seg_LabFusion::SBA_Estimate()
     //#endif
     for(int classifier=0; classifier<this->numb_classif; classifier++)
     {
-        LabFusion_datatype * geotime=NULL;
-        LabFusion_datatype * speedfunc=NULL;
+        segPrecisionTYPE * geotime=NULL;
+        segPrecisionTYPE * speedfunc=NULL;
         if(this->LNCC_status)
         {
-            speedfunc= (LabFusion_datatype *) calloc(this->numel, sizeof(LabFusion_datatype));
+            speedfunc= (segPrecisionTYPE *) calloc(this->numel, sizeof(segPrecisionTYPE));
             for(int i=0; i<(this->CurrSizes->numel); i++)
             {
                 bool lnccexists=false;
-                for(classifier_datatype lnccindex=0; lnccindex<this->Numb_Neigh; lnccindex++)
+                for(categoricalLabelType lnccindex=0; lnccindex<this->Numb_Neigh; lnccindex++)
                 {
                     if(classifier==(this->LNCC[i+lnccindex*this->CurrSizes->numel]))
                     {
                         lnccexists=true;
                     }
                 }
-                speedfunc[i]=((LabFusion_datatype)(lnccexists)+0.1);
+                speedfunc[i]=((segPrecisionTYPE)(lnccexists)+0.1);
             }
             for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
             {
@@ -1138,14 +1138,14 @@ int seg_LabFusion::SBA_Estimate()
 int seg_LabFusion::MV_Estimate()
 {
 
-    LabFusion_datatype * tmpW=new LabFusion_datatype [this->NumberOfLabels];
+    segPrecisionTYPE * tmpW=new segPrecisionTYPE [this->NumberOfLabels];
     if(tmpW == NULL)
     {
         fprintf(stderr,"* Error when alocating tmpW: Not enough memory\n");
         exit(1);
     }
 
-    classifier_datatype * inputCLASSIFIERptr = static_cast<classifier_datatype *>(this->inputCLASSIFIER->data);
+    categoricalLabelType * inputCLASSIFIERptr = static_cast<categoricalLabelType *>(this->inputCLASSIFIER->data);
 
     this->tracePQ=0;
     for(int i=0; i<(this->CurrSizes->numel); i++)
@@ -1165,8 +1165,8 @@ int seg_LabFusion::MV_Estimate()
                 }
             }
 
-            LabFusion_datatype tmpmaxval=-1;
-            LabFusion_datatype tmpmaxindex=-1;
+            segPrecisionTYPE tmpmaxval=-1;
+            segPrecisionTYPE tmpmaxindex=-1;
 
             if(this->NumberOfLabels>2)
             {
@@ -1200,8 +1200,8 @@ int seg_LabFusion::MV_Estimate()
                     tmpW[inputCLASSIFIERptr[i+NCCvalue*this->CurrSizes->numel]]++;
                 }
             }
-            LabFusion_datatype tmpmaxval=0;
-            LabFusion_datatype tmpmaxindex=0;
+            segPrecisionTYPE tmpmaxval=0;
+            segPrecisionTYPE tmpmaxindex=0;
             if(this->NumberOfLabels>2)
             {
                 for(int currlabelnumb=0; currlabelnumb<(this->NumberOfLabels); currlabelnumb++)
@@ -1230,8 +1230,8 @@ int seg_LabFusion::MV_Estimate()
                 tmpW[inputCLASSIFIERptr[i+classifier*this->CurrSizes->numel]]++;
 
             }
-            LabFusion_datatype tmpmaxval=-1;
-            LabFusion_datatype tmpmaxindex=-1;
+            segPrecisionTYPE tmpmaxval=-1;
+            segPrecisionTYPE tmpmaxindex=-1;
             if(this->NumberOfLabels>2)
             {
                 for(int currlabelnumb=0; currlabelnumb<(this->NumberOfLabels); currlabelnumb++)
@@ -1276,20 +1276,20 @@ int seg_LabFusion::UpdateMRF()
         int col_size, plane_size,indexCentre, indexWest, indexEast, indexSouth, indexNorth, indexTop, indexBottom;
         int indexWestSmall, indexEastSmall, indexSouthSmall, indexNorthSmall, indexTopSmall, indexBottomSmall;
         int ix, iy, iz, maxiy, maxix, maxiz, neighbourclass;
-        SegPrecisionTYPE Sum_Temp_MRF_Class_Expect;
+        segPrecisionTYPE Sum_Temp_MRF_Class_Expect;
         col_size = (int)(CurrSizes->xsize);
         plane_size = (int)(CurrSizes->xsize)*(CurrSizes->ysize);
         maxix = (int)(CurrSizes->xsize);
         maxiy = (int)(CurrSizes->ysize);
         maxiz = (int)(CurrSizes->zsize);
-        SegPrecisionTYPE Clique[MaxMultiLableClass]= {0};
+        segPrecisionTYPE Clique[maxMultiLableClass]= {0};
         if(Clique == NULL)
         {
             fprintf(stderr,"* The variable Clique was not allocated: OUT OF MEMORY!");
             exit(1);
         }
 
-        SegPrecisionTYPE Temp_MRF_Class_Expect[MaxMultiLableClass]= {0};
+        segPrecisionTYPE Temp_MRF_Class_Expect[maxMultiLableClass]= {0};
         if(Temp_MRF_Class_Expect == NULL)
         {
             fprintf(stderr,"* The variable Temp_MRF_Class_Expect was not allocated: OUT OF MEMORY!");
@@ -1458,11 +1458,11 @@ int seg_LabFusion::EstimateInitialDensity()
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 
-int seg_LabFusion::SetPQ(LabFusion_datatype tmpP,LabFusion_datatype tmpQ)
+int seg_LabFusion::SetPQ(segPrecisionTYPE tmpP,segPrecisionTYPE tmpQ)
 {
     for(int i=0; i<this->numb_classif; i++)
     {
-        this->ConfusionMatrix[i]=(LabFusion_datatype)tmpP;
+        this->ConfusionMatrix[i]=(segPrecisionTYPE)tmpP;
     }
     return 1;
 
@@ -1475,10 +1475,10 @@ int seg_LabFusion::UpdateDensity()
     if(this->PropUpdate)
     {
 
-        LabFusion_datatype tempsum=0;
+        segPrecisionTYPE tempsum=0;
         for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
         {
-            LabFusion_datatype tempprop=0;
+            segPrecisionTYPE tempprop=0;
             for( int i=0; i<this->numel; i++)
             {
                 if(this->maskAndUncertainIndeces[i]>0)
@@ -1491,7 +1491,7 @@ int seg_LabFusion::UpdateDensity()
         }
         for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
         {
-            this->Prop[currlabelnumb]=(this->Prop[currlabelnumb])/(LabFusion_datatype)(tempsum);
+            this->Prop[currlabelnumb]=(this->Prop[currlabelnumb])/(segPrecisionTYPE)(tempsum);
         }
 
         // Adding the 0.0001 trace amount and renormalise works like an EPS for numerical precision.
@@ -1503,7 +1503,7 @@ int seg_LabFusion::UpdateDensity()
         }
         for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
         {
-            this->Prop[currlabelnumb]=(this->Prop[currlabelnumb])/(LabFusion_datatype)(tempsum);;
+            this->Prop[currlabelnumb]=(this->Prop[currlabelnumb])/(segPrecisionTYPE)(tempsum);;
         }
 
 
@@ -1533,10 +1533,10 @@ int seg_LabFusion::UpdateDensity_noTest()
 
 
 
-    LabFusion_datatype tempsum=0;
+    segPrecisionTYPE tempsum=0;
     for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
     {
-        LabFusion_datatype tempprop=0;
+        segPrecisionTYPE tempprop=0;
         for( int i=0; i<this->numel; i++)
         {
             if(this->maskAndUncertainIndeces[i])
@@ -1549,7 +1549,7 @@ int seg_LabFusion::UpdateDensity_noTest()
     }
     for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
     {
-        this->Prop[currlabelnumb]=(this->Prop[currlabelnumb])/(LabFusion_datatype)(tempsum);
+        this->Prop[currlabelnumb]=(this->Prop[currlabelnumb])/(segPrecisionTYPE)(tempsum);
     }
 
 
@@ -1589,7 +1589,7 @@ int seg_LabFusion::Allocate_Stuff_MV()
 {
 
 
-    this->W=new LabFusion_datatype [this->numel];
+    this->W=new segPrecisionTYPE [this->numel];
     if(W == NULL)
     {
         fprintf(stderr,"* Error when alocating W: Not enough memory\n");
@@ -1610,7 +1610,7 @@ int seg_LabFusion::Allocate_Stuff_SBA()
 {
 
 
-    this->W=new LabFusion_datatype [this->numel*this->NumberOfLabels];
+    this->W=new segPrecisionTYPE [this->numel*this->NumberOfLabels];
     if(W == NULL)
     {
         fprintf(stderr,"* Error when alocating W: Not enough memory\n");
@@ -1635,7 +1635,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
         cout<< "Allocating this->FinalSeg";
         flush(cout);
     }
-    this->FinalSeg = new LabFusion_datatype [this->numel];
+    this->FinalSeg = new segPrecisionTYPE [this->numel];
     if(this->verbose_level>1)
     {
         cout<< " -> Done";
@@ -1655,7 +1655,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
 
 
 
-    classifier_datatype * inputCLASSIFIERptr = static_cast<classifier_datatype *>(this->inputCLASSIFIER->data);
+    categoricalLabelType * inputCLASSIFIERptr = static_cast<categoricalLabelType *>(this->inputCLASSIFIER->data);
 
     if(this->uncertainflag)
     {
@@ -1727,7 +1727,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
         flush(cout);
     }
 
-    this->W=new LabFusion_datatype [this->sizeAfterMaskingAndUncertainty*this->NumberOfLabels];
+    this->W=new segPrecisionTYPE [this->sizeAfterMaskingAndUncertainty*this->NumberOfLabels];
     if(this->W == NULL)
     {
         fprintf(stderr,"\n* Error when alocating this->W: Not enough memory\n");
@@ -1856,24 +1856,6 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
     dim_array[1]=(int)inputCLASSIFIER->ny;
     dim_array[2]=(int)inputCLASSIFIER->nz;
 
-    /*
-    if(this->verbose_level>1){
-      cout<< "Dilating uncertainarea";
-      flush(cout);
-    }
-
-    if(this->uncertainflag){
-      if(dilunc>0){
-          Dillate(this->uncertainarea,dilunc,dim_array,this->verbose_level);
-        }
-    }
-
-    if(this->verbose_level>1){
-      cout<< " - Done"<<endl;
-      flush(cout);
-    }
-    */
-
 
     if(this->verbose_level>1)
     {
@@ -1882,7 +1864,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
     }
     if(this->MRF_status)
     {
-        this->MRF=new LabFusion_datatype [this->sizeAfterMaskingAndUncertainty*this->NumberOfLabels];
+        this->MRF=new segPrecisionTYPE [this->sizeAfterMaskingAndUncertainty*this->NumberOfLabels];
         if(MRF == NULL)
         {
             fprintf(stderr,"* The variable MRF was not allocated: OUT OF MEMORY!");
@@ -1988,7 +1970,7 @@ nifti_image * seg_LabFusion::GetResult_label()
     {
         for(int i=0; i<(this->numel); i++)
         {
-            LabFusion_datatype wmax=-1;
+            segPrecisionTYPE wmax=-1;
             int wmaxindex=0;
             for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
             {
@@ -2018,7 +2000,7 @@ nifti_image * seg_LabFusion::GetResult_label()
         {
             if(this->maskAndUncertainIndeces[i]>=0)
             {
-                LabFusion_datatype wmax=-1;
+                segPrecisionTYPE wmax=-1;
                 int wmaxindex=0;
                 for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
                 {
@@ -2180,7 +2162,14 @@ int  seg_LabFusion::Run_STAPLE_or_STEPS()
         // Print Trace depending on the verbose level
         if(this->verbose_level>0)
         {
-            printTrace(this->iter,this->tracePQ,this->oldTracePQ);
+            if(this->iter>0)
+            {
+                cout<< "Normalized Trace Change = " << fabs((this->tracePQ-this->oldTracePQ)/fabsf(this->oldTracePQ)) << endl;
+            }
+            else
+            {
+                cout<< "Initial Normalized Trace Value = " << setprecision(7) << this->tracePQ << endl;
+            }
         }
 
         // EXIT CHECKS

@@ -5,18 +5,28 @@
 
 using namespace std;
 
-template <class D> class matrix
+/// @brief My own very simple implementation of a matrix class.
+///
+/// Did this mostly for fun. This class will probably be replaced with Eigen, since Eigen is better and it has been recently added as a dependency.
+template <class matrixDataType> class seg_Matrix
 {
 
-    int size; //numb of columns
-    int size2; //numb of rows
-    D* data;
+    int size; ///< @brief Number of columns
+    int size2; ///< @brief Number of rows
+    matrixDataType* data; ///< @brief Data pointer, stored as an array
+
+    /// @brief Delete the current data and allocate a matrix of length size2*size
     void allocate()
     {
-        delete[] data;
-        data = new D [size*size2];
+        if(data!=NULL)
+        {
+            delete [] data;
+        }
+        data = new matrixDataType [size*size2];
     }
-    matrix()
+
+    /// @brief Constructure. Initialise all to 0/NULL
+    seg_Matrix()
     {
         this->size = 0;
         this->size2 = 0;
@@ -24,50 +34,61 @@ template <class D> class matrix
     }
 
 public:
-    matrix(int tmpsize)
+
+    /// @brief Initialise a square matrix of size squareSize
+    seg_Matrix(int squareSize)
     {
         this->size2 = 0;
         this->size = 0;
         this->data = NULL;
-        if (tmpsize <= 0) tmpsize = 5;
-        this->size = tmpsize;
-        this->size2 = tmpsize;
-        this->data = NULL;
-        allocate();
-    }
-    matrix(int tmpsize, int tmpsize2)    // row, column
-    {
-        this->size2 = 0;
-        this->size = 0;
-        this->data = NULL;
-        if (tmpsize <= 0)
+        if (squareSize <= 2)
         {
-            cout << "ERROR: Size <= 0" << endl;
-            return;
+            squareSize = 2;
         }
-        if (tmpsize2 <= 0)
-        {
-            cout << "ERROR: Size <= 0" << endl;
-            return;
-        }
-        this->size2 = tmpsize;
-        this->size = tmpsize2;
+        this->size = squareSize;
+        this->size2 = squareSize;
         this->data = NULL;
         allocate();
     }
 
-    ~matrix()
+    /// @brief Initialise a matrix of size _size1*_size2
+    seg_Matrix(int _size1, int _size2)
     {
+        this->size2 = 0;
+        this->size = 0;
+        this->data = NULL;
+        if (_size1 <= 0)
+        {
+            cout << "ERROR: Size <= 0" << endl;
+            return;
+        }
+        if (_size2 <= 0)
+        {
+            cout << "ERROR: Size <= 0" << endl;
+            return;
+        }
+        this->size2 = _size1;
+        this->size = _size2;
+        this->data = NULL;
+        allocate();
+    }
+
+     /// @brief Destructor. Delete data if not NULL
+    ~seg_Matrix()
+    {
+        if(data!=NULL)
+        {
         delete[] data;
+        }
     }
-
+    /// @brief Prints out the diagonal and off-diagonal resuduals of the matrix whn compared to identity. Provides insights about the singularity. Mostly used for debugging.
     void comparetoidentity()
     {
         if(size==size2)
         {
             int worstdiagonal = 0;
-            D maxunitydeviation = 0.0;
-            D currentunitydeviation;
+            matrixDataType maxunitydeviation = 0.0;
+            matrixDataType currentunitydeviation;
             for ( int i = 0; i < size; i++ )
             {
                 currentunitydeviation = data[i*size+i] - 1.;
@@ -80,8 +101,8 @@ public:
             }
             int worstoffdiagonalrow = 0;
             int worstoffdiagonalcolumn = 0;
-            D maxzerodeviation = 0.0;
-            D currentzerodeviation ;
+            matrixDataType maxzerodeviation = 0.0;
+            matrixDataType currentzerodeviation ;
             for ( int i = 0; i < size; i++ )
             {
                 for ( int j = 0; j < size; j++ )
@@ -109,12 +130,14 @@ public:
             cout << "ERROR: Compare to identity - Matrix is not Square"<< endl;
         }
     }
-    void settoproduct(matrix& left, matrix& right)
+
+     /// @brief Set the current matrix to the product of left and right
+    void settoproduct(seg_Matrix& left, seg_Matrix& right)
     {
-        int lsize = left.getsize();
-        int lsize2 = left.getsize2();
-        int rsize = right.getsize();
-        int rsize2 = right.getsize2();
+        int lsize = left.getSizeColumn();
+        int lsize2 = left.getSizeRow();
+        int rsize = right.getSizeColumn();
+        int rsize2 = right.getSizeRow();
 
         if (lsize!=rsize2)
         {
@@ -124,12 +147,12 @@ public:
         size2=lsize2; // numb rows
         size=rsize; // numb cols
         allocate();
-        D leftvalue=0;
-        D rightvalue=0;
+        matrixDataType leftvalue=0;
+        matrixDataType rightvalue=0;
         for ( int i = 0; i < size2; i++ ) // for each row
             for ( int j = 0; j < size; j++ )    // for each column
             {
-                D sum = 0.0;
+                matrixDataType sum = 0.0;
                 bool success;
                 for (int c = 0; c < lsize; c++)
                 {
@@ -141,6 +164,7 @@ public:
             }
     }
 
+     /// @brief Print the matrix
     void dumpmatrix()
     {
 
@@ -153,12 +177,14 @@ public:
             cout << endl;
         }
     }
-    void copymatrix(matrix&  source)
+
+    /// @brief Make "this" a copy of the input source
+    void copymatrix(seg_Matrix&  source)
     {
-        size = source.getsize();
-        size2 = source.getsize2();
+        size = source.getSizeColumn();
+        size2 = source.getSizeRow();
         allocate();
-        D value=0;
+        matrixDataType value=0;
         for ( int i = 0; i < size2; i++ )// curr row
             for ( int j = 0; j < size; j++ )   // curr column
             {
@@ -168,40 +194,45 @@ public:
             }
     }
 
-    void setsize(int newsize)
+    /// @brief Set the matrix as a diagonal matrix of size diagonalSize. Realocates the data afterwards.
+    void setsize(int diagonalSize)
     {
-        if (newsize > 0 )
+        if (diagonalSize > 0 )
         {
-            size = newsize ;
-            size2 = newsize;
+            size = diagonalSize ;
+            size2 = diagonalSize;
             allocate();
         }
     }
 
-    void setsize(int newsize, int newsize2)
+    /// @brief Set the matrix to the size _size1*_size2. Realocates the data afterwards.
+    void setsize(int _size1, int _size2)
     {
-        if (newsize > 0 && newsize2 > 0)
+        if (_size1 > 0 && _size2 > 0)
         {
-            size = newsize ;
-            size2 = newsize2;
+            size = _size1 ;
+            size2 = _size2;
             allocate();
         }
     }
 
-    int getsize()
+    /// @brief Get the number of columns
+    int getSizeColumn()
     {
         return size;
     }
 
-    int getsize2()
+    /// @brief Get the number of rows
+    int getSizeRow()
     {
         return size2;
     }
 
-    void getvalue(int row, int column, D& returnvalue, bool& success)
+    /// @brief Get the value at a specific location (row,column) and output it as returnvalue
+    void getvalue(int row, int column, matrixDataType& returnvalue, bool& success)
     {
         if ( (row>=size2) || (column>=size)
-                || (row<0) || (column<0) )
+             || (row<0) || (column<0) )
         {
             success = false;
             return;
@@ -209,13 +240,17 @@ public:
         returnvalue = data[ row * size + column ];
         success = true;
     }
-    bool setvalue(int row, int column, D newvalue)
+
+    /// @brief Set the value at a specific location (row,column) to newValue
+    bool setvalue(int row, int column, matrixDataType newvalue)
     {
         if ( (row >= size2) || (column >= size)
-                || (row<0) || (column<0) ) return false;
+             || (row<0) || (column<0) ) return false;
         data[ row * size + column ] = newvalue;
         return true;
     }
+
+    /// @brief Invert the matrix using a LU decomposition
     void invert()
     {
         if (size!=size2)
@@ -232,7 +267,7 @@ public:
         {
             for (int j=i; j < size; j++)    // do a column of L
             {
-                D sum = 0.0;
+                matrixDataType sum = 0.0;
                 for (int k = 0; k < i; k++)
                 {
                     sum += data[j*size+k] * data[k*size+i];
@@ -242,7 +277,7 @@ public:
             if (i == size-1) continue;
             for (int j=i+1; j < size; j++)     // do a row of U
             {
-                D sum = 0.0;
+                matrixDataType sum = 0.0;
                 for (int k = 0; k < i; k++)
                 {
                     sum += data[i*size+k]*data[k*size+j];
@@ -253,7 +288,7 @@ public:
         for ( int i = 0; i < size; i++ )  // invert L
             for ( int j = i; j < size; j++ )
             {
-                D x = 1.0;
+                matrixDataType x = 1.0;
                 if ( i != j )
                 {
                     x = 0.0;
@@ -271,7 +306,7 @@ public:
                 {
                     continue;
                 }
-                D sum = 0.0;
+                matrixDataType sum = 0.0;
                 for ( int k = i; k < j; k++ )
                 {
                     sum += data[k*size+j]*( (i==k) ? 1.0 : data[i*size+k] );
@@ -281,7 +316,7 @@ public:
         for ( int i = 0; i < size; i++ )   // final inversion
             for ( int j = 0; j < size; j++ )
             {
-                D sum = 0.0;
+                matrixDataType sum = 0.0;
                 for ( int k = ((i>j)?i:j); k < size; k++ )
                 {
                     sum += ((j==k)?1.0:data[j*size+k])*data[k*size+i];
@@ -289,6 +324,8 @@ public:
                 data[j*size+i] = sum;
             }
     }
+
+    /// @brief Estimate the matrix determinant using a recursive method
     double determinant()
     {
 
@@ -336,6 +373,7 @@ public:
         return det;
     }
 
+    /// @brief The actual recusive function used to estimate the matrix determinant. \sa determinant
     double Determinant_lib(double **a,int n)
     {
         int i,j,j1,j2;

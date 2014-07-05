@@ -1,3 +1,14 @@
+/**
+ * @file seg_CalcTopNCC.cpp
+ * @author M. Jorge Cardoso
+ * @date 01/01/2014
+ *
+ * Copyright (c) 2014, University College London. All rights reserved.
+ * Centre for Medical Image Computing (CMIC)
+ * See the LICENSE.txt file in the nifty_seg root folder
+ *
+ */
+
 #include "_seg_tools.h"
 #include "_seg_common.h"
 #include <iostream>
@@ -129,7 +140,7 @@ int main(int argc, char **argv)
             return 0;
         }
 
-        nccvalues[i]=seg_norm3GNCC(Image_Target,Image_template,Mask,0);
+        nccvalues[i]=estimateNCC3D(Image_Target,Image_template,Mask,0);
         nccvaluesold[i]=nccvalues[i];
         nifti_image_free(Image_template);
         Image_template=NULL;

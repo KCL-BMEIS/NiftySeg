@@ -1,3 +1,14 @@
+/**
+ * @file seg_LoAd.cpp
+ * @author M. Jorge Cardoso
+ * @date 01/01/2014
+ *
+ * Copyright (c) 2014, University College London. All rights reserved.
+ * Centre for Medical Image Computing (CMIC)
+ * See the LICENSE.txt file in the nifty_seg root folder
+ *
+ */
+
 #include "_seg_LoAd.h"
 #include "_seg_EM.h"
 #include <iostream>
@@ -33,7 +44,7 @@ void Merge_Priors(nifti_image * Priors, nifti_image ** Priors_temp)
 {
     long img_size= Priors->nx * Priors->ny * Priors->nz;
     SegPrecisionTYPE * Prior_ptr_start = static_cast<SegPrecisionTYPE *>(Priors->data);
-    for(long cl=0; cl<(non_PV_numclass); cl++)
+    for(long cl=0; cl<(nonPVNumClass); cl++)
     {
         SegPrecisionTYPE * Prior_tmp_ptr = static_cast<SegPrecisionTYPE *>(Priors_temp[cl]->data);
         SegPrecisionTYPE * Prior_ptr = &Prior_ptr_start[cl*img_size];
@@ -67,7 +78,7 @@ int main(int argc, char **argv)
             return 0;
         }
 
-        SEG_PARAM * segment_param = new SEG_PARAM [1]();
+        seg_EM_Params * segment_param = new seg_EM_Params [1]();
         //SEG_PARAM segment_param;
 
         // Set defaults (SEG_PARAM constructor sets everything to zero)
@@ -209,7 +220,7 @@ int main(int argc, char **argv)
         seg_changeDatatype<SegPrecisionTYPE>(Mask);
 
 
-        nifti_image ** Priors_temp=new nifti_image * [non_PV_numclass];
+        nifti_image ** Priors_temp=new nifti_image * [nonPVNumClass];
 
         if(segment_param->flag_manual_priors)
         {
@@ -237,7 +248,7 @@ int main(int argc, char **argv)
 
         nifti_image * Priors=nifti_copy_nim_info(T1);
         Priors->dim[0]=4;
-        Priors->dim[4]=non_PV_numclass;
+        Priors->dim[4]=nonPVNumClass;
         Priors->datatype=DT_FLOAT32;
         Priors->cal_max=1;
 
@@ -246,7 +257,7 @@ int main(int argc, char **argv)
         Priors->data = (void *) calloc(Priors->nvox, sizeof(SegPrecisionTYPE));
 
         Merge_Priors(Priors,Priors_temp);
-        for(int i=0; i<non_PV_numclass; i++)
+        for(int i=0; i<nonPVNumClass; i++)
         {
             nifti_image_free(Priors_temp[i]);
             Priors_temp[i]=NULL;
