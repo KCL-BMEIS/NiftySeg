@@ -1,5 +1,7 @@
 #include "_seg_LoAd.h"
 
+/// @brief The LoAd segment tool
+/// \deprecated
 nifti_image * LoAd_Segment(nifti_image * T1, nifti_image * Mask, nifti_image * Priors, seg_EM_Params * segment_param)
 {
 
@@ -527,7 +529,7 @@ int PriorWeight_mask(float * ShortPrior,nifti_image * Priors, float * Expec,floa
 {
 
     for(long i=0; i<(CurrSizes->numclass*CurrSizes->numelmasked); i++)ShortPrior[i]=Expec[i];
-    GaussianFilter4D_cArray(ShortPrior,S2L,L2S,GaussKernelSize,CurrSizes,CSFclass);
+    GaussianFilter4D_cArray(ShortPrior,S2L,L2S,GaussKernelSize,CurrSizes);
     float * PriorsPtr = static_cast<float *>(Priors->data);
     long currindex=0;
     for(long k=0; k<CurrSizes->numclass; k++)
@@ -2259,7 +2261,7 @@ int Relax_Priors(segPrecisionTYPE * Priors,
             cout<< "Relaxing Priors with Rf = "<< RelaxFactor << endl;
             flush(cout);
         }
-        GaussianFilter4D_cArray(Expec,S2L,L2S,2.0, CurrSizes,CSFclass);
+        GaussianFilter4D_cArray(Expec,S2L,L2S,2.0, CurrSizes);
         Relax_Priors_Share(Priors,Expec,RelaxFactor,G,be,CurrSizes);
         for(long i=0; i<(CurrSizes->numclass*CurrSizes->numelmasked); i++)MRF[i]=Priors[i];
         memcpy(Priors,Expec,CurrSizes->numelmasked*CurrSizes->numclass*sizeof(segPrecisionTYPE));
@@ -2346,8 +2348,8 @@ int Convert_to_PV(nifti_image * T1,
     {
         cout<< "Covert to Explicit PV modeling" << endl;
     }
-    GaussianFilter4D_cArray(Expec,S2L,L2S,1.0,CurrSizes,CSFclass);
-    GaussianFilter4D_cArray(MRF,S2L,L2S,1.0,CurrSizes,CSFclass);
+    GaussianFilter4D_cArray(Expec,S2L,L2S,1.0,CurrSizes);
+    GaussianFilter4D_cArray(MRF,S2L,L2S,1.0,CurrSizes);
     Convert_WM_and_GM_to_PV(T1,BiasField,ShortPrior,Expec,S2L,M,V,CurrSizes);
     CurrSizes->numclass=7;
     for(long i=0; i<(CurrSizes->numclass*CurrSizes->numelmasked); i++)
@@ -2440,7 +2442,7 @@ int Sulci_and_gyri_correction(segPrecisionTYPE * MRF_Beta,
         }
 
     }
-    GaussianFilter4D_cArray(Expec,S2L,L2S,1.0, CurrSizes,CSFclass);
+    GaussianFilter4D_cArray(Expec,S2L,L2S,1.0, CurrSizes);
 
     for(long i=0; i<(long)CurrSizes->numelmasked; i++)
     {

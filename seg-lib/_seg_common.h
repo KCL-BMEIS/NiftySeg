@@ -1,6 +1,6 @@
 # pragma once
 /** @file
- * @defgroup DEFINES_SEG_COMMON Overall defines & includes (_seg_common.h)
+ * @defgroup DEFINES_SEG_COMMON seg_common.h defines
  * @{  */
 //Global includes
 

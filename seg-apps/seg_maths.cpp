@@ -62,7 +62,6 @@ void Usage(char *exec)
     printf("\n\t* * Image similarity: Local metrics * *\n");
     printf("\t-lncc\t<file> <std>\tLocal CC between current img and <file> on a kernel with <std>\n");
     printf("\t-lssd\t<file> <std>\tLocal SSD between current img and <file> on a kernel with <std>\n");
-    //printf("\t-lmi\t<file> <std>\tLocal MI between current img and <file> on a kernel with <std>\n");
     printf("\n\t* * Normalisation * *\n");
     printf("\t-llsnorm\t<file_norm>\t Linear LS normalisation between current and <file_norm>\n");
     printf("\t-lltsnorm\t<file_norm> <float>\t Linear LTS normalisation assuming <float> percent outliers\n");
@@ -600,7 +599,8 @@ int main(int argc, char **argv)
             else if(strcmp(argv[i], "-llsnorm") == 0)
             {
                 string parser=argv[++i];
-                if(   (strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))    ||     (parser.length()==1 && parser.find("0")!=string::npos)   )
+                if(   (strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))
+                      ||(parser.length()==1 && parser.find("0")!=string::npos))
                 {
                     cerr<<"ERROR: "<<argv[i]<<"  has to be an image"<<endl;
                     exit(1);
@@ -648,7 +648,8 @@ int main(int argc, char **argv)
                 string parserout=argv[++i];
                 float percent_outlier=strtod(parserout.c_str(),NULL);
                 percent_outlier=percent_outlier>0.5?0.5:(percent_outlier<0?0:percent_outlier);
-                if(   (strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))    ||     (parser.length()==1 && parser.find("0")!=string::npos)   )
+                if(   (strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos ))
+                      ||(parser.length()==1 && parser.find("0")!=string::npos))
                 {
                     cerr<<"ERROR: "<<argv[i]<<"  has to be an image"<<endl;
                     exit(1);

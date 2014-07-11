@@ -10,116 +10,48 @@ void GaussianFilter4D_cArray(segPrecisionTYPE * ShortData,
                              int * S2L,
                              int * L2S,
                              segPrecisionTYPE gauss_std,
-                             ImageSize * CurrSizes,
-                             int class_with_CSF)
+                             ImageSize * CurrSizes)
 {
 
-    long kernelsize=0;
-    long kernelsizemin=(int)floorf(gauss_std*6.0);
-    long kernelsizemax=(int)ceilf(gauss_std*6.0);
+    const int dims[8]={(CurrSizes->xsize>1)+(CurrSizes->ysize>1)+(CurrSizes->zsize>1)+(CurrSizes->tsize>1)+(CurrSizes->usize>1),
+                       CurrSizes->xsize,CurrSizes->ysize,CurrSizes->zsize,CurrSizes->tsize,CurrSizes->usize,0,0};
+    nifti_image *TMPimg = nifti_make_new_nim(dims,NIFTI_TYPE_FLOAT32,0);
+    TMPimg->dim[0]=TMPimg->ndim=dims[0];
+    TMPimg->dim[4]=TMPimg->nt=CurrSizes->tsize;
+    TMPimg->dim[5]=TMPimg->nu=1;
+    TMPimg->pixdim[5]=TMPimg->du=1;
+    nifti_update_dims_from_array(TMPimg);
+    TMPimg->datatype = NIFTI_TYPE_FLOAT32;
+    TMPimg->nbyper = sizeof(float);
+    TMPimg->data = (void *)(malloc(CurrSizes->numel*CurrSizes->numclass*sizeof(segPrecisionTYPE)));
 
-    if((kernelsizemin/2.0)==(double)(kernelsizemin/2) && kernelsizemin!=kernelsizemax)  // Which one is odd? kernelsizemin or kernelsizemax?
-    {
-        kernelsize=kernelsizemax;
-    }
-    else if((kernelsizemax/2.0)==(double)(kernelsizemax/2) && kernelsizemin!=kernelsizemax)
-    {
-        kernelsize=kernelsizemin;
-    }
-    else
-    {
-        kernelsize=kernelsizemin+1;
-    }
-
-    if(kernelsize<3)
-    {
-        kernelsize=3;
-    }
-
-    long kernelshift=(int)floorf(kernelsize/2);
-    segPrecisionTYPE GaussKernel [100]= {0};
-
-    for(long i=0; i<kernelsize; i++)
-    {
-        float kernelvalue=expf((float)(-0.5*powf((i-kernelshift)/gauss_std, 2)))/(sqrtf(2*3.14159265*powf(gauss_std, 2)));
-        GaussKernel[i]=kernelvalue;
-    }
-
-    segPrecisionTYPE * Buffer= new segPrecisionTYPE [CurrSizes->numel]();
-    segPrecisionTYPE * LongData= new segPrecisionTYPE [CurrSizes->numel]();
-
-
-    long shiftdirection[3];
-    shiftdirection[0]=1;
-    shiftdirection[1]=(int)CurrSizes->xsize;
-    shiftdirection[2]=(int)CurrSizes->xsize*(int)CurrSizes->ysize;
-    long dim_array[3];
-    dim_array[0]=(int)CurrSizes->xsize;
-    dim_array[1]=(int)CurrSizes->ysize;
-    dim_array[2]=(int)CurrSizes->zsize;
-
-
-    //Outside the mask is considered Pure CSF
-    int outsiderangevalue[10];
-    for(long i=0; i<10; i++)
-    {
-        outsiderangevalue[i]=0;
-    }
-    outsiderangevalue[class_with_CSF]=1;
+    segPrecisionTYPE * TMPdataPtr=static_cast<segPrecisionTYPE *>(TMPimg->data);
 
     for(long curr4d=0; curr4d<CurrSizes->numclass; curr4d++)  //For Each Class
     {
-        int current_4dShift_short=curr4d*CurrSizes->numelmasked;
-        for(long index=0; index<(long)CurrSizes->numelmasked; index++) //Copy Class to Buffer in LongFormat
+        for(long index=0; index<(long)CurrSizes->numel; index++) //Every voxel is initially a NaN
         {
-            Buffer[S2L[index]]=ShortData[index+current_4dShift_short];
+            TMPdataPtr[index+curr4d*CurrSizes->numel]=std::numeric_limits<float>::quiet_NaN();
         }
-
-
-        long xyzpos[3];
-        for(long currentdirection=0; currentdirection<3; currentdirection++) //Blur Buffer along each direction
+        for(long index=0; index<(long)CurrSizes->numelmasked; index++) //Copy Class to TMPdataPtr in LongFormat if inside S2L
         {
-            int index=0;
-            for(xyzpos[2]=0; xyzpos[2]<(long)CurrSizes->zsize; xyzpos[2]++)
-            {
-                for(xyzpos[1]=0; xyzpos[1]<(long)CurrSizes->ysize; xyzpos[1]++)
-                {
-                    for(xyzpos[0]=0; xyzpos[0]<(long)CurrSizes->xsize; xyzpos[0]++)
-                    {
-                        segPrecisionTYPE tmpvalue=0.0f;
-                        segPrecisionTYPE tmpkernelsum=0.0f;
-                        LongData[index]=0.0f;
-                        if(L2S[index]>=0)
-                        {
-                            for(long shift=((xyzpos[currentdirection]<kernelshift)?-xyzpos[currentdirection]:-kernelshift); shift<=((xyzpos[currentdirection]>=(dim_array[currentdirection]-kernelshift))?(int)dim_array[currentdirection]-xyzpos[currentdirection]-1:kernelshift) ; shift++)
-                            {
-                                tmpvalue+=(L2S[index+shift*shiftdirection[currentdirection]]==-1)?GaussKernel[shift+kernelshift]*outsiderangevalue[curr4d]:GaussKernel[shift+kernelshift]*Buffer[index+shift*shiftdirection[currentdirection]];
-                                tmpkernelsum+=GaussKernel[shift+kernelshift];
-                            }
-                            LongData[index]=tmpvalue/tmpkernelsum;
-                        }
-                        index++;
-                    }
-                }
-            }
-            if(currentdirection<2)
-            {
-                for(long index2=0; index2<(long)CurrSizes->numel; index2++)
-                {
-                    Buffer[index2]=LongData[index2];
-                }
-            }
+            TMPdataPtr[S2L[index]+curr4d*CurrSizes->numel]=ShortData[index+curr4d*CurrSizes->numelmasked];
         }
-
-        for(long index=0; index<(long)CurrSizes->numelmasked; index++) //Copy Class to Buffer in LongFormat
-        {
-            ShortData[index+current_4dShift_short]=LongData[S2L[index]];
-        }
-
 
     }
-    delete [] LongData;
-    delete [] Buffer;
+
+    GaussianSmoothing4D_nifti(TMPimg,NULL,gauss_std);
+
+
+    for(long curr4d=0; curr4d<CurrSizes->numclass; curr4d++)  //For Each Class
+    {
+        for(long index=0; index<(long)CurrSizes->numelmasked; index++) //Copy data from TMPdataPtr back to the shortData
+        {
+            ShortData[index+curr4d*CurrSizes->numelmasked]=TMPdataPtr[S2L[index]+curr4d*CurrSizes->numel];
+        }
+    }
+
+    nifti_image_free(TMPimg);
     return;
 }
 
@@ -132,7 +64,7 @@ void GaussianFilter4D_cArray(segPrecisionTYPE * LongData,
                        CurrSizes->xsize,CurrSizes->ysize,CurrSizes->zsize,CurrSizes->tsize,CurrSizes->usize,0,0};
     nifti_image *TMPimg = nifti_make_new_nim(dims,NIFTI_TYPE_FLOAT32,0);
     TMPimg->dim[0]=TMPimg->ndim=3;
-    TMPimg->dim[4]=TMPimg->nt=1;
+    TMPimg->dim[4]=TMPimg->nt=CurrSizes->tsize;
     TMPimg->dim[5]=TMPimg->nu=1;
     TMPimg->pixdim[5]=TMPimg->du=1;
     nifti_update_dims_from_array(TMPimg);
@@ -289,138 +221,7 @@ void GaussianSmoothing4D_nifti(nifti_image * Data,int * mask,float gauss_std_in)
     return;
 }
 
-void GaussianFilter4D_cArray(segPrecisionTYPE * DataPTR,int * mask,segPrecisionTYPE gauss_std_in, ImageSize *Currentsize)
-{
 
-    int nx=Currentsize->xsize;
-    int ny=Currentsize->ysize;
-    int nz=Currentsize->zsize;
-
-    float * ImageBuffer= new float [nx*ny*nz]();
-    float * Density= new float [nx*ny*nz]();
-    float * DensityBuffer= new float [nx*ny*nz]();
-
-
-    int shiftdirection[3]= {1,nx,nx*ny};
-    int dim_array[3]= {nx,ny,nz};
-    float dist_array[3]= {1.0f,1.0f,1.0f};
-
-    int numel=nx*ny*nz;
-    for(long curr4d=0; curr4d<Currentsize->tsize; curr4d++)  //For Each TP
-    {
-        int current_4dShift_short=curr4d*nx*ny*nz;
-
-        // Masking density and area
-        int i=0;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    shared(DataPTR,mask,current_4dShift_short,nx,ny,nz,Density) \
-    private(i)
-#endif
-        for(i=0; i<nx*ny*nz; i++)
-        {
-            Density[i]=mask[i]>0;
-            DataPTR[i+current_4dShift_short]=(mask[i]>0)?DataPTR[i+current_4dShift_short]:0;
-        }
-
-        //Blur Buffer and density along each direction
-        for(long currentdirection=0; currentdirection<3; currentdirection++)
-        {
-
-            // Setup kernel
-            float gauss_std=gauss_std_in>0?gauss_std_in:fabs(gauss_std_in/(float)dist_array[currentdirection]);
-
-            int kernelsize=(int)(gauss_std*6.0f) % 2 != 0 ? (int)(gauss_std*6.0f) : (int)(gauss_std*6.0f)+1;
-            int kernelshift=(int)(kernelsize/2.0f);
-            float GaussKernel[400]= {0};
-            float kernelsum=0;
-            for(int i=0; i<kernelsize; i++)
-            {
-                GaussKernel[i]=expf((float)(-0.5f*powf((float)((float)i-(float)kernelshift)/gauss_std, 2.0f)))/(sqrtf(2.0f*3.14159265*powf(gauss_std, 2)));
-                kernelsum+=GaussKernel[i];
-            }
-            for(int i=0; i<kernelsize; i++)
-                GaussKernel[i]/=kernelsum;
-
-            // Updating buffers
-            int index;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    shared(DataPTR,Density,ImageBuffer,DensityBuffer,current_4dShift_short,numel) \
-    private(i)
-#endif
-            for(index=0; index<numel; index++)
-            {
-                ImageBuffer[index]=DataPTR[index+current_4dShift_short];
-                DensityBuffer[index]=Density[index];
-            }
-
-            // openmp defines
-
-            float TmpDataConvolution=0;
-            float TmpMaskConvolution=0;
-            float TmpKernDensity=0;
-            int shiftstart=0;
-            int shiftstop=0;
-            int shift=0;
-            int xyzpos[3];
-            int xyzpos2;
-            // For every pixel
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    shared(DataPTR,GaussKernel,ImageBuffer,DensityBuffer,nx,ny,nz,kernelshift,Density,dim_array,currentdirection,shiftdirection,current_4dShift_short) \
-    private(xyzpos2,TmpDataConvolution,TmpMaskConvolution,TmpKernDensity,index,shiftstart,shiftstop,shift,xyzpos)
-#endif
-            for(xyzpos2=0; xyzpos2<nz; xyzpos2++)
-            {
-                xyzpos[2]=xyzpos2;
-                for(xyzpos[1]=0; xyzpos[1]<ny; xyzpos[1]++)
-                {
-                    for(xyzpos[0]=0; xyzpos[0]<nx; xyzpos[0]++)
-                    {
-
-                        TmpDataConvolution=0;
-                        TmpMaskConvolution=0;
-                        TmpKernDensity=0;
-                        index=xyzpos[0]+(xyzpos[1]+xyzpos[2]*ny)*nx;
-                        // Calculate allowed kernel shifts
-                        shiftstart=((xyzpos[currentdirection]<kernelshift)?-xyzpos[currentdirection]:-kernelshift);
-                        shiftstop=((xyzpos[currentdirection]>=(dim_array[currentdirection]-kernelshift))?(int)dim_array[currentdirection]-xyzpos[currentdirection]-1:kernelshift);
-
-                        for(shift=shiftstart; shift<=shiftstop; shift++)
-                        {
-                            // Data Blur
-                            TmpDataConvolution+=GaussKernel[shift+kernelshift]*ImageBuffer[index+shift*shiftdirection[currentdirection]];
-                            // Mask Blur
-                            TmpMaskConvolution+=GaussKernel[shift+kernelshift]*DensityBuffer[index+shift*shiftdirection[currentdirection]];
-                            // Kernel density
-                            TmpKernDensity+=GaussKernel[shift+kernelshift];
-                        }
-                        // Devide convolutions by the kernel density
-                        DataPTR[index+current_4dShift_short]=TmpDataConvolution/TmpKernDensity;
-                        Density[index]=TmpMaskConvolution/TmpKernDensity;
-
-                    }
-                }
-            }
-        }
-        int index=0;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    shared(DataPTR, mask, Density,current_4dShift_short,numel) \
-    private(index)
-#endif
-        for(index=0; index<numel; index++)
-        {
-            DataPTR[index+current_4dShift_short]=(mask[index]>0)?DataPTR[index+current_4dShift_short]/Density[index]:0;
-        }
-    }
-
-    delete [] ImageBuffer;
-    delete [] Density;
-    delete [] DensityBuffer;
-    return;
-}
 
 
 void BlockSmoothing(nifti_image * Data,int * mask,int side_size)
@@ -1394,8 +1195,8 @@ unsigned char * estimateMLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,floa
             BaseSTD[i]=BaseImageptr[i]*BaseImageptr[i];
         }
         // Calc Mean
-        int realt=CurrSizes->numclass;
-        CurrSizes->numclass=1;
+        int realt=CurrSizes->tsize;
+        CurrSizes->tsize=1;
         GaussianFilter4D_cArray(BaseMean,(float)(distance_level),CurrSizes);
         GaussianFilter4D_cArray(BaseSTD,(float)(distance_level),CurrSizes);
 
@@ -1468,7 +1269,7 @@ unsigned char * estimateMLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,floa
         delete [] BaseSTD;
         delete [] BaseMean;
 
-        CurrSizes->numclass=realt;
+        CurrSizes->tsize=realt;
         LNCC_ordered=new unsigned char [numbordered_level*BaseImage->nx*BaseImage->ny*BaseImage->nz];
         if(LNCC_ordered == NULL)
         {
@@ -1587,8 +1388,8 @@ unsigned char * estimateLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,float
         BaseSTD[i]=BaseImageptr[i]*BaseImageptr[i];
     }
     // Calc Mean
-    int realt=CurrSizes->numclass;
-    CurrSizes->numclass=1;
+    int realt=CurrSizes->tsize;
+    CurrSizes->tsize=1;
     GaussianFilter4D_cArray(BaseMean,(float)(distance),CurrSizes);
     GaussianFilter4D_cArray(BaseSTD,(float)(distance),CurrSizes);
 
@@ -1666,7 +1467,7 @@ unsigned char * estimateLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,float
 
 
     // cout << "Filtering LNCC"<< endl;
-    CurrSizes->numclass=realt;
+    CurrSizes->tsize=realt;
     //  Gaussian_Filter_4D(LNCCptr,(float)(distance),CurrSizes);
 
     LNCC_ordered=new unsigned char [numberordered*BaseImage->nx*BaseImage->ny*BaseImage->nz];

@@ -12,14 +12,17 @@ class seg_EM
 {
 protected:
 
-    nifti_image*    InputImage;     /// @brief A pointer to an externally defined input data. Do not delete this pointer internally.
-    bool    inputImage_status;      /// @brief A status bool assigning if the image has been read.
-    int     verbose_level;          /// @brief The level of verbose of the algorithm. 0=off, 1="balanced amount of info", 2="dump all possible info"
-    string  filenameOut;            /// @brief The filename of the Output result of the segmentation.
+    /// @brief A pointer to an externally defined input data. Do not delete this pointer internally.
+    nifti_image*    InputImage;
+    /// @brief A status bool assigning if the image has been read.
+    bool    inputImage_status;
+    /// @brief The level of verbose of the algorithm. 0=off, 1="balanced amount of info", 2="dump all possible info"
+    int     verbose_level;
+    /// @brief The filename of the Output result of the segmentation.
+    string  filenameOut;
 
-    // Size
-    /// @brief Number of dimentions of the image (2d=2, 3d=3, 4d=4)
-    int     dimentions;
+    /// @brief Number of dimensions of the image (2d=2, 3d=3, 4d=4)
+    int     dimensions;
     /// @brief Dimention of the input image in X
     int     nx;
     /// @brief Dimention of the input image in Y
@@ -37,17 +40,16 @@ protected:
     /// @brief Spacing between voxels in X
     float   dz;
     /// @brief Number of elements (voxels) in the image
-    int     numel;
+    int     numElements;
     /// @brief Current number of iterations
     int     iter;
     /// @brief The amount of regularisation of the off diagonal components of the covariance matrix
     float reg_factor;
-    /// @brief A data structure to pass the dimentions of the image around more easily.
+    /// @brief A data structure to pass the dimensions of the image around more easily.
     ImageSize * CurrSizes;
 
 
-    // SegParameters
-    /// @brief A vector of concatenated class means, with K*D elements (K classes and D data dimentions),
+    /// @brief A vector of concatenated class means, with K*D elements (K classes and D data dimensions),
     float*  M;
     /// @brief A vector of concatenated covariance matrices with K*D^2 elements (K classes times a D^2 covariance matrix per class),
     float*  V;
@@ -61,7 +63,7 @@ protected:
     /// i.e. storing how to go from an index in the input data to its corresponding Short* array (size of the mask) location.
     int*    L2S;
     /// @brief The actual number of classes used in the mixture model.
-    int     numb_classes;
+    int     numberOfClasses;
     /// @brief The current log likelihood estimates
     double  loglik;
     /// @brief The log likelihood estimates in the previous iteration (used to test for convergence)
@@ -72,8 +74,6 @@ protected:
     int     maxIteration;
     /// @brief The Minimum number of iterations (overrides the covergenge criteria "ratio")
     int     minIteration;
-    /// @brief A boolean storing of we should aproximate the expf computation. Trade-off between speed and accuracy.
-    bool    aprox;
 
     /// @brief A float vector of size maxMultispectalSize containing the maximum intensity value used for the intensity rescaling
     float rescale_max[maxMultispectalSize];
@@ -86,7 +86,7 @@ protected:
     /// @brief A boolean defining if an image mask is being used.
     unsigned char maskImageStatus;
     /// @brief Defines the number of elements (voxels) whithin the mask, i.e. same as numel, but only within the mask ROI
-    int     numelmasked;
+    int     numElementsMasked;
     /// @brief Defines the number of elements (voxels) whithin the bias field image, i.e. numel rescaled by the subsampling factor reduxFactorForBias
     int     numelbias;
 
@@ -115,9 +115,9 @@ protected:
     /// @brief A boolean defining if the outlierness model is used
     bool    outliernessStatus;
     /// @brief A float storing the mahalonobis distance threshold as defined in Koen's paper
-    float   OutliernessThreshold;
+    float   outliernessThreshold;
     /// @brief Only start optimising the Outlieness part of the model if the convergence ratio is below Outlierness_ratio
-    float   Outlierness_ratio;
+    float   outliernessRatio;
 
     // BiasField Specific
     /// @brief A boolean defining if the BiasField model is used
@@ -127,7 +127,7 @@ protected:
     /// @brief A float image of size nt*numel containing the current estimate of the bias field per time point
     float*  BiasField;
     /// @brief A float vector of size ((BiasField_order+1)*(BiasField_order+2)/2*(BiasField_order+3)/3)*nu*nt containing all the polynomial basis' coefficients
-    float*  BiasField_coeficients;
+    float*  biasFieldCoeficients;
     /// @brief Only start optimising the BiasField part of the model if the convergence ratio is below BiasField_ratio
     float   biasFieldRatio;
 
@@ -158,7 +158,6 @@ protected:
 
     // Private funcs
     void     CreateDiagonalMRFTransitionMatrix();
-    void     Normalize_T1();
     void     CreateCurrSizes();
     void     InitializeAndNormalizeImageAndPriors();
     void     InitializeAndAllocate();
@@ -167,13 +166,10 @@ protected:
     void     InitializeAndNormalizeImage();
     void     CreateShort2LongMatrix();
     void     CreateLong2ShortMatrix();
-    void     CreateExpectationAndShortPriors();
-
 
     void     RunMaximization();
     void     RunExpectation();
     void     RunPriorRelaxation();
-    void     RunOutlierness();
     void     RunMRF();
     void     RunMRF3D();
     void     RunMRF2D();
@@ -186,25 +182,21 @@ public:
     seg_EM (int _numb_classes,int _nu,int _nt);
     ~seg_EM ();
 
-    void     CheckParameters_EM();
-    void     Initisalise_EM();
     void     Run_EM();
 
     // Setters of the options
     void    SetInputImage(nifti_image *);
     void    SetMaskImage(nifti_image *);
     void    SetPriorImage(nifti_image *_r);
-    void    SetFilenameOut(char *);
+    void    SetFilenameOut(char *_f);
     void    SetMAP(float *_M, float* _V);
     void    SetRegValue(float reg);
     void    SetRelaxation(float relax_factor,float relax_gauss_kernel);
     void    SetMRF(float MRF_strenght);
-    void    SetOutlierness(float _OutliernessThreshold, float _Outlierness_ratio);
-    void    SetBiasField(int _BiasField_order, float _BiasField_ratio);
-    void    SetLoAd(float RelaxFactor,bool relaxStatus,bool pvModelStatus,bool sgDelineationStatus);
+    void    SetOutlierness(float _OutliernessThreshold, float _OutliernessRatio);
+    void    SetBiasField(int _BiasFieldOrder, float _BiasFieldRatio);
     void    SetMaximalIterationNumber(unsigned int numberiter);
     void    SetMinIterationNumber(unsigned int numberiter);
-    void    SetAprox(bool aproxval);
     void    SetVerbose(unsigned int verblevel);
 
     // Getters of the results

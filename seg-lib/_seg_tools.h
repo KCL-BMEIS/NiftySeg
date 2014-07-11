@@ -10,9 +10,8 @@
 #endif
 
 // Gaussian convolution functions
-void GaussianFilter4D_cArray(segPrecisionTYPE * ShortData, int * S2L, int * L2S, segPrecisionTYPE gauss_std, ImageSize * CurrSizes, int class_with_CSF);
+void GaussianFilter4D_cArray(segPrecisionTYPE * ShortData, int * S2L, int * L2S, segPrecisionTYPE gauss_std, ImageSize * CurrSizes);
 void GaussianFilter4D_cArray(segPrecisionTYPE * LongData, segPrecisionTYPE gauss_std, ImageSize * CurrSizes);
-void GaussianFilter4D_cArray(segPrecisionTYPE * DataPTR,int * mask,segPrecisionTYPE gauss_std, ImageSize *Currentsize);
 void GaussianSmoothing4D_nifti(nifti_image * Data,int * mask,float gauss_std);
 void BlockSmoothing(nifti_image * Data,int * mask,int side_size);
 void SmoothLab(float * DataPTR, float factor, ImageSize * CurrSizes);

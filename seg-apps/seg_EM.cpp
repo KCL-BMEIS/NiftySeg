@@ -604,7 +604,6 @@ int main(int argc, char **argv)
 
         SEG.SetVerbose(segment_param->verbose_level);
         SEG.SetFilenameOut(segment_param->filename_out);
-        SEG.SetAprox(segment_param->aprox);
         SEG.SetMaximalIterationNumber(segment_param->maxIteration);
         SEG.SetMinIterationNumber(segment_param->minIteration);
 
