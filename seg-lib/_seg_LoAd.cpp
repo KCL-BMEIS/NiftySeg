@@ -3306,14 +3306,12 @@ nifti_image * Get_Bias_Corrected_mask(float * BiasFieldCoefs,
                     currypower[0]=1;
                     currzpower[0]=1;
                     int orderminusone=0;
-                    int maxorderplusone=biasOrder+1;
-                    while (order<maxorderplusone)
+
+                    for (order=1; order<maxAllowedBCPowerOrder; order++, orderminusone++)
                     {
                         currxpower[order]=currxpower[orderminusone]*xpos;
                         currypower[order]=currypower[orderminusone]*ypos;
                         currzpower[order]=currzpower[orderminusone]*zpos;
-                        order++;
-                        orderminusone++;
                     }
 
                     // Estimate the basis
@@ -4141,9 +4139,9 @@ void BiasCorrection(segPrecisionTYPE * BiasField,
                 for (int ix=0; ix<maxix; ix++)
                 {
                     segPrecisionTYPE tmpbiasfield=0.0f;
-                    segPrecisionTYPE currxpower[maxAllowedBCPowerOrder];
-                    segPrecisionTYPE currypower[maxAllowedBCPowerOrder];
-                    segPrecisionTYPE currzpower[maxAllowedBCPowerOrder];
+                    segPrecisionTYPE currxpower[maxAllowedBCPowerOrder]={0};
+                    segPrecisionTYPE currypower[maxAllowedBCPowerOrder]={0};
+                    segPrecisionTYPE currzpower[maxAllowedBCPowerOrder]={0};
                     linearindexes=(iz)*(CurrSizes->xsize)*(CurrSizes->ysize)+(iy)*(CurrSizes->xsize)+ix;
                     tmpbiasfield=0.0f;
                     xpos=(((segPrecisionTYPE)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x);
@@ -4493,9 +4491,9 @@ void BiasCorrection_SPARCS(float * BiasField,
                 if((Mask[linearindexes])>0)
                 {
                     float tmpbiasfield=0.0f;
-                    float currxpower[maxAllowedBCPowerOrder];
-                    float currypower[maxAllowedBCPowerOrder];
-                    float currzpower[maxAllowedBCPowerOrder];
+                    float currxpower[maxAllowedBCPowerOrder]={0};
+                    float currypower[maxAllowedBCPowerOrder]={0};
+                    float currzpower[maxAllowedBCPowerOrder]={0};
                     tmpbiasfield=0.0f;
                     xpos=(((float)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x);
                     ypos=(((float)iy-not_point_five_times_dims_y)*inv_not_point_five_times_dims_y);
@@ -4896,9 +4894,9 @@ void BiasCorrection_mask(segPrecisionTYPE * BiasField,
 //#endif
         for (int iz=0; iz<maxiz; iz++)
         {
-            segPrecisionTYPE currxpower[maxAllowedBCPowerOrder];
-            segPrecisionTYPE currypower[maxAllowedBCPowerOrder];
-            segPrecisionTYPE currzpower[maxAllowedBCPowerOrder];
+            segPrecisionTYPE currxpower[maxAllowedBCPowerOrder]={0};
+            segPrecisionTYPE currypower[maxAllowedBCPowerOrder]={0};
+            segPrecisionTYPE currzpower[maxAllowedBCPowerOrder]={0};
             segPrecisionTYPE tmpbiasfield=0.0f;
             for (int iy=0; iy<maxiy; iy++)
             {
@@ -5239,8 +5237,8 @@ void BiasCorrection2D(segPrecisionTYPE * BiasField,
             C[i2]=(segPrecisionTYPE)(cvalue);
         }
 
-        segPrecisionTYPE currxpower[maxAllowedBCPowerOrder];
-        segPrecisionTYPE currypower[maxAllowedBCPowerOrder];
+        segPrecisionTYPE currxpower[maxAllowedBCPowerOrder]={0};
+        segPrecisionTYPE currypower[maxAllowedBCPowerOrder]={0};
         segPrecisionTYPE tmpbiasfield=0.0f;
         for (int iy=0; iy<maxiy; iy++)
         {
@@ -5587,8 +5585,8 @@ void BiasCorrection_mask2D(segPrecisionTYPE * BiasField,
             C[i2]=(segPrecisionTYPE)(cvalue);
         }
 
-        segPrecisionTYPE currxpower[maxAllowedBCPowerOrder];
-        segPrecisionTYPE currypower[maxAllowedBCPowerOrder];
+        segPrecisionTYPE currxpower[maxAllowedBCPowerOrder]={0};
+        segPrecisionTYPE currypower[maxAllowedBCPowerOrder]={0};
         segPrecisionTYPE tmpbiasfield=0.0f;
         for (int iy=0; iy<maxiy; iy++)
         {

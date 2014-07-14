@@ -1,7 +1,4 @@
 #include "_seg_tools.h"
-#ifdef _OPENMP
-#include "omp.h"
-#endif
 
 
 
@@ -13,8 +10,8 @@ void GaussianFilter4D_cArray(segPrecisionTYPE * ShortData,
                              ImageSize * CurrSizes)
 {
 
-    const int dims[8]={(CurrSizes->xsize>1)+(CurrSizes->ysize>1)+(CurrSizes->zsize>1)+(CurrSizes->tsize>1)+(CurrSizes->usize>1),
-                       CurrSizes->xsize,CurrSizes->ysize,CurrSizes->zsize,CurrSizes->tsize,CurrSizes->usize,0,0};
+    const int dims[8]={(int)((CurrSizes->xsize>1)+(CurrSizes->ysize>1)+(CurrSizes->zsize>1)+(CurrSizes->tsize>1)+(CurrSizes->usize>1)),
+                       (int)(CurrSizes->xsize),(int)(CurrSizes->ysize),(int)(CurrSizes->zsize),(int)(CurrSizes->tsize),(int)(CurrSizes->usize),0,0};
     nifti_image *TMPimg = nifti_make_new_nim(dims,NIFTI_TYPE_FLOAT32,0);
     TMPimg->dim[0]=TMPimg->ndim=dims[0];
     TMPimg->dim[4]=TMPimg->nt=CurrSizes->tsize;
@@ -60,8 +57,8 @@ void GaussianFilter4D_cArray(segPrecisionTYPE * LongData,
                        ImageSize * CurrSizes)
 {
 
-    const int dims[8]={(CurrSizes->xsize>1)+(CurrSizes->ysize>1)+(CurrSizes->zsize>1)+(CurrSizes->tsize>1)+(CurrSizes->usize>1),
-                       CurrSizes->xsize,CurrSizes->ysize,CurrSizes->zsize,CurrSizes->tsize,CurrSizes->usize,0,0};
+    const int dims[8]={(int)((CurrSizes->xsize>1)+(CurrSizes->ysize>1)+(CurrSizes->zsize>1)+(CurrSizes->tsize>1)+(CurrSizes->usize>1)),
+                       (int)(CurrSizes->xsize),(int)(CurrSizes->ysize),(int)(CurrSizes->zsize),(int)(CurrSizes->tsize),(int)(CurrSizes->usize),0,0};
     nifti_image *TMPimg = nifti_make_new_nim(dims,NIFTI_TYPE_FLOAT32,0);
     TMPimg->dim[0]=TMPimg->ndim=3;
     TMPimg->dim[4]=TMPimg->nt=CurrSizes->tsize;
@@ -1027,10 +1024,6 @@ unsigned char * estimateROINCC4D(nifti_image * LableImage,nifti_image * BaseImag
         }
     }
 
-    int dim_array[3];
-    dim_array[0]=(int)BaseImage->nx;
-    dim_array[1]=(int)BaseImage->ny;
-    dim_array[2]=(int)BaseImage->nz;
     Dillate(ROIarea,DilSize,CurrSizes);
 
 

@@ -607,10 +607,8 @@ void seg_EM::InitializeAndNormalizeImage()
     int numel=(int)(this->InputImage->nx*this->InputImage->ny*this->InputImage->nz);
 
 
-    if(this->InputImage->datatype!=NIFTI_TYPE_FLOAT32 || this->InputImage->datatype!=NIFTI_TYPE_FLOAT64)
-    {
-        seg_changeDatatype<segPrecisionTYPE>(this->InputImage);
-    }
+    seg_changeDatatype<segPrecisionTYPE>(this->InputImage);
+
 
     for(long udir=0; udir<this->nu; udir++) // Per Multispectral Image
     {
@@ -1125,6 +1123,10 @@ nifti_image * seg_EM::GetResult()
 nifti_image * seg_EM::GetBiasCorrected(char * filename)
 {
 
+    if(this->biasFieldOrder==0)
+    {
+        return NULL;
+    }
     int UsedBasisFunctions=(int)((this->biasFieldOrder+1) * (this->biasFieldOrder+2)/2 *(this->biasFieldOrder+3)/3);
     segPrecisionTYPE * InputImageData = static_cast<segPrecisionTYPE *>(this->InputImage->data);
 
@@ -1143,7 +1145,7 @@ nifti_image * seg_EM::GetBiasCorrected(char * filename)
     {
         if(InputImageData[i]!=InputImageData[i] )
         {
-            brainmask[i]=0;
+            brainmask[i]=0.0f;
         }
         else{
             brainmask[i]=Maskptrtmp[i];
@@ -1161,9 +1163,9 @@ nifti_image * seg_EM::GetBiasCorrected(char * filename)
     segPrecisionTYPE * BiasCorrected_PTR = static_cast<segPrecisionTYPE *>(Result->data);
 
     segPrecisionTYPE BiasField=0;
-    segPrecisionTYPE currxpower[maxAllowedBCPowerOrder];
-    segPrecisionTYPE currypower[maxAllowedBCPowerOrder];
-    segPrecisionTYPE currzpower[maxAllowedBCPowerOrder];
+    segPrecisionTYPE currxpower[maxAllowedBCPowerOrder]={0};
+    segPrecisionTYPE currypower[maxAllowedBCPowerOrder]={0};
+    segPrecisionTYPE currzpower[maxAllowedBCPowerOrder]={0};
     segPrecisionTYPE xpos=0.0f;
     segPrecisionTYPE ypos=0.0f;
     segPrecisionTYPE zpos=0.0f;
@@ -1191,13 +1193,14 @@ nifti_image * seg_EM::GetBiasCorrected(char * filename)
             BiasCorrected_PTR[i]=0;
         }
 
+
         segPrecisionTYPE to_resize=0;
         int index_full=0;
         for (int iz=0; iz<this->nz; iz++)
         {
             for (int iy=0; iy<this->ny; iy++)
             {
-                for (int ix=0; ix<this->nz; ix++)
+                for (int ix=0; ix<this->nx; ix++)
                 {
                     BiasField=0.0f;
                     xpos=(((segPrecisionTYPE)ix-not_point_five_times_dims_x)*inv_not_point_five_times_dims_x);
@@ -1412,20 +1415,25 @@ void seg_EM::RunMaximization()
         Expec_offset[cl]=cl*numel_masked;
     }
 
+    segPrecisionTYPE * ExpectationTmpPTR = (segPrecisionTYPE *) this->Expec;
+    segPrecisionTYPE * OutliernessTmpPTR = (segPrecisionTYPE *) this->Outlierness;
+    segPrecisionTYPE * InputImageTmpPtr = static_cast<segPrecisionTYPE *>(this->InputImage->data);
+    segPrecisionTYPE * BiasFieldTmpPTR= (segPrecisionTYPE *) this->BiasField;
+
 #ifdef _OPENMP
-#pragma omp parallel for shared(InputImage,BiasField,this->Outlierness)
+#pragma omp parallel for shared(InputImageTmpPtr,BiasFieldTmpPTR,OutliernessTmpPTR)
 #endif
     // ***********
     // For each class, get all the temporary pointers
     for( int cl=0; cl<num_class; cl++)
     {
         int * S2L_PTR = (int *) this->S2L;
-        segPrecisionTYPE * ExpectationPTR = (segPrecisionTYPE *) this->Expec;
-        segPrecisionTYPE * OutliernessPTR = (segPrecisionTYPE *) this->Outlierness;
-        segPrecisionTYPE * InputImagePtr = static_cast<segPrecisionTYPE *>(this->InputImage->data);
-        segPrecisionTYPE * BiasFieldPTR= (segPrecisionTYPE *) this->BiasField;
-        segPrecisionTYPE * T1_PTR2= static_cast<segPrecisionTYPE *>(this->InputImage->data);
-        segPrecisionTYPE * BiasField_PTR2= (segPrecisionTYPE *) this->BiasField;
+        segPrecisionTYPE * ExpectationPTR = (segPrecisionTYPE *) ExpectationTmpPTR;
+        segPrecisionTYPE * OutliernessPTR = (segPrecisionTYPE *) OutliernessTmpPTR;
+        segPrecisionTYPE * InputImagePtr = (segPrecisionTYPE *) InputImageTmpPtr;
+        segPrecisionTYPE * BiasFieldPTR= (segPrecisionTYPE *) BiasFieldTmpPTR;
+        segPrecisionTYPE * T1_PTR2= (segPrecisionTYPE *) InputImageTmpPtr;
+        segPrecisionTYPE * BiasField_PTR2= (segPrecisionTYPE *) BiasFieldTmpPTR;
 
         // MEAN
         // For each multispectral data (or each time point), estimate the mean vector. This involves doing a weighted sum (tempsum/SumPriors) of the observed intensities, weighted by the responsabilities Expec_PTR, the OutliernessPTR. The Estimated mean uses the bias field corrected intensities (T1_PTR-BiasField_PTR)
@@ -1738,23 +1746,28 @@ void seg_EM::RunExpectation()
     segPrecisionTYPE logliktmp=0.0f;
 
 
+    segPrecisionTYPE * ExpectationTmpPTR = (segPrecisionTYPE *) this->Expec;
+    segPrecisionTYPE * OutliernessTmpPTR = (segPrecisionTYPE *) this->Outlierness;
+    segPrecisionTYPE * InputImageTmpPtr = static_cast<segPrecisionTYPE *>(this->InputImage->data);
+    segPrecisionTYPE * BiasFieldTmpPTR= (segPrecisionTYPE *) this->BiasField;
+
 #ifdef _OPENMP
     segPrecisionTYPE * loglikthread = new segPrecisionTYPE [omp_get_max_threads()]();
     for(long i=0; i<(long)omp_get_max_threads(); i++)
         loglikthread[i]=0;
 
-#pragma omp parallel for shared(Expec,loglikthread,T1,BiasField,Outlierness,IterPrior)
+#pragma omp parallel for shared(ExpectationTmpPTR,loglikthread,InputImageTmpPtr,BiasFieldTmpPTR,OutliernessTmpPTR,IterPrior)
 #endif
     // Now that we have the Gaussian normaliser and the inverted determinant of the covariance, estimate the Gaussian PDF. We do that independently per voxel.
     for (int i=0; i<numel_masked; i++)
     {
-        segPrecisionTYPE * T1_PTR = static_cast<segPrecisionTYPE *>(this->InputImage->data);
+        segPrecisionTYPE * T1_PTR = (segPrecisionTYPE *)(InputImageTmpPtr);
         segPrecisionTYPE T1_Bias_corr[maxMultispectalSize];
         segPrecisionTYPE SumExpec=0.0f;
 
         // For each modality, estimate the bias field corrected intensity first
         for(long Multispec=0; Multispec<this->nu; Multispec++)
-            T1_Bias_corr[Multispec]=(BiasField!=NULL)?(T1_PTR[this->S2L[i]+Multispec*this->numElements] + BiasField[i+Multispec*numel_masked]):(T1_PTR[this->S2L[i]+Multispec*this->numElements]);
+            T1_Bias_corr[Multispec]=(BiasFieldTmpPTR!=NULL)?(T1_PTR[this->S2L[i]+Multispec*this->numElements] + BiasFieldTmpPTR[i+Multispec*numel_masked]):(T1_PTR[this->S2L[i]+Multispec*this->numElements]);
 
         // Then, for each class and for each modality, iterate over all modalities and subtract their (Y-\Mu)/inv(|\Sigma|) in order to get the Mahalanobis distance.
         for (int cl=0; cl<num_class; cl++)
@@ -1773,12 +1786,12 @@ void seg_EM::RunExpectation()
             if(OutliernessFlag)
             {
                 segPrecisionTYPE outvalue=(expf(mahal)+0.01)/(expf(mahal)+expf(-0.5*(this->outliernessThreshold*this->outliernessThreshold))+0.01);
-                Outlierness[i+Expec_offset[cl]]=outvalue;
+                OutliernessTmpPTR[i+Expec_offset[cl]]=outvalue;
             }
             // Update the Expectation by calculating, Prior*GaussianPDF
-            Expec[i+Expec_offset[cl]]=IterPrior[i+Expec_offset[cl]] * ( inv_sqrt_V_2pi[cl] * expf(mahal) ) ;
+            ExpectationTmpPTR[i+Expec_offset[cl]]=IterPrior[i+Expec_offset[cl]] * ( inv_sqrt_V_2pi[cl] * expf(mahal) ) ;
             // Update the normaliser
-            SumExpec+=Expec[i+Expec_offset[cl]];
+            SumExpec+=ExpectationTmpPTR[i+Expec_offset[cl]];
         }
 
         // If something went wrong, just set the expectation to 1/K
@@ -1786,7 +1799,7 @@ void seg_EM::RunExpectation()
         {
             for (int cl=0; cl<num_class; cl++)
             {
-                Expec[i+Expec_offset[cl]]=(segPrecisionTYPE)(1)/(segPrecisionTYPE)(num_class);
+                ExpectationTmpPTR[i+Expec_offset[cl]]=(segPrecisionTYPE)(1)/(segPrecisionTYPE)(num_class);
             }
 
         }
@@ -1796,7 +1809,7 @@ void seg_EM::RunExpectation()
 
             for (int cl=0; cl<num_class; cl++)
             {
-                Expec[i+Expec_offset[cl]]=Expec[i+Expec_offset[cl]]/SumExpec;
+                ExpectationTmpPTR[i+Expec_offset[cl]]=ExpectationTmpPTR[i+Expec_offset[cl]]/SumExpec;
             }
 #ifdef _OPENMP
             loglikthread[omp_get_thread_num()]+=logf(SumExpec);
@@ -1993,8 +2006,10 @@ void seg_EM::RunMRF3D()
 
         }
 
+        segPrecisionTYPE * ExpectationTmpPTR = (segPrecisionTYPE *) this->Expec;
+
 #ifdef _OPENMP
-#pragma omp parallel for shared(Expec,MRFprior,Long_2_Short_IndicesPtr)
+#pragma omp parallel for shared(ExpectationTmpPTR,MRFpriorPtr,Long_2_Short_IndicesPtr)
 #endif
         // As it is 3D, iterate over all Z, Y and X's
         for (int iz=1; iz<maxiz-1; iz++)
@@ -2030,12 +2045,12 @@ void seg_EM::RunMRF3D()
                             Gplane[currclass] = 0.0;
                             Hplane[currclass] = 0.0;
                             Temp_MRF_Class_Expect[currclass] = 0.0;
-                            Gplane[currclass]+=this->Expec[indexWest];
-                            Gplane[currclass]+=this->Expec[indexEast];
-                            Gplane[currclass]+=this->Expec[indexNorth];
-                            Gplane[currclass]+=this->Expec[indexSouth];
-                            Hplane[currclass]+=this->Expec[indexTop];
-                            Hplane[currclass]+=this->Expec[indexBottom];
+                            Gplane[currclass]+=ExpectationTmpPTR[indexWest];
+                            Gplane[currclass]+=ExpectationTmpPTR[indexEast];
+                            Gplane[currclass]+=ExpectationTmpPTR[indexNorth];
+                            Gplane[currclass]+=ExpectationTmpPTR[indexSouth];
+                            Hplane[currclass]+=ExpectationTmpPTR[indexTop];
+                            Hplane[currclass]+=ExpectationTmpPTR[indexBottom];
                             // increment the indexes to shift them to the next class
 
                             if(currclass<numclass)
@@ -2449,9 +2464,9 @@ void seg_EM::RunBiasField3D()
         // Now that we have the Coefs, we can get the actual bias field by multiplying with the Basis functions.
         for (int iz=0; iz<maxiz; iz++)
         {
-            segPrecisionTYPE currxpower[maxAllowedBCPowerOrder];
-            segPrecisionTYPE currypower[maxAllowedBCPowerOrder];
-            segPrecisionTYPE currzpower[maxAllowedBCPowerOrder];
+            segPrecisionTYPE currxpower[maxAllowedBCPowerOrder]={0};
+            segPrecisionTYPE currypower[maxAllowedBCPowerOrder]={0};
+            segPrecisionTYPE currzpower[maxAllowedBCPowerOrder]={0};
             segPrecisionTYPE tmpbiasfield=0.0f;
             for (int iy=0; iy<maxiy; iy++)
             {
@@ -2802,8 +2817,8 @@ void seg_EM::RunBiasField2D()
             FinalCoefs[i2]=(segPrecisionTYPE)(cvalue);
         }
 
-        segPrecisionTYPE currxpower[maxAllowedBCPowerOrder];
-        segPrecisionTYPE currypower[maxAllowedBCPowerOrder];
+        segPrecisionTYPE currxpower[maxAllowedBCPowerOrder]={0};
+        segPrecisionTYPE currypower[maxAllowedBCPowerOrder]={0};
         segPrecisionTYPE tmpbiasfield=0.0f;
         for (int iy=0; iy<maxiy; iy++)
         {

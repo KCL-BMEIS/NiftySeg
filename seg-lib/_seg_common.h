@@ -68,6 +68,9 @@
 #include <alloca.h>
 #include <new>
 #include <exception>
+#ifdef _OPENMP
+#include "omp.h"
+#endif
 
 // NiftySeg data defines
 /// @brief Defines the overall data type used internally. As float is hardcoded in some places, please do not change this for now.
@@ -80,7 +83,7 @@
 /// @brief Defines the maximum number of classes the algorithm can infer. This is only used for memory and speed reasons. The value can be increase if necessary.
 #define maxNumbClass 12
 /// @brief Defines the maximum order of the polynomial for the Bias correction. This is only used for memory and speed reasons. The value can be increase if necessary.
-#define maxAllowedBCPowerOrder 6
+#define maxAllowedBCPowerOrder 7
 /// @brief Defines the subsampling size to estimate the bias field. The intensities/function are sampled only every redux_factor_for_bias voxels
 #define reduxFactorForBias 2
 /// @brief Defines the maximum number of multimodal images (_nu)
