@@ -29,6 +29,7 @@ seg_EM::seg_EM(int _numb_classes, int _nu,int _nt)
 
     this->numElements=0;
 
+
     this->iter=0;
     this->ratio=1000;
 
@@ -82,6 +83,7 @@ seg_EM::seg_EM(int _numb_classes, int _nu,int _nt)
     this->BiasField=NULL;
     this->biasFieldCoeficients=NULL;
     this->biasFieldRatio=0;
+    this->numelBias=0;
 
     this->stageLoAd=-1;
     this->pvModelStatus=false;
@@ -2138,7 +2140,7 @@ void seg_EM::RunBiasField3D()
         cout << "Optimising the Bias Field with order " << this->biasFieldOrder<< endl;
         if(this->nu>1)
         {
-            cout<< "Assuming fully decoupled bias-fields" << endl;
+            cout<< "Assuming decoupled bias-fields between time points" << endl;
         }
         flush(cout);
     }
@@ -2204,15 +2206,16 @@ void seg_EM::RunBiasField3D()
         int samplecount=0;
         int linearindexes=0;
         int currshortindex=0;
-        if(this->numelbias==0)
+        if(this->numelBias==0)
         {
-            for (int iz=0; iz<maxiz; iz+=reduxfactor)
+            for (int iz=0; iz<this->nz; iz+=reduxfactor)
             {
-                for (int iy=0; iy<maxiy; iy+=reduxfactor)
+                for (int iy=0; iy<this->ny; iy+=reduxfactor)
                 {
-                    for (int ix=0; ix<maxix; ix+=reduxfactor)
+                    for (int ix=0; ix<this->nx; ix+=reduxfactor)
                     {
-                        linearindexes=iz*plane_size+iy*col_size+ix;
+                        linearindexes = iz*this->nx*this->ny + iy*this->nx + ix;
+
                         if(this->L2S[linearindexes]>=0)
                         {
                             samplecount++;
@@ -2225,18 +2228,28 @@ void seg_EM::RunBiasField3D()
                 cout << "Number of samples for BiasField = " << samplecount<<"\n";
                 flush(cout);
             }
-            this->numelbias=samplecount;
+            this->numelBias=samplecount;
         }
         else
         {
-            samplecount=this->numelbias;
+            samplecount=this->numelBias;
         }
 
 
 
         // CALC A'WA
 
-        segPrecisionTYPE * W= new segPrecisionTYPE [samplecount] ();
+        segPrecisionTYPE * W;
+        try
+        {
+            W = new segPrecisionTYPE [samplecount] ();
+        }
+        catch (std::bad_alloc& ba)
+        {
+            std::cerr << "ERROR:Low memory, could not allocate Q (" <<samplecount<<" float elements): "<< ba.what() <<std::endl;
+            exit(1);
+        }
+
         segPrecisionTYPE W_tmp=0;
         currshortindex=0;
         int Windex=0;
@@ -2282,7 +2295,17 @@ void seg_EM::RunBiasField3D()
         segPrecisionTYPE inv_not_point_five_times_dims_y=1.0f/(0.5f*(segPrecisionTYPE)Dims3d[1]);
         segPrecisionTYPE inv_not_point_five_times_dims_z=1.0f/(0.5f*(segPrecisionTYPE)Dims3d[2]);
 
-        segPrecisionTYPE * Basis= new segPrecisionTYPE[UsedBasisFunctions]();
+        segPrecisionTYPE * Basis;
+        try
+        {
+            Basis= new segPrecisionTYPE[UsedBasisFunctions]();
+        }
+        catch (std::bad_alloc& ba)
+        {
+            std::cerr << "ERROR:Low memory, could not allocate Basis (" <<UsedBasisFunctions<<" float elements): "<< ba.what() <<std::endl;
+            exit(1);
+        }
+
         segPrecisionTYPE xpos=0.0f;
         segPrecisionTYPE ypos=0.0f;
         segPrecisionTYPE zpos=0.0f;
@@ -2522,8 +2545,14 @@ void seg_EM::RunBiasField3D()
             this->biasFieldCoeficients[i+multispec*UsedBasisFunctions]=FinalCoefs[i];
         }
 
-        delete [] Basis;
-        delete [] W;
+        if(Basis!=NULL)
+        {
+            delete [] Basis;
+        }
+        if(W!=NULL)
+        {
+            delete [] W;
+        }
     }
 }
 
@@ -2602,7 +2631,7 @@ void seg_EM::RunBiasField2D()
         int samplecount=0;
         int linearindexes=0;
         int currshortindex=0;
-        if(this->numelbias==0)
+        if(this->numelBias==0)
         {
             for (int iy=0; iy<maxiy; iy+=reduxfactor)
             {
@@ -2620,11 +2649,11 @@ void seg_EM::RunBiasField2D()
                 cout << "Number of samples for BiasField = " << samplecount<<"\n";
                 flush(cout);
             }
-            this->numelbias=samplecount;
+            this->numelBias=samplecount;
         }
         else
         {
-            samplecount=this->numelbias;
+            samplecount=this->numelBias;
         }
 
 

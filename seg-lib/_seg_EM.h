@@ -88,7 +88,7 @@ protected:
     /// @brief Defines the number of elements (voxels) whithin the mask, i.e. same as numel, but only within the mask ROI
     int     numElementsMasked;
     /// @brief Defines the number of elements (voxels) whithin the bias field image, i.e. numel rescaled by the subsampling factor reduxFactorForBias
-    int     numelbias;
+    int     numelBias;
 
     // Priors Specific
     /// @brief A pointer to an externally defined set of priors. Do not delete this pointer internally.
