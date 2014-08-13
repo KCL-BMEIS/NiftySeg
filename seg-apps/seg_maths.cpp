@@ -1719,6 +1719,7 @@ int main(int argc, char **argv)
                     case 31: bufferImages[current_buffer?0:1][i]=24; break; // Left to Right Accumbens Area
                     case 32: bufferImages[current_buffer?0:1][i]=33; break; // Right to Left Amygdala
                     case 33: bufferImages[current_buffer?0:1][i]=32; break; // Left to Right Amygdala
+                    case 35: bufferImages[current_buffer?0:1][i]=36; break; // Pons
                     case 36: bufferImages[current_buffer?0:1][i]=36; break; // Brain Stem
                     case 37: bufferImages[current_buffer?0:1][i]=38; break; // Right to Left Caudate
                     case 38: bufferImages[current_buffer?0:1][i]=37; break; // Left to Right Caudate
