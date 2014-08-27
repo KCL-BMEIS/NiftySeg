@@ -48,6 +48,9 @@ void LS_Vecs(float * Y, float * X,int * mask, unsigned int size, float *a, float
 // Estimate some mathematical morphology operators, such as the connected components, dilations, erosions, etc.
 void ConnectComp(int * Old, int * New, int dimensions[3],int varin);
 template <class OldType, class NewType> void Largest_ConnectComp(void * Old, void * New, ImageSize * Currentsize);
+template <class OldType, class NewType> void ConnectComp26NN(void * Old, void * New, ImageSize * Currentsize);
+template <class OldType, class NewType> void ConnectComp6NN(void * Old, void * New, ImageSize * Currentsize);
+
 template <class OldType, class NewType> void Close_Forground_ConnectComp(void * Old, void * New, ImageSize * Currentsize);
 void Dillate(float * Image,int kernel,ImageSize * Currentsize );
 void Erosion(float * Image,int kernel,ImageSize * Currentsize );
@@ -55,3 +58,6 @@ void Dillate_const(bool * Image, bool * Const, int kernel, int dimensions[3], in
 
 // Otsu intensity thresholding.
 void otsu(float * Image, int * mask, ImageSize *Currentsize );
+
+template <class DTYPE> void seg_mat44_mul(mat44 const* mat, DTYPE const* in,DTYPE *out);
+

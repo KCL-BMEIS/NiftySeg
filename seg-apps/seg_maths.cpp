@@ -47,6 +47,8 @@ void Usage(char *exec)
     printf("\t-ero\t<int>\t\tErode the image <int> times (in voxels).\n");
     printf("\n\t* * Operations binary 3-D images * *\n");
     printf("\t-lconcomp\t\tTake the largest connected component\n");
+    printf("\t-concomp6\t\tLabel the different connected components with a 6NN kernel\n");
+    printf("\t-concomp26\t\tLabel the different connected components with a 26NN kernel\n");
     printf("\t-fill\t\t\tFill holes in binary object (e.g. fill ventricle in brain mask).\n");
     printf("\t-euc\t\t\tEuclidean distance trasnform\n");
     printf("\t-geo <float/file>\tGeodesic distance according to the speed function <float/file>\n");
@@ -1139,6 +1141,36 @@ int main(int argc, char **argv)
                     i=argc;
                 }
             }
+            // *********************  Connected Components 6NN  *************************
+            else if(strcmp(argv[i], "-concomp6") == 0)
+            {
+                if(CurrSize->tsize==1)
+                {
+                    ConnectComp6NN<float,float>(static_cast<void*>(bufferImages[current_buffer]),static_cast<void*>(bufferImages[current_buffer?0:1]),CurrSize);
+                    current_buffer=current_buffer?0:1;
+                }
+                else
+                {
+                    cout << "ERROR: Image to -concomp6 is not 3D"<<endl;
+                    i=argc;
+                }
+            }
+
+            // *********************  Connected Components 6NN  *************************
+            else if(strcmp(argv[i], "-concomp26") == 0)
+            {
+                if(CurrSize->tsize==1)
+                {
+                    ConnectComp26NN<float,float>(static_cast<void*>(bufferImages[current_buffer]),static_cast<void*>(bufferImages[current_buffer?0:1]),CurrSize);
+                    current_buffer=current_buffer?0:1;
+                }
+                else
+                {
+                    cout << "ERROR: Image to -concomp26 is not 3D"<<endl;
+                    i=argc;
+                }
+            }
+
             // *********************  Range  *************************
             else if(strcmp(argv[i], "-range") == 0)
             {

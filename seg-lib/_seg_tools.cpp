@@ -53,8 +53,8 @@ void GaussianFilter4D_cArray(segPrecisionTYPE * ShortData,
 }
 
 void GaussianFilter4D_cArray(segPrecisionTYPE * LongData,
-                       segPrecisionTYPE gauss_std,
-                       ImageSize * CurrSizes)
+                             segPrecisionTYPE gauss_std,
+                             ImageSize * CurrSizes)
 {
 
     const int dims[8]={(int)((CurrSizes->xsize>1)+(CurrSizes->ysize>1)+(CurrSizes->zsize>1)+(CurrSizes->tsize>1)+(CurrSizes->usize>1)),
@@ -1444,9 +1444,9 @@ unsigned char * estimateLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,float
 
         for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
         {
-                    bufferSTD[i]=bufferSTD[i]-bufferMean[i]*bufferMean[i];
-                    currLNCCptr[i]=(bufferDATA[i]-BaseMean[i]*bufferMean[i])/(sqrt(bufferSTD[i]*BaseSTD[i])+0.000001);
-                    currLNCCptr[i]=currLNCCptr[i]>0?currLNCCptr[i]:0;
+            bufferSTD[i]=bufferSTD[i]-bufferMean[i]*bufferMean[i];
+            currLNCCptr[i]=(bufferDATA[i]-BaseMean[i]*bufferMean[i])/(sqrt(bufferSTD[i]*BaseSTD[i])+0.000001);
+            currLNCCptr[i]=currLNCCptr[i]>0?currLNCCptr[i]:0;
 
         }
 
@@ -2717,6 +2717,326 @@ template void Largest_ConnectComp<unsigned char, unsigned char>(void * Old, void
 template void Largest_ConnectComp<float, float>(void * Old, void * New, ImageSize * Currentsize);
 
 
+template <class OldType, class NewType>
+void ConnectComp26NN(void * Old_void, void * New_void, ImageSize * Currentsize)
+{
+
+    OldType * Old = static_cast<OldType *>(Old_void);
+    NewType * New = static_cast<NewType *>(New_void);
+    int dimensions[3];
+    dimensions[0]=Currentsize->xsize;
+    dimensions[1]=Currentsize->ysize;
+    dimensions[2]=Currentsize->zsize;
+
+    // Create Counter image
+    int index;
+    int CCcounter=1;
+    int NumElements=((int)dimensions[0]*(int)dimensions[1]*(int)dimensions[2]);
+    int * tempimg= (int *) calloc(NumElements, sizeof(int));
+
+    //  **********    Foreground    ***********
+    index=0;
+    for(int z=0; z<((int)dimensions[2]); z++)
+    {
+        for(int y=0; y<((int)dimensions[1]); y++)
+        {
+            for(int x=0; x<((int)dimensions[0]); x++)
+            {
+                tempimg[index]=0;
+                Old[index]=Old[index]>0;
+                index++;
+            }
+        }
+    }
+
+    index=0;
+    for(int z=0; z<((int)dimensions[2]); z++)
+    {
+        for(int y=0; y<((int)dimensions[1]); y++)
+        {
+            for(int x=0; x<((int)dimensions[0]); x++)
+            {
+                tempimg[index]=0;
+                if(Old[index]>0)
+                {
+                    tempimg[index]=CCcounter;
+                    CCcounter++;
+                }
+                index++;
+            }
+        }
+    }
+    //cout << "Test [" << indexprob<<"] = "<< New[indexprob]<< " "<<Old[indexprob]<<endl;
+
+    int tempmin;
+    int numbchanges=1;
+
+
+    int *CClist = (int *) calloc(CCcounter, sizeof(int));
+    for(int i=1; i<CCcounter; i++)
+    {
+        CClist[i]=i;
+    }
+
+    int iter=0;
+    while(numbchanges!=0)
+    {
+        //while(iter<3){
+        flush(cout);
+        iter++;
+        numbchanges=0;
+        int currindex=0;
+        for(int z=1; z<((int)dimensions[2]-1); z++)
+        {
+            for(int y=1; y<((int)dimensions[1]-1); y++)
+            {
+                for(int x=1; x<((int)dimensions[0]-1); x++)
+                {
+                    index =z*dimensions[1]*dimensions[0]+y*dimensions[0]+x;
+                    if(Old[index]>0 && CClist[tempimg[index]]>0)
+                    {
+                        tempmin=CClist[tempimg[index]];
+                        for(int deltaZ=-1; deltaZ<2; deltaZ++)
+                        {
+                            for(int deltaY=-1; deltaY<2; deltaY++)
+                            {
+                                for(int deltaX=-1; deltaX<2; deltaX++)
+                                {
+                                    currindex=index+ (deltaZ*dimensions[0]*dimensions[1]) + (deltaY*dimensions[0]) +(deltaX);
+                                    if(currindex!=index)
+                                    {
+                                        if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]])
+                                        {
+                                            tempmin=CClist[tempimg[currindex]];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if(tempmin>0 && tempmin<CClist[tempimg[index]])
+                        {
+                            CClist[tempimg[index]]=tempmin;
+                            numbchanges++;
+                        }
+                    }
+                }
+            }
+        }
+
+        for(int index=0; index<((int)dimensions[0]*(int)dimensions[1]*(int)dimensions[2]); index++)
+        {
+            if(Old[index]>0)
+            {
+                tempimg[index]=CClist[tempimg[index]];
+            }
+        }
+        //probarea=New[index];
+    }
+
+
+
+    //Find lable counts
+    float *Pixelcounter = (float *) calloc((int)CCcounter, sizeof(float));
+    int *PixelcounterOrder;
+
+    for(index=0; index<NumElements; index++)
+    {
+        if(tempimg[index]>0 && Old[index]>0)
+        {
+            Pixelcounter[(int)tempimg[index]]++;
+        }
+    }
+    PixelcounterOrder=quickSort_order(Pixelcounter,CCcounter);
+
+    //Rassign to oposit class
+    for(index=0; index<NumElements; index++)
+    {
+        if(tempimg[index]>0 && Old[index]>0)
+        {
+            New[index]=CCcounter-PixelcounterOrder[(int)tempimg[index]];
+        }
+        else{
+            New[index]=0;
+        }
+    }
+    delete [] tempimg;
+
+    return;
+}
+template void ConnectComp26NN<unsigned char, unsigned char>(void * Old, void * New, ImageSize * Currentsize);
+template void ConnectComp26NN<float, float>(void * Old, void * New, ImageSize * Currentsize);
+
+template <class OldType, class NewType>
+void ConnectComp6NN(void * Old_void, void * New_void, ImageSize * Currentsize)
+{
+
+    OldType * Old = static_cast<OldType *>(Old_void);
+    NewType * New = static_cast<NewType *>(New_void);
+    int dimensions[3];
+    dimensions[0]=Currentsize->xsize;
+    dimensions[1]=Currentsize->ysize;
+    dimensions[2]=Currentsize->zsize;
+
+    // Create Counter image
+    int index;
+    int CCcounter=1;
+    int NumElements=((int)dimensions[0]*(int)dimensions[1]*(int)dimensions[2]);
+    int * tempimg= (int *) calloc(NumElements, sizeof(int));
+
+    //  **********    Foreground    ***********
+    index=0;
+    for(int z=0; z<((int)dimensions[2]); z++)
+    {
+        for(int y=0; y<((int)dimensions[1]); y++)
+        {
+            for(int x=0; x<((int)dimensions[0]); x++)
+            {
+                tempimg[index]=0;
+                if(Old[index]==0)
+                {
+                    Old[index]=0;
+                }
+                else
+                {
+                    Old[index]=1;
+                }
+                index++;
+            }
+        }
+    }
+
+    index=0;
+    for(int z=0; z<((int)dimensions[2]); z++)
+    {
+        for(int y=0; y<((int)dimensions[1]); y++)
+        {
+            for(int x=0; x<((int)dimensions[0]); x++)
+            {
+                tempimg[index]=0;
+                if(Old[index]>0)
+                {
+                    tempimg[index]=CCcounter;
+                    CCcounter++;
+                }
+                index++;
+            }
+        }
+    }
+    //cout << "Test [" << indexprob<<"] = "<< New[indexprob]<< " "<<Old[indexprob]<<endl;
+
+    int tempmin;
+    int numbchanges=1;
+
+
+    int *CClist = (int *) calloc(CCcounter, sizeof(int));
+    for(int i=1; i<CCcounter; i++)
+    {
+        CClist[i]=i;
+    }
+
+    int iter=0;
+    while(numbchanges!=0)
+    {
+        //while(iter<3){
+
+        flush(cout);
+        iter++;
+        numbchanges=0;
+        int currindex=0;
+        for(int z=1; z<((int)dimensions[2]-1); z++)
+        {
+            for(int y=1; y<((int)dimensions[1]-1); y++)
+            {
+                for(int x=1; x<((int)dimensions[0]-1); x++)
+                {
+                    index = z*dimensions[1]*dimensions[0]+y*dimensions[0]+x;
+                    if(Old[index]>0 && CClist[tempimg[index]]>0)
+                    {
+                        tempmin=CClist[tempimg[index]];
+
+                        for(int deltaZ=-1; deltaZ<=1; deltaZ+=2)
+                        {
+                            currindex=index+deltaZ*dimensions[0]*dimensions[1];
+                            if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]])
+                            {
+                                tempmin=CClist[tempimg[currindex]];
+                            }
+                        }
+                        for(int deltaY=-1; deltaY<=1; deltaY+=2)
+                        {
+                            currindex=index+deltaY*dimensions[0];
+                            if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]])
+                            {
+                                tempmin=CClist[tempimg[currindex]];
+                            }
+                        }
+                        for(int deltaX=-1; deltaX<=1; deltaX+=2)
+                        {
+                            currindex=index+deltaX;
+                            if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]])
+                            {
+                                tempmin=CClist[tempimg[currindex]];
+                            }
+                        }
+                        if(tempmin>0 && tempmin<CClist[tempimg[index]])
+                        {
+                            CClist[tempimg[index]]=tempmin;
+                            numbchanges++;
+                        }
+                    }
+                }
+            }
+        }
+
+        for(int index=0; index<((int)dimensions[0]*(int)dimensions[1]*(int)dimensions[2]); index++)
+        {
+            if(Old[index]>0)
+            {
+                tempimg[index]=CClist[tempimg[index]];
+            }
+        }
+
+        //cout << numbchanges<<" "<<New[index]<<" "<<CClist[New[index]]<< endl;
+        //probarea=New[index];
+    }
+
+
+
+    //Find lable counts
+    float *Pixelcounter = (float *) calloc((int)CCcounter, sizeof(float));
+    int *PixelcounterOrder;
+
+    for(index=0; index<NumElements; index++)
+    {
+        if(tempimg[index]>0 && Old[index]>0)
+        {
+            Pixelcounter[(int)tempimg[index]]++;
+        }
+    }
+    cout<<"test"<<endl;
+    PixelcounterOrder=quickSort_order(Pixelcounter,CCcounter);
+    cout<<"test2"<<endl;
+
+    //Rassign to oposit class
+    for(index=0; index<NumElements; index++)
+    {
+        if(tempimg[index]>0 && Old[index]>0)
+        {
+            New[index]=CCcounter-PixelcounterOrder[(int)tempimg[index]];
+        }
+        else{
+            New[index]=0;
+        }
+    }
+    delete [] tempimg;
+
+    return;
+}
+template void ConnectComp6NN<unsigned char, unsigned char>(void * Old, void * New, ImageSize * Currentsize);
+template void ConnectComp6NN<float, float>(void * Old, void * New, ImageSize * Currentsize);
+
+
 void Dillate(float * Image,
              int kernel,
              ImageSize * Currentsize)
@@ -2835,7 +3155,7 @@ void Dillate_const(bool * Image,
                    bool * Const,
                    int kernel,
                    int dimensions[3],
-                   int direction)
+int direction)
 {
     int xyzpos[3];
     int shiftdir=0;
@@ -2948,3 +3268,26 @@ void Dillate_const(bool * Image,
 }
 
 
+/* *************************************************************** */
+/* *************************************************************** */
+template <class DTYPE>
+void seg_mat44_mul(mat44 const* mat,
+                   DTYPE const* in,
+                   DTYPE *out)
+{
+   out[0]= (DTYPE)mat->m[0][0]*in[0] +
+           (DTYPE)mat->m[0][1]*in[1] +
+           (DTYPE)mat->m[0][2]*in[2] +
+           (DTYPE)mat->m[0][3];
+   out[1]= (DTYPE)mat->m[1][0]*in[0] +
+           (DTYPE)mat->m[1][1]*in[1] +
+           (DTYPE)mat->m[1][2]*in[2] +
+           (DTYPE)mat->m[1][3];
+   out[2]= (DTYPE)mat->m[2][0]*in[0] +
+           (DTYPE)mat->m[2][1]*in[1] +
+           (DTYPE)mat->m[2][2]*in[2] +
+           (DTYPE)mat->m[2][3];
+   return;
+}
+template void seg_mat44_mul<float>(mat44 const*, float const*, float*);
+template void seg_mat44_mul<double>(mat44 const*, double const*, double*);
