@@ -43,9 +43,9 @@ void Usage(char *exec)
     printf("\t  -n  \t\t| Count of all voxels above 0 (<# voxels>)\n");
     printf("\t  -np \t\t| Sum of all fuzzy voxels (sum(<in>))\n");
     printf("\n\tCoordinates operations (datatype: all)\n");
-    printf("\t  -x \t\t| Location (in vox) of the smallest value in the image\n");
-    printf("\t  -X \t\t| Location (in vox) of the largest value in the image\n");
-    printf("\t  -c \t\t| Location (in vox) of the centre of mass of the object\n");
+    printf("\t  -x \t\t| Location (i j k x y z) of the smallest value in the image\n");
+    printf("\t  -X \t\t| Location (i j k x y z) of the largest value in the image\n");
+    printf("\t  -c \t\t| Location (i j k x y z) of the centre of mass of the object\n");
     printf("\t  -B \t\t| Bounding box of all nonzero voxels [ xmin xsize ymin ysize zmin zsize ]\n");
     printf("\n\tLabel attribute operations (datatype: char or uchar)\n");
     printf("\t  -Vl <csv> \t\t| Volume of each integer label <in>. Save to <csv> file.\n");
@@ -717,11 +717,9 @@ int main(int argc, char **argv)
                 {
                     seg_changeDatatype<float>(Images[0]);
                 }
-                float * Img1prt = static_cast<float *>(Images[0]->data);
-                float count=0;
-                float locX=0;
-                float locY=0;
-                float locZ=0;
+                float *Img1prt = static_cast<float *>(Images[0]->data);
+                float intensitySum=0;
+                float locVox[3]={0,0,0};
                 int index=0;
                 for(int Zindex=0; Zindex<Images[0]->nz; Zindex++)
                 {
@@ -729,19 +727,29 @@ int main(int argc, char **argv)
                     {
                         for(int Xindex=0; Xindex<Images[0]->nx; Xindex++)
                         {
-                            if(mask[index] && Img1prt[index]>0)
+                           float intensity=Img1prt[index];
+                            if(mask[index] && intensity>0)
                             {
-                                count++;
-                                locX+=Xindex;
-                                locY+=Yindex;
-                                locZ+=Zindex;
+                                locVox[0]+=Xindex*intensity;
+                                locVox[1]+=Yindex*intensity;
+                                locVox[2]+=Zindex*intensity;
+                                intensitySum+=intensity;
                             }
                             index++;
                         }
                     }
                 }
-
-                cout <<locX/count<<" "<<locY/count<<" "<<locZ/count<<endl;
+                locVox[0]/=intensitySum;
+                locVox[1]/=intensitySum;
+                locVox[2]/=intensitySum;
+                // Compute the coordinate in mm
+                float locMil[3]={0,0,0};
+                if(Images[0]->sform_code!=0)
+                   seg_mat44_mul(&Images[0]->sto_xyz,locVox,locMil);
+                else
+                   seg_mat44_mul(&Images[0]->qto_xyz,locVox,locMil);
+                // Display the coordinates
+                cout <<locVox[0]<<" "<<locVox[1]<<" "<<locVox[2]<<" "<<locMil[0]<<" "<<locMil[1]<<" "<<locMil[2]<<endl;
                 flush(cout);
             }
 
@@ -756,9 +764,7 @@ int main(int argc, char **argv)
                 }
                 float * Img1prt = static_cast<float *>(Images[0]->data);
                 float maxval=-1e32;
-                int locX=0;
-                int locY=0;
-                int locZ=0;
+                float locVox[3]={0,0,0};
                 int index=0;
                 for(int Zindex=0; Zindex<Images[0]->nz; Zindex++)
                 {
@@ -769,23 +775,29 @@ int main(int argc, char **argv)
                             if(mask[index] && Img1prt[index]>maxval)
                             {
                                 maxval=Img1prt[index];
-                                locX=Xindex;
-                                locY=Yindex;
-                                locZ=Zindex;
+                                locVox[0]=Xindex;
+                                locVox[1]=Yindex;
+                                locVox[2]=Zindex;
                             }
                             index++;
                         }
                     }
                 }
-
-                cout <<locX<<" "<<locY<<" "<<locZ<<endl;
+                // Compute the coordinate in mm
+                float locMil[3]={0,0,0};
+                if(Images[0]->sform_code!=0)
+                   seg_mat44_mul(&Images[0]->sto_xyz,locVox,locMil);
+                else
+                   seg_mat44_mul(&Images[0]->qto_xyz,locVox,locMil);
+                // Display the coordinates
+                cout <<locVox[0]<<" "<<locVox[1]<<" "<<locVox[2]<<" "<<locMil[0]<<" "<<locMil[1]<<" "<<locMil[2]<<endl;
                 flush(cout);
             }
 
             // **************************            ---------          *****************************
             // **************************            Min location       *****************************
             // **************************            ---------          *****************************
-            else if(strcmp(argv[i], "-X")==0 && (i)<argc)
+            else if(strcmp(argv[i], "-x")==0 && (i)<argc)
             {
                 if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
                 {
@@ -793,9 +805,7 @@ int main(int argc, char **argv)
                 }
                 float * Img1prt = static_cast<float *>(Images[0]->data);
                 float minval=1e32;
-                int locX=0;
-                int locY=0;
-                int locZ=0;
+                float locVox[3]={0,0,0};
                 int index=0;
                 for(int Zindex=0; Zindex<Images[0]->nz; Zindex++)
                 {
@@ -806,16 +816,22 @@ int main(int argc, char **argv)
                             if(mask[index] && Img1prt[index]<minval)
                             {
                                 minval=Img1prt[index];
-                                locX=Xindex;
-                                locY=Yindex;
-                                locZ=Zindex;
+                                locVox[0]=Xindex;
+                                locVox[1]=Yindex;
+                                locVox[2]=Zindex;
                             }
                             index++;
                         }
                     }
                 }
-
-                cout <<locX<<" "<<locY<<" "<<locZ<<endl;
+                // Compute the coordinate in mm
+                float locMil[3]={0,0,0};
+                if(Images[0]->sform_code!=0)
+                   seg_mat44_mul(&Images[0]->sto_xyz,locVox,locMil);
+                else
+                   seg_mat44_mul(&Images[0]->qto_xyz,locVox,locMil);
+                // Display the coordinates
+                cout <<locVox[0]<<" "<<locVox[1]<<" "<<locVox[2]<<" "<<locMil[0]<<" "<<locMil[1]<<" "<<locMil[2]<<endl;
                 flush(cout);
             }
 
