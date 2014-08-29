@@ -33,7 +33,7 @@ std::string xml_segLabFusion =
 
     // Filename of the input image
 
-    "    <image fileExtensions=\"*.nii,*.nii.gz\">\n"
+    "    <image fileExtensions=\".nii,.nii.gz\">\n"
     "      <name>inputImageName</name>\n"
     "      <longflag>in</longflag>\n"
     "      <description>Filename of the input image to be segmented. The input image should be 2D, 3D or 4D images. 2D images should be on the XY plane. 4D images are segmented as if they were multimodal.</description>\n"

@@ -33,7 +33,7 @@ std::string xml_segEM =
 
     // Filename of the input image
 
-    "    <image fileExtensions=\"*.nii,*.nii.gz\">\n"
+    "    <image fileExtensions=\".nii,.nii.gz\">\n"
     "      <name>inputImageName</name>\n"
     "      <longflag>in</longflag>\n"
     "      <description>Filename of the input image to be segmented. The input image should be 2D, 3D or 4D images. 2D images should be on the XY plane. 4D images are segmented as if they were multimodal.</description>\n"
@@ -44,7 +44,7 @@ std::string xml_segEM =
 
     // Filename of the output segmented image
 
-    "    <image fileExtensions=\"*.nii,*.nii.gz\">\n"
+    "    <image fileExtensions=\".nii,.nii.gz\">\n"
     "      <name>outputImageName</name>\n"
     "      <longflag>out</longflag>\n"
     "      <description>Filename of the output segmented image.</description>\n"
@@ -70,7 +70,7 @@ std::string xml_segEM =
 
     // Filename of an image of 4D priors
 
-    "    <image fileExtensions=\"*.nii,*.nii.gz\">\n"
+    "    <image fileExtensions=\".nii,.nii.gz\">\n"
     "      <name>filename_priors</name>\n"
     "      <longflag>priors4D</longflag>\n"
     "      <description>Filename of a 4D image of priors stacked in the 4th dimension. All priors should be registered to the input image.</description>\n"
@@ -106,7 +106,7 @@ std::string xml_segEM =
 
     // Filename of an optional mask image
 
-    "    <image fileExtensions=\"*.nii,*.nii.gz\">\n"
+    "    <image fileExtensions=\".nii,.nii.gz\">\n"
     "      <name>filename_mask</name>\n"
     "      <longflag>mask</longflag>\n"
     "      <description>Filename of an optional mask for the input image.</description>\n"
@@ -200,7 +200,7 @@ std::string xml_segEM =
 
     // Filename of the output bias field correction
 
-    "    <image fileExtensions=\"*.nii,*.nii.gz\">\n"
+    "    <image fileExtensions=\".nii,.nii.gz\">\n"
     "      <name>filename_bias</name>\n"
     "      <longflag>bc_out</longflag>\n"
     "      <description>File to write the bias field corrected image to.</description>\n"
@@ -249,7 +249,7 @@ std::string xml_segEM =
 
 // Outlier output filename
 
-    "    <image fileExtensions=\"*.nii,*.nii.gz\">\n"
+    "    <image fileExtensions=\".nii,.nii.gz\">\n"
     "      <name>filename_out_outlier</name>\n"
     "      <longflag>out_outlier</longflag>\n"
     "      <description>File to write the outlierness image to.</description>\n"
