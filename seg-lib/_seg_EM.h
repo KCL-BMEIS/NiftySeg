@@ -74,6 +74,8 @@ protected:
     int     maxIteration;
     /// @brief The Minimum number of iterations (overrides the covergenge criteria "ratio")
     int     minIteration;
+    /// @brief The convergence criteria ratio for the LogLik increase
+    float convCrit;
 
     /// @brief A float vector of size maxMultispectalSize containing the maximum intensity value used for the intensity rescaling
     float rescale_max[maxMultispectalSize];
@@ -197,6 +199,7 @@ public:
     void    SetBiasField(int _BiasFieldOrder, float _BiasFieldRatio);
     void    SetMaximalIterationNumber(unsigned int numberiter);
     void    SetMinIterationNumber(unsigned int numberiter);
+    void    SetConvergenceCriteria(float inConvCrit);
     void    SetVerbose(unsigned int verblevel);
 
     // Getters of the results

@@ -27,6 +27,7 @@ seg_EM::seg_EM(int _numb_classes, int _nu,int _nt)
     this->dy=0;
     this->dz=0;
 
+
     this->numElements=0;
 
 
@@ -54,6 +55,8 @@ seg_EM::seg_EM(int _numb_classes, int _nu,int _nt)
 
     this->maxIteration=30;
     this->minIteration=4;
+        this->convCrit=0.0005;
+
     this->verbose_level=0;
     this->loglik=2.0;
     this->oldloglik=1.0;
@@ -350,6 +353,19 @@ void seg_EM::SetMinIterationNumber(unsigned int numberiter)
     this->minIteration=numberiter;
     return;
 }
+
+/* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
+/// @brief Sets the convergence criteria threshold
+/// @param inConvCrit An float defining the minimum log lik ration increase
+///
+///
+void seg_EM::SetConvergenceCriteria(float inConvCrit)
+{
+    this->convCrit=inConvCrit;
+    return;
+}
+
+
 
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
@@ -1369,7 +1385,7 @@ void  seg_EM::Run_EM()
             }
         }
         // Preform Exit
-        if((((this->loglik-this->oldloglik)/(fabs(this->oldloglik+this->loglik)/2.0f))<(segPrecisionTYPE)(0.0005)
+        if((((this->loglik-this->oldloglik)/(fabs(this->oldloglik+this->loglik)/2.0f))<(segPrecisionTYPE)(this->convCrit)
             && this->iter>this->minIteration)
                 || iter>=this->maxIteration
                 || (isinf(this->loglik) && this->iter>3))
