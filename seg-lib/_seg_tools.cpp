@@ -1,5 +1,5 @@
 #include "_seg_tools.h"
-
+#include <cfloat>
 
 
 

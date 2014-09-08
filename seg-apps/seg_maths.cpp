@@ -16,6 +16,7 @@
 #include <Eigen/Core>
 #include <Eigen/LU>
 #include <Eigen/Cholesky>
+#include <cfloat>
 
 using namespace std;
 #define SegPrecisionTYPE float
