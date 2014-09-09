@@ -8,7 +8,7 @@
     #include <dirent_win.h>
     #include <float.h>
     #include <time.h>
-
+    #include <malloc.h>
 
     #ifndef M_PI
         /// @brief M_PI as to be defined in windows
@@ -39,6 +39,7 @@
     #endif
 #else  //IF NOT ON WINDOWS
     #include <dirent.h>
+    #include <alloca.h>
 #endif
 
 #if (defined(_WIN32) || defined(_WINDOWS)) && !defined(__CYGWIN__)
@@ -65,7 +66,6 @@
 #include <iostream>
 #include <iomanip>
 #include "nifti1_io.h"
-#include <alloca.h>
 #include <new>
 #include <exception>
 #ifdef _OPENMP

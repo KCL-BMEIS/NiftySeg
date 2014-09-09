@@ -16,6 +16,7 @@
 #include <Eigen/Core>
 #include <Eigen/LU>
 #include <Eigen/Cholesky>
+#include <cfloat>
 
 using namespace std;
 #define SegPrecisionTYPE float
@@ -1174,8 +1175,8 @@ int main(int argc, char **argv)
             // *********************  Range  *************************
             else if(strcmp(argv[i], "-range") == 0)
             {
-                float min=std::numeric_limits<float>::max();
-                float max=-std::numeric_limits<float>::max();
+                float min=FLT_MAX;
+                float max=-FLT_MAX;
                 for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                 {
                     max=bufferImages[current_buffer][i]>max?bufferImages[current_buffer][i]:max;
@@ -1387,7 +1388,7 @@ int main(int argc, char **argv)
             {
                 for(long i=0; i<CurrSize->numel; i++)
                 {
-                    float tmax=(float)-std::numeric_limits<float>::max();
+                    float tmax=(float)-FLT_MAX;
                     for(long tp=0; tp<(long)CurrSize->tsize; tp++)
                     {
                         if(tmax<bufferImages[current_buffer][i+(long)(tp)*(long)CurrSize->numel])
@@ -1403,7 +1404,7 @@ int main(int argc, char **argv)
             {
                 for(long i=0; i<CurrSize->numel; i++)
                 {
-                    float tmax=(float)-std::numeric_limits<float>::max();
+                    float tmax=(float)-FLT_MAX;
                     float tmaxindex=-1;
                     for(long tp=0; tp<(long)CurrSize->tsize; tp++)
                     {
@@ -1440,7 +1441,7 @@ int main(int argc, char **argv)
             {
                 for(long i=0; i<CurrSize->numel; i++)
                 {
-                    float tmin=(float)std::numeric_limits<float>::max();
+                    float tmin=(float)FLT_MAX;
                     for(long tp=0; tp<CurrSize->tsize; tp++)
                     {
                         if(tmin>bufferImages[current_buffer][i+(int)(tp)*CurrSize->numel])
