@@ -1,5 +1,5 @@
 #include "_seg_tools.h"
-
+#include <cfloat>
 
 
 
@@ -125,12 +125,12 @@ void GaussianSmoothing4D_nifti(nifti_image * Data,int * mask,float gauss_std_in)
             int kernelshift=(int)(kernelsize/2.0f);
             float GaussKernel[400]= {0};
             float kernelsum=0;
-            for(int i=0; i<kernelsize; i++)
+            for(i=0; i<kernelsize; i++)
             {
                 GaussKernel[i]=expf((float)(-0.5f*powf((float)((float)i-(float)kernelshift)/gauss_std, 2.0f)))/(sqrtf(2.0f*3.14159265*powf(gauss_std, 2)));
                 kernelsum+=GaussKernel[i];
             }
-            for(int i=0; i<kernelsize; i++)
+            for(i=0; i<kernelsize; i++)
                 GaussKernel[i]/=kernelsum;
 
             // Updating buffers
@@ -430,14 +430,16 @@ void SmoothLab(float * DataPTR,float factor, ImageSize * Currentsize){
                                 }
                                 else
                                 {
-                                    tmp_lab.insert(DataPointPair((unsigned int)round(DataPTR[index2]),kernelval));
+                                    unsigned int tmpIndex = (unsigned int)round(DataPTR[index2]);
+                                    DataPointPair tmpPair = std::make_pair(tmpIndex, kernelval);
+                                    tmp_lab.insert(tmpPair);
                                 }
                             }
                         }
                     }
                     std::map<unsigned int,float>::iterator currIterator = tmp_lab.begin();
                     int maxindex=0;
-                    float maxval=-std::numeric_limits<float>::max();;
+                    float maxval=-FLT_MAX;
                     while(currIterator != tmp_lab.end())
                     {
                         if(currIterator->second>maxval)
@@ -1924,7 +1926,7 @@ void LTS_Vecs(float * Y, float * X,int * mask, float percentOutliers,int maxNumb
 {
 
     percentOutliers=percentOutliers<0?0:(percentOutliers>0.499)?0.499:percentOutliers;
-    float distance_threshold=std::numeric_limits<float>::max();
+    float distance_threshold=FLT_MAX;
     int iteration=maxNumbIter;
     float Aval=1;
     float Bval=0;
