@@ -361,6 +361,9 @@ void SmoothLab(float * DataPTR,float factor, ImageSize * Currentsize){
 
     float * ImageBuffer= new float [nx*ny*nz]();
     float gauss_std=factor;
+    float gaussX_std=gauss_std;
+    float gaussY_std=gauss_std;
+    float gaussZ_std=gauss_std;
 
     int shiftdirection[3]= {1,nx,nx*ny};
     int dim_array[3]= {nx,ny,nz};
@@ -371,17 +374,16 @@ void SmoothLab(float * DataPTR,float factor, ImageSize * Currentsize){
         long current_4dShift_short=curr4d*nx*ny*nz;
 
         int index=0;
-        int xyzpos2=0;
         int xyzpos[3]={0};
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    shared(DataPTR,ImageBuffer,nx,ny,nz,dim_array,gauss_std,shiftdirection,current_4dShift_short) \
-    private(xyzpos2,index,xyzpos)
+    shared(DataPTR,ImageBuffer,nx,ny,nz,dim_array,gauss_std,shiftdirection,current_4dShift_short,gaussX_std,gaussY_std,gaussZ_std) \
+    private(index,xyzpos)
 #endif
-        for(xyzpos2=0; xyzpos2<nz; xyzpos2++)
+        for(int zpos=0; zpos<nz; zpos++)
         {
-            xyzpos[2]=xyzpos2;
+            xyzpos[2]=zpos;
             for(xyzpos[1]=0; xyzpos[1]<ny; xyzpos[1]++)
             {
                 for(xyzpos[0]=0; xyzpos[0]<nx; xyzpos[0]++)
@@ -390,26 +392,34 @@ void SmoothLab(float * DataPTR,float factor, ImageSize * Currentsize){
                     index=xyzpos[0]+(xyzpos[1]+xyzpos[2]*ny)*nx;
 
                     // Calculate allowed kernel shifts
-                    int kernelsize=(int)(gauss_std*6.0f) % 2 != 0 ? (int)(gauss_std*6.0f) : (int)(gauss_std*6.0f)+1;
-                    int kernelshift=(int)(kernelsize/2.0f);
+                    int kernelXsize=(int)(gaussX_std*6.0f) % 2 != 0 ? (int)(gaussX_std*6.0f) : (int)(gaussX_std*6.0f)+1;
+                    int kernelXshift=(int)(kernelXsize/2.0f);
+                    int shiftXstart=((xyzpos[0]<kernelXshift)?-xyzpos[0]:-kernelXshift);
+                    int shiftXstop=((xyzpos[0]>=(dim_array[0]-kernelXshift))?(int)dim_array[0]-xyzpos[0]-1:kernelXshift);
 
-                    int shiftxstart=((xyzpos[0]<kernelshift)?-xyzpos[0]:-kernelshift);
-                    int shiftxstop=((xyzpos[0]>=(dim_array[0]-kernelshift))?(int)dim_array[0]-xyzpos[0]-1:kernelshift);
-                    int shiftystart=((xyzpos[1]<kernelshift)?-xyzpos[1]:-kernelshift);
-                    int shiftystop=((xyzpos[1]>=(dim_array[1]-kernelshift))?(int)dim_array[1]-xyzpos[1]-1:kernelshift);
-                    int shiftzstart=((xyzpos[2]<kernelshift)?-xyzpos[2]:-kernelshift);
-                    int shiftzstop=((xyzpos[2]>=(dim_array[2]-kernelshift))?(int)dim_array[2]-xyzpos[2]-1:kernelshift);
+                    int kernelYsize=(int)(gaussY_std*6.0f) % 2 != 0 ? (int)(gaussY_std*6.0f) : (int)(gaussY_std*6.0f)+1;
+                    int kernelYshift=(int)(kernelYsize/2.0f);
+                    int shiftYstart=((xyzpos[1]<kernelYshift)?-xyzpos[1]:-kernelYshift);
+                    int shiftYstop=((xyzpos[1]>=(dim_array[1]-kernelYshift))?(int)dim_array[1]-xyzpos[1]-1:kernelYshift);
+
+                    int kernelZsize=(int)(gaussZ_std*6.0f) % 2 != 0 ? (int)(gaussZ_std*6.0f) : (int)(gaussZ_std*6.0f)+1;
+                    int kernelZshift=(int)(kernelZsize/2.0f);
+                    int shiftZstart=((xyzpos[2]<kernelZshift)?-xyzpos[2]:-kernelZshift);
+                    int shiftZstop=((xyzpos[2]>=(dim_array[2]-kernelZshift))?(int)dim_array[2]-xyzpos[2]-1:kernelZshift);
 
 
                     DataPointMap tmp_lab;
-                    for(int shiftx=shiftxstart; shiftx<=shiftxstop; shiftx++)
+                    for(int shiftx=shiftXstart; shiftx<=shiftXstop; shiftx++)
                     {
-                        for(int shifty=shiftystart; shifty<=shiftystop; shifty++)
+                        for(int shifty=shiftYstart; shifty<=shiftYstop; shifty++)
                         {
-                            for(int shiftz=shiftzstart; shiftz<=shiftzstop; shiftz++)
+                            for(int shiftz=shiftZstart; shiftz<=shiftZstop; shiftz++)
                             {
                                 // Data Blur
-                                float kernelval=expf((float)(-0.5f*(powf(shiftxstart,2)+powf(shiftystart,2)+powf(shiftzstart,2))/powf(gauss_std, 2.0f)))/(sqrtf(2.0f*3.14159265*powf(gauss_std, 2)));
+                                float kernelval=expf((float)(-0.5f *(powf(shiftx,2)/powf(gaussX_std, 2.0f)
+                                                                     +powf(shifty,2)/powf(gaussY_std, 2.0f)
+                                                                     +powf(shiftz,2)/powf(gaussZ_std, 2.0f)
+                                                                     )))/(sqrtf(2.0f*3.14159265*powf(gauss_std, 2)));
                                 int index2=index+(shiftx*shiftdirection[0])+(shifty*shiftdirection[1])+(shiftz*shiftdirection[2]);
 
 
@@ -3275,19 +3285,19 @@ void seg_mat44_mul(mat44 const* mat,
                    DTYPE const* in,
                    DTYPE *out)
 {
-   out[0]= (DTYPE)mat->m[0][0]*in[0] +
-           (DTYPE)mat->m[0][1]*in[1] +
-           (DTYPE)mat->m[0][2]*in[2] +
-           (DTYPE)mat->m[0][3];
-   out[1]= (DTYPE)mat->m[1][0]*in[0] +
-           (DTYPE)mat->m[1][1]*in[1] +
-           (DTYPE)mat->m[1][2]*in[2] +
-           (DTYPE)mat->m[1][3];
-   out[2]= (DTYPE)mat->m[2][0]*in[0] +
-           (DTYPE)mat->m[2][1]*in[1] +
-           (DTYPE)mat->m[2][2]*in[2] +
-           (DTYPE)mat->m[2][3];
-   return;
+    out[0]= (DTYPE)mat->m[0][0]*in[0] +
+            (DTYPE)mat->m[0][1]*in[1] +
+            (DTYPE)mat->m[0][2]*in[2] +
+            (DTYPE)mat->m[0][3];
+    out[1]= (DTYPE)mat->m[1][0]*in[0] +
+            (DTYPE)mat->m[1][1]*in[1] +
+            (DTYPE)mat->m[1][2]*in[2] +
+            (DTYPE)mat->m[1][3];
+    out[2]= (DTYPE)mat->m[2][0]*in[0] +
+            (DTYPE)mat->m[2][1]*in[1] +
+            (DTYPE)mat->m[2][2]*in[2] +
+            (DTYPE)mat->m[2][3];
+    return;
 }
 template void seg_mat44_mul<float>(mat44 const*, float const*, float*);
 template void seg_mat44_mul<double>(mat44 const*, double const*, double*);
