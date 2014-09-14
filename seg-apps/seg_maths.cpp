@@ -1354,9 +1354,9 @@ int main(int argc, char **argv)
             else if(strcmp(argv[i], "-subsamp2xy") == 0)
             {
 
-                int newx=(int)floor(CurrSize->xsize/2.0f);
-                int newy=(int)floor(CurrSize->ysize/2.0f);
-                int newz=(int)floor(CurrSize->zsize);
+                int newx=(int)floor(static_cast<float>(CurrSize->xsize)/2.0f);
+                int newy=(int)floor(static_cast<float>(CurrSize->ysize)/2.0f);
+                int newz=(int)floor(static_cast<float>(CurrSize->zsize));
                 int newnumel=newx*newy*newz;
 
 
