@@ -5,6 +5,9 @@
 
 using namespace std;
 
+#include "NiftySegWinExportHeader.h"
+
+
 /// @brief My own very simple implementation of a matrix class.
 ///
 /// Did this mostly for fun. This class will probably be replaced with Eigen, since Eigen is better and it has been recently added as a dependency.
@@ -420,4 +423,3 @@ public:
         return(det);
     }
 };
-
