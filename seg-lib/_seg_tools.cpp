@@ -2616,8 +2616,54 @@ void Largest_ConnectComp(void * Old_void, void * New_void, ImageSize * Currentsi
         iter++;
         numbchanges=0;
         int currindex=0;
-        for(int z=1; z<((int)dimensions[2]-1); z++)
-        {
+        if((int)dimensions[2]>1){
+            for(int z=1; z<((int)dimensions[2]-1); z++)
+            {
+                for(int y=1; y<((int)dimensions[1]-1); y++)
+                {
+                    for(int x=1; x<((int)dimensions[0]-1); x++)
+                    {
+                        index = z*dimensions[1]*dimensions[0]+y*dimensions[0]+x;
+                        if(Old[index]>0 && CClist[tempimg[index]]>0)
+                        {
+                            tempmin=CClist[tempimg[index]];
+
+                            for(int deltaZ=-1; deltaZ<=1; deltaZ+=2)
+                            {
+                                currindex=index+deltaZ*dimensions[0]*dimensions[1];
+                                if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]])
+                                {
+                                    tempmin=CClist[tempimg[currindex]];
+                                }
+                            }
+                            for(int deltaY=-1; deltaY<=1; deltaY+=2)
+                            {
+                                currindex=index+deltaY*dimensions[0];
+                                if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]])
+                                {
+                                    tempmin=CClist[tempimg[currindex]];
+                                }
+                            }
+                            for(int deltaX=-1; deltaX<=1; deltaX+=2)
+                            {
+                                currindex=index+deltaX;
+                                if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]])
+                                {
+                                    tempmin=CClist[tempimg[currindex]];
+                                }
+                            }
+                            if(tempmin>0 && tempmin<CClist[tempimg[index]])
+                            {
+                                CClist[tempimg[index]]=tempmin;
+                                numbchanges++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else{
+            int z=0;
             for(int y=1; y<((int)dimensions[1]-1); y++)
             {
                 for(int x=1; x<((int)dimensions[0]-1); x++)
@@ -2626,15 +2672,6 @@ void Largest_ConnectComp(void * Old_void, void * New_void, ImageSize * Currentsi
                     if(Old[index]>0 && CClist[tempimg[index]]>0)
                     {
                         tempmin=CClist[tempimg[index]];
-
-                        for(int deltaZ=-1; deltaZ<=1; deltaZ+=2)
-                        {
-                            currindex=index+deltaZ*dimensions[0]*dimensions[1];
-                            if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]])
-                            {
-                                tempmin=CClist[tempimg[currindex]];
-                            }
-                        }
                         for(int deltaY=-1; deltaY<=1; deltaY+=2)
                         {
                             currindex=index+deltaY*dimensions[0];
@@ -2798,34 +2835,71 @@ void ConnectComp26NN(void * Old_void, void * New_void, ImageSize * Currentsize)
         iter++;
         numbchanges=0;
         int currindex=0;
-        for(int z=1; z<((int)dimensions[2]-1); z++)
-        {
-            for(int y=1; y<((int)dimensions[1]-1); y++)
+        if((int)dimensions[2]>1){
+            for(int z=1; z<((int)dimensions[2]-1); z++)
             {
-                for(int x=1; x<((int)dimensions[0]-1); x++)
+                for(int y=1; y<((int)dimensions[1]-1); y++)
                 {
-                    index =z*dimensions[1]*dimensions[0]+y*dimensions[0]+x;
-                    if(Old[index]>0 && CClist[tempimg[index]]>0)
+                    for(int x=1; x<((int)dimensions[0]-1); x++)
                     {
-                        tempmin=CClist[tempimg[index]];
-                        for(int deltaZ=-1; deltaZ<2; deltaZ++)
+                        index =z*dimensions[1]*dimensions[0]+y*dimensions[0]+x;
+                        if(Old[index]>0 && CClist[tempimg[index]]>0)
                         {
-                            for(int deltaY=-1; deltaY<2; deltaY++)
+                            tempmin=CClist[tempimg[index]];
+                            for(int deltaZ=-1; deltaZ<2; deltaZ++)
                             {
-                                for(int deltaX=-1; deltaX<2; deltaX++)
+                                for(int deltaY=-1; deltaY<2; deltaY++)
                                 {
-                                    currindex=index+ (deltaZ*dimensions[0]*dimensions[1]) + (deltaY*dimensions[0]) +(deltaX);
-                                    if(currindex!=index)
+                                    for(int deltaX=-1; deltaX<2; deltaX++)
                                     {
-                                        if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]])
+                                        currindex=index+ (deltaZ*dimensions[0]*dimensions[1]) + (deltaY*dimensions[0]) +(deltaX);
+                                        if(currindex!=index)
                                         {
-                                            tempmin=CClist[tempimg[currindex]];
+                                            if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]])
+                                            {
+                                                tempmin=CClist[tempimg[currindex]];
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
 
+                            if(tempmin>0 && tempmin<CClist[tempimg[index]])
+                            {
+                                CClist[tempimg[index]]=tempmin;
+                                numbchanges++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else{
+            int z=0;
+            for(int y=1; y<((int)dimensions[1]-1); y++)
+            {
+                for(int x=1; x<((int)dimensions[0]-1); x++)
+                {
+                    index = z*dimensions[1]*dimensions[0]+y*dimensions[0]+x;
+                    if(Old[index]>0 && CClist[tempimg[index]]>0)
+                    {
+                        tempmin=CClist[tempimg[index]];
+                        for(int deltaY=-1; deltaY<=1; deltaY+=2)
+                        {
+                            currindex=index+deltaY*dimensions[0];
+                            if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]])
+                            {
+                                tempmin=CClist[tempimg[currindex]];
+                            }
+                        }
+                        for(int deltaX=-1; deltaX<=1; deltaX+=2)
+                        {
+                            currindex=index+deltaX;
+                            if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]])
+                            {
+                                tempmin=CClist[tempimg[currindex]];
+                            }
+                        }
                         if(tempmin>0 && tempmin<CClist[tempimg[index]])
                         {
                             CClist[tempimg[index]]=tempmin;
@@ -2935,7 +3009,7 @@ void ConnectComp6NN(void * Old_void, void * New_void, ImageSize * Currentsize)
             }
         }
     }
-    //cout << "Test [" << indexprob<<"] = "<< New[indexprob]<< " "<<Old[indexprob]<<endl;
+
 
     int tempmin;
     int numbchanges=1;
@@ -2956,8 +3030,54 @@ void ConnectComp6NN(void * Old_void, void * New_void, ImageSize * Currentsize)
         iter++;
         numbchanges=0;
         int currindex=0;
-        for(int z=1; z<((int)dimensions[2]-1); z++)
-        {
+        if((int)dimensions[2]>1){
+            for(int z=1; z<((int)dimensions[2]-1); z++)
+            {
+                for(int y=1; y<((int)dimensions[1]-1); y++)
+                {
+                    for(int x=1; x<((int)dimensions[0]-1); x++)
+                    {
+                        index = z*dimensions[1]*dimensions[0]+y*dimensions[0]+x;
+                        if(Old[index]>0 && CClist[tempimg[index]]>0)
+                        {
+                            tempmin=CClist[tempimg[index]];
+
+                            for(int deltaZ=-1; deltaZ<=1; deltaZ+=2)
+                            {
+                                currindex=index+deltaZ*dimensions[0]*dimensions[1];
+                                if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]])
+                                {
+                                    tempmin=CClist[tempimg[currindex]];
+                                }
+                            }
+                            for(int deltaY=-1; deltaY<=1; deltaY+=2)
+                            {
+                                currindex=index+deltaY*dimensions[0];
+                                if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]])
+                                {
+                                    tempmin=CClist[tempimg[currindex]];
+                                }
+                            }
+                            for(int deltaX=-1; deltaX<=1; deltaX+=2)
+                            {
+                                currindex=index+deltaX;
+                                if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]])
+                                {
+                                    tempmin=CClist[tempimg[currindex]];
+                                }
+                            }
+                            if(tempmin>0 && tempmin<CClist[tempimg[index]])
+                            {
+                                CClist[tempimg[index]]=tempmin;
+                                numbchanges++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else{
+            int z=0;
             for(int y=1; y<((int)dimensions[1]-1); y++)
             {
                 for(int x=1; x<((int)dimensions[0]-1); x++)
@@ -2966,15 +3086,6 @@ void ConnectComp6NN(void * Old_void, void * New_void, ImageSize * Currentsize)
                     if(Old[index]>0 && CClist[tempimg[index]]>0)
                     {
                         tempmin=CClist[tempimg[index]];
-
-                        for(int deltaZ=-1; deltaZ<=1; deltaZ+=2)
-                        {
-                            currindex=index+deltaZ*dimensions[0]*dimensions[1];
-                            if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]])
-                            {
-                                tempmin=CClist[tempimg[currindex]];
-                            }
-                        }
                         for(int deltaY=-1; deltaY<=1; deltaY+=2)
                         {
                             currindex=index+deltaY*dimensions[0];
@@ -3026,9 +3137,9 @@ void ConnectComp6NN(void * Old_void, void * New_void, ImageSize * Currentsize)
             Pixelcounter[(int)tempimg[index]]++;
         }
     }
-    cout<<"test"<<endl;
+
     PixelcounterOrder=quickSort_order(Pixelcounter,CCcounter);
-    cout<<"test2"<<endl;
+
 
     //Rassign to oposit class
     for(index=0; index<NumElements; index++)
