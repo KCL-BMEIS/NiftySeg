@@ -841,7 +841,7 @@ float estimateNCC3D(nifti_image * BaseImage,nifti_image * Template,nifti_image *
         usemask=true;
         for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
         {
-            Maskcount+=Maskptr[i];
+            Maskcount+=(float)(Maskptr[i]>0);
         }
     }
 
