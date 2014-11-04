@@ -3183,6 +3183,7 @@ void Dillate(float * Image,
     }
 
     float tmpvalue=0;
+    for(int tp=0; tp<Currentsize->tsize; tp++){
     for(int currentdirection=0; currentdirection<3; currentdirection++) //Buffer aint each direction
     {
         int index=0;
@@ -3195,9 +3196,9 @@ void Dillate(float * Image,
                     tmpvalue=-1e32;
                     for(int shift=((xyzpos[currentdirection]<kernel)?-xyzpos[currentdirection]:-kernel); shift<=((xyzpos[currentdirection]>=(dimensions[currentdirection]-kernel))?(int)dimensions[currentdirection]-xyzpos[currentdirection]-1:kernel); shift++)
                     {
-                        if(Image[index+shift*shiftdirection[currentdirection]]>tmpvalue)
+                        if(Image[index+shift*shiftdirection[currentdirection]+tp*dimensions[0]*dimensions[1]*dimensions[2]]>tmpvalue)
                         {
-                            tmpvalue=Image[index+shift*shiftdirection[currentdirection]];
+                            tmpvalue=Image[index+shift*shiftdirection[currentdirection]+tp*dimensions[0]*dimensions[1]*dimensions[2]];
                         }
 
                     }
@@ -3208,8 +3209,9 @@ void Dillate(float * Image,
         }
         for(int i=0; i<(dimensions[1]*dimensions[0]*dimensions[2]); i++)
         {
-            Image[i]=Buffer[i];
+            Image[i+tp*dimensions[0]*dimensions[1]*dimensions[2]]=Buffer[i];
         }
+    }
     }
 
     delete [] Buffer;
@@ -3240,6 +3242,7 @@ void Erosion(float * Image,
     }
 
     float tmpvalue=0;
+    for(int tp=0; tp<Currentsize->tsize; tp++){
     for(int currentdirection=0; currentdirection<3; currentdirection++) //Buffer aint each direction
     {
         int index=0;
@@ -3252,9 +3255,9 @@ void Erosion(float * Image,
                     tmpvalue=1e32;
                     for(int shift=((xyzpos[currentdirection]<kernel)?-xyzpos[currentdirection]:-kernel); shift<=((xyzpos[currentdirection]>=(dimensions[currentdirection]-kernel))?(int)dimensions[currentdirection]-xyzpos[currentdirection]-1:kernel); shift++)
                     {
-                        if(Image[index+shift*shiftdirection[currentdirection]]<tmpvalue)
+                        if(Image[index+shift*shiftdirection[currentdirection]+tp*dimensions[0]*dimensions[1]*dimensions[2]]<tmpvalue)
                         {
-                            tmpvalue=Image[index+shift*shiftdirection[currentdirection]];
+                            tmpvalue=Image[index+shift*shiftdirection[currentdirection]+tp*dimensions[0]*dimensions[1]*dimensions[2]];
                         }
 
                     }
@@ -3265,8 +3268,9 @@ void Erosion(float * Image,
         }
         for(int i=0; i<(dimensions[1]*dimensions[0]*dimensions[2]); i++)
         {
-            Image[i]=Buffer[i];
+            Image[i+tp*dimensions[0]*dimensions[1]*dimensions[2]]=Buffer[i];
         }
+    }
     }
     delete [] Buffer;
 

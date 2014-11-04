@@ -741,8 +741,8 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
                 }
                 for(int humanRater=0; humanRater<this->Numb_Neigh; humanRater++)
                 {
-                    int LNCCvalue=(int)(this->LNCC[i+humanRater*this->CurrSizes->numel]);
-                    tmpW[(int)inputHumanRater[i+LNCCvalue*this->CurrSizes->numel]]=1;
+                    int SimilarityIndex=this->LNCC==NULL?humanRater:(int)(this->LNCC[i+humanRater*this->CurrSizes->numel]);
+                    tmpW[(int)inputHumanRater[i+SimilarityIndex*this->CurrSizes->numel]]=1;
                 }
 
                 if(this->LNCC_status)
@@ -1887,8 +1887,8 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
 nifti_image * seg_LabFusion::GetResult_probability()
 {
     nifti_image * Result = nifti_copy_nim_info(this->inputCLASSIFIER);
-    Result->dim[0]=3;
-    Result->dim[4]=1;
+    Result->dim[0]=4;
+    Result->dim[4]=this->NumberOfLabels;
     Result->dim[5]=1;
     nifti_update_dims_from_array(Result);
 
@@ -1907,8 +1907,9 @@ nifti_image * seg_LabFusion::GetResult_probability()
 
     nifti_set_filenames(Result,(char*)this->FilenameOut.c_str(),0,0);
     nifti_datatype_sizes(Result->datatype,&Result->nbyper,&Result->swapsize);
-    Result->cal_max=(this->NumberOfLabels-1);
-    Result->data = (void *) calloc(Result->nvox, sizeof(float));
+    Result->cal_max=(1);
+    Result->cal_min=(1);
+    Result->data = (void *) calloc(Result->nx*Result->ny*Result->nz*Result->nt, sizeof(float));
     float * Resultdata = static_cast<float *>(Result->data);
     if(TYPE_OF_FUSION==1 )
     {
@@ -1917,8 +1918,12 @@ nifti_image * seg_LabFusion::GetResult_probability()
         {
             if(this->maskAndUncertainIndeces[i]>=0)
             {
-                int currlabelnumb=1;
-                Resultdata[i]=W[uncertainindex+currlabelnumb*this->sizeAfterMaskingAndUncertainty];
+
+                for(int currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
+                {
+                Resultdata[i+currlabelnumb*Result->nx*Result->ny*Result->nz]=
+                        W[uncertainindex+currlabelnumb*this->sizeAfterMaskingAndUncertainty];
+                }
                 uncertainindex++;
             }
             else
@@ -1926,6 +1931,7 @@ nifti_image * seg_LabFusion::GetResult_probability()
                 Resultdata[i]=(int)this->FinalSeg[i]>1?1:(int)this->FinalSeg[i];
             }
         }
+
     }
     return Result;
 }

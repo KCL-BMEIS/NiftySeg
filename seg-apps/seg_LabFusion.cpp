@@ -460,6 +460,12 @@ int main(int argc, char **argv)
         }
 
 
+        if(LabFusType==10)
+        {
+            LabFusType = 1;
+            Thresh_IMG_value=0.999;
+        }
+
         // *****************************
         //   CALCULATING REQUIRED SIZE
         // *****************************
@@ -525,10 +531,10 @@ int main(int argc, char **argv)
             }
             flush(cout);
         }
-
-        if(ProbOutput==1 && (MaxLab>2 || LabFusType>1))
+        cout<<(float)MaxLab<<" "<<LabFusType<<endl;
+        if(ProbOutput==1 && (MaxLab>9 || LabFusType>1))
         {
-            fprintf(stderr,"* Probabilistic output only available for 1 label and for STEPS/STAPLE\n");
+            fprintf(stderr,"* Due to memory limitations, Probabilistic output only available for less than 10 labels and for STEPS/STAPLE\n");
             flush(cout);
             return 1;
         }
