@@ -27,3 +27,19 @@
     INSTALL_TARGETS(/bin seg_CalcTopNCC)
 
 #-----------------------------------------------------------------------------
+set(MODULE_LIST
+  seg_LoAd
+  seg_stats
+  seg_EM
+  seg_LabFusion
+  seg_maths
+  seg_CalcTopNCC
+)
+
+foreach(MODULE_NAME ${MODULE_LIST})
+  install(TARGETS ${MODULE_NAME}
+    RUNTIME DESTINATION bin COMPONENT Runtime
+    LIBRARY DESTINATION lib COMPONENT Runtime
+    ARCHIVE DESTINATION lib COMPONENT Runtime
+  )
+endforeach(MODULE_NAME)
