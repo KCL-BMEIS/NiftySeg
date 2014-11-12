@@ -1,10 +1,13 @@
 #pragma once
+#include "NiftySegWinExportHeader.h"
 
 #include "_seg_common.h"
+extern "C++" {
 #include "_seg_tools.h"
+}
 
 
-class seg_LabFusion
+class NIFTYSEG_WINEXPORT seg_LabFusion
 {
 protected:
     nifti_image*    inputCLASSIFIER; // pointer to external
