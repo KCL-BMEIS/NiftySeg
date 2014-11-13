@@ -54,7 +54,7 @@
     INSTALL(FILES ${NAME}.h DESTINATION include)
     add_dependencies(_seg_LabFusion Eigen)
 
-INSTALL(FILES _seg_common.h DESTINATION include)
+INSTALL(FILES _seg_common.h NiftySegWinExportHeader.h DESTINATION include)
 
 
 
