@@ -2536,10 +2536,10 @@ void Close_Forground_ConnectComp(void * Old_void, void * New_void, ImageSize * C
     return;
 }
 template NIFTYSEG_WINEXPORT
-	void Close_Forground_ConnectComp<unsigned char, unsigned char>(void * Old, void * New, ImageSize * Currentsize);
+void Close_Forground_ConnectComp<unsigned char, unsigned char>(void * Old, void * New, ImageSize * Currentsize);
 
 template NIFTYSEG_WINEXPORT
-	void Close_Forground_ConnectComp<float, float>(void * Old, void * New, ImageSize * Currentsize);
+void Close_Forground_ConnectComp<float, float>(void * Old, void * New, ImageSize * Currentsize);
 
 
 template <class OldType, class NewType>
@@ -3187,34 +3187,34 @@ void Dillate(float * Image,
 
     float tmpvalue=0;
     for(int tp=0; tp<Currentsize->tsize; tp++){
-    for(int currentdirection=0; currentdirection<3; currentdirection++) //Buffer aint each direction
-    {
-        int index=0;
-        for(xyzpos[2]=0; xyzpos[2]<dimensions[2]; xyzpos[2]++)
+        for(int currentdirection=0; currentdirection<3; currentdirection++) //Buffer aint each direction
         {
-            for(xyzpos[1]=0; xyzpos[1]<dimensions[1]; xyzpos[1]++)
+            int index=0;
+            for(xyzpos[2]=0; xyzpos[2]<dimensions[2]; xyzpos[2]++)
             {
-                for(xyzpos[0]=0; xyzpos[0]<dimensions[0]; xyzpos[0]++)
+                for(xyzpos[1]=0; xyzpos[1]<dimensions[1]; xyzpos[1]++)
                 {
-                    tmpvalue=-1e32;
-                    for(int shift=((xyzpos[currentdirection]<kernel)?-xyzpos[currentdirection]:-kernel); shift<=((xyzpos[currentdirection]>=(dimensions[currentdirection]-kernel))?(int)dimensions[currentdirection]-xyzpos[currentdirection]-1:kernel); shift++)
+                    for(xyzpos[0]=0; xyzpos[0]<dimensions[0]; xyzpos[0]++)
                     {
-                        if(Image[index+shift*shiftdirection[currentdirection]+tp*dimensions[0]*dimensions[1]*dimensions[2]]>tmpvalue)
+                        tmpvalue=-1e32;
+                        for(int shift=((xyzpos[currentdirection]<kernel)?-xyzpos[currentdirection]:-kernel); shift<=((xyzpos[currentdirection]>=(dimensions[currentdirection]-kernel))?(int)dimensions[currentdirection]-xyzpos[currentdirection]-1:kernel); shift++)
                         {
-                            tmpvalue=Image[index+shift*shiftdirection[currentdirection]+tp*dimensions[0]*dimensions[1]*dimensions[2]];
-                        }
+                            if(Image[index+shift*shiftdirection[currentdirection]+tp*dimensions[0]*dimensions[1]*dimensions[2]]>tmpvalue)
+                            {
+                                tmpvalue=Image[index+shift*shiftdirection[currentdirection]+tp*dimensions[0]*dimensions[1]*dimensions[2]];
+                            }
 
+                        }
+                        Buffer[index]=tmpvalue;
+                        index++;
                     }
-                    Buffer[index]=tmpvalue;
-                    index++;
                 }
             }
+            for(int i=0; i<(dimensions[1]*dimensions[0]*dimensions[2]); i++)
+            {
+                Image[i+tp*dimensions[0]*dimensions[1]*dimensions[2]]=Buffer[i];
+            }
         }
-        for(int i=0; i<(dimensions[1]*dimensions[0]*dimensions[2]); i++)
-        {
-            Image[i+tp*dimensions[0]*dimensions[1]*dimensions[2]]=Buffer[i];
-        }
-    }
     }
 
     delete [] Buffer;
@@ -3246,34 +3246,34 @@ void Erosion(float * Image,
 
     float tmpvalue=0;
     for(int tp=0; tp<Currentsize->tsize; tp++){
-    for(int currentdirection=0; currentdirection<3; currentdirection++) //Buffer aint each direction
-    {
-        int index=0;
-        for(xyzpos[2]=0; xyzpos[2]<dimensions[2]; xyzpos[2]++)
+        for(int currentdirection=0; currentdirection<3; currentdirection++) //Buffer aint each direction
         {
-            for(xyzpos[1]=0; xyzpos[1]<dimensions[1]; xyzpos[1]++)
+            int index=0;
+            for(xyzpos[2]=0; xyzpos[2]<dimensions[2]; xyzpos[2]++)
             {
-                for(xyzpos[0]=0; xyzpos[0]<dimensions[0]; xyzpos[0]++)
+                for(xyzpos[1]=0; xyzpos[1]<dimensions[1]; xyzpos[1]++)
                 {
-                    tmpvalue=1e32;
-                    for(int shift=((xyzpos[currentdirection]<kernel)?-xyzpos[currentdirection]:-kernel); shift<=((xyzpos[currentdirection]>=(dimensions[currentdirection]-kernel))?(int)dimensions[currentdirection]-xyzpos[currentdirection]-1:kernel); shift++)
+                    for(xyzpos[0]=0; xyzpos[0]<dimensions[0]; xyzpos[0]++)
                     {
-                        if(Image[index+shift*shiftdirection[currentdirection]+tp*dimensions[0]*dimensions[1]*dimensions[2]]<tmpvalue)
+                        tmpvalue=1e32;
+                        for(int shift=((xyzpos[currentdirection]<kernel)?-xyzpos[currentdirection]:-kernel); shift<=((xyzpos[currentdirection]>=(dimensions[currentdirection]-kernel))?(int)dimensions[currentdirection]-xyzpos[currentdirection]-1:kernel); shift++)
                         {
-                            tmpvalue=Image[index+shift*shiftdirection[currentdirection]+tp*dimensions[0]*dimensions[1]*dimensions[2]];
-                        }
+                            if(Image[index+shift*shiftdirection[currentdirection]+tp*dimensions[0]*dimensions[1]*dimensions[2]]<tmpvalue)
+                            {
+                                tmpvalue=Image[index+shift*shiftdirection[currentdirection]+tp*dimensions[0]*dimensions[1]*dimensions[2]];
+                            }
 
+                        }
+                        Buffer[index]=tmpvalue;
+                        index++;
                     }
-                    Buffer[index]=tmpvalue;
-                    index++;
                 }
             }
+            for(int i=0; i<(dimensions[1]*dimensions[0]*dimensions[2]); i++)
+            {
+                Image[i+tp*dimensions[0]*dimensions[1]*dimensions[2]]=Buffer[i];
+            }
         }
-        for(int i=0; i<(dimensions[1]*dimensions[0]*dimensions[2]); i++)
-        {
-            Image[i+tp*dimensions[0]*dimensions[1]*dimensions[2]]=Buffer[i];
-        }
-    }
     }
     delete [] Buffer;
 
