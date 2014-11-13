@@ -1653,9 +1653,9 @@ int seg_changeDatatype(nifti_image *image)
     return 1;
 }
 /* *************************************************************** */
-template int seg_changeDatatype<unsigned char>(nifti_image *);
-template int seg_changeDatatype<float>(nifti_image *);
-template int seg_changeDatatype<double>(nifti_image *);
+template NIFTYSEG_WINEXPORT int seg_changeDatatype<unsigned char>(nifti_image *);
+template NIFTYSEG_WINEXPORT int seg_changeDatatype<float>(nifti_image *);
+template NIFTYSEG_WINEXPORT int seg_changeDatatype<double>(nifti_image *);
 
 /* *************************************************************** */
 template<class SourceTYPE, class FieldTYPE>
@@ -2535,8 +2535,11 @@ void Close_Forground_ConnectComp(void * Old_void, void * New_void, ImageSize * C
 
     return;
 }
-template void Close_Forground_ConnectComp<unsigned char, unsigned char>(void * Old, void * New, ImageSize * Currentsize);
-template void Close_Forground_ConnectComp<float, float>(void * Old, void * New, ImageSize * Currentsize);
+template NIFTYSEG_WINEXPORT
+	void Close_Forground_ConnectComp<unsigned char, unsigned char>(void * Old, void * New, ImageSize * Currentsize);
+
+template NIFTYSEG_WINEXPORT
+	void Close_Forground_ConnectComp<float, float>(void * Old, void * New, ImageSize * Currentsize);
 
 
 template <class OldType, class NewType>
@@ -2762,8 +2765,8 @@ void Largest_ConnectComp(void * Old_void, void * New_void, ImageSize * Currentsi
 
     return;
 }
-template void Largest_ConnectComp<unsigned char, unsigned char>(void * Old, void * New, ImageSize * Currentsize);
-template void Largest_ConnectComp<float, float>(void * Old, void * New, ImageSize * Currentsize);
+template NIFTYSEG_WINEXPORT void Largest_ConnectComp<unsigned char, unsigned char>(void * Old, void * New, ImageSize * Currentsize);
+template NIFTYSEG_WINEXPORT void Largest_ConnectComp<float, float>(void * Old, void * New, ImageSize * Currentsize);
 
 
 template <class OldType, class NewType>
@@ -2950,8 +2953,8 @@ void ConnectComp26NN(void * Old_void, void * New_void, ImageSize * Currentsize)
 
     return;
 }
-template void ConnectComp26NN<unsigned char, unsigned char>(void * Old, void * New, ImageSize * Currentsize);
-template void ConnectComp26NN<float, float>(void * Old, void * New, ImageSize * Currentsize);
+template NIFTYSEG_WINEXPORT void ConnectComp26NN<unsigned char, unsigned char>(void * Old, void * New, ImageSize * Currentsize);
+template NIFTYSEG_WINEXPORT void ConnectComp26NN<float, float>(void * Old, void * New, ImageSize * Currentsize);
 
 template <class OldType, class NewType>
 void ConnectComp6NN(void * Old_void, void * New_void, ImageSize * Currentsize)
@@ -3156,8 +3159,8 @@ void ConnectComp6NN(void * Old_void, void * New_void, ImageSize * Currentsize)
 
     return;
 }
-template void ConnectComp6NN<unsigned char, unsigned char>(void * Old, void * New, ImageSize * Currentsize);
-template void ConnectComp6NN<float, float>(void * Old, void * New, ImageSize * Currentsize);
+template NIFTYSEG_WINEXPORT void ConnectComp6NN<unsigned char, unsigned char>(void * Old, void * New, ImageSize * Currentsize);
+template NIFTYSEG_WINEXPORT void ConnectComp6NN<float, float>(void * Old, void * New, ImageSize * Currentsize);
 
 
 void Dillate(float * Image,
@@ -3416,5 +3419,5 @@ void seg_mat44_mul(mat44 const* mat,
             (DTYPE)mat->m[2][3];
     return;
 }
-template void seg_mat44_mul<float>(mat44 const*, float const*, float*);
-template void seg_mat44_mul<double>(mat44 const*, double const*, double*);
+template NIFTYSEG_WINEXPORT void seg_mat44_mul<float>(mat44 const*, float const*, float*);
+template NIFTYSEG_WINEXPORT void seg_mat44_mul<double>(mat44 const*, double const*, double*);

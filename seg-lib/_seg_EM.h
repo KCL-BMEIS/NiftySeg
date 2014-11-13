@@ -1,14 +1,16 @@
 #pragma once
+#include "NiftySegWinExportHeader.h"
 
 #include "_seg_common.h"
 #include "_seg_matrix.h"
+extern "C++" {
 #include "_seg_tools.h"
-
+}
 
 /** @class seg_EM
  *  @brief General purpouse EM segmentation class
  */
-class seg_EM
+class NIFTYSEG_WINEXPORT seg_EM
 {
 protected:
 

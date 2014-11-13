@@ -74,6 +74,9 @@ endif(USE_OPENMP)
 
 IF(BUILD_SHARED_LIBS)
   SET(LIBRARY_TYPE SHARED)
+  if(WIN32)
+    add_definitions(-DNIFTYSEG_WINDOWS_EXPORT)
+  endif(WIN32)
 ELSE(BUILD_SHARED_LIBS)
   SET(LIBRARY_TYPE STATIC)
 ENDIF(BUILD_SHARED_LIBS)
@@ -156,10 +159,10 @@ else()
       -DCMAKE_INSTALL_PREFIX:PATH=${PROJECT_BINARY_DIR}/Eigen/install 
       -DBUILD_TESTING=1
     )
-  set(EIGEN_INCLUDE_DIR ${PROJECT_BINARY_DIR}/Eigen/install/include/eigen3)
-  install(DIRECTORY ${EIGEN_INCLUDE_DIR}/Eigen DESTINATION include)
+  set(Eigen_INCLUDE_DIR ${PROJECT_BINARY_DIR}/Eigen/install/include/eigen3)
+  install(DIRECTORY ${Eigen_INCLUDE_DIR}/Eigen DESTINATION include)
 endif()
-include_directories(${EIGEN_INCLUDE_DIR})
+include_directories(${Eigen_INCLUDE_DIR})
 
 #-----------------------------------------------------------------------------
 # Get the GIT HASH if avaiable
@@ -190,7 +193,7 @@ endif(GIT_FOUND)
 #-----------------------------------------------------------------------------
 
 
-include_directories(${EIGEN_INCLUDE_DIR})
+include_directories(${Eigen_INCLUDE_DIR})
 SET(ZLIB "z")
 SUBDIRS(zlib)
 SUBDIRS(nifti)

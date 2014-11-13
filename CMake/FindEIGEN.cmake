@@ -7,7 +7,7 @@
 # Once done this will define
 #
 #  EIGEN_FOUND - system has eigen lib with correct version
-#  EIGEN_INCLUDE_DIR - the eigen include directory
+#  Eigen_INCLUDE_DIR - the eigen include directory
 #  EIGEN_VERSION - eigen version
 
 # Copyright (c) 2006, 2007 Montel Laurent, <montel@kde.org>
@@ -32,12 +32,12 @@ endif(NOT Eigen_FIND_VERSION)
 
 # Construct consistent error messages for use below.
 set(EIGEN_DIR_DESCRIPTION "directory containing the file 'Eigen/Core', i.e. the root of the build tree, or the PREFIX/include/eigen3 for an installation.")
-set(EIGEN_DIR_MESSAGE "EIGEN not found.  Set the EIGEN_INCLUDE_DIR cmake cache entry to the ${EIGEN_DIR_DESCRIPTION}")
+set(EIGEN_DIR_MESSAGE "EIGEN not found.  Set the Eigen_INCLUDE_DIR cmake cache entry to the ${EIGEN_DIR_DESCRIPTION}")
 
 if(NOT EIGEN_FOUND)
 
   # Look for signature_of_eigen3_matrix_library in build trees or under <prefix>/include/eigen3.
-  find_path(EIGEN_INCLUDE_DIR
+  find_path(Eigen_INCLUDE_DIR
     NAMES Eigen/Core
     PATH_SUFFIXES eigen3
     HINTS ENV EIGEN_DIR
@@ -47,11 +47,11 @@ if(NOT EIGEN_FOUND)
     DOC "The ${EIGEN_DIR_DESCRIPTION}"
     )
 
-  if(EIGEN_INCLUDE_DIR)
-    if(EXISTS ${EIGEN_INCLUDE_DIR}/Eigen/Core)
+  if(Eigen_INCLUDE_DIR)
+    if(EXISTS ${Eigen_INCLUDE_DIR}/Eigen/Core)
       set(EIGEN_FOUND 1)
     else()
-      set(EIGEN_INCLUDE_DIR "EIGEN_INCLUDE_DIR-NOTFOUND" CACHE PATH "The ${EIGEN_DIR_DESCRIPTION}" FORCE)
+      set(Eigen_INCLUDE_DIR "Eigen_INCLUDE_DIR-NOTFOUND" CACHE PATH "The ${EIGEN_DIR_DESCRIPTION}" FORCE)
     endif()
   endif()
 
