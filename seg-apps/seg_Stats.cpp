@@ -42,6 +42,8 @@ void Usage(char *exec)
     printf("\t  -vp \t\t| Volume of all probabilsitic voxels (sum(<in>) * <volume per voxel>)\n");
     printf("\t  -n  \t\t| Count of all voxels above 0 (<# voxels>)\n");
     printf("\t  -np \t\t| Sum of all fuzzy voxels (sum(<in>))\n");
+    printf("\t  -e \t\t| Entropy of all voxels\n");
+    printf("\t  -ne \t\t| Normalized entropy of all voxels\n");
     printf("\n\tCoordinates operations (datatype: all)\n");
     printf("\t  -x \t\t| Location (i j k x y z) of the smallest value in the image\n");
     printf("\t  -X \t\t| Location (i j k x y z) of the largest value in the image\n");
@@ -1123,6 +1125,45 @@ int main(int argc, char **argv)
                     cout<< "Label["<<curtclass<<"] = "<< (double)CountIMG1[curtclass]<<endl;
                 }
 
+                flush(cout);
+            }
+	    // **************************            ---------          *****************************
+            // ********************        Entropy and normalized entropy   *****************************
+            // **************************            ---------          *****************************
+	    else if((strcmp(argv[i], "-e") == 0 || strcmp(argv[i], "-ne") == 0) && (i)<argc)
+            {
+                if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
+                {
+                    seg_changeDatatype<float>(Images[0]);
+                }
+                float * Img1prt = static_cast<float *>(Images[0]->data);
+                float max=std::numeric_limits<float>::min();
+                for(unsigned int index=0; index<Images[0]->nvox; index++)
+                {
+                    if(mask[index])
+                    {
+                        if(max<Img1prt[index]) {
+                            max=Img1prt[index];
+                        }
+                    }
+                }
+                float ent=0;
+                float probability=0;
+                int count=0;
+                for(unsigned int index=0; index<Images[0]->nvox; index++)
+                {
+                    if(mask[index])
+                    {
+                        probability=Img1prt[index]/max;
+                        if(probability>0) {
+                            ent += probability*log(probability);
+                        }
+                        count++;
+                    }
+                }
+                ent=-ent;
+                if(strcmp(argv[i], "-ne") == 0) ent=ent/(float)count;
+                cout <<(double)(ent)<<endl;
                 flush(cout);
             }
 #ifdef _GIT_HASH
