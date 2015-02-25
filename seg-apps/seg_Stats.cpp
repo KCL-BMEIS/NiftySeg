@@ -977,7 +977,7 @@ int main(int argc, char **argv)
                     }
                     HeapSort(imgsort,maskcount-1);
                 }
-                cout << imgsort[(int)(round(percentile*(maskcount-1)))]<<endl;
+                cout << imgsort[(int)(floor((double)(percentile)*(double)(maskcount-1)))]<<endl;
 
                 flush(cout);
             }

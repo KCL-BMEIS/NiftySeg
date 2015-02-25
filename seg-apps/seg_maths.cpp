@@ -596,6 +596,40 @@ int main(int argc, char **argv)
                     delete [] Lable;
                     delete [] Speed;
                 }
+                else
+                {
+
+                    if(   (strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos )) ||(parser.length()==1 && parser.find("0")!=string::npos))
+                    {
+                        cerr<<"ERROR: "<<argv[i]<<"  has to be an image"<<endl;
+                        exit(1);
+                    }
+
+                    bool * Lable= new bool [CurrSize->numel];
+                    float * Speed= new float [CurrSize->numel];
+                    nifti_image * SpeedImage=nifti_image_read(parser.c_str(),true);
+                    SpeedImage->nu=(SpeedImage->nu>1)?SpeedImage->nu:1;
+                    SpeedImage->nt=(SpeedImage->nt>1)?SpeedImage->nt:1;
+                    if(SpeedImage->datatype!=DT_FLOAT32)
+                    {
+                        seg_changeDatatype<float>(SpeedImage);
+                    }
+                    float * SpeedImagePtr = static_cast<float *>(SpeedImage->data);
+
+                    for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
+                    {
+                        Lable[i]=bufferImages[current_buffer][i];
+                        Speed[i]=SpeedImagePtr[i]>0.0001?SpeedImagePtr[i]:0.0001;
+                    }
+                    float * Distance = DoubleEuclideanDistance_3D(Lable,Speed,CurrSize);
+                    for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
+                        bufferImages[current_buffer?0:1][i]=Distance[i];
+                    current_buffer=current_buffer?0:1;
+                    delete [] Distance;
+                    delete [] Lable;
+                    delete [] Speed;
+                    nifti_image_free(SpeedImage);
+                }
             }
 
             // *********************  linear LS Normlise  *************************
@@ -1080,6 +1114,48 @@ int main(int argc, char **argv)
                     cout << "ERROR: "<< parser << " has to be a number > 0"<<endl;
                     i=argc;
                 }
+            }
+            // *********************  GAUSSIAN SMOTHING *************************
+            else if(strcmp(argv[i], "-smoNaN") == 0)
+            {
+                string filename=argv[++i];
+                nifti_image * MaskImage=nifti_image_read(filename.c_str(),true);
+                MaskImage->nu=(MaskImage->nu>1)?MaskImage->nu:1;
+                MaskImage->nt=(MaskImage->nt>1)?MaskImage->nt:1;
+                if(MaskImage->datatype!=DT_FLOAT32)
+                {
+                    seg_changeDatatype<SegPrecisionTYPE>(MaskImage);
+                }
+
+
+                for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
+                    bufferImages[current_buffer][i]=(bufferImages[current_buffer][i])?
+                                bufferImages[current_buffer][i]:
+                                std::numeric_limits<float>::quiet_NaN();
+
+                for(long tp=0; tp<(long)(CurrSize->tsize*CurrSize->usize); tp++){
+
+
+                    //create dummy nii
+                    nifti_image * TMPnii = nifti_copy_nim_info(InputImage);
+                    TMPnii->dim[1]=CurrSize->xsize;
+                    TMPnii->dim[2]=CurrSize->ysize;
+                    TMPnii->dim[3]=CurrSize->zsize;
+                    TMPnii->dim[4]=TMPnii->nt=1;
+                    TMPnii->dim[5]=TMPnii->nu=1;
+                    nifti_update_dims_from_array(TMPnii);
+                    //copy pointer, run gaussian, and set to null
+                    TMPnii->data=static_cast<void*>(&bufferImages[current_buffer][CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*tp]);
+                    GaussianSmoothing4D_Nan_nifti(TMPnii,MaskImage);
+                    TMPnii->data=NULL;
+                    //As TMPnii->data=NULL, the free will not cause any harm
+                    nifti_image_free(TMPnii);
+
+                    nifti_image_free(MaskImage);
+                }
+
+                    //current_buffer=current_buffer?0:1;
+
             }
             // *********************  GAUSSIAN sharpening  (NOT WORKING) *************************
             else if(strcmp(argv[i], "-sharp") == 0)

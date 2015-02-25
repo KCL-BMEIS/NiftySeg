@@ -13,6 +13,7 @@
 // Gaussian convolution functions
 NIFTYSEG_WINEXPORT void GaussianFilter4D_cArray(segPrecisionTYPE * ShortData, int * S2L, int * L2S, segPrecisionTYPE gauss_std, ImageSize * CurrSizes);
 NIFTYSEG_WINEXPORT void GaussianFilter4D_cArray(segPrecisionTYPE * LongData, segPrecisionTYPE gauss_std, ImageSize * CurrSizes);
+NIFTYSEG_WINEXPORT void GaussianSmoothing4D_Nan_nifti(nifti_image * Data, nifti_image * mask);
 NIFTYSEG_WINEXPORT void GaussianSmoothing4D_nifti(nifti_image * Data,int * mask,float gauss_std);
 NIFTYSEG_WINEXPORT void BlockSmoothing(nifti_image * Data,int * mask,int side_size);
 NIFTYSEG_WINEXPORT void SmoothLab(float * DataPTR, float factor, ImageSize * CurrSizes);
