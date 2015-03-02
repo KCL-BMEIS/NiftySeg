@@ -78,6 +78,7 @@ void Usage(char *exec)
     printf("\n\t* * Image header operations * *\n");
     printf("\t-hdr_copy <file> \tCopy header from working image to <file> and save in <output>.\n");
     printf("\t-scl\t\t\tReset scale and slope info.\n");
+    printf("\t-4to5\t\t\tFlip the 4th and 5th dimension.\n");
     printf("\n\t* * Output * *\n");
     printf("\t-odt <datatype> \tSet output <datatype> (char, short, int, uchar, ushort, uint, float, double).\n");
     printf("\t-range\t\t\tReset the image range to the min max\n");
@@ -123,7 +124,6 @@ int main(int argc, char **argv)
         }
 
 
-
         char * filename_in=argv[1];
         nifti_image * InputImage=nifti_image_read(filename_in,true);
         if(InputImage == NULL)
@@ -155,8 +155,6 @@ int main(int argc, char **argv)
             bufferImages[0][i]=InputImagePtr[i];
         }
         int current_buffer=0;
-
-
 
         for(long i=2; i<(argc-1); i++)
         {
@@ -1570,6 +1568,18 @@ int main(int argc, char **argv)
                 nifti_image_free(NewImage);
 
             }
+            // *********************  Copy Header  *************************
+            else if(strcmp(argv[i], "-4to5") == 0)
+            {
+
+                int tempT=CurrSize->tsize;
+                int tempU=CurrSize->usize;
+
+                 InputImage->dim[4]=InputImage->nt=CurrSize->tsize=tempU;
+                 InputImage->dim[5]=InputImage->nu=CurrSize->usize=tempT;
+
+
+            }
             // *********************  Get LSSD  *************************
             else if(strcmp(argv[i], "-lssd") == 0)
             {
@@ -2150,14 +2160,15 @@ int main(int argc, char **argv)
             nifti_image * OutputImage = nifti_copy_nim_info(InputImage);
             OutputImage->datatype=datatypeoutput;
             nifti_set_filenames(OutputImage,filename_out,0,0);
-            OutputImage->dim[1]=CurrSize->xsize;
-            OutputImage->dim[2]=CurrSize->ysize;
-            OutputImage->dim[3]=CurrSize->zsize;
+            OutputImage->dim[1]=OutputImage->nx=CurrSize->xsize;
+            OutputImage->dim[2]=OutputImage->ny=CurrSize->ysize;
+            OutputImage->dim[3]=OutputImage->nz=CurrSize->zsize;
             OutputImage->dim[4]=OutputImage->nt=CurrSize->tsize;
             OutputImage->dim[5]=OutputImage->nu=CurrSize->usize;
             OutputImage->dim[6]=OutputImage->nv=1;
             OutputImage->dim[7]=OutputImage->nw=1;
-            OutputImage->dim[0]=3;
+            OutputImage->dim[0]=2;
+            OutputImage->dim[0]=(OutputImage->dim[3]>1?3:OutputImage->dim[0]);
             OutputImage->dim[0]=(OutputImage->dim[4]>1?4:OutputImage->dim[0]);
             OutputImage->dim[0]=(OutputImage->dim[5]>1?5:OutputImage->dim[0]);
             OutputImage->dim[0]=(OutputImage->dim[6]>1?6:OutputImage->dim[0]);
@@ -2174,7 +2185,6 @@ int main(int argc, char **argv)
                     scalingdiff=true;
                 }
             }
-
             if(scalingdiff)
             {
 
