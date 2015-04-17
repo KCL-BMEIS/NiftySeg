@@ -48,7 +48,7 @@
 
 #if (defined(_WIN32) || defined(_WINDOWS)) && !defined(__CYGWIN__)
     /// @brief Defines the system wide path separator for filenames
-    #define SEP "\\0"
+    #define SEP "\\"
 #else
     /// @brief Defines the system wide path separator for filenames
     #define SEP "/\0"
