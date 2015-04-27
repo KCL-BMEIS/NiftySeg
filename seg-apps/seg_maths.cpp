@@ -42,6 +42,7 @@ void Usage(char *exec)
     printf("\t-abs \t\t\tAbsolute value of the image.\n");
     printf("\t-bin \t\t\tBinarise the image.\n");
     printf("\t-otsu \t\t\tOtsu thresholding of the current image.\n");
+    printf("\t-min\t<file>\tGet the min per voxel between <current> and <file>.\n");
     printf("\n\t* * Operations on 3-D images * *\n");
     printf("\t-smol\t<float>\t\tGaussian smoothing of a 3D label image.\n");
     printf("\t-dil\t<int>\t\tDilate the image <int> times (in voxels).\n");
@@ -1177,6 +1178,30 @@ int main(int argc, char **argv)
                     i=argc;
                 }
             }
+            // *********************  Min  *************************
+            else if(strcmp(argv[i], "-min") == 0)
+            {
+                string parser=argv[++i];
+                if(!(parser.find_first_not_of("1234567890.-+")== string::npos))
+                {
+
+                    nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
+                    NewImage->nu=(NewImage->nu>1)?NewImage->nu:1;
+                    NewImage->nt=(NewImage->nt>1)?NewImage->nt:1;
+                    if(NewImage->datatype!=DT_FLOAT32)
+                    {
+                        seg_changeDatatype<SegPrecisionTYPE>(NewImage);
+                    }
+                    SegPrecisionTYPE * NewImagePtr = static_cast<SegPrecisionTYPE *>(NewImage->data);
+                    if(NewImage->nx==CurrSize->xsize&&NewImage->ny==CurrSize->ysize&&NewImage->nz==CurrSize->zsize&&NewImage->nt==CurrSize->tsize&&NewImage->nu==CurrSize->usize)
+                    {
+                        for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
+                            bufferImages[current_buffer?0:1][i]=min(bufferImages[current_buffer][i],NewImagePtr[i]);
+                        current_buffer=current_buffer?0:1;
+                    }
+                }
+            }
+
             // *********************  Otsu thresholding *************************
             else if(strcmp(argv[i], "-otsu") == 0)
             {
@@ -1400,6 +1425,23 @@ int main(int argc, char **argv)
                 int newz=(int)floor(CurrSize->zsize/2.0f);
                 int newnumel=newx*newy*newz;
 
+
+                for(long tp=0; tp<(long)(CurrSize->tsize*CurrSize->usize); tp++){
+                    //create dummy nii
+                    nifti_image * TMPnii = nifti_copy_nim_info(InputImage);
+                    TMPnii->dim[1]=CurrSize->xsize;
+                    TMPnii->dim[2]=CurrSize->ysize;
+                    TMPnii->dim[3]=CurrSize->zsize;
+                    TMPnii->dim[4]=TMPnii->nt=1;
+                    TMPnii->dim[5]=TMPnii->nu=1;
+                    nifti_update_dims_from_array(TMPnii);
+                    //copy pointer, run gaussian, and set to null
+                    TMPnii->data=static_cast<void*>(&bufferImages[current_buffer][CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*tp]);
+                    GaussianSmoothing4D_nifti(TMPnii,NULL,0.5);
+                    TMPnii->data=NULL;
+                    //As TMPnii->data=NULL, the free will not cause any harm
+                    nifti_image_free(TMPnii);
+                }
 
                 delete [] bufferImages[current_buffer?0:1];
                 bufferImages[current_buffer?0:1]= new SegPrecisionTYPE [newnumel*CurrSize->tsize];
