@@ -60,8 +60,8 @@
 #include <new>
 #include <fstream>
 #include <limits>
-#include <cstdlib.h>
-#include <cmath.h>
+#include <cstdlib>
+#include <cmath>
 #include <string>
 #include <iostream>
 #include <iomanip>
