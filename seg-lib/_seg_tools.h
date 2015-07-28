@@ -5,7 +5,7 @@
 #include "_seg_FMM.h"
 
 #if (defined(_WIN32) || defined(_WINDOWS)) && !defined(__CYGWIN__)
-#define SEP "\\0"
+#define SEP "\\"
 #else
 #define SEP "/\0"
 #endif
