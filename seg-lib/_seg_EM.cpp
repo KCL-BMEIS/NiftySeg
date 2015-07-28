@@ -150,6 +150,12 @@ seg_EM::~seg_EM()
 
     if(this->CurrSizes!=NULL)
         delete [] this->CurrSizes;
+
+    if(this->M!=NULL)
+	delete [] this->M;
+
+    if(this->V!=NULL)
+	delete [] this->V;
 }
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
