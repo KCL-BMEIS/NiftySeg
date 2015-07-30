@@ -2475,6 +2475,7 @@ void Close_Forground_ConnectComp(void * Old_void, void * New_void, ImageSize * C
         //probarea=New[index];
     }
 
+    free(CClist);
 
     // Update C. Components
 
@@ -2713,6 +2714,7 @@ void Largest_ConnectComp(void * Old_void, void * New_void, ImageSize * Currentsi
         //probarea=New[index];
     }
 
+    free(CClist);
 
     // Update C. Components
 

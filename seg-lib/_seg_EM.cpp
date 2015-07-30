@@ -1270,6 +1270,8 @@ nifti_image * seg_EM::GetBiasCorrected(char * filename)
             }
         }
     }
+    delete [] brainmask;
+
     return Result;
 }
 
