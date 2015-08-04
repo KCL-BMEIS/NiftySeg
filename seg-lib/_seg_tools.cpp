@@ -2356,7 +2356,7 @@ void Close_Forground_ConnectComp(void * Old_void, void * New_void, ImageSize * C
     int index;
     int CCcounter=1;
     int NumElements=((int)dimensions[0]*(int)dimensions[1]*(int)dimensions[2]);
-    int * tempimg= (int *) calloc(NumElements, sizeof(int));
+    int* tempimg = new int[NumElements];
 
     //  **********    Foreground    ***********
     index=0;
@@ -2481,7 +2481,7 @@ void Close_Forground_ConnectComp(void * Old_void, void * New_void, ImageSize * C
 
 
     //Find lable counts
-    int *Pixelcounter = (int *) calloc((int)CCcounter, sizeof(int));
+    int *Pixelcounter = new int[CCcounter];
 
     for(index=0; index<NumElements; index++)
     {
