@@ -10,15 +10,17 @@
  */
 
 #include "_seg_tools.h"
+#include <limits>
 #include <iostream>
-#include <time.h>
-#include <stdlib.h>
+#include <ctime>
+#include <cstdlib>
 #include <fstream>
 #include <new>
 #include <exception>
+#include <cmath>
+
 using namespace std;
 #define SegPrecisionTYPE float
-
 
 void Usage(char *exec)
 {

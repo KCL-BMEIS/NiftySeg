@@ -6,11 +6,19 @@
 #ifndef _NIFTI_IO_HEADER_
 #define _NIFTI_IO_HEADER_
 
+#ifndef __cplusplus
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <ctype.h>
+#else
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
+#include <cctype>
+#endif
 
 #ifndef DONT_INCLUDE_ANALYZE_STRUCT
 #define DONT_INCLUDE_ANALYZE_STRUCT  /*** not needed herein ***/

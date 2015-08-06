@@ -199,6 +199,9 @@ SUBDIRS(zlib)
 SUBDIRS(nifti)
 SUBDIRS(seg-lib)
 SUBDIRS(seg-apps)
+IF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+  SUBDIRS(win32)
+ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 # add a target to generate API documentation with Doxygen
 find_package(Doxygen)

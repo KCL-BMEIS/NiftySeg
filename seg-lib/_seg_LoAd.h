@@ -2,7 +2,7 @@
 
 #include "NiftySegWinExportHeader.h"
 #include <iostream>
-#include <math.h>
+#include <cmath>
 #include "_seg_common.h"
 #include "_seg_tools.h"
 #include "_seg_matrix.h"

@@ -4,6 +4,10 @@
  * @{  */
 //Global includes
 
+/// @brief  will provide many of the math defines and constants
+#define _USE_MATH_DEFINES
+#define NOMINMAX
+
 #if ((defined(_WIN32) || defined(_WINDOWS)) && !defined(__CYGWIN__))
     #include <dirent_win.h>
     #include <float.h>
@@ -44,19 +48,16 @@
 
 #if (defined(_WIN32) || defined(_WINDOWS)) && !defined(__CYGWIN__)
     /// @brief Defines the system wide path separator for filenames
-    #define SEP "\\0"
+    #define SEP "\\"
 #else
     /// @brief Defines the system wide path separator for filenames
     #define SEP "/\0"
 #endif
 
-/// @brief  will provide many of the math defines and constants
-#define _USE_MATH_DEFINES
-
 #include <sys/types.h>
 #include <errno.h>
 #include <vector>
-#include <stdio.h>
+#include <cstdio>
 #include <new>
 #include <fstream>
 #include <limits>
@@ -68,6 +69,7 @@
 #include "nifti1_io.h"
 #include <new>
 #include <exception>
+#include <algorithm>
 #ifdef _OPENMP
 #include "omp.h"
 #endif
