@@ -159,6 +159,7 @@ void GaussianSmoothing4D_nifti(nifti_image * Data,int * mask,float gauss_std_in)
                 int xyzpos[3];
                 int xyzpos2;
                 // For every pixel
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
     shared(DataPTR,GaussKernel,ImageBuffer,DensityBuffer,nx,ny,nz,kernelshift,Density,dim_array,currentdirection,shiftdirection,current_4dShift_short) \
