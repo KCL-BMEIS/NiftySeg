@@ -997,6 +997,10 @@ float estimateNCC3D(nifti_image * BaseImage,nifti_image * Template,nifti_image *
         usemask=true;
         for(long i=0; i<BaseImage->nx*BaseImage->ny*BaseImage->nz; i++)
         {
+            // Account for NANs
+            if(Templateptr[i]!=Templateptr[i] || BaseImageptr[i]!=BaseImageptr[i]){
+                Maskptr[i]=0;
+            }
             Maskcount+=(float)(Maskptr[i]>0);
         }
     }
@@ -1515,7 +1519,206 @@ unsigned char * estimateMLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,floa
 }
 
 /* *************************************************************** */
+/* *************************************************************** */
+template<class PrecisionTYPE>
+PrecisionTYPE GetBasisSplineValue(PrecisionTYPE x)
+{
+    x=fabs(x);
+    PrecisionTYPE value=0.0;
+    if(x<2.0)
+    {
+        if(x<1.0)
+            value = (PrecisionTYPE)(2.0f/3.0f + (0.5f*x-1.0)*x*x);
+        else
+        {
+            x-=2.0f;
+            value = -x*x*x/6.0f;
+        }
+    }
+    return value;
+}
+/* *************************************************************** */
+/* *************************************************************** */
+float seg_getNMIValue(nifti_image *img1,
+                      nifti_image *img2,
+                      unsigned char *referenceMask
+                      )
+{
+    // Create pointers to the image data arrays
+    float *img1Ptr = static_cast<float *>(img1->data);
+    float *img2Ptr = static_cast<float *>(img2->data);
+    // Useful variable
+    size_t voxelNumber = (size_t)img1->nx *
+            img1->ny *
+            img1->nz;
 
+    unsigned short referenceBinNumber=68;
+    unsigned short floatingBinNumber=68;
+    unsigned short totalBinNumber=floatingBinNumber*referenceBinNumber+referenceBinNumber+floatingBinNumber;
+    float entropyValues[4]={0};
+
+    // Empty the joint histogram
+    double * jointHistogramPro=new double [totalBinNumber];
+    double * jointHistogramProPtr=(double *)jointHistogramPro;
+    memset((double *)jointHistogramProPtr,0,totalBinNumber*sizeof(double));
+    //cout<<jointHistogramPro<<endl;
+
+    double * jointHistogramLog=new double [totalBinNumber];
+    double * jointHistogramLogPtr=(double *)jointHistogramLog;
+    memset((double *)jointHistogramLogPtr,0,totalBinNumber*sizeof(double));
+
+    // Fill the joint histograms using an approximation
+    float *refPtr = &img1Ptr[0];
+    float *warPtr = &img2Ptr[0];
+    for(size_t voxel=0; voxel<voxelNumber; ++voxel)
+    {
+        if(referenceMask[voxel]>-1)
+        {
+            float refValue=refPtr[voxel];
+            float warValue=warPtr[voxel];
+            if(refValue==refValue && warValue==warValue &&
+                    refValue>=0 && warValue>=0 &&
+                    refValue<referenceBinNumber &&
+                    warValue<floatingBinNumber)
+            {
+                ++jointHistogramProPtr[static_cast<int>(refValue) +
+                        static_cast<int>(warValue) * referenceBinNumber];
+            }
+        }
+    }
+    // Convolve the histogram with a cubic B-spline kernel
+    double kernel[3];
+    kernel[0]=kernel[2]=GetBasisSplineValue(-1.);
+    kernel[1]=GetBasisSplineValue(0.);
+    // Histogram is first smooth along the reference axis
+    memset((double*)jointHistogramLogPtr,0,totalBinNumber*sizeof(double));
+    for(int f=0; f<floatingBinNumber; ++f)
+    {
+        for(int r=0; r<referenceBinNumber; ++r)
+        {
+            double value=0.0;
+            int index = r-1;
+            double *ptrHisto = &jointHistogramProPtr[index+referenceBinNumber*f];
+
+            for(int it=0; it<3; it++)
+            {
+                if(-1<index && index<referenceBinNumber)
+                {
+                    value += *ptrHisto * kernel[it];
+                }
+                ++ptrHisto;
+                ++index;
+            }
+            jointHistogramLogPtr[r+referenceBinNumber*f] = value;
+        }
+    }
+    // Histogram is then smooth along the warped floating axis
+    for(int r=0; r<referenceBinNumber; ++r)
+    {
+        for(int f=0; f<floatingBinNumber; ++f)
+        {
+            double value=0.;
+            int index = f-1;
+            double *ptrHisto = &jointHistogramLogPtr[r+referenceBinNumber*index];
+
+            for(int it=0; it<3; it++)
+            {
+                if(-1<index && index<floatingBinNumber)
+                {
+                    value += *ptrHisto * kernel[it];
+                }
+                ptrHisto+=referenceBinNumber;
+                ++index;
+            }
+            jointHistogramProPtr[r+referenceBinNumber*f] = value;
+        }
+    }
+    // Normalise the histogram
+    double activeVoxel=0.f;
+    for(int i=0; i<totalBinNumber; ++i)
+        activeVoxel+=jointHistogramProPtr[i];
+    entropyValues[3]=activeVoxel;
+    for(int i=0; i<totalBinNumber; ++i)
+        jointHistogramProPtr[i]/=activeVoxel;
+    // Marginalise over the reference axis
+    for(int r=0; r<referenceBinNumber; ++r)
+    {
+        double sum=0.;
+        int index=r;
+        for(int f=0; f<floatingBinNumber; ++f)
+        {
+            sum+=jointHistogramProPtr[index];
+            index+=referenceBinNumber;
+        }
+        jointHistogramProPtr[referenceBinNumber*
+                floatingBinNumber+r]=sum;
+    }
+    // Marginalise over the warped floating axis
+    for(int f=0; f<floatingBinNumber; ++f)
+    {
+        double sum=0.;
+        int index=referenceBinNumber*f;
+        for(int r=0; r<referenceBinNumber; ++r)
+        {
+            sum+=jointHistogramProPtr[index];
+            ++index;
+        }
+        jointHistogramProPtr[referenceBinNumber*
+                floatingBinNumber+referenceBinNumber+f]=sum;
+    }
+    // Set the log values to zero
+    memset(jointHistogramLogPtr,0,totalBinNumber*sizeof(double));
+    // Compute the entropy of the reference image
+    double referenceEntropy=0.;
+    for(int r=0; r<referenceBinNumber; ++r)
+    {
+        double valPro=jointHistogramProPtr[referenceBinNumber*floatingBinNumber+r];
+        if(valPro>0)
+        {
+            double valLog=log(valPro);
+            referenceEntropy -= valPro * valLog;
+            jointHistogramLogPtr[referenceBinNumber*floatingBinNumber+r]=valLog;
+        }
+    }
+    entropyValues[0]=referenceEntropy;
+    // Compute the entropy of the warped floating image
+    double warpedEntropy=0.;
+    for(int f=0; f<floatingBinNumber; ++f)
+    {
+        double valPro=jointHistogramProPtr[referenceBinNumber*floatingBinNumber+
+                referenceBinNumber+f];
+        if(valPro>0)
+        {
+            double valLog=log(valPro);
+            warpedEntropy -= valPro * valLog;
+            jointHistogramLogPtr[referenceBinNumber*floatingBinNumber+
+                    referenceBinNumber+f]=valLog;
+        }
+    }
+    entropyValues[1]=warpedEntropy;
+    // Compute the joint entropy
+    double jointEntropy=0.;
+    for(int i=0; i<referenceBinNumber*floatingBinNumber; ++i)
+    {
+        double valPro=jointHistogramProPtr[i];
+        if(valPro>0)
+        {
+            double valLog=log(valPro);
+            jointEntropy -= valPro * valLog;
+            jointHistogramLogPtr[i]=valLog;
+        }
+    }
+    entropyValues[2]=jointEntropy;
+
+    delete [] jointHistogramLog;
+    //cout<<jointHistogramPro<<endl;
+    delete [] jointHistogramPro;
+
+
+    return (entropyValues[0]+entropyValues[1])/entropyValues[2];
+}
+
+/* *************************************************************** */
 
 unsigned char * estimateLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,float distance,int numberordered,ImageSize * CurrSizes,int verbose)
 {

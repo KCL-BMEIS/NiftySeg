@@ -44,6 +44,7 @@ NIFTYSEG_WINEXPORT unsigned char * estimateROINCC4D(nifti_image * LableImage,nif
 NIFTYSEG_WINEXPORT unsigned char * estimateLNCC4D(nifti_image * BaseImage,nifti_image * LNCC,float distance,int numberordered,ImageSize * CurrSizes,int verbose);
 NIFTYSEG_WINEXPORT unsigned char * estimateMLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,float distance,int labels, int numberordered,ImageSize * CurrSizes,int verbose);
 NIFTYSEG_WINEXPORT float estimateNCC3D(nifti_image * BaseImage,nifti_image * Template,nifti_image * Mask,int verbose);
+NIFTYSEG_WINEXPORT float seg_getNMIValue(nifti_image *referenceImage, nifti_image *warpedImage, unsigned char *referenceMask);
 
 // Data scraping tools, used to get files/folders inside directories (with or without string match)
 NIFTYSEG_WINEXPORT int get_all_files_and_folders_in_dir(string dir, vector<string> &files , vector<string> &folders);
