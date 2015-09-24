@@ -19,10 +19,12 @@
         #define M_PI (3.14159265358979323846)
     #endif
 
+#if !(defined _MSC_VER && _MSC_VER >= 1800)
     template<typename T> inline bool isinf(T value)
     {
         return std::numeric_limits<T>::has_infinity && value == std::numeric_limits<T>::infinity();
     }
+
     #ifndef isnan(_X)
         /// @brief Define necessary to make it multi-platform compatible
         #define isnan(_X) _isnan(_X)
@@ -32,6 +34,7 @@
         /// @brief Define necessary to make it multi-platform compatible, as Windows does not necessarily have a round function
         #define round(_x) floor(_x + 0.5)
     #endif
+#endif
 
     inline int fabs(int _x)
     {
@@ -40,7 +43,8 @@
 
     #ifndef strtof(_s, _t)
         #define strtof(_s, _t) (float) strtod(_s, _t)
-    #endif
+	#endif
+
 #else  //IF NOT ON WINDOWS
     #include <dirent.h>
     #include <alloca.h>
