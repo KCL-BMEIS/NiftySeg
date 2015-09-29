@@ -1396,7 +1396,7 @@ void  seg_EM::Run_EM()
         if((((this->loglik-this->oldloglik)/(fabs(this->oldloglik+this->loglik)/2.0f))<(segPrecisionTYPE)(this->convCrit)
             && this->iter>this->minIteration)
                 || iter>=this->maxIteration
-                || (isinf(this->loglik) && this->iter>3))
+	        || (::isinf(this->loglik) && this->iter>3))
         {
             out=false;
         }
