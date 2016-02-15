@@ -487,8 +487,8 @@ int main(int argc, char **argv)
                 }
 
                 float * Img1prt = static_cast<float *>(Images[0]->data);
-                float  Count1[1000]= {0};
-                float  Count2[1000]= {0};
+                double  Count1[1000]= {0};
+                double  Count2[1000]= {0};
                 for(unsigned int index=0; index<1000; index++){
                    Count1[i]=0;
                    Count2[i]=0;
@@ -578,7 +578,7 @@ int main(int argc, char **argv)
                     seg_changeDatatype<float>(Images[0]);
                 }
                 float * Img1prt = static_cast<float *>(Images[0]->data);
-                float calcvol=0;
+                double calcvol=0;
                 for(unsigned int index=0; index<Images[0]->nvox; index++)
                 {
                     if(mask[index] && isnan(Img1prt[index])==0)
@@ -600,7 +600,7 @@ int main(int argc, char **argv)
                     seg_changeDatatype<float>(Images[0]);
                 }
                 float * Img1prt = static_cast<float *>(Images[0]->data);
-                float calcvol=0;
+                double calcvol=0;
                 for(unsigned int index=0; index<Images[0]->nvox; index++)
                 {
                     if(mask[index])
@@ -653,9 +653,7 @@ int main(int argc, char **argv)
             // **************************            ---------          *****************************
             else if(strcmp(argv[i], "-Vl") == 0 && (i+1)<argc)
             {
-                int oldnumbimg=numbimg;
-                numbimg=numbimg+1;
-                filenames[oldnumbimg] = argv[++i];
+                char * filenameCSVoutput = argv[++i];
                 if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
                 {
                     seg_changeDatatype<float>(Images[0]);
@@ -680,7 +678,7 @@ int main(int argc, char **argv)
                     maxclass=curlab>maxclass?curlab:maxclass;
                 }
                 ofstream myfile;
-                myfile.open(filenames[oldnumbimg]);
+                myfile.open(filenameCSVoutput);
 
                 flush(cout);
                 for(int curtclass=0; curtclass<=maxclass; curtclass++)
@@ -702,9 +700,7 @@ int main(int argc, char **argv)
             // **************************            ---------          *****************************
             else if(strcmp(argv[i], "-Nl") == 0 && (i+1)<argc)
             {
-                int oldnumbimg=numbimg;
-                numbimg=numbimg+1;
-                filenames[oldnumbimg] = argv[++i];
+                char * filenameCSVoutput = argv[++i];
                 if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
                 {
                     seg_changeDatatype<float>(Images[0]);
@@ -729,7 +725,7 @@ int main(int argc, char **argv)
                     maxclass=curlab>maxclass?curlab:maxclass;
                 }
                 ofstream myfile;
-                myfile.open(filenames[oldnumbimg]);
+                myfile.open(filenameCSVoutput);
 
                 flush(cout);
                 for(int curtclass=0; curtclass<=maxclass; curtclass++)
@@ -934,13 +930,13 @@ int main(int argc, char **argv)
                     seg_changeDatatype<float>(Images[0]);
                 }
                 float * Img1prt = static_cast<float *>(Images[0]->data);
-                float calcvol=0;
-                float calcvolcount=0;
+                double calcvol=0;
+                double calcvolcount=0;
                 for(unsigned int index=0; index<Images[0]->nvox; index++)
                 {
                     if(mask[index])
                     {
-                        calcvol += Img1prt[index];
+                        calcvol += (double)Img1prt[index];
                         calcvolcount+=1;
                     }
                 }
@@ -1091,7 +1087,7 @@ int main(int argc, char **argv)
                         calccount+=1;
                     }
                 }
-                float mean=(double)(calc)/(double)(calccount);
+                double mean=(double)(calc)/(double)(calccount);
                 calc=0;
                 calccount=0;
                 for(unsigned int index=0; index<Images[0]->nvox; index++)

@@ -73,6 +73,7 @@ template <class OldType, class NewType> NIFTYSEG_WINEXPORT
 
 NIFTYSEG_WINEXPORT void Dillate(float * Image,int kernel,ImageSize * Currentsize );
 NIFTYSEG_WINEXPORT void Erosion(float * Image,int kernel,ImageSize * Currentsize );
+NIFTYSEG_WINEXPORT void TopologicalErosion(float * Image, int kernel, ImageSize *Currentsize );
 NIFTYSEG_WINEXPORT void Dillate_const(bool * Image, bool * Const, int kernel, int dimensions[3], int direction);
 
 // Otsu intensity thresholding.

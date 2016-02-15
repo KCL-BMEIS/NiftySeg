@@ -35,6 +35,7 @@ void Usage(char *exec)
     printf("\t-uthr\t<float>\t\tThreshold image above <float>.\n");
     printf("\t-smo\t<float>\t\tGaussian smoothing by std <float> (in voxels and up to 4-D).\n");
     printf("\t-equal\t<int>\t\tGet voxels equal to <int>\n");
+    printf("\t-replace\t<int1> <int2>\tReplaces voxels equal to <int1> with <int2>\n");
     printf("\t-sqrt \t\t\tSquare root of the image.\n");
     printf("\t-exp \t\t\tExponential root of the image.\n");
     printf("\t-log \t\t\tLog of the image.\n");
@@ -483,6 +484,25 @@ int main(int argc, char **argv)
                     i=argc;
                 }
             }
+            // *********************  Replace below  *************************
+            else if(strcmp(argv[i], "-replace") == 0)
+            {
+                string parser=argv[++i];
+                string parser2=argv[++i];
+                if(((strtod(parser.c_str(),NULL)!=0 ) || (parser.length()==1 && parser.find("0")!=string::npos)))
+                {
+                    double factor=strtod(parser.c_str(),NULL);
+                    double factor2=strtod(parser2.c_str(),NULL);
+                    for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
+                        bufferImages[current_buffer?0:1][i]=(bufferImages[current_buffer][i]==factor)?factor2:bufferImages[current_buffer][i];
+                    current_buffer=current_buffer?0:1;
+                }
+                else
+                {
+                    cout << "ERROR: "<< parser << " is not a valid number"<<endl;
+                    i=argc;
+                }
+            }
             // *********************  THRESHOLD ABOVE  *************************
             else if(strcmp(argv[i], "-uthr") == 0)
             {
@@ -520,6 +540,42 @@ int main(int argc, char **argv)
             }
             // *********************  Erosion   *************************
             else if(strcmp(argv[i], "-ero") == 0)
+            {
+                string parser=argv[++i];
+                if(parser.find_first_not_of("1234567890.-+")== string::npos)
+                {
+                    double factor=strtod(parser.c_str(),NULL);
+                    Erosion(bufferImages[current_buffer],(int)round(factor),CurrSize);
+                    for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
+                        bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i];
+                    current_buffer=current_buffer?0:1;
+                }
+                else
+                {
+                    cout << "ERROR: "<< parser << " has to be an integer > 0"<<endl;
+                    i=argc;
+                }
+            }
+//            // *********************  Erosion   *************************
+//            else if(strcmp(argv[i], "-eroT") == 0)
+//            {
+//                string parser=argv[++i];
+//                if(parser.find_first_not_of("1234567890.-+")== string::npos)
+//                {
+//                    double factor=strtod(parser.c_str(),NULL);
+//                    //TopologicalErosion(bufferImages[current_buffer],(int)round(factor),CurrSize);
+//                    for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
+//                        bufferImages[current_buffer?0:1][i]=bufferImages[current_buffer][i];
+//                    current_buffer=current_buffer?0:1;
+//                }
+//                else
+//                {
+//                    cout << "ERROR: "<< parser << " has to be an integer > 0"<<endl;
+//                    i=argc;
+//                }
+//            }
+            // *********************  Erosion   *************************
+            else if(strcmp(argv[i], "-erot") == 0)
             {
                 string parser=argv[++i];
                 if(parser.find_first_not_of("1234567890.-+")== string::npos)
@@ -2087,7 +2143,7 @@ int main(int argc, char **argv)
                                                     }
 
                                                 }
-                                                else  if(curval2==47|| curval2==51|| curval2==53){
+                                                else  if(curval1==47|| curval1==51|| curval1==53){
                                                     if(curval2==46 ){
                                                         bufferImages[current_buffer?0:1][indexcur]=46;
                                                         stop=1;
@@ -2098,7 +2154,7 @@ int main(int argc, char **argv)
                                                     }
 
                                                 }
-                                                else if(curval2==52 || curval2==50 || curval2==47 ){
+                                                else if(curval1==52 || curval1==50 || curval1==47 ){
                                                     if(curval2==45 ){
                                                         bufferImages[current_buffer?0:1][indexcur]=45;
                                                         stop=1;
@@ -2131,13 +2187,13 @@ int main(int argc, char **argv)
 
             }
             else if(strcmp(argv[i], "-fliplab2") == 0)
-            {
+              {
                 for(long indexZ=1; indexZ<(CurrSize->zsize-1); indexZ++){
                     for(long indexY=1; indexY<(CurrSize->ysize-1); indexY++){
                         for(long indexX=1; indexX<(CurrSize->xsize-1); indexX++){
                             int indexcur=indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize;
                             float curval=bufferImages[current_buffer][indexcur];
-                            if( curval== 3){
+                            if( curval==46 || curval== 45){
                                 int shiftrealsize=1;
                                 int shiftspacing=1;
 
@@ -2145,128 +2201,41 @@ int main(int argc, char **argv)
                                 for(int shiftz=-shiftrealsize; shiftz<=shiftrealsize; shiftz+=shiftspacing){
                                     for(int shifty=-shiftrealsize; shifty<=shiftrealsize; shifty+=shiftspacing){
                                         for(int shiftx=-shiftrealsize; shiftx<=shiftrealsize; shiftx+=shiftspacing){
-                                            int index1=(indexX+shiftx)+CurrSize->xsize*(indexY+shifty)+CurrSize->xsize*CurrSize->ysize*(indexZ+shiftz);
-                                            int index2=(indexX-shiftx)+CurrSize->xsize*(indexY-shifty)+CurrSize->xsize*CurrSize->ysize*(indexZ-shiftz);
-                                            float curval1=bufferImages[current_buffer][index1];
-                                            float curval2=bufferImages[current_buffer][index2];
-                                            if(stop==0 && (fabs(shiftx)+fabs(shifty)+fabs(shiftz))<2 ){
-                                                if(curval1==2){
-                                                    if(curval2==1){
-                                                        bufferImages[current_buffer?0:1][indexcur]=1;
+                                            if( stop==0 && (fabs(shiftz)+fabs(shifty)+fabs(shiftx))<2 ){
+
+                                                int index2=(indexX-shiftx)+CurrSize->xsize*(indexY-shifty)+CurrSize->xsize*CurrSize->ysize*(indexZ-shiftz);
+                                                float curval2=bufferImages[current_buffer][index2];
+
+                                                    if(curval2==47|| curval2==51|| curval2==53){
+                                                        bufferImages[current_buffer?0:1][indexcur]=67;
                                                         stop=1;
+                                                        //cout<<"hit"<<endl;
+                                                    }
+                                                    else if(curval2==52 || curval2==50 || curval2==47 ){
+                                                        bufferImages[current_buffer?0:1][indexcur]=66;
+                                                        stop=1;
+                                                        //cout<<"hat"<<endl;
                                                     }
                                                     else{
                                                         bufferImages[current_buffer?0:1][indexcur]=bufferImages[current_buffer][indexcur];
-
                                                     }
-
-                                                }
-                                                else{
-                                                    bufferImages[current_buffer?0:1][indexcur]=bufferImages[current_buffer][indexcur];
-
-                                                }
                                             }
-
                                         }
                                     }
                                 }
-
                             }
+
                             else{
-                                bufferImages[current_buffer?0:1][indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize]=bufferImages[current_buffer][indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize];
-
-                            }
-                        }
-                    }
-                }
-                current_buffer=current_buffer?0:1;
-
-                for(long indexZ=1; indexZ<(CurrSize->zsize-1); indexZ++){
-                    for(long indexY=1; indexY<(CurrSize->ysize-1); indexY++){
-                        for(long indexX=1; indexX<(CurrSize->xsize-1); indexX++){
-                            int indexcur=indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize;
-                            float curval=bufferImages[current_buffer][indexcur];
-                            if( curval== 1){
-                                int shiftrealsize=1;
-                                int shiftspacing=1;
-
-                                int stop=0;
-                                for(int shiftz=-shiftrealsize; shiftz<=shiftrealsize; shiftz+=shiftspacing){
-                                    for(int shifty=-shiftrealsize; shifty<=shiftrealsize; shifty+=shiftspacing){
-                                        for(int shiftx=-shiftrealsize; shiftx<=shiftrealsize; shiftx+=shiftspacing){
-                                            int index1=(indexX+shiftx)+CurrSize->xsize*(indexY+shifty)+CurrSize->xsize*CurrSize->ysize*(indexZ+shiftz);
-                                            int index2=(indexX-shiftx)+CurrSize->xsize*(indexY-shifty)+CurrSize->xsize*CurrSize->ysize*(indexZ-shiftz);
-                                            float curval1=bufferImages[current_buffer][index1];
-                                            float curval2=bufferImages[current_buffer][index2];
-                                            if(stop==0 && (fabs(shiftx)+fabs(shifty)+fabs(shiftz))<2 ){
-                                                if(curval1==3){
-                                                    if(curval2==3){
-                                                        bufferImages[current_buffer?0:1][indexcur]=3;
-                                                        stop=1;
-                                                    }
-                                                    else{
-                                                        bufferImages[current_buffer?0:1][indexcur]=bufferImages[current_buffer][indexcur];
-
-                                                    }
-
-                                                }
-                                                else{
-                                                    bufferImages[current_buffer?0:1][indexcur]=bufferImages[current_buffer][indexcur];
-
-                                                }
-                                            }
-
-                                        }
-                                    }
-                                }
-
-                            }
-                            else if( curval== 0){
-                                int shiftrealsize=1;
-                                int shiftspacing=1;
-
-                                int stop=0;
-                                for(int shiftz=-shiftrealsize; shiftz<=shiftrealsize; shiftz+=shiftspacing){
-                                    for(int shifty=-shiftrealsize; shifty<=shiftrealsize; shifty+=shiftspacing){
-                                        for(int shiftx=-shiftrealsize; shiftx<=shiftrealsize; shiftx+=shiftspacing){
-                                            int index1=(indexX+shiftx)+CurrSize->xsize*(indexY+shifty)+CurrSize->xsize*CurrSize->ysize*(indexZ+shiftz);
-                                            int index2=(indexX-shiftx)+CurrSize->xsize*(indexY-shifty)+CurrSize->xsize*CurrSize->ysize*(indexZ-shiftz);
-                                            float curval1=bufferImages[current_buffer][index1];
-                                            float curval2=bufferImages[current_buffer][index2];
-                                            if(stop==0 && (fabs(shiftx)+fabs(shifty)+fabs(shiftz))<2 ){
-                                                if(curval1==2){
-                                                    if(curval2==2){
-                                                        bufferImages[current_buffer?0:1][indexcur]=2;
-                                                        stop=1;
-                                                    }
-                                                    else{
-                                                        bufferImages[current_buffer?0:1][indexcur]=bufferImages[current_buffer][indexcur];
-
-                                                    }
-
-                                                }
-                                                else{
-                                                    bufferImages[current_buffer?0:1][indexcur]=bufferImages[current_buffer][indexcur];
-
-                                                }
-                                            }
-
-                                        }
-                                    }
-                                }
-
-                            }
-                            else{
-                                bufferImages[current_buffer?0:1][indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize]=bufferImages[current_buffer][indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize];
+                                bufferImages[current_buffer?0:1][indexcur]=bufferImages[current_buffer][indexcur];
 
                             }
                         }
                     }
                 }
 
-                current_buffer=current_buffer?0:1;
+                  current_buffer=current_buffer?0:1;
 
-            }
+              }
             else if(strcmp(argv[i], "-flipimgx") == 0) // X flip image
             {
 

@@ -532,7 +532,7 @@ int main(int argc, char **argv)
             flush(cout);
         }
         cout<<(float)MaxLab<<" "<<LabFusType<<endl;
-        if(ProbOutput==1 && (MaxLab>9 || LabFusType>1))
+        if(ProbOutput==1 && (MaxLab>9 || LabFusType==2))
         {
             fprintf(stderr,"* Due to memory limitations, Probabilistic output only available for less than 10 labels and for STEPS/STAPLE\n");
             flush(cout);

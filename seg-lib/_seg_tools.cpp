@@ -578,34 +578,42 @@ void SmoothLab(float * DataPTR,float factor, ImageSize * Currentsize){
                                                                      )))/(sqrtf(2.0f*3.14159265*powf(gauss_std, 2)));
                                 int index2=index+(shiftx*shiftdirection[0])+(shifty*shiftdirection[1])+(shiftz*shiftdirection[2]);
 
+                                if( !(DataPTR[index2]!=DataPTR[index2]) ){
 
-                                std::map<unsigned int,float>::iterator location=tmp_lab.find(DataPTR[index2]);
-                                if(location!=tmp_lab.end())
-                                {
-                                    location->second=location->second+kernelval;
-                                }
-                                else
-                                {
-                                    unsigned int tmpIndex = (unsigned int)round(DataPTR[index2]);
-                                    DataPointPair tmpPair = std::make_pair(tmpIndex, kernelval);
-                                    tmp_lab.insert(tmpPair);
+                                    std::map<unsigned int,float>::iterator location=tmp_lab.find(DataPTR[index2]);
+
+                                    if(location!=tmp_lab.end())
+                                    {
+                                        location->second=location->second+kernelval;
+                                    }
+                                    else
+                                    {
+                                        unsigned int tmpIndex = (unsigned int)round(DataPTR[index2]);
+                                        DataPointPair tmpPair = std::make_pair(tmpIndex, kernelval);
+                                        tmp_lab.insert(tmpPair);
+                                    }
                                 }
                             }
                         }
                     }
                     std::map<unsigned int,float>::iterator currIterator = tmp_lab.begin();
-                    int maxindex=0;
+                    int maxindex=std::numeric_limits<float>::quiet_NaN();
                     float maxval=-FLT_MAX;
-                    while(currIterator != tmp_lab.end())
-                    {
-                        if(currIterator->second>maxval)
+                    if(currIterator!=tmp_lab.end()){
+                        while(currIterator != tmp_lab.end())
                         {
-                            maxindex=currIterator->first;
-                            maxval=currIterator->second;
+                            if(currIterator->second>maxval)
+                            {
+                                maxindex=currIterator->first;
+                                maxval=currIterator->second;
+                            }
+                            currIterator++;
                         }
-                        currIterator++;
+                        ImageBuffer[index]=maxindex;
                     }
-                    ImageBuffer[index]=maxindex;
+                    else{
+                        ImageBuffer[index]=std::numeric_limits<float>::quiet_NaN();
+                    }
                 }
             }
         }
@@ -3640,6 +3648,278 @@ void Erosion(float * Image,
 
     return;
 }
+
+bool isSimplePoint(bool * SimplePointTestBlock){
+
+  bool CounterBlock[27]={0};
+  char CCcounter=0;
+  int index=0;
+  for(int z=0; z<3; z++)
+  {
+    for(int y=0; y<3; y++)
+    {
+      for(int x=0; x<3; x++)
+      {
+        if(SimplePointTestBlock[index]>0){
+          CounterBlock[index]=CCcounter;
+          CCcounter++;
+          index++;
+        }
+        else{
+          CounterBlock[index]=0;
+        }
+      }
+    }
+  }
+  int CClist[27]={0};
+  for(int i=0; i<27; i++)
+  {
+    CClist[i]=CounterBlock[i]?i:-1;
+  }
+
+  int iter=0;
+  int numbchanges=1;
+  int totalnumbchanges=0;
+  while(numbchanges!=0)
+  {
+    //while(iter<3){
+
+    flush(cout);
+    iter++;
+    numbchanges=0;
+    int currindex=0;
+
+    index=0;
+    int tempmin;
+    for(int z=1; z<3; z++)
+    {
+      for(int y=1; y<3; y++)
+      {
+        for(int x=1; x<3; x++)
+        {
+          if(SimplePointTestBlock[index]>0 && CClist[CounterBlock[index]]>0)
+          {
+            tempmin=CClist[CounterBlock[index]];
+
+            for(int deltaZ=-1; deltaZ<=1; deltaZ+=2)
+            {
+              currindex=index+deltaZ*9;
+              if(SimplePointTestBlock[currindex]>0 && tempmin>CClist[CounterBlock[currindex]])
+              {
+                tempmin=CClist[CounterBlock[currindex]];
+              }
+            }
+            for(int deltaY=-1; deltaY<=1; deltaY+=2)
+            {
+              currindex=index+deltaY*3;
+              if(SimplePointTestBlock[currindex]>0 && tempmin>CClist[CounterBlock[currindex]])
+              {
+                tempmin=CClist[CounterBlock[currindex]];
+              }
+            }
+            for(int deltaX=-1; deltaX<=1; deltaX+=2)
+            {
+              currindex=index+deltaX;
+              if(SimplePointTestBlock[currindex]>0 && tempmin>CClist[CounterBlock[currindex]])
+              {
+                tempmin=CClist[CounterBlock[currindex]];
+              }
+            }
+            if(tempmin>0 && tempmin<CClist[CounterBlock[index]])
+            {
+              CClist[CounterBlock[index]]=tempmin;
+              numbchanges++;
+            }
+          }
+          index++;
+        }
+      }
+    }
+
+    for(int i=0; i<27; i++)
+    {
+      if(CClist[i]==i && CClist[i]>=0)
+      {
+      totalnumbchanges += 1;
+      }
+    }
+
+  }
+
+
+  bool SimplePointTestBlockMod[27]={0};
+  CCcounter=0;
+  index=0;
+  for(int z=0; z<3; z++)
+  {
+    for(int y=0; y<3; y++)
+    {
+      for(int x=0; x<3; x++)
+      {
+        SimplePointTestBlockMod[index]=(z==1 && y==1 && x==1)?0:SimplePointTestBlock[index];
+
+        if(SimplePointTestBlockMod[index]>0){
+          CounterBlock[index]=CCcounter;
+          CCcounter++;
+          index++;
+        }
+        else{
+          CounterBlock[index]=0;
+        }
+      }
+    }
+  }
+  for(int i=0; i<27; i++)
+  {
+    CClist[i]=CounterBlock[i]?i:-1;
+  }
+
+  iter=0;
+  numbchanges=1;
+  int totalnumbchanges2=0;
+  while(numbchanges!=0)
+  {
+
+    flush(cout);
+    iter++;
+    numbchanges=0;
+    int currindex=0;
+
+    index=0;
+    int tempmin;
+    for(int z=1; z<3; z++)
+    {
+      for(int y=1; y<3; y++)
+      {
+        for(int x=1; x<3; x++)
+        {
+          if(SimplePointTestBlockMod[index]>0 && CClist[CounterBlock[index]]>0)
+          {
+            tempmin=CClist[CounterBlock[index]];
+
+            for(int deltaZ=-1; deltaZ<=1; deltaZ+=2)
+            {
+              currindex=index+deltaZ*9;
+              if(SimplePointTestBlockMod[currindex]>0 && tempmin>CClist[CounterBlock[currindex]])
+              {
+                tempmin=CClist[CounterBlock[currindex]];
+              }
+            }
+            for(int deltaY=-1; deltaY<=1; deltaY+=2)
+            {
+              currindex=index+deltaY*3;
+              if(SimplePointTestBlockMod[currindex]>0 && tempmin>CClist[CounterBlock[currindex]])
+              {
+                tempmin=CClist[CounterBlock[currindex]];
+              }
+            }
+            for(int deltaX=-1; deltaX<=1; deltaX+=2)
+            {
+              currindex=index+deltaX;
+              if(SimplePointTestBlockMod[currindex]>0 && tempmin>CClist[CounterBlock[currindex]])
+              {
+                tempmin=CClist[CounterBlock[currindex]];
+              }
+            }
+            if(tempmin>0 && tempmin<CClist[CounterBlock[index]])
+            {
+              CClist[CounterBlock[index]]=tempmin;
+              numbchanges++;
+            }
+          }
+          index++;
+        }
+      }
+    }
+
+    for(int i=0; i<27; i++)
+    {
+      if(CClist[i]==i && CClist[i]>=0)
+      {
+      totalnumbchanges2 += 1;
+      }
+    }
+
+  }
+
+  if(totalnumbchanges2>0 && totalnumbchanges>0){
+    cout << totalnumbchanges2<< "  "<< totalnumbchanges<<endl;
+  }
+  return (totalnumbchanges2==totalnumbchanges);
+}
+
+//void TopologicalErosion(float * Image,
+//             int kernel,
+//             ImageSize *Currentsize )
+//{
+
+//    int dimensions[3];
+//    dimensions[0]=Currentsize->xsize;
+//    dimensions[1]=Currentsize->ysize;
+//    dimensions[2]=Currentsize->zsize;
+//    int xyzpos[3];
+//    int shiftdirection[3];
+//    shiftdirection[0]=1;
+//    shiftdirection[1]=dimensions[0];
+//    shiftdirection[2]=dimensions[1]*dimensions[0];
+//    float * Buffer = new float [(dimensions[1])*(dimensions[0])*(dimensions[2])];
+
+//    if(Buffer == NULL)
+//    {
+//        fprintf(stderr,"* Error when alocating Buffer in void Dillate(): Not enough memory\n");
+//        exit(1);
+//    }
+
+//    for(int tp=0; tp<Currentsize->tsize; tp++){
+//      int index=0;
+//      for(xyzpos[2]=0; xyzpos[2]<dimensions[2]; xyzpos[2]++)
+//      {
+//        for(xyzpos[1]=0; xyzpos[1]<dimensions[1]; xyzpos[1]++)
+//        {
+//          for(xyzpos[0]=0; xyzpos[0]<dimensions[0]; xyzpos[0]++)
+//          {
+//            if(Image[index]){
+//              bool SimplePointTestBlock[27]={0};
+//              for(char dx=-1; dx<2; dx++){
+//                for(char dy=-1; dy<2; dy++){
+//                  for(char dz=-1; dz<2; dz++){
+//                    if(Image[(xyzpos[0]+dx)+((xyzpos[1]+dy)+(xyzpos[2]+dz)*dimensions[1])*dimensions[0]]>0 &&
+//                       (xyzpos[0]+dx)>0 && (xyzpos[0]+dx)<(dimensions[0]-1)
+//                       && (xyzpos[1]+dy)>0 && (xyzpos[1]+dy)<(dimensions[1]-1)
+//                       && (xyzpos[2]+dz)>0 && (xyzpos[2]+dz)<(dimensions[2]-1)){
+//                      SimplePointTestBlock[(dx+1)+(dy+1)*3+(dz+1)*9]=Image[index+dx+(dy+(dz*dimensions[1]))*dimensions[0]];
+//                    }
+//                  }
+//                }
+//              }
+//              Buffer[index]=isSimplePoint(SimplePointTestBlock);
+//            }
+//            else{
+//              Buffer[index]=0;
+//            }
+//            index++;
+//          }
+//        }
+//      }
+//    }
+//    for(int tp=0; tp<Currentsize->tsize; tp++){
+//      int index=0;
+//      for(xyzpos[2]=0; xyzpos[2]<dimensions[2]; xyzpos[2]++)
+//      {
+//        for(xyzpos[1]=0; xyzpos[1]<dimensions[1]; xyzpos[1]++)
+//        {
+//          for(xyzpos[0]=0; xyzpos[0]<dimensions[0]; xyzpos[0]++)
+//          {
+//            Image[index]=Buffer[index];
+//            index++;
+//          }
+//        }
+//      }
+//    }
+//    delete [] Buffer;
+
+//    return;
+//}
 
 
 void Dillate_const(bool * Image,

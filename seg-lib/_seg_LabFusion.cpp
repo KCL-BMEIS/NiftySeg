@@ -1070,7 +1070,7 @@ int seg_LabFusion::SBA_Estimate()
                 geotime=DoubleEuclideanDistance_3D(CurrLableImage,speedfunc,CurrSizes);
                 for(int i=0; i<(this->CurrSizes->numel); i++)
                 {
-                    this->W[i+currlabelnumb*this->numel]+=geotime[i];
+                    this->W[i+currlabelnumb*this->numel]+=geotime[i]*fabs(geotime[i]);
                 }
                 free(geotime);
             }
@@ -1096,7 +1096,7 @@ int seg_LabFusion::SBA_Estimate()
 
                     for(int i=0; i<(this->CurrSizes->numel); i++)
                     {
-                        this->W[i+currlabelnumb*this->numel]+=geotime[i];
+                        this->W[i+currlabelnumb*this->numel]+=geotime[i]*fabs(geotime[i]);
                     }
                     free(geotime);
                 }
@@ -1120,7 +1120,7 @@ int seg_LabFusion::SBA_Estimate()
 
                 for(int i=0; i<(this->CurrSizes->numel); i++)
                 {
-                    this->W[i+currlabelnumb*this->numel]+=geotime[i];
+                    this->W[i+currlabelnumb*this->numel]+=geotime[i]*fabs(geotime[i]);
                 }
                 free(geotime);
             }
@@ -1911,7 +1911,7 @@ nifti_image * seg_LabFusion::GetResult_probability()
     Result->cal_min=(1);
     Result->data = (void *) calloc(Result->nx*Result->ny*Result->nz*Result->nt, sizeof(float));
     float * Resultdata = static_cast<float *>(Result->data);
-    if(TYPE_OF_FUSION==1 )
+    if(TYPE_OF_FUSION==1 || TYPE_OF_FUSION==3 )
     {
         int uncertainindex=0;
         for(int i=0; i<(this->numel); i++)
