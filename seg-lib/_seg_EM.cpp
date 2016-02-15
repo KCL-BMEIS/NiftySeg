@@ -2194,6 +2194,12 @@ void seg_EM::RunBiasField3D()
     }
     segPrecisionTYPE invV[maxNumbClass];
     segPrecisionTYPE currM[maxNumbClass];
+    for(long i=0; i<maxNumbClass; i++)
+    {
+        invV[i]=0;
+        currM[i]=0;
+    }
+
 
     // Solve the problem separetly per modality, as the Bias Field is assumed to be indpendent between modalities.
     for(long multispec=0; multispec<this->nu; multispec++)
@@ -2627,6 +2633,12 @@ void seg_EM::RunBiasField2D()
     }
     segPrecisionTYPE invV[maxNumbClass];
     segPrecisionTYPE currM[maxNumbClass];
+    for(long i=0; i<maxNumbClass; i++)
+    {
+        invV[i]=0;
+        currM[i]=0;
+    }
+
 
     for(long multispec=0; multispec<this->nu; multispec++)
     {
