@@ -137,10 +137,9 @@ option(USE_SYSTEM_EIGEN "Use an already installed version of the Eigen library" 
 if(USE_SYSTEM_EIGEN)
   find_package(EIGEN REQUIRED)
 else()
-  set(${PROJECT_NAME}_VERSION_EIGEN "ffa86ffb5570" CACHE STRING "Version of EIGEN" FORCE)
-  set(${PROJECT_NAME}_MD5_SUM_EIGEN 9559c34af203dde5f3f1d976d859c5b3 CACHE STRING "MD5 check sum for EIGEN" FORCE)
+  set(${PROJECT_NAME}_MD5_SUM_EIGEN 62bee4dd0b9fdb21ecc6131681d47106 CACHE STRING "MD5 check sum for EIGEN" FORCE)
   set(${PROJECT_NAME}_LOCATION_EIGEN 
-    "http://cmic.cs.ucl.ac.uk/platform/dependencies/eigen-eigen-${${PROJECT_NAME}_VERSION_EIGEN}.tar.gz" 
+    "http://cmictig.cs.ucl.ac.uk/images/3.3-beta1.tar.gz"
     CACHE STRING "Location of Eigen" FORCE)
   mark_as_advanced(FORCE ${PROJECT_NAME}_VERSION_EIGEN)
   mark_as_advanced(FORCE ${PROJECT_NAME}_MD5_SUM_EIGEN)

@@ -27,39 +27,42 @@ void Usage(char *exec)
     printf("\nStat tools:\nUsage:\t%s <in> [constrains] [statistics]\n\n",exec);
 
     printf("\t* * Constrains (optional) * *\n");
-    printf("\t  -m <mask> \t| Only estimate statistics within the masked area.\n");
-    printf("\t  -t <float> \t| Only estimate statistics if voxel is larger than <float>.\n");
+    printf("\t-m <mask> \t| Only estimate statistics within the masked area.\n");
+    printf("\t-t <float> \t| Only estimate statistics if voxel is larger than <float>.\n");
     printf("\n\t  Note: All NaN or Inf are ignored for all stats. \n\t        The -m and -t options can be used in conjusction.\n\n");
 
     printf("\n\t* * Statistics (at least one option is mandatory) * *\n");
     printf("\tRange operations (datatype: all)\n");
-    printf("\t  -r \t\t| The range <min max> of all voxels.\n");
-    printf("\t  -R \t\t| The robust range (assuming 2%% outliers on both sides) of all voxels\n");
-    printf("\t  -p <float> \t| The <float>th percentile of all voxels intensity (float=[0,100])\n");
-    printf("\n\tClassical operations (datatype: all)\n");
-    printf("\t  -a  \t\t| Average of all voxels \n");
-    printf("\t  -s  \t\t| Standard deviation of all voxels \n");
-    printf("\t  -v  \t\t| Volume of all voxels above 0 (<# voxels> * <volume per voxel>)\n");
-    printf("\t  -vl \t\t| Volume of each integer label (<# voxels per label> * <volume per voxel>)\n");
-    printf("\t  -vp \t\t| Volume of all probabilsitic voxels (sum(<in>) * <volume per voxel>)\n");
-    printf("\t  -n  \t\t| Count of all voxels above 0 (<# voxels>)\n");
-    printf("\t  -np \t\t| Sum of all fuzzy voxels (sum(<in>))\n");
-    printf("\t  -e \t\t| Entropy of all voxels\n");
-    printf("\t  -ne \t\t| Normalized entropy of all voxels\n");
+    printf("\t-r \t\t| The range <min max> of all voxels.\n");
+    printf("\t-R \t\t| The robust range (assuming 2%% outliers on both sides) of all voxels\n");
+    printf("\t-p <float> \t| The <float>th percentile of all voxels intensity (float=[0,100])\n");
+    printf("\n\tClassical statistics (datatype: all)\n");
+    printf("\t-a  \t\t| Average of all voxels \n");
+    printf("\t-s  \t\t| Standard deviation of all voxels \n");
+    printf("\t-v  \t\t| Volume of all voxels above 0 (<# voxels> * <volume per voxel>)\n");
+    printf("\t-vl \t\t| Volume of each integer label (<# voxels per label> * <volume per voxel>)\n");
+    printf("\t-vp \t\t| Volume of all probabilsitic voxels (sum(<in>) * <volume per voxel>)\n");
+    printf("\t-n  \t\t| Count of all voxels above 0 (<# voxels>)\n");
+    printf("\t-np \t\t| Sum of all fuzzy voxels (sum(<in>))\n");
+    printf("\t-e \t\t| Entropy of all voxels\n");
+    printf("\t-ne \t\t| Normalized entropy of all voxels\n");
+    printf("\n\tImage similarities (datatype: all)\n");
+    printf("\t-ncc <in2>\t| Normalized cross correlation between <in> and <in2>\n");
+    printf("\t-nmi <in2>\t| Normalized Mutual Information between <in> and <in2>\n");
     printf("\n\tCoordinates operations (datatype: all)\n");
-    printf("\t  -x \t\t| Location (i j k x y z) of the smallest value in the image\n");
-    printf("\t  -X \t\t| Location (i j k x y z) of the largest value in the image\n");
-    printf("\t  -c \t\t| Location (i j k x y z) of the centre of mass of the object\n");
-    printf("\t  -B \t\t| Bounding box of all nonzero voxels [ xmin xsize ymin ysize zmin zsize ]\n");
+    printf("\t-x \t\t| Location (i j k x y z) of the smallest value in the image\n");
+    printf("\t-X \t\t| Location (i j k x y z) of the largest value in the image\n");
+    printf("\t-c \t\t| Location (i j k x y z) of the centre of mass of the object\n");
+    printf("\t-B \t\t| Bounding box of all nonzero voxels [ xmin xsize ymin ysize zmin zsize ]\n");
     printf("\n\tLabel attribute operations (datatype: char or uchar)\n");
-    printf("\t  -Vl <csv> \t\t| Volume of each integer label <in>. Save to <csv> file.\n");
-    printf("\t  -Nl <csv> \t\t| Count of each label <in>. Save to <csv> file.\n");
-    printf("\t  -al <in2> \t\t| Average value in <in> for each label in <in2> \n");
-    printf("\t  -Al <in2> <csv>\t| Average value in <in> for each label in <in2>. Save to <csv> file\n");
-    printf("\t  -d <in2>\t\t| Calculate the Dice score between all classes in <in> and <in2>\n");
-    printf("\t  -D <in2> <csv>\t| Calculate the Dice score between all classes in <in> and <in2>. Save to <csv> file\n");
+    printf("\t-Vl <csv> \t| Volume of each integer label <in>. Save to <csv> file.\n");
+    printf("\t-Nl <csv> \t| Count of each label <in>. Save to <csv> file.\n");
+    printf("\t-al <in2> \t| Average value in <in> for each label in <in2> \n");
+    printf("\t-Al <in2> <csv>\t| Average value in <in> for each label in <in2>. Save to <csv> file\n");
+    printf("\t-d <in2>\t| Calculate the Dice score between all classes in <in> and <in2>\n");
+    printf("\t-D <in2> <csv>\t| Calculate the Dice score between all classes in <in> and <in2>. Save to <csv> file\n");
 #ifdef _GIT_HASH
-    printf("\t--version\t\t|Print current source code git hash key and exit\n\t\t\t\t(%s)\n",_GIT_HASH);
+    printf("\t--version\t| Print current source code git hash key and exit\n\t\t\t\t(%s)\n",_GIT_HASH);
 #endif
     printf("\n\t* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
     return;
@@ -77,8 +80,8 @@ int main(int argc, char **argv)
     {
         set_new_handler(no_memory);
 
-        char * filenames[10];
-        nifti_image * Images[10];
+        char * filenames[100];
+        nifti_image * Images[100];
         int numbimg=1;
         float * imgsort=NULL;
         if(argc<3)
@@ -96,14 +99,26 @@ int main(int argc, char **argv)
             return 0;
         }
 
-        bool * mask=new bool [Images[0]->nvox];
-        unsigned int maskcount=0;
+
         if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
         {
             seg_changeDatatype<float>(Images[0]);
         }
         float * Img1prt = static_cast<float *>(Images[0]->data);
 
+
+        nifti_image * Mask=nifti_copy_nim_info(Images[0]);
+        Mask->dim[0]=3;
+        Mask->nt=Mask->dim[4]=0;
+        Mask->datatype=NIFTI_TYPE_UINT8;
+        Mask->cal_max=1;
+        Mask->cal_min=0;
+        nifti_update_dims_from_array(Mask);
+        nifti_datatype_sizes(Mask->datatype,&Mask->nbyper,&Mask->swapsize);
+        Mask->data = (void *) calloc(Mask->nvox, sizeof(unsigned char));
+        unsigned char * mask = static_cast<unsigned char *>(Mask->data);
+
+        unsigned int maskcount=0;
         for(unsigned int index=0; index<Images[0]->nvox; index++)
         {
             if(isnan(Img1prt[index])==0){
@@ -118,6 +133,10 @@ int main(int argc, char **argv)
 
         for(int i=2; i<argc; i++)
         {
+            if(argc>50){
+                fprintf(stderr, "ERROR: too many arguments\n");
+                return 0;
+            }
             if(strcmp(argv[i], "-help")==0 || strcmp(argv[i], "-Help")==0 ||
                     strcmp(argv[i], "-HELP")==0 || strcmp(argv[i], "-h")==0 ||
                     strcmp(argv[i], "--h")==0 || strcmp(argv[i], "--help")==0)
@@ -190,6 +209,71 @@ int main(int argc, char **argv)
                 {
                     cout<<"ERROR: Because of threshold choice, no samples are available for further calculations."<<endl;
                     return 0;
+                }
+            }
+            // **************************            ---------          *****************************
+            // **************************            CALC NCC           *****************************
+            // **************************            ---------          *****************************
+            else if(strcmp(argv[i], "-ncc") == 0 && (i+1)<argc)
+            {
+                int oldnumbimg=numbimg;
+                numbimg=numbimg+1;
+                filenames[oldnumbimg] = argv[++i];
+                if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
+                {
+                    seg_changeDatatype<float>(Images[0]);
+                }
+                for(int j=oldnumbimg; j<numbimg; j++)
+                {
+                    Images[j]=nifti_image_read(filenames[j],true);
+                    if(Images[j]==NULL)
+                    {
+                        fprintf(stderr, "This image can not be read: %s\n", filenames[j]);
+                        return 0;
+                    }
+                    if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
+                    {
+                        seg_changeDatatype<float>(Images[j]);
+                    }
+                    if(Images[j]->nx==Images[0]->nx && Images[j]->ny==Images[0]->ny && Images[j]->nz==Images[0]->nz && Images[j]->nt==Images[0]->nt){
+                    cout<< estimateNCC3D(Images[0],Images[j],Mask,0)<<endl;
+                    }
+                    else{
+                        fprintf(stderr, "The images %s and %s have different sizes\n", filenames[0], filenames[j]);
+                    }
+                }
+            }
+
+            // **************************            ---------          *****************************
+            // **************************            CALC NMI          *****************************
+            // **************************            ---------          *****************************
+            else if(strcmp(argv[i], "-nmi") == 0 && (i+1)<argc)
+            {
+                int oldnumbimg=numbimg;
+                numbimg=numbimg+1;
+                filenames[oldnumbimg] = argv[++i];
+                if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
+                {
+                    seg_changeDatatype<float>(Images[0]);
+                }
+                for(int j=oldnumbimg; j<numbimg; j++)
+                {
+                    Images[j]=nifti_image_read(filenames[j],true);
+                    if(Images[j]==NULL)
+                    {
+                        fprintf(stderr, "This image can not be read: %s\n", filenames[j]);
+                        return 0;
+                    }
+                    if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
+                    {
+                        seg_changeDatatype<float>(Images[j]);
+                    }
+                    if(Images[j]->nx==Images[0]->nx && Images[j]->ny==Images[0]->ny && Images[j]->nz==Images[0]->nz && Images[j]->nt==Images[0]->nt){
+                        cout<< seg_getNMIValue(Images[0],Images[j],mask)<<endl;
+                    }
+                    else{
+                        fprintf(stderr, "The images %s and %s have different sizes\n", filenames[0], filenames[j]);
+                    }
                 }
             }
             // **************************            ---------          *****************************
@@ -403,8 +487,8 @@ int main(int argc, char **argv)
                 }
 
                 float * Img1prt = static_cast<float *>(Images[0]->data);
-                float  Count1[1000]= {0};
-                float  Count2[1000]= {0};
+                double  Count1[1000]= {0};
+                double  Count2[1000]= {0};
                 for(unsigned int index=0; index<1000; index++){
                    Count1[i]=0;
                    Count2[i]=0;
@@ -494,7 +578,7 @@ int main(int argc, char **argv)
                     seg_changeDatatype<float>(Images[0]);
                 }
                 float * Img1prt = static_cast<float *>(Images[0]->data);
-                float calcvol=0;
+                double calcvol=0;
                 for(unsigned int index=0; index<Images[0]->nvox; index++)
                 {
                     if(mask[index] && isnan(Img1prt[index])==0)
@@ -516,7 +600,7 @@ int main(int argc, char **argv)
                     seg_changeDatatype<float>(Images[0]);
                 }
                 float * Img1prt = static_cast<float *>(Images[0]->data);
-                float calcvol=0;
+                double calcvol=0;
                 for(unsigned int index=0; index<Images[0]->nvox; index++)
                 {
                     if(mask[index])
@@ -569,9 +653,7 @@ int main(int argc, char **argv)
             // **************************            ---------          *****************************
             else if(strcmp(argv[i], "-Vl") == 0 && (i+1)<argc)
             {
-                int oldnumbimg=numbimg;
-                numbimg=numbimg+1;
-                filenames[oldnumbimg] = argv[++i];
+                char * filenameCSVoutput = argv[++i];
                 if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
                 {
                     seg_changeDatatype<float>(Images[0]);
@@ -596,7 +678,7 @@ int main(int argc, char **argv)
                     maxclass=curlab>maxclass?curlab:maxclass;
                 }
                 ofstream myfile;
-                myfile.open(filenames[oldnumbimg]);
+                myfile.open(filenameCSVoutput);
 
                 flush(cout);
                 for(int curtclass=0; curtclass<=maxclass; curtclass++)
@@ -618,9 +700,7 @@ int main(int argc, char **argv)
             // **************************            ---------          *****************************
             else if(strcmp(argv[i], "-Nl") == 0 && (i+1)<argc)
             {
-                int oldnumbimg=numbimg;
-                numbimg=numbimg+1;
-                filenames[oldnumbimg] = argv[++i];
+                char * filenameCSVoutput = argv[++i];
                 if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
                 {
                     seg_changeDatatype<float>(Images[0]);
@@ -645,7 +725,7 @@ int main(int argc, char **argv)
                     maxclass=curlab>maxclass?curlab:maxclass;
                 }
                 ofstream myfile;
-                myfile.open(filenames[oldnumbimg]);
+                myfile.open(filenameCSVoutput);
 
                 flush(cout);
                 for(int curtclass=0; curtclass<=maxclass; curtclass++)
@@ -850,13 +930,13 @@ int main(int argc, char **argv)
                     seg_changeDatatype<float>(Images[0]);
                 }
                 float * Img1prt = static_cast<float *>(Images[0]->data);
-                float calcvol=0;
-                float calcvolcount=0;
+                double calcvol=0;
+                double calcvolcount=0;
                 for(unsigned int index=0; index<Images[0]->nvox; index++)
                 {
                     if(mask[index])
                     {
-                        calcvol += Img1prt[index];
+                        calcvol += (double)Img1prt[index];
                         calcvolcount+=1;
                     }
                 }
@@ -1007,7 +1087,7 @@ int main(int argc, char **argv)
                         calccount+=1;
                     }
                 }
-                float mean=(double)(calc)/(double)(calccount);
+                double mean=(double)(calc)/(double)(calccount);
                 calc=0;
                 calccount=0;
                 for(unsigned int index=0; index<Images[0]->nvox; index++)
@@ -1194,6 +1274,7 @@ int main(int argc, char **argv)
         {
             nifti_image_free(Images[i]);
         }
+        nifti_image_free(Mask);
     }
 
     catch(std::exception & e)
