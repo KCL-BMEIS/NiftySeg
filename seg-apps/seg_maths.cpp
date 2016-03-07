@@ -81,6 +81,9 @@ void Usage(char *exec)
     printf("\t-hdr_copy <file> \tCopy header from working image to <file> and save in <output>.\n");
     printf("\t-scl\t\t\tReset scale and slope info.\n");
     printf("\t-4to5\t\t\tFlip the 4th and 5th dimension.\n");
+    printf("\n\t* * Image header output * *\n");
+    printf("\t-xvox \t Output the number of voxels in the x direction. Replace x with y/z for other directions.\n");
+    printf("\t-xdim \t Output the voxel dimention in the x direction. Replace x with y/z for other directions. \n");
     printf("\n\t* * Output * *\n");
     printf("\t-odt <datatype> \tSet output <datatype> (char, short, int, uchar, ushort, uint, float, double).\n");
     printf("\t-range\t\t\tReset the image range to the min max\n");
@@ -1937,7 +1940,10 @@ int main(int argc, char **argv)
                 {
                     switch((int)floor(bufferImages[current_buffer][i])){
                     case 0: bufferImages[current_buffer?0:1][i]=0; break; break; // Background and skull
-                    case 1: bufferImages[current_buffer?0:1][i]=1; break; // Non-ventricular CSF
+                    case 1: bufferImages[current_buffer?0:1][i]=1; break; // NonBrain Low
+                    case 2: bufferImages[current_buffer?0:1][i]=2; break; // NonBrain Mid
+                    case 3: bufferImages[current_buffer?0:1][i]=3; break; // NonBrain High
+                    case 4: bufferImages[current_buffer?0:1][i]=4; break; // Non-ventricular CSF
                     case 5: bufferImages[current_buffer?0:1][i]=5; break; // 3rd Ventricle
                     case 12: bufferImages[current_buffer?0:1][i]=12; break; // 4th Ventricle
                     case 16: bufferImages[current_buffer?0:1][i]=16; break; // 5th Ventricle
@@ -1945,7 +1951,7 @@ int main(int argc, char **argv)
                     case 31: bufferImages[current_buffer?0:1][i]=24; break; // Left to Right Accumbens Area
                     case 32: bufferImages[current_buffer?0:1][i]=33; break; // Right to Left Amygdala
                     case 33: bufferImages[current_buffer?0:1][i]=32; break; // Left to Right Amygdala
-                    case 35: bufferImages[current_buffer?0:1][i]=36; break; // Pons
+                    case 35: bufferImages[current_buffer?0:1][i]=35; break; // Pons
                     case 36: bufferImages[current_buffer?0:1][i]=36; break; // Brain Stem
                     case 37: bufferImages[current_buffer?0:1][i]=38; break; // Right to Left Caudate
                     case 38: bufferImages[current_buffer?0:1][i]=37; break; // Left to Right Caudate
@@ -1955,8 +1961,7 @@ int main(int argc, char **argv)
                     case 42: bufferImages[current_buffer?0:1][i]=41; break; // Left to Right Cerebellum White Matter
                     case 43: bufferImages[current_buffer?0:1][i]=44; break; // Right to Left Cerebral Exterior
                     case 44: bufferImages[current_buffer?0:1][i]=43; break; // Left to Right Cerebral Exterior
-                    case 45: bufferImages[current_buffer?0:1][i]=46; break; // Right to Left Cerebral White Matter
-                    case 46: bufferImages[current_buffer?0:1][i]=45; break; // Left to Right Cerebral White Matter
+
                     case 47: bufferImages[current_buffer?0:1][i]=47; break; // 3rd Ventricle (Posterior part)
                     case 48: bufferImages[current_buffer?0:1][i]=49; break; // Right to Left Hippocampus
                     case 49: bufferImages[current_buffer?0:1][i]=48; break; // Left to Right Hippocampus
@@ -1982,6 +1987,23 @@ int main(int argc, char **argv)
                     case 74: bufferImages[current_buffer?0:1][i]=74; break; // Cerebellar Vermal Lobules VIII-X
                     case 77: bufferImages[current_buffer?0:1][i]=76; break; // Right to Left Basal Forebrain
                     case 76: bufferImages[current_buffer?0:1][i]=77; break; // Left to Right Basal Forebrain
+
+                    case 81: bufferImages[current_buffer?0:1][i]=89; break;
+                    case 82: bufferImages[current_buffer?0:1][i]=90; break;
+                    case 83: bufferImages[current_buffer?0:1][i]=91; break;
+                    case 84: bufferImages[current_buffer?0:1][i]=92; break;
+                    case 85: bufferImages[current_buffer?0:1][i]=93; break;
+                    case 86: bufferImages[current_buffer?0:1][i]=94; break;
+
+                    case 87: bufferImages[current_buffer?0:1][i]=87; break;
+
+                    case 89: bufferImages[current_buffer?0:1][i]=81; break;
+                    case 90: bufferImages[current_buffer?0:1][i]=82; break;
+                    case 91: bufferImages[current_buffer?0:1][i]=83; break;
+                    case 92: bufferImages[current_buffer?0:1][i]=84; break;
+                    case 93: bufferImages[current_buffer?0:1][i]=85; break;
+                    case 94: bufferImages[current_buffer?0:1][i]=86; break;
+
                     case 101: bufferImages[current_buffer?0:1][i]=102; break; // Right to Left ACgG anterior cingulate gyrus
                     case 102: bufferImages[current_buffer?0:1][i]=101; break; // Left to Right ACgG anterior cingulate gyrus
                     case 103: bufferImages[current_buffer?0:1][i]=104; break; // Right to Left AIns anterior insula
@@ -2268,6 +2290,55 @@ int main(int argc, char **argv)
 
                 current_buffer=current_buffer?0:1;
 
+            }
+            // **************************            ---------          *****************************
+            // **************************            Vox dim X          *****************************
+            // **************************            ---------          *****************************
+            else if(strcmp(argv[i], "-xvox") == 0 && (i)<argc)
+            {
+                cout <<(double)(Images[0]->dx)<<endl;
+                flush(cout);
+            }
+            // **************************            ---------          *****************************
+            // **************************            Vox dim Y          *****************************
+            // **************************            ---------          *****************************
+            else if(strcmp(argv[i], "-yvox") == 0 && (i)<argc)
+            {
+                cout <<(double)(Images[0]->dy)<<endl;
+                flush(cout);
+            }
+            // **************************            ---------          *****************************
+            // **************************            Vox dim Z          *****************************
+            // **************************            ---------          *****************************
+            else if(strcmp(argv[i], "-zvox") == 0 && (i)<argc)
+            {
+                cout <<(double)(Images[0]->dz)<<endl;
+                flush(cout);
+            }
+
+            // **************************            ---------          *****************************
+            // **************************            Im dim X           *****************************
+            // **************************            ---------          *****************************
+            else if(strcmp(argv[i], "-xdim") == 0 && (i)<argc)
+            {
+                cout <<(double)(Images[0]->nx)<<endl;
+                flush(cout);
+            }
+            // **************************            ---------          *****************************
+            // **************************            Im dim Y           *****************************
+            // **************************            ---------          *****************************
+            else if(strcmp(argv[i], "-ydim") == 0 && (i)<argc)
+            {
+                cout <<(double)(Images[0]->ny)<<endl;
+                flush(cout);
+            }
+            // **************************            ---------          *****************************
+            // **************************            Im dim Z           *****************************
+            // **************************            ---------          *****************************
+            else if(strcmp(argv[i], "-zdim") == 0 && (i)<argc)
+            {
+                cout <<(double)(Images[0]->nz)<<endl;
+                flush(cout);
             }
 
             // *********************  output data type  *************************
