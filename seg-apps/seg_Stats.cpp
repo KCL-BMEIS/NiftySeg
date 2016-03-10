@@ -46,6 +46,16 @@ void Usage(char *exec)
     printf("\t-np \t\t| Sum of all fuzzy voxels (sum(<in>))\n");
     printf("\t-e \t\t| Entropy of all voxels\n");
     printf("\t-ne \t\t| Normalized entropy of all voxels\n");
+
+//    printf("\n\tClassical statistics per slice along axis <ax> (ax=1,2,3)\n");
+//    printf("\t-sa  <ax> \t\t| Average of all voxels \n");
+//    printf("\t-ss  <ax> \t\t| Standard deviation of all voxels \n");
+//    printf("\t-sv  <ax> \t\t| Volume of all voxels above 0 (<# voxels> * <volume per voxel>)\n");
+//    printf("\t-svl <ax>\t\t| Volume of each integer label (<# voxels per label> * <volume per voxel>)\n");
+//    printf("\t-svp <ax>\t\t| Volume of all probabilsitic voxels (sum(<in>) * <volume per voxel>)\n");
+//    printf("\t-sn  <ax> \t\t| Count of all voxels above 0 (<# voxels>)\n");
+//    printf("\t-snp <ax>\t\t| Sum of all fuzzy voxels (sum(<in>))\n");
+
     printf("\n\tImage similarities (datatype: all)\n");
     printf("\t-ncc <in2>\t| Normalized cross correlation between <in> and <in2>\n");
     printf("\t-nmi <in2>\t| Normalized Mutual Information between <in> and <in2>\n");
@@ -54,6 +64,9 @@ void Usage(char *exec)
     printf("\t-X \t\t| Location (i j k x y z) of the largest value in the image\n");
     printf("\t-c \t\t| Location (i j k x y z) of the centre of mass of the object\n");
     printf("\t-B \t\t| Bounding box of all nonzero voxels [ xmin xsize ymin ysize zmin zsize ]\n");
+    printf("\n\tHeader info\n");
+    printf("\t-xvox \t| Output the number of voxels in the x direction. Replace x with y/z for other directions.\n");
+    printf("\t-xdim \t|  Output the voxel dimention in the x direction. Replace x with y/z for other directions. \n");
     printf("\n\tLabel attribute operations (datatype: char or uchar)\n");
     printf("\t-Vl <csv> \t| Volume of each integer label <in>. Save to <csv> file.\n");
     printf("\t-Nl <csv> \t| Count of each label <in>. Save to <csv> file.\n");
@@ -1248,6 +1261,126 @@ int main(int argc, char **argv)
                 cout <<(double)(ent)<<endl;
                 flush(cout);
             }
+//            // **************************            ---------          *****************************
+//            // **************************             PerSlice Average          *****************************
+//            // **************************            ---------          *****************************
+
+//            else if(strcmp(argv[i], "-sa") == 0 && (i)<argc)
+//            {
+//                if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
+//                {
+//                    seg_changeDatatype<float>(Images[0]);
+//                }
+//                float * Img1prt = static_cast<float *>(Images[0]->data);
+//                double calcvol=0;
+//                double calcvolcount=0;
+//                for(unsigned int index=0; index<Images[0]->nvox; index++)
+//                {
+//                    if(mask[index])
+//                    {
+//                        calcvol += (double)Img1prt[index];
+//                        calcvolcount+=1;
+//                    }
+//                }
+
+//                cout << (double)(calcvol)/(double)(calcvolcount)<<endl;
+//                flush(cout);
+//            }
+//            // **************************            ---------          *****************************
+//            // **************************              Per Slice std             *****************************
+//            // **************************            ---------          *****************************
+//            else if(strcmp(argv[i], "-ss") == 0 && (i)<argc)
+//            {
+//                if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
+//                {
+//                    seg_changeDatatype<float>(Images[0]);
+//                }
+//                float * Img1prt = static_cast<float *>(Images[0]->data);
+//                float calc=0;
+//                float calccount=0;
+//                for(unsigned int index=0; index<Images[0]->nvox; index++)
+//                {
+//                    if(mask[index])
+//                    {
+//                        calc += Img1prt[index];
+//                        calccount+=1;
+//                    }
+//                }
+//                double mean=(double)(calc)/(double)(calccount);
+//                calc=0;
+//                calccount=0;
+//                for(unsigned int index=0; index<Images[0]->nvox; index++)
+//                {
+//                    if(mask[index])
+//                    {
+//                        calc += powf(mean-Img1prt[index],2);
+//                        calccount+=1;
+//                    }
+//                }
+
+//                cout <<sqrt((double)(calc)/(double)(calccount))<<endl;
+//                flush(cout);
+//            }
+//            // **************************            PerSlice Bin   Numb          *****************************
+//            else if(strcmp(argv[i], "-sn") == 0 && (i)<argc)
+//            {
+//                if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
+//                {
+//                    seg_changeDatatype<float>(Images[0]);
+//                }
+//                float * Img1prt = static_cast<float *>(Images[0]->data);
+//                float calcvol=0;
+//                for(unsigned int index=0; index<Images[0]->nvox; index++)
+//                {
+//                    if(mask[index])
+//                    {
+//                        calcvol += Img1prt[index]>0;
+//                    }
+//                }
+
+//                cout <<(double)(calcvol)<<endl;
+//                flush(cout);
+//            }
+            // **************************            ---------          *****************************
+            // **************************            Vox dim X/Y/Z          *****************************
+            // **************************            ---------          *****************************
+            else if(strcmp(argv[i], "-xvox") == 0 && (i)<argc)
+            {
+                cout <<(double)(Images[0]->dx)<<endl;
+                flush(cout);
+            }
+            else if(strcmp(argv[i], "-yvox") == 0 && (i)<argc)
+            {
+                cout <<(double)(Images[0]->dy)<<endl;
+                flush(cout);
+            }
+            else if(strcmp(argv[i], "-zvox") == 0 && (i)<argc)
+            {
+                cout <<(double)(Images[0]->dz)<<endl;
+                flush(cout);
+            }
+
+            // **************************            ---------          *****************************
+            // **************************            Im dim X/Y/Z           *****************************
+            // **************************            ---------          *****************************
+            else if(strcmp(argv[i], "-xdim") == 0 && (i)<argc)
+            {
+                cout <<(double)(Images[0]->nx)<<endl;
+                flush(cout);
+            }
+            else if(strcmp(argv[i], "-ydim") == 0 && (i)<argc)
+            {
+                cout <<(double)(Images[0]->ny)<<endl;
+                flush(cout);
+            }
+            else if(strcmp(argv[i], "-zdim") == 0 && (i)<argc)
+            {
+                cout <<(double)(Images[0]->nz)<<endl;
+                flush(cout);
+            }
+
+
+
 #ifdef _GIT_HASH
             else if( strcmp(argv[i], "--version")==0)
             {

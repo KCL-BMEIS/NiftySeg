@@ -81,9 +81,6 @@ void Usage(char *exec)
     printf("\t-hdr_copy <file> \tCopy header from working image to <file> and save in <output>.\n");
     printf("\t-scl\t\t\tReset scale and slope info.\n");
     printf("\t-4to5\t\t\tFlip the 4th and 5th dimension.\n");
-    printf("\n\t* * Image header output * *\n");
-    printf("\t-xvox \t Output the number of voxels in the x direction. Replace x with y/z for other directions.\n");
-    printf("\t-xdim \t Output the voxel dimention in the x direction. Replace x with y/z for other directions. \n");
     printf("\n\t* * Output * *\n");
     printf("\t-odt <datatype> \tSet output <datatype> (char, short, int, uchar, ushort, uint, float, double).\n");
     printf("\t-range\t\t\tReset the image range to the min max\n");
@@ -2291,56 +2288,6 @@ int main(int argc, char **argv)
                 current_buffer=current_buffer?0:1;
 
             }
-            // **************************            ---------          *****************************
-            // **************************            Vox dim X          *****************************
-            // **************************            ---------          *****************************
-            else if(strcmp(argv[i], "-xvox") == 0 && (i)<argc)
-            {
-                cout <<(double)(Images[0]->dx)<<endl;
-                flush(cout);
-            }
-            // **************************            ---------          *****************************
-            // **************************            Vox dim Y          *****************************
-            // **************************            ---------          *****************************
-            else if(strcmp(argv[i], "-yvox") == 0 && (i)<argc)
-            {
-                cout <<(double)(Images[0]->dy)<<endl;
-                flush(cout);
-            }
-            // **************************            ---------          *****************************
-            // **************************            Vox dim Z          *****************************
-            // **************************            ---------          *****************************
-            else if(strcmp(argv[i], "-zvox") == 0 && (i)<argc)
-            {
-                cout <<(double)(Images[0]->dz)<<endl;
-                flush(cout);
-            }
-
-            // **************************            ---------          *****************************
-            // **************************            Im dim X           *****************************
-            // **************************            ---------          *****************************
-            else if(strcmp(argv[i], "-xdim") == 0 && (i)<argc)
-            {
-                cout <<(double)(Images[0]->nx)<<endl;
-                flush(cout);
-            }
-            // **************************            ---------          *****************************
-            // **************************            Im dim Y           *****************************
-            // **************************            ---------          *****************************
-            else if(strcmp(argv[i], "-ydim") == 0 && (i)<argc)
-            {
-                cout <<(double)(Images[0]->ny)<<endl;
-                flush(cout);
-            }
-            // **************************            ---------          *****************************
-            // **************************            Im dim Z           *****************************
-            // **************************            ---------          *****************************
-            else if(strcmp(argv[i], "-zdim") == 0 && (i)<argc)
-            {
-                cout <<(double)(Images[0]->nz)<<endl;
-                flush(cout);
-            }
-
             // *********************  output data type  *************************
             else if(strcmp(argv[i], "-v") == 0)
             {
