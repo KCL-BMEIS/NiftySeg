@@ -47,12 +47,12 @@ void Usage(char *exec)
     printf("\t-e \t\t| Entropy of all voxels\n");
     printf("\t-ne \t\t| Normalized entropy of all voxels\n");
 
-//    printf("\n\tClassical statistics per slice along axis <ax> (ax=1,2,3)\n");
-//    printf("\t-sa  <ax> \t\t| Average of all voxels \n");
-//    printf("\t-ss  <ax> \t\t| Standard deviation of all voxels \n");
+    printf("\n\tClassical statistics per slice along axis <ax> (ax=1,2,3)\n");
+    printf("\t-sa  <ax> \t| Average of all voxels \n");
+    printf("\t-ss  <ax> \t| Standard deviation of all voxels \n");
 //    printf("\t-sv  <ax> \t\t| Volume of all voxels above 0 (<# voxels> * <volume per voxel>)\n");
 //    printf("\t-svl <ax>\t\t| Volume of each integer label (<# voxels per label> * <volume per voxel>)\n");
-//    printf("\t-svp <ax>\t\t| Volume of all probabilsitic voxels (sum(<in>) * <volume per voxel>)\n");
+    printf("\t-svp <ax>\t| Volume of all probabilsitic voxels (sum(<in>) * <volume per voxel>)\n");
 //    printf("\t-sn  <ax> \t\t| Count of all voxels above 0 (<# voxels>)\n");
 //    printf("\t-snp <ax>\t\t| Sum of all fuzzy voxels (sum(<in>))\n");
 
@@ -64,9 +64,9 @@ void Usage(char *exec)
     printf("\t-X \t\t| Location (i j k x y z) of the largest value in the image\n");
     printf("\t-c \t\t| Location (i j k x y z) of the centre of mass of the object\n");
     printf("\t-B \t\t| Bounding box of all nonzero voxels [ xmin xsize ymin ysize zmin zsize ]\n");
-    printf("\n\tHeader info\n");
-    printf("\t-xvox \t| Output the number of voxels in the x direction. Replace x with y/z for other directions.\n");
-    printf("\t-xdim \t|  Output the voxel dimention in the x direction. Replace x with y/z for other directions. \n");
+    printf("\n\tHeader info (datatype: all)\n");
+    printf("\t-xvox \t\t| Output the number of voxels in the x direction. Replace x with y/z for other directions.\n");
+    printf("\t-xdim \t\t|  Output the voxel dimention in the x direction. Replace x with y/z for other directions. \n");
     printf("\n\tLabel attribute operations (datatype: char or uchar)\n");
     printf("\t-Vl <csv> \t| Volume of each integer label <in>. Save to <csv> file.\n");
     printf("\t-Nl <csv> \t| Count of each label <in>. Save to <csv> file.\n");
@@ -1261,86 +1261,227 @@ int main(int argc, char **argv)
                 cout <<(double)(ent)<<endl;
                 flush(cout);
             }
-//            // **************************            ---------          *****************************
-//            // **************************             PerSlice Average          *****************************
-//            // **************************            ---------          *****************************
+            // **************************            ---------          *****************************
+            // **************************             PerSlice Average          *****************************
+            // **************************            ---------          *****************************
 
-//            else if(strcmp(argv[i], "-sa") == 0 && (i)<argc)
-//            {
-//                if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
-//                {
-//                    seg_changeDatatype<float>(Images[0]);
-//                }
-//                float * Img1prt = static_cast<float *>(Images[0]->data);
-//                double calcvol=0;
-//                double calcvolcount=0;
-//                for(unsigned int index=0; index<Images[0]->nvox; index++)
-//                {
-//                    if(mask[index])
-//                    {
-//                        calcvol += (double)Img1prt[index];
-//                        calcvolcount+=1;
-//                    }
-//                }
+            else if(strcmp(argv[i], "-sa") == 0 && (i+1)<argc)
+            {
+                if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
+                {
+                    seg_changeDatatype<float>(Images[0]);
+                }
+                float * Img1prt = static_cast<float *>(Images[0]->data);
 
-//                cout << (double)(calcvol)/(double)(calcvolcount)<<endl;
-//                flush(cout);
-//            }
-//            // **************************            ---------          *****************************
-//            // **************************              Per Slice std             *****************************
-//            // **************************            ---------          *****************************
-//            else if(strcmp(argv[i], "-ss") == 0 && (i)<argc)
-//            {
-//                if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
-//                {
-//                    seg_changeDatatype<float>(Images[0]);
-//                }
-//                float * Img1prt = static_cast<float *>(Images[0]->data);
-//                float calc=0;
-//                float calccount=0;
-//                for(unsigned int index=0; index<Images[0]->nvox; index++)
-//                {
-//                    if(mask[index])
-//                    {
-//                        calc += Img1prt[index];
-//                        calccount+=1;
-//                    }
-//                }
-//                double mean=(double)(calc)/(double)(calccount);
-//                calc=0;
-//                calccount=0;
-//                for(unsigned int index=0; index<Images[0]->nvox; index++)
-//                {
-//                    if(mask[index])
-//                    {
-//                        calc += powf(mean-Img1prt[index],2);
-//                        calccount+=1;
-//                    }
-//                }
+                unsigned int direction = atoi(argv[++i]);
+                unsigned int dim1=0;
+                unsigned int dim2=0;
+                unsigned int dirmain=0;
+                if(direction>0 && direction<=3){
+                    if(direction==1){
+                        dirmain=Images[0]->nx;
+                        dim1=Images[0]->ny;
+                        dim2=Images[0]->nz;
+                    }
+                    else if(direction==2){
+                        dim1=Images[0]->nx;
+                        dirmain=Images[0]->ny;
+                        dim2=Images[0]->nz;
+                      }
+                    else if(direction==3){
+                        dim1=Images[0]->nx;
+                        dim2=Images[0]->ny;
+                        dirmain=Images[0]->nz;
+                      }
+                }
+                else{
+                   cout<<"Error: Direction " <<direction<<" unknown"<<endl;
+                }
 
-//                cout <<sqrt((double)(calc)/(double)(calccount))<<endl;
-//                flush(cout);
-//            }
-//            // **************************            PerSlice Bin   Numb          *****************************
-//            else if(strcmp(argv[i], "-sn") == 0 && (i)<argc)
-//            {
-//                if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
-//                {
-//                    seg_changeDatatype<float>(Images[0]);
-//                }
-//                float * Img1prt = static_cast<float *>(Images[0]->data);
-//                float calcvol=0;
-//                for(unsigned int index=0; index<Images[0]->nvox; index++)
-//                {
-//                    if(mask[index])
-//                    {
-//                        calcvol += Img1prt[index]>0;
-//                    }
-//                }
+                unsigned int index=0;
+                double calcvol=0;
+                double calcvolcount=0;
+                for(unsigned int dirmain_ind=0; dirmain_ind<dirmain; dirmain_ind++)
+                {
+                    calcvol=calcvolcount=0;
+                    for(unsigned int dim1_ind=0; dim1_ind<dim1; dim1_ind++){
+                        for(unsigned int dim2_ind=0; dim2_ind<dim2; dim2_ind++){
+                            if(direction==1){
+                                index=dirmain_ind+dim1_ind*Images[0]->nx+dim2_ind*Images[0]->nx*Images[0]->ny;
+                            }
+                            else if(direction==2){
+                                index=dim1_ind+dirmain_ind*Images[0]->nx+dim2_ind*Images[0]->nx*Images[0]->ny;
+                              }
+                            else if(direction==3){
+                                index=dim1_ind+dim2_ind*Images[0]->nx+dirmain_ind*Images[0]->nx*Images[0]->ny;
+                              }
+                            else{
+                                cout<<"Error: Direction is problematic"<<endl;
+                            }
+                            if(mask[index]){
+                                calcvol += (double)Img1prt[index];
+                                calcvolcount+=1;
+                            }
+                        }
+                    }
+                    cout << (double)(calcvol)/(double)(calcvolcount)<<endl;
+                    flush(cout);
+                }
+            }
+            // **************************            ---------          *****************************
+            // **************************             PerSlice std          *****************************
+            // **************************            ---------          *****************************
 
-//                cout <<(double)(calcvol)<<endl;
-//                flush(cout);
-//            }
+            else if(strcmp(argv[i], "-ss") == 0 && (i+1)<argc)
+            {
+                if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
+                {
+                    seg_changeDatatype<float>(Images[0]);
+                }
+                float * Img1prt = static_cast<float *>(Images[0]->data);
+
+                unsigned int direction = atoi(argv[++i]);
+                unsigned int dim1=0;
+                unsigned int dim2=0;
+                unsigned int dirmain=0;
+                if(direction>0 && direction<=3){
+                    if(direction==1){
+                        dirmain=Images[0]->nx;
+                        dim1=Images[0]->ny;
+                        dim2=Images[0]->nz;
+                    }
+                    else if(direction==2){
+                        dim1=Images[0]->nx;
+                        dirmain=Images[0]->ny;
+                        dim2=Images[0]->nz;
+                      }
+                    else if(direction==3){
+                        dim1=Images[0]->nx;
+                        dim2=Images[0]->ny;
+                        dirmain=Images[0]->nz;
+                      }
+                }
+                else{
+                   cout<<"Error: Direction " <<direction<<" unknown"<<endl;
+                }
+
+                unsigned int index=0;
+                double calcval=0;
+                double calcvalcount=0;
+                for(unsigned int dirmain_ind=0; dirmain_ind<dirmain; dirmain_ind++)
+                {
+                    calcval=calcvalcount=0;
+                    for(unsigned int dim1_ind=0; dim1_ind<dim1; dim1_ind++){
+                        for(unsigned int dim2_ind=0; dim2_ind<dim2; dim2_ind++){
+                            if(direction==1){
+                                index=dirmain_ind+dim1_ind*Images[0]->nx+dim2_ind*Images[0]->nx*Images[0]->ny;
+                            }
+                            else if(direction==2){
+                                index=dim1_ind+dirmain_ind*Images[0]->nx+dim2_ind*Images[0]->nx*Images[0]->ny;
+                              }
+                            else if(direction==3){
+                                index=dim1_ind+dim2_ind*Images[0]->nx+dirmain_ind*Images[0]->nx*Images[0]->ny;
+                              }
+                            else{
+                                cout<<"Error: Direction is problematic"<<endl;
+                            }
+                            if(mask[index]){
+                                calcval += (double)Img1prt[index];
+                                calcvalcount+=1;
+                            }
+                        }
+                    }
+                    float mean=(double)(calcval)/(double)(calcvalcount);
+                    calcval=calcvalcount=0;
+                    for(unsigned int dim1_ind=0; dim1_ind<dim1; dim1_ind++){
+                        for(unsigned int dim2_ind=0; dim2_ind<dim2; dim2_ind++){
+                            if(direction==1){
+                                index=dirmain_ind+dim1_ind*Images[0]->nx+dim2_ind*Images[0]->nx*Images[0]->ny;
+                            }
+                            else if(direction==2){
+                                index=dim1_ind+dirmain_ind*Images[0]->nx+dim2_ind*Images[0]->nx*Images[0]->ny;
+                              }
+                            else if(direction==3){
+                                index=dim1_ind+dim2_ind*Images[0]->nx+dirmain_ind*Images[0]->nx*Images[0]->ny;
+                              }
+                            else{
+                                cout<<"Error: Direction is problematic"<<endl;
+                            }
+                            if(mask[index]){
+                                calcval += (double)powf(mean-Img1prt[index],2);
+                                calcvalcount+=1;
+                            }
+                        }
+                    }
+                    cout << sqrt((double)(calcval)/(double)(calcvalcount))<<endl;
+                    flush(cout);
+                }
+            }
+            // **************************            ---------          *****************************
+            // **************************             PerSlice volume          *****************************
+            // **************************            ---------          *****************************
+
+            else if(strcmp(argv[i], "-svp") == 0 && (i+1)<argc)
+            {
+                if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
+                {
+                    seg_changeDatatype<float>(Images[0]);
+                }
+                float * Img1prt = static_cast<float *>(Images[0]->data);
+
+                unsigned int direction = atoi(argv[++i]);
+                unsigned int dim1=0;
+                unsigned int dim2=0;
+                unsigned int dirmain=0;
+                if(direction>0 && direction<=3){
+                    if(direction==1){
+                        dirmain=Images[0]->nx;
+                        dim1=Images[0]->ny;
+                        dim2=Images[0]->nz;
+                    }
+                    else if(direction==2){
+                        dim1=Images[0]->nx;
+                        dirmain=Images[0]->ny;
+                        dim2=Images[0]->nz;
+                      }
+                    else if(direction==3){
+                        dim1=Images[0]->nx;
+                        dim2=Images[0]->ny;
+                        dirmain=Images[0]->nz;
+                      }
+                }
+                else{
+                   cout<<"Error: Direction " <<direction<<" unknown"<<endl;
+                }
+
+                unsigned int index=0;
+                double calcvol=0;
+                for(unsigned int dirmain_ind=0; dirmain_ind<dirmain; dirmain_ind++)
+                {
+                    calcvol=0;
+                    for(unsigned int dim1_ind=0; dim1_ind<dim1; dim1_ind++){
+                        for(unsigned int dim2_ind=0; dim2_ind<dim2; dim2_ind++){
+                            if(direction==1){
+                                index=dirmain_ind+dim1_ind*Images[0]->nx+dim2_ind*Images[0]->nx*Images[0]->ny;
+                            }
+                            else if(direction==2){
+                                index=dim1_ind+dirmain_ind*Images[0]->nx+dim2_ind*Images[0]->nx*Images[0]->ny;
+                              }
+                            else if(direction==3){
+                                index=dim1_ind+dim2_ind*Images[0]->nx+dirmain_ind*Images[0]->nx*Images[0]->ny;
+                              }
+                            else{
+                                cout<<"Error: Direction is problematic"<<endl;
+                            }
+                            if(mask[index]){
+                                calcvol += (double)Img1prt[index];
+                            }
+                        }
+                    }
+                    cout << (double)(calcvol)*(double)(Images[0]->dx)*(double)(Images[0]->dy)*(double)(Images[0]->dz)<<endl;
+                    flush(cout);
+                }
+            }
             // **************************            ---------          *****************************
             // **************************            Vox dim X/Y/Z          *****************************
             // **************************            ---------          *****************************
