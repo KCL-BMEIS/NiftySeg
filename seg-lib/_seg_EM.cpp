@@ -439,7 +439,7 @@ void seg_EM::SetBiasField(int _BiasFieldOrder, segPrecisionTYPE _BiasFieldRatio)
     else{
         this->biasFieldStatus=true;
         this->biasFieldOrder=_BiasFieldOrder;
-        this->biasFieldCoeficients = new segPrecisionTYPE[((_BiasFieldOrder+1)*(_BiasFieldOrder+2)/2*(_BiasFieldOrder+3)/3)*this->nu*this->nt]();
+        this->biasFieldCoeficients = new segPrecisionTYPE[((int)(((float)(this->biasFieldOrder)+1.0f) * ((float)(this->biasFieldOrder)+2.0f)/2.0f *((float)(this->biasFieldOrder)+3.0f)/3.0f))*this->nu*this->nt]();
         this->biasFieldRatio=_BiasFieldRatio;
         if(this->maskImageStatus>0)
         {
@@ -1151,7 +1151,7 @@ nifti_image * seg_EM::GetBiasCorrected(char * filename)
     {
         return NULL;
     }
-    int UsedBasisFunctions=(int)((this->biasFieldOrder+1) * (this->biasFieldOrder+2)/2 *(this->biasFieldOrder+3)/3);
+    int UsedBasisFunctions=(int)(((float)(this->biasFieldOrder)+1.0f) * ((float)(this->biasFieldOrder)+2.0f)/2.0f *((float)(this->biasFieldOrder)+3.0f)/3.0f);
     segPrecisionTYPE * InputImageData = static_cast<segPrecisionTYPE *>(this->InputImage->data);
 
     nifti_image * Result = nifti_copy_nim_info(this->InputImage);
@@ -2164,7 +2164,7 @@ void seg_EM::RunBiasField3D()
         cout << "Optimising the Bias Field with order " << this->biasFieldOrder<< endl;
         if(this->nu>1)
         {
-            cout<< "Assuming decoupled bias-fields between time points" << endl;
+            cout<< "Assuming independent bias-fields between time points" << endl;
         }
         flush(cout);
     }
@@ -2173,10 +2173,9 @@ void seg_EM::RunBiasField3D()
     segPrecisionTYPE * sampledData = static_cast<segPrecisionTYPE *>(this->InputImage->data);
 
     // Get number of basis functions
-    int UsedBasisFunctions=(int)((this->biasFieldOrder+1) * (this->biasFieldOrder+2)/2 *(this->biasFieldOrder+3)/3);
-
+    int UsedBasisFunctions=(int)(((float)(this->biasFieldOrder)+1.0f) * ((float)(this->biasFieldOrder)+2.0f)/2.0f *((float)(this->biasFieldOrder)+3.0f)/3.0f);
     // Precompute Powers depending on the current BiasOrder. The power order to sum to this->biasFieldOrder max.
-    int PowerOrder [((maxAllowedBCPowerOrder+1)*(maxAllowedBCPowerOrder+2)/2*(maxAllowedBCPowerOrder+3))]= {0};
+    int PowerOrder [(int)((((float)(maxAllowedBCPowerOrder)+1.0f) * ((float)(maxAllowedBCPowerOrder)+2.0f)/2.0f *((float)(maxAllowedBCPowerOrder)+3.0f)/3.0f))*3]= {0};
     int ind=0;
     for(int order=0; order<=this->biasFieldOrder; order++)
     {
@@ -2216,9 +2215,9 @@ void seg_EM::RunBiasField3D()
         }
 
         //
-        segPrecisionTYPE AWA [((maxAllowedBCPowerOrder+1)*(maxAllowedBCPowerOrder+2)/2*(maxAllowedBCPowerOrder+3)/3)*((maxAllowedBCPowerOrder+1)*(maxAllowedBCPowerOrder+2)/2*(maxAllowedBCPowerOrder+3)/3)]= {0.0f};
-        segPrecisionTYPE WR [((maxAllowedBCPowerOrder+1)*(maxAllowedBCPowerOrder+2)/2*(maxAllowedBCPowerOrder+3)/3)]= {0.0f};
-        segPrecisionTYPE FinalCoefs [((maxAllowedBCPowerOrder+1)*(maxAllowedBCPowerOrder+2)/2*(maxAllowedBCPowerOrder+3)/3)]= {0.0f};
+        segPrecisionTYPE AWA [(int)((((float)(maxAllowedBCPowerOrder)+1.0f) * ((float)(maxAllowedBCPowerOrder)+2.0f)/2.0f *((float)(maxAllowedBCPowerOrder)+3.0f)/3.0f))*(int)((((float)(maxAllowedBCPowerOrder)+1.0f) * ((float)(maxAllowedBCPowerOrder)+2.0f)/2.0f *((float)(maxAllowedBCPowerOrder)+3.0f)/3.0f))]= {0.0f};
+        segPrecisionTYPE WR [(int)((((float)(maxAllowedBCPowerOrder)+1.0f) * ((float)(maxAllowedBCPowerOrder)+2.0f)/2.0f *((float)(maxAllowedBCPowerOrder)+3.0f)/3.0f))]= {0.0f};
+        segPrecisionTYPE FinalCoefs [(int)((((float)(maxAllowedBCPowerOrder)+1.0f) * ((float)(maxAllowedBCPowerOrder)+2.0f)/2.0f *((float)(maxAllowedBCPowerOrder)+3.0f)/3.0f))]= {0.0f};
 
 
         // Precompute sizes
@@ -2255,7 +2254,7 @@ void seg_EM::RunBiasField3D()
             }
             if(verbose_level>0)
             {
-                cout << "Number of samples for BiasField = " << samplecount<<"\n";
+                cout << "Number of samples for BiasField = " << samplecount<<", with "<<UsedBasisFunctions<<" basis functions\n";
                 flush(cout);
             }
             this->numelBias=samplecount;
@@ -2343,7 +2342,6 @@ void seg_EM::RunBiasField3D()
         int y_bias_index_shift=1;
         int z_bias_index_shift=2;
         segPrecisionTYPE currentW=0.0f;
-
         // Calc A'WA (Van Leemput 1999 eq 7)
         Windex=0;
         segPrecisionTYPE * Basisptr1= (segPrecisionTYPE *) Basis;
@@ -2391,7 +2389,6 @@ void seg_EM::RunBiasField3D()
                 }
             }
         }
-
 
         // Transfer from the AWA matrix to an actual matrix structure.
         seg_Matrix <double> RealAWA(UsedBasisFunctions,UsedBasisFunctions);
@@ -2455,6 +2452,7 @@ void seg_EM::RunBiasField3D()
                 }
             }
         }
+
         //Compute WR (Van Leemput 1999 eq 7)
         for(int bfindex=0; bfindex<UsedBasisFunctions; bfindex++)
         {
@@ -2488,7 +2486,6 @@ void seg_EM::RunBiasField3D()
                 *WRptr=1;
             }
         }
-
         // Copy data from WR to the matrix structure
         seg_Matrix <double> RealWR(UsedBasisFunctions,1);
 
@@ -2496,7 +2493,6 @@ void seg_EM::RunBiasField3D()
         {
             RealWR.setvalue(i2,0,(double)(WR[i2]));
         }
-
         // Get coeficients by multiplying RealAWA_inv with RealWR
         seg_Matrix <double> RealCoefs(UsedBasisFunctions,1);
         RealCoefs.settoproduct(RealAWA_inv,RealWR);
