@@ -35,7 +35,7 @@ void Usage(char *exec)
     printf("\t-uthr\t<float>\t\tThreshold image above <float>.\n");
     printf("\t-smo\t<float>\t\tGaussian smoothing by std <float> (in voxels and up to 4-D).\n");
     printf("\t-equal\t<int>\t\tGet voxels equal to <int>\n");
-    printf("\t-replace\t<int1> <int2>\tReplaces voxels equal to <int1> with <int2>\n");
+    printf("\t-replace <int1> <int2>\tReplaces voxels equal to <int1> with <int2>\n");
     printf("\t-sqrt \t\t\tSquare root of the image.\n");
     printf("\t-exp \t\t\tExponential root of the image.\n");
     printf("\t-log \t\t\tLog of the image.\n");
@@ -43,10 +43,10 @@ void Usage(char *exec)
     printf("\t-abs \t\t\tAbsolute value of the image.\n");
     printf("\t-bin \t\t\tBinarise the image.\n");
     printf("\t-otsu \t\t\tOtsu thresholding of the current image.\n");
-    printf("\t-edge\t<float>\t\t\tCalculate the edges of the image using a threshold <float>.\n");
-    printf("\t-sobel3\t<float>\t\t\tCalculate the edges of all timepoints using a Sobel filter with a 3x3x3 kernel and applying <float> gaussian smoothing.\n");
-    printf("\t-sobel5\t<float>\t\t\tCalculate the edges of all timepoints using a Sobel filter with a 5x5x5 kernel and applying <float> gaussian smoothing.\n");
-    printf("\t-min\t<file>\tGet the min per voxel between <current> and <file>.\n");
+    printf("\t-edge\t<float>\t\tCalculate the edges of the image using a threshold <float>.\n");
+    printf("\t-sobel3\t<float>\t\tCalculate the edges of all timepoints using a Sobel filter with a 3x3x3 kernel and applying <float> gaussian smoothing.\n");
+    printf("\t-sobel5\t<float>\t\tCalculate the edges of all timepoints using a Sobel filter with a 5x5x5 kernel and applying <float> gaussian smoothing.\n");
+    printf("\t-min\t<file>\t\tGet the min per voxel between <current> and <file>.\n");
     printf("\n\t* * Operations on 3-D images * *\n");
     printf("\t-smol\t<float>\t\tGaussian smoothing of a 3D label image.\n");
     printf("\t-dil\t<int>\t\tDilate the image <int> times (in voxels).\n");
@@ -71,13 +71,13 @@ void Usage(char *exec)
     printf("\t-lncc\t<file> <std>\tLocal CC between current img and <file> on a kernel with <std>\n");
     printf("\t-lssd\t<file> <std>\tLocal SSD between current img and <file> on a kernel with <std>\n");
     printf("\n\t* * Normalisation * *\n");
-    printf("\t-llsnorm\t<file_norm>\t Linear LS normalisation between current and <file_norm>\n");
+    printf("\t-llsnorm\t<file_norm>\t\t Linear LS normalisation between current and <file_norm>\n");
     printf("\t-lltsnorm\t<file_norm> <float>\t Linear LTS normalisation assuming <float> percent outliers\n");
     printf("\t-qlsnorm\t<order> <file_norm>\t LS normalisation of <order> between current and <file_norm>\n");
     printf("\n\t* * NaN handling * *\n");
-    printf("\t-removenan\t\t Remove all NaNs and replace then with 0\n");
-    printf("\t-isnan\t\t Binary image equal to 1 if the value is NaN and 0 otherwise\n");
-    printf("\t-masknan\t<file_norm>\t Assign everything outside the mask (mask==0) with NaNs \n");
+    printf("\t-removenan\t\tRemove all NaNs and replace then with 0\n");
+    printf("\t-isnan\t\t\tBinary image equal to 1 if the value is NaN and 0 otherwise\n");
+    printf("\t-masknan <file_norm>\tAssign everything outside the mask (mask==0) with NaNs \n");
     printf("\n\t* * Sampling * *\n");
     printf("\t-subsamp2\t\tSubsample the image by 2 using NN sampling (qform and sform scaled) \n");
     printf("\n\t* * Image header operations * *\n");
@@ -89,7 +89,7 @@ void Usage(char *exec)
     printf("\t-range\t\t\tReset the image range to the min max\n");
     printf("\t-v\t\t\tVerbose.\n");
 #if defined (_OPENMP)
-    printf("\t-omp <int>\t\t Number of openmp threads [%d]\n",omp_get_max_threads());
+    printf("\t-omp <int>\t\tNumber of openmp threads [%d]\n",omp_get_max_threads());
 #endif
 #ifdef _GIT_HASH
     printf("\t--version\t\tPrint current source code git hash key and exit\n\t\t\t\t(%s)\n",_GIT_HASH);
@@ -421,7 +421,7 @@ int main(int argc, char **argv)
                         nifti_update_dims_from_array(TMPnii);
                         //copy pointer, run gaussian, and set to null
                         TMPnii->data=static_cast<void*>(&Img1prt[CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*tp]);
-                        if(factor>0) GaussianSmoothing(TMPnii,NULL,factor);
+                        if(factor>0) GaussianSmoothing4D_nifti(TMPnii,NULL,factor);
                         TMPnii->data=NULL;
                         //As TMPnii->data=NULL, the free will not cause any harm
                         nifti_image_free(TMPnii);
@@ -527,7 +527,7 @@ int main(int argc, char **argv)
                         nifti_update_dims_from_array(TMPnii);
                         //copy pointer, run gaussian, and set to null
                         TMPnii->data=static_cast<void*>(&Img1prt[CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*tp]);
-                        if(factor>0) GaussianSmoothing(TMPnii,NULL,factor);
+                        if(factor>0) GaussianSmoothing4D_nifti(TMPnii,NULL,factor);
                         TMPnii->data=NULL;
                         //As TMPnii->data=NULL, the free will not cause any harm
                         nifti_image_free(TMPnii);
