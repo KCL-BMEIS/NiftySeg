@@ -43,6 +43,9 @@ void Usage(char *exec)
     printf("\t-abs \t\t\tAbsolute value of the image.\n");
     printf("\t-bin \t\t\tBinarise the image.\n");
     printf("\t-otsu \t\t\tOtsu thresholding of the current image.\n");
+    printf("\t-edge\t<float>\t\t\tCalculate the edges of the image using a threshold <float>.\n");
+    printf("\t-sobel3\t<float>\t\t\tCalculate the edges of all timepoints using a Sobel filter with a 3x3x3 kernel and applying <float> gaussian smoothing.\n");
+    printf("\t-sobel5\t<float>\t\t\tCalculate the edges of all timepoints using a Sobel filter with a 5x5x5 kernel and applying <float> gaussian smoothing.\n");
     printf("\t-min\t<file>\tGet the min per voxel between <current> and <file>.\n");
     printf("\n\t* * Operations on 3-D images * *\n");
     printf("\t-smol\t<float>\t\tGaussian smoothing of a 3D label image.\n");
@@ -93,6 +96,11 @@ void Usage(char *exec)
 #endif
     printf("\n\t* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
     return;
+}
+
+bool isEdge(float a,float b,double treshold) {
+    float max=a>b?a:b;
+    return (fabs(a-b)/max>treshold);
 }
 
 int isNumeric (const char *s)
@@ -344,7 +352,269 @@ int main(int argc, char **argv)
                 current_buffer=current_buffer?0:1;
 
             }
+	    //  *********************  mask edge  *************************
+            else if(strcmp(argv[i], "-edge") == 0)
+            {
+                string parser=argv[++i];
+                if(((strtod(parser.c_str(),NULL)!=0) || (parser.length()==1 && parser.find("0")!=string::npos)))
+                {
+                    double treshold=strtod(parser.c_str(),NULL);;
+                    float * Img1prt = bufferImages[current_buffer];
+                    for(int index=0; index<CurrSize->xsize*CurrSize->ysize*CurrSize->zsize; index++)
+                    {
+                        bool edge=false;
+                        if((index+1)<CurrSize->xsize*CurrSize->ysize*CurrSize->zsize) {
+                            if(isEdge(Img1prt[index],Img1prt[index+1],treshold)) edge=true;
+                        }
+                        if((index-1)>0) {
+                            if(isEdge(Img1prt[index],Img1prt[index-1],treshold)) edge=true;
+                        }
+                        if((index+CurrSize->xsize)<CurrSize->xsize*CurrSize->ysize*CurrSize->zsize) {
+                            if(isEdge(Img1prt[index],Img1prt[index+CurrSize->xsize],treshold)) edge=true;
+                        }
+                        if((index-CurrSize->xsize)>0) {
+                            if(isEdge(Img1prt[index],Img1prt[index-CurrSize->xsize],treshold)) edge=true;
+                        }
+                        if((index+CurrSize->xsize*CurrSize->ysize)<CurrSize->xsize*CurrSize->ysize*CurrSize->zsize) {
+                            if(isEdge(Img1prt[index],Img1prt[index+CurrSize->xsize*CurrSize->ysize],treshold)) edge=true;
+                        }
+                        if((index-CurrSize->xsize*CurrSize->ysize)>0) {
+                            if(isEdge(Img1prt[index],Img1prt[index-CurrSize->xsize*CurrSize->ysize],treshold)) edge=true;
+                        }
+                        if(edge)
+                        {
+                            bufferImages[current_buffer?0:1][index]=bufferImages[current_buffer][index];
+                        }
+                        else {
+                            bufferImages[current_buffer?0:1][index]=0;
+                        }
+                    }
+                    current_buffer=current_buffer?0:1;
+                }
+                else
+                {
+                    cout << "ERROR: "<< parser << " is not a valid number"<<endl;
+                    i=argc;
+                }
+            }
+	    else if(strcmp(argv[i], "-sobel3") == 0)
+            {
+                string parser=argv[++i];
+                if(((strtod(parser.c_str(),NULL)!=0) || (parser.length()==1 && parser.find("0")!=string::npos)))
+                {
+                    double factor=strtod(parser.c_str(),NULL);
+                    float * Img1prt = bufferImages[current_buffer];
+                    long tp=0;
+                    #ifdef _OPENMP
+                    #pragma omp parallel for ordered schedule(auto)\
+                        private(tp)\
+                        shared(CurrSize,bufferImages,Img1prt,factor,InputImage)
+                    #endif
+                    for(tp=0; tp<(long)(CurrSize->tsize*CurrSize->usize); tp++){
+                        //create dummy nii
+                        nifti_image * TMPnii = nifti_copy_nim_info(InputImage);
+                        TMPnii->dim[1]=CurrSize->xsize;
+                        TMPnii->dim[2]=CurrSize->ysize;
+                        TMPnii->dim[3]=CurrSize->zsize;
+                        TMPnii->dim[4]=TMPnii->nt=1;
+                        TMPnii->dim[5]=TMPnii->nu=1;
+                        nifti_update_dims_from_array(TMPnii);
+                        //copy pointer, run gaussian, and set to null
+                        TMPnii->data=static_cast<void*>(&Img1prt[CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*tp]);
+                        if(factor>0) GaussianSmoothing(TMPnii,NULL,factor);
+                        TMPnii->data=NULL;
+                        //As TMPnii->data=NULL, the free will not cause any harm
+                        nifti_image_free(TMPnii);
 
+                        float *imgsort=new float [CurrSize->xsize*CurrSize->ysize*CurrSize->zsize];
+                        for(long i=0; i<CurrSize->xsize*CurrSize->ysize*CurrSize->zsize; i++) {
+                            imgsort[i]=Img1prt[i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize];
+                        }
+                        HeapSort(imgsort,CurrSize->xsize*CurrSize->ysize*CurrSize->zsize-1);
+                        float max=imgsort[(int)(round((1-0.02)*(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize-1)))];
+                        float min=imgsort[(int)(round(0.02*(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize-1)))];
+                        float newMax=1,newMin=0;
+                        for(long i=0; i<CurrSize->xsize*CurrSize->ysize*CurrSize->zsize; i++) {
+                            if(min>Img1prt[i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]) Img1prt[i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]=min;
+                            if(max<Img1prt[i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]) Img1prt[i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]=max;
+                            Img1prt[i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]=newMin+(Img1prt[i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]-min)*(newMax-newMin)/(max-min);
+                        }
+                        int inz=0;
+                        float xkernel[3][3][3]={
+                                            {{-1,-2,-1},{-2,-4,-2},{-1,-2,-1}},
+                                            {{ 0, 0, 0},{ 0, 0, 0},{ 0, 0, 0}},
+                                            {{ 1, 2, 1},{ 2, 4, 2},{ 1, 2, 1}}
+                                         };
+                        float ykernel[3][3][3]={
+                                            {{ 1, 2, 1},{ 0, 0, 0},{-1,-2,-1}},
+                                            {{ 2, 4, 2},{ 0, 0, 0},{-2,-4,-2}},
+                                            {{ 1, 2, 1},{ 0, 0, 0},{-1,-2,-1}}
+                                         };
+                        float zkernel[3][3][3]={
+                                            {{-1, 0, 1},{-2, 0, 2},{-1, 0, 1}},
+                                            {{-2, 0, 2},{-4, 0, 4},{-2, 0, 2}},
+                                            {{-1, 0, 1},{-2, 0, 2},{-1, 0, 1}}
+                                         };
+                        #ifdef _OPENMP
+                        #pragma omp parallel for ordered schedule(auto)\
+                            private(inz)\
+                            shared(CurrSize,bufferImages,Img1prt,xkernel,ykernel,zkernel)
+                        #endif
+                        for(inz=0; inz<CurrSize->zsize; inz++) {
+                            for(int iny=0; iny<CurrSize->ysize; iny++) {
+                                for(int inx=0; inx<CurrSize->xsize; inx++) {
+                                    float sumx=0,sumy=0,sumz=0;
+                                    for(int i=-1;i<=1;i++) {
+                                        for(int j=-1;j<=1;j++) {
+                                            for(int k=-1;k<=1;k++) {
+                                                if(inx+k>=0 && iny+j>=0 && inz+i>=0 &&
+                                                        inx+k<CurrSize->xsize && iny+j<CurrSize->ysize && inz+i<CurrSize->zsize) {
+                                                    int index=(inx+k)+(iny+j)*CurrSize->xsize+(inz+i)*(CurrSize->xsize*CurrSize->ysize);
+                                                    sumx+=xkernel[k+1][j+1][i+1]*Img1prt[index+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize];
+                                                    sumy+=ykernel[j+1][k+1][i+1]*Img1prt[index+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize];
+                                                    sumz+=zkernel[i+1][k+1][j+1]*Img1prt[index+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize];
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    int index=inx+iny*CurrSize->xsize+inz*(CurrSize->xsize*CurrSize->ysize);
+                                    float val=sqrt(sumx*sumx+sumy*sumy+sumz*sumz);
+                                    bufferImages[current_buffer?0:1][index+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]=val;
+                                }
+                            }
+                        }
+                        for(long i=0; i<CurrSize->xsize*CurrSize->ysize*CurrSize->zsize; i++) {
+                            imgsort[i]=bufferImages[current_buffer?0:1][i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize];
+                        }
+                        HeapSort(imgsort,CurrSize->xsize*CurrSize->ysize*CurrSize->zsize-1);
+                        max=imgsort[(int)(round((1-0.02)*(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize-1)))];
+                        min=imgsort[(int)(round(0.02*(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize-1)))];
+                        for(long i=0; i<CurrSize->xsize*CurrSize->ysize*CurrSize->zsize; i++) {
+                            if(min>bufferImages[current_buffer?0:1][i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]) bufferImages[current_buffer?0:1][i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]=min;
+                            if(max<bufferImages[current_buffer?0:1][i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]) bufferImages[current_buffer?0:1][i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]=max;
+                            bufferImages[current_buffer?0:1][i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]=newMin+(bufferImages[current_buffer?0:1][i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]-min)*(newMax-newMin)/(max-min);
+                        }
+                    }
+                }
+                else {
+                    cout << "ERROR: "<< parser << " is not a valid number"<<endl;
+                    i=argc;
+                }
+                current_buffer=current_buffer?0:1;
+            }
+            else if(strcmp(argv[i], "-sobel5") == 0)
+            {
+                string parser=argv[++i];
+                if(((strtod(parser.c_str(),NULL)!=0) || (parser.length()==1 && parser.find("0")!=string::npos)))
+                {
+                    double factor=strtod(parser.c_str(),NULL);
+                    float * Img1prt = bufferImages[current_buffer];
+                    long tp=0;
+                    #ifdef _OPENMP
+                    #pragma omp parallel for ordered schedule(auto)\
+                        private(tp)\
+                        shared(CurrSize,bufferImages,Img1prt,factor,InputImage)
+                    #endif
+                    for(tp=0; tp<(long)(CurrSize->tsize*CurrSize->usize); tp++){
+                        //create dummy nii
+                        nifti_image * TMPnii = nifti_copy_nim_info(InputImage);
+                        TMPnii->dim[1]=CurrSize->xsize;
+                        TMPnii->dim[2]=CurrSize->ysize;
+                        TMPnii->dim[3]=CurrSize->zsize;
+                        TMPnii->dim[4]=TMPnii->nt=1;
+                        TMPnii->dim[5]=TMPnii->nu=1;
+                        nifti_update_dims_from_array(TMPnii);
+                        //copy pointer, run gaussian, and set to null
+                        TMPnii->data=static_cast<void*>(&Img1prt[CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*tp]);
+                        if(factor>0) GaussianSmoothing(TMPnii,NULL,factor);
+                        TMPnii->data=NULL;
+                        //As TMPnii->data=NULL, the free will not cause any harm
+                        nifti_image_free(TMPnii);
+
+                        float *imgsort=new float [CurrSize->xsize*CurrSize->ysize*CurrSize->zsize];
+                        for(long i=0; i<CurrSize->xsize*CurrSize->ysize*CurrSize->zsize; i++) {
+                            imgsort[i]=Img1prt[i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize];
+                        }
+                        HeapSort(imgsort,CurrSize->xsize*CurrSize->ysize*CurrSize->zsize-1);
+                        float max=imgsort[(int)(round((1-0.02)*(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize-1)))];
+                        float min=imgsort[(int)(round(0.02*(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize-1)))];
+                        float newMax=1,newMin=0;
+                        for(long i=0; i<CurrSize->xsize*CurrSize->ysize*CurrSize->zsize; i++) {
+                            if(min>Img1prt[i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]) Img1prt[i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]=min;
+                            if(max<Img1prt[i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]) Img1prt[i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]=max;
+                            Img1prt[i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]=newMin+(Img1prt[i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]-min)*(newMax-newMin)/(max-min);
+                        }
+                        float xkernel[5][5][5]={
+                                            {{-1,-4, -6,-4,-1},{-2, -8,-12, -8,-2},{-4,-16,-24,-16,-4},{-2, -8,-12, -8,-2},{-1,-4, -6,-4,-1}},
+                                            {{-2,-8,-12,-8,-2},{-4,-16,-24,-16,-4},{-8,-32,-48,-32,-8},{-4,-16,-24,-16,-4},{-2,-8,-12,-8,-2}},
+                                            {{ 0, 0,  0, 0, 0},{ 0,  0,  0,  0, 0},{ 0,  0,  0,  0, 0},{ 0,  0,  0,  0, 0},{ 0, 0,  0, 0, 0}},
+                                            {{ 2, 8, 12, 8, 2},{ 4, 16, 24, 16, 4},{ 8, 32, 48, 32, 8},{ 4, 16, 24, 16, 4},{ 2, 8, 12, 8, 2}},
+                                            {{ 1, 4,  6, 4, 1},{ 2,  8, 12,  8, 2},{ 4, 16, 24, 16, 4},{ 2,  8, 12,  8, 2},{ 1, 4,  6, 4, 1}}
+                                         };
+                        float ykernel[5][5][5]={
+                                            {{ 1,  4,  6,  4, 1},{ 2,  8, 12,  8, 2},{ 0, 0, 0, 0, 0},{-2, -8,-12, -8,-2},{-1, -4, -6, -4,-1}},
+                                            {{ 2,  8, 12,  8, 2},{ 4, 16, 24, 16, 4},{ 0, 0, 0, 0, 0},{-4,-16,-24,-16,-4},{-2, -8,-12, -8,-2}},
+                                            {{ 4, 16, 24, 16, 4},{ 8, 32, 48, 32, 8},{ 0, 0, 0, 0, 0},{-8,-32,-48,-32,-8},{-4,-16,-24,-16,-4}},
+                                            {{ 2,  8, 12,  8, 2},{ 4, 16, 24, 16, 4},{ 0, 0, 0, 0, 0},{-4,-16,-24,-16,-4},{-2, -8,-12, -8,-2}},
+                                            {{ 1,  4,  6,  4, 1},{ 2,  8, 12,  8, 2},{ 0, 0, 0, 0, 0},{-2, -8,-12, -8,-2},{-1, -4, -6, -4,-1}}
+                                         };
+                        float zkernel[5][5][5]={
+                                            {{-1, -2,  0,  2, 1},{ -2, -4, 0,  4,  2},{ -4, -8, 0,  8,  4},{ -2, -4, 0,  4,  2},{-1, -2,  0,  2, 1}},
+                                            {{-4, -8,  0,  8, 4},{ -8,-16, 0, 16,  8},{-16,-32, 0, 32, 16},{ -8,-16, 0, 16,  8},{-4, -8,  0,  8, 4}},
+                                            {{-6,-12,  0, 12, 6},{-12,-24, 0, 24, 12},{-24,-48, 0, 48, 24},{-12,-24, 0, 24, 12},{-6,-12,  0, 12, 6}},
+                                            {{-4, -8,  0,  8, 4},{ -8,-16, 0, 16,  8},{-16,-32, 0, 32, 16},{ -8,-16, 0, 16,  8},{-4, -8,  0,  8, 4}},
+                                            {{-1, -2,  0,  2, 1},{- 2, -4, 0,  4,  2},{ -4,  8, 0,  8,  4},{ -2, -4, 0,  4,  2},{-1, -2,  0,  2, 1}}
+                                         };
+                        int inz=0;
+                        #ifdef _OPENMP
+                        #pragma omp parallel for ordered schedule(auto)\
+                            private(inz)\
+                            shared(CurrSize,bufferImages,Img1prt,xkernel,ykernel,zkernel)
+                        #endif
+                        for(inz=0; inz<CurrSize->zsize; inz++) {
+                            for(int iny=0; iny<CurrSize->ysize; iny++) {
+                                for(int inx=0; inx<CurrSize->xsize; inx++) {
+                                    float sumx=0,sumy=0,sumz=0;
+                                    for(int i=-2;i<=2;i++) {
+                                        for(int j=-2;j<=2;j++) {
+                                            for(int k=-2;k<=2;k++) {
+                                                if(inx+k>=0 && iny+j>=0 && inz+i>=0 &&
+                                                        inx+k<CurrSize->xsize && iny+j<CurrSize->ysize && inz+i<CurrSize->zsize) {
+                                                    int index=(inx+k)+(iny+j)*CurrSize->xsize+(inz+i)*(CurrSize->xsize*CurrSize->ysize);
+                                                    sumx+=xkernel[k+2][j+2][i+2]*Img1prt[index+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize];
+                                                    sumy+=ykernel[j+2][k+2][i+2]*Img1prt[index+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize];
+                                                    sumz+=zkernel[i+2][k+2][j+2]*Img1prt[index+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize];
+                                                }
+                                            }
+                                        }
+                                    }
+                                    int index=inx+iny*CurrSize->xsize+inz*(CurrSize->xsize*CurrSize->ysize);
+                                    float val=sqrt(sumx*sumx+sumy*sumy+sumz*sumz);
+                                    bufferImages[current_buffer?0:1][index+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]=val;
+                                }
+                            }
+                        }
+                        for(long i=0; i<CurrSize->xsize*CurrSize->ysize*CurrSize->zsize; i++) {
+                            imgsort[i]=bufferImages[current_buffer?0:1][i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize];
+                        }
+                        HeapSort(imgsort,CurrSize->xsize*CurrSize->ysize*CurrSize->zsize-1);
+                        max=imgsort[(int)(round((1-0.02)*(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize-1)))];
+                        min=imgsort[(int)(round(0.02*(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize-1)))];
+                        for(long i=0; i<CurrSize->xsize*CurrSize->ysize*CurrSize->zsize; i++) {
+                            if(min>bufferImages[current_buffer?0:1][i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]) bufferImages[current_buffer?0:1][i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]=min;
+                            if(max<bufferImages[current_buffer?0:1][i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]) bufferImages[current_buffer?0:1][i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]=max;
+                            bufferImages[current_buffer?0:1][i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]=newMin+(bufferImages[current_buffer?0:1][i+tp*CurrSize->xsize*CurrSize->ysize*CurrSize->zsize]-min)*(newMax-newMin)/(max-min);
+                        }
+                    }
+                }
+                else {
+                    cout << "ERROR: "<< parser << " is not a valid number"<<endl;
+                    i=argc;
+                }
+                current_buffer=current_buffer?0:1;
+            }
+	    
             // *********************  ADD  *************************
             else if( strcmp(argv[i], "-div") == 0)
             {
