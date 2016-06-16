@@ -26,6 +26,11 @@
         TARGET_LINK_LIBRARIES(seg_CalcTopNCC _seg_tools _seg_FMM _seg_nifti ${ZLIB})
     INSTALL_TARGETS(/bin seg_CalcTopNCC)
 
+    ADD_EXECUTABLE(seg_PatchMatch seg_PatchMatch.cpp)
+	TARGET_LINK_LIBRARIES(seg_PatchMatch _seg_PatchMatch _seg_tools _seg_Topo _seg_MRF _seg_FMM _seg_BiasCorrection _seg_nifti ${ZLIB})
+    INSTALL_TARGETS(/bin seg_PatchMatch)
+
+
 #-----------------------------------------------------------------------------
 set(MODULE_LIST
   seg_LoAd
@@ -34,6 +39,7 @@ set(MODULE_LIST
   seg_LabFusion
   seg_maths
   seg_CalcTopNCC
+  seg_PatchMatch
 )
 
 foreach(MODULE_NAME ${MODULE_LIST})
