@@ -21,8 +21,9 @@ using namespace std;
 void Usage(char *exec)
 {
     printf("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
-    printf("Usage:\t%s <input> <input_mask> <database> <output_result> [options].\n\n",exec);
+    printf("Usage:\t%s -i <input> -m <input_mask> -db <database> -o <output_result> [options].\n\n",exec);
     printf("\t* * Considerations * *\n\n");
+    printf("\t\tFor an extended help, please read the NiftySeg wiki page at: http://cmictig.cs.ucl.ac.uk/wiki/index.php/NiftySeg\n");
     printf("\t\tThe database file is a text file and in each line we have a template file, a mask with the search region to consider and a file with the label to propagate.\n");
     printf("\t\tInput image, input mask, template images from database and masks from database must have the same 4D resolution (same number of XxYxZ voxels, modalities and/or time-points).\n");
     printf("\t\tLabel files from database must have the same 3D resolution (XxYxZ voxels) than input image but can have different number of volumes than the input image allowing to propagate multiple labels in the same execution.\n");
@@ -76,9 +77,17 @@ int main(int argc, char **argv)
         vector<string> imageFiles;
         vector<string> maskFiles;
         vector<string> outputFiles;
-
+        char * filename_in=NULL;
+        char * filename_mask=NULL;
+        char * filename_database=NULL;
+        string filename_out="";
+	bool ok_input_file=false;
+	bool ok_mask_file=false;
+	bool ok_database_file=false;
+	bool ok_output_file=false;
+	
         set_new_handler(no_memory);
-        if (argc <= 3)
+        if (argc <= 8)
         {
 		#ifdef _GIT_HASH
                 if(argc>=2 && strcmp(argv[1], "--version")==0)
@@ -98,43 +107,8 @@ int main(int argc, char **argv)
             return 0;
         }
 
-        char * filename_in=argv[1];
-        char * filename_mask=argv[2];
-        char * filename_database=argv[3];
-        string filename_out=argv[4];
-
-        // We read the two mains files
-        nifti_image * InputImage=nifti_image_read(filename_in,true);
-        if(InputImage == NULL)
-        {
-            fprintf(stderr,"* Error when reading the input image\n");
-            return 1;
-        }
-        if(InputImage->datatype!=NIFTI_TYPE_FLOAT32)
-        {
-            seg_changeDatatype<SegPrecisionTYPE>(InputImage);
-        }
-        nifti_image * InputMask=nifti_image_read(filename_mask,true);
-        if(InputMask == NULL)
-        {
-            fprintf(stderr,"* Error when reading the input mask\n");
-            return 1;
-        }
-        if(InputImage->datatype!=NIFTI_TYPE_FLOAT32)
-        {
-            seg_changeDatatype<SegPrecisionTYPE>(InputMask);
-        }
-
-        ImageSize * CurrSize = new ImageSize [1]();
-        CurrSize->numel=(long)(InputImage->nx*InputImage->ny*InputImage->nz);
-        CurrSize->xsize=InputImage->nx;
-        CurrSize->ysize=InputImage->ny;
-        CurrSize->zsize=InputImage->nz;
-        CurrSize->usize=(InputImage->nu>1)?InputImage->nu:1;
-        CurrSize->tsize=(InputImage->nt>1)?InputImage->nt:1;
-
         // We read extra parameters for the algorithm
-        for(long i=5; i<argc; i++)
+        for(long i=1; i<argc; i++)
         {
             if(strcmp(argv[i], "-help")==0 || strcmp(argv[i], "-Help")==0 ||
                     strcmp(argv[i], "-HELP")==0 || strcmp(argv[i], "-h")==0 ||
@@ -143,12 +117,32 @@ int main(int argc, char **argv)
                 Usage(argv[0]);
                 return 0;
             }
+	    else  if(strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "-input") == 0 || strcmp(argv[i], "-in") == 0)
+            {
+		filename_in=argv[++i];
+		ok_input_file=true;
+	    }
+	    else  if(strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "-mask") == 0)
+            {
+		filename_mask=argv[++i];
+		ok_mask_file=true;
+	    }
+	    else  if(strcmp(argv[i], "-db") == 0 || strcmp(argv[i], "-database") == 0)
+            {
+		filename_database=argv[++i];
+		ok_database_file=true;
+	    }
+	    else  if(strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "-output") == 0 || strcmp(argv[i], "-out") == 0)
+            {
+		filename_out=argv[++i];
+		ok_output_file=true;
+	    }
             else  if(strcmp(argv[i], "-size") == 0)
             {
                 string parser=argv[++i];
                 size=(int)round(strtod(parser.c_str(),NULL));
                 if(size%2!=1 || size<3) {
-                    cout << "ERROR: Wrong patch size "<< size << ", it has to be an odd number equal or bigger than 3."<<endl;
+                    cerr << "ERROR: Wrong patch size "<< size << ", it has to be an odd number equal or bigger than 3."<<endl;
                     return -1;
                 }
             }
@@ -161,7 +155,7 @@ int main(int argc, char **argv)
                 string parser=argv[++i];
                 cs=strtod(parser.c_str(),NULL);
                 if(cs<2) {
-                    cout << "ERROR: Wrong number of the contrained search area size "<< cs << " is too small. At least 2."<<endl;
+                    cerr << "ERROR: Wrong number of the contrained search area size "<< cs << " is too small. At least 2."<<endl;
                     return -1;
                 }
             }
@@ -170,7 +164,7 @@ int main(int argc, char **argv)
                 string parser=argv[++i];
                 better_match=strtod(parser.c_str(),NULL);
                 if(better_match<1) {
-                    cout << "ERROR: Wrong number of better match "<< better_match << " is not possible"<<endl;
+                    cerr << "ERROR: Wrong number of better match "<< better_match << " is not possible"<<endl;
                     return -1;
                 }
             }
@@ -179,7 +173,7 @@ int main(int argc, char **argv)
                 string parser=argv[++i];
                 pm_threads=strtod(parser.c_str(),NULL);
                 if(pm_threads<1) {
-                    cout << "ERROR: Wrong number of Patchmatch executions "<< pm_threads << " is not possible"<<endl;
+                    cerr << "ERROR: Wrong number of Patchmatch executions "<< pm_threads << " is not possible"<<endl;
                     return -1;
                 }
             }
@@ -188,7 +182,7 @@ int main(int argc, char **argv)
                 string parser=argv[++i];
                 it=strtod(parser.c_str(),NULL);
                 if(it<1) {
-                    cout << "ERROR: Wrong number of iterations "<< it << " is not possible"<<endl;
+                    cerr << "ERROR: Wrong number of iterations "<< it << " is not possible"<<endl;
                     return -1;
                 }
             }
@@ -197,7 +191,7 @@ int main(int argc, char **argv)
                 string parser=argv[++i];
                 distance=(int)round(strtod(parser.c_str(),NULL));
                 if(distance>1 || distance<0) {
-                    cout << "ERROR: Wrong distance "<< distance << " is unknown"<<endl;
+                    cerr << "ERROR: Wrong distance "<< distance << " is unknown"<<endl;
                     return -1;
                 }
             }
@@ -249,8 +243,9 @@ int main(int argc, char **argv)
                 }
                 else
                 {
-                    cout << "ERROR: Datatype "<< parser << " is unknown"<<endl;
+                    cerr << "ERROR: Datatype "<< parser << " is unknown"<<endl;
                     i=argc;
+		    return -1;
                 }
             }
 	    #ifdef _GIT_HASH
@@ -262,22 +257,73 @@ int main(int argc, char **argv)
 	    #endif
             else
             {
-                cout << "Option "<< string(argv[i]) << " unkown"<<endl;
+                cerr << "Option "<< string(argv[i]) << " unkown"<<endl;
                 i=argc;
                 return -1;
             }
         }
+	if (!ok_input_file) {
+	    cerr<<"* Error input file not provided -i <filename>"<<endl;
+	    Usage(argv[0]);
+            return -1;
+	}
+	if (!ok_mask_file) {
+	    cerr<<"* Error input file not provided -m <filename>"<<endl;
+	    Usage(argv[0]);
+            return -1;
+	}
+	if (!ok_database_file) {
+	    cerr<<"* Error database file not provided -db <filename>"<<endl;
+	    Usage(argv[0]);
+            return -1;
+	}
+	if (!ok_output_file) {
+	    cerr<<"* Error output file not provided -o <filename>"<<endl;
+	    Usage(argv[0]);
+            return -1;
+	}
+	// We read the two mains files
+        nifti_image * InputImage=nifti_image_read(filename_in,true);
+        if(InputImage == NULL)
+        {
+            fprintf(stderr,"* Error when reading the input image\n");
+            return 1;
+        }
+        if(InputImage->datatype!=NIFTI_TYPE_FLOAT32)
+        {
+            seg_changeDatatype<SegPrecisionTYPE>(InputImage);
+        }
+        nifti_image * InputMask=nifti_image_read(filename_mask,true);
+        if(InputMask == NULL)
+        {
+            fprintf(stderr,"* Error when reading the input mask\n");
+            return 1;
+        }
+        if(InputImage->datatype!=NIFTI_TYPE_FLOAT32)
+        {
+            seg_changeDatatype<SegPrecisionTYPE>(InputMask);
+        }
+
+        ImageSize * CurrSize = new ImageSize [1]();
+        CurrSize->numel=(long)(InputImage->nx*InputImage->ny*InputImage->nz);
+        CurrSize->xsize=InputImage->nx;
+        CurrSize->ysize=InputImage->ny;
+        CurrSize->zsize=InputImage->nz;
+        CurrSize->usize=(InputImage->nu>1)?InputImage->nu:1;
+        CurrSize->tsize=(InputImage->nt>1)?InputImage->nt:1;
+	
         if(pm_threads<better_match) {
-            cout<< "ERROR: the number of patchmatch executions can't be less than the expected matching better results."<<endl;
+            cerr<< "ERROR: the number of patchmatch executions can't be less than the expected matching better results."<<endl;
             exit(-1);
         }
         if(!(InputMask->nx==InputImage->nx && InputMask->ny==InputImage->ny && InputMask->nz==InputImage->nz))
         {
-            cout << "ERROR: input mask "<< filename_mask << " has a different size  respect to input  image = ( "<<InputImage->nx<<","
+            cerr << "ERROR: input mask "<< filename_mask << " has a different size  respect to input  image = ( "<<InputImage->nx<<","
                  <<InputImage->ny<<","<<InputImage->nz<<","<<" )  input mask = ( "<<InputMask->nx<<","
                 <<InputMask->ny<<","<<InputMask->nz<<" )"<<endl;
             exit(-1);
         }
+
         // We show the parameters
         if(verbose)
         {
@@ -349,7 +395,7 @@ int main(int argc, char **argv)
         }
 
         if(verbose) cout<<"PatchMatch process starts"<<endl;
-        cout<<"PatchMatching..."<<endl;
+        if(verbose) cout<<"PatchMatching..."<<endl;
         seg_PatchMatch <SegPrecisionTYPE> *patchmatch=new seg_PatchMatch<SegPrecisionTYPE>();
         patchmatch->setVerbose(verbose);
         patchmatch->setDebug(debug);
@@ -511,8 +557,8 @@ int main(int argc, char **argv)
         time( &end );
         int minutes = (int)floorf(float(end-start)/60.0f);
         int seconds = (int)(end-start - 60*minutes);
-        cout<<"PatchMatch done in "<<minutes<<" min "<<seconds<<" sec"<<endl;
-        cout<<"Have a good day !"<<endl;
+        if(verbose) cout<<"PatchMatch done in "<<minutes<<" min "<<seconds<<" sec"<<endl;
+        if(verbose) cout<<"Have a good day !"<<endl;
     }
 
     catch(std::exception & e)
