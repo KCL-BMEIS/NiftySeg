@@ -63,6 +63,16 @@
         ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
     INSTALL(FILES ${NAME}.h _seg_matrix.h DESTINATION include)
+    
+    set(NAME _seg_fill_lesions)
+    ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} ${NAME}.h ${NAME}.cpp _seg_matrix.h)
+    TARGET_LINK_LIBRARIES(${NAME} _seg_tools _seg_FMM _seg_Topo _seg_nifti _seg_BiasCorrection)
+    INSTALL(FILES ${NAME}.h _seg_matrix.h DESTINATION include)
+    
+    set(NAME _seg_fill_lesions_other)
+    ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} ${NAME}.h ${NAME}.cpp _seg_matrix.h)
+    TARGET_LINK_LIBRARIES(${NAME} _seg_tools _seg_FMM _seg_Topo _seg_nifti _seg_BiasCorrection)
+    INSTALL(FILES ${NAME}.h _seg_matrix.h DESTINATION include)
 
 INSTALL(FILES _seg_common.h NiftySegWinExportHeader.h DESTINATION include)
 
