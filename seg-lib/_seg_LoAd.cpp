@@ -3859,6 +3859,11 @@ void BiasCorrection(segPrecisionTYPE * BiasField,
     }
     segPrecisionTYPE invV[maxNumbClass];
     segPrecisionTYPE currM[maxNumbClass];
+    for(int i=0; i<nrOfClasses; i++)
+    {
+        invV[i]=0;
+        currM[i]=0;
+    }
 
     for(long multispec=0; multispec<CurrSizes->usize; multispec++)
     {
@@ -4596,6 +4601,12 @@ void BiasCorrection_mask(segPrecisionTYPE * BiasField,
     segPrecisionTYPE invV[maxNumbClass];
     segPrecisionTYPE currM[maxNumbClass];
 
+    for(long i=0; i<maxNumbClass; i++)
+    {
+        invV[i]=0;
+        currM[i]=0;
+    }
+
     for(long multispec=0; multispec<CurrSizes->usize; multispec++)
     {
         sampledData = static_cast<segPrecisionTYPE *>(T1->data);
@@ -5001,6 +5012,11 @@ void BiasCorrection2D(segPrecisionTYPE * BiasField,
     }
     segPrecisionTYPE invV[maxNumbClass];
     segPrecisionTYPE currM[maxNumbClass];
+    for(long i=0; i<maxNumbClass; i++)
+    {
+        invV[i]=0;
+        currM[i]=0;
+    }
 
     for(long multispec=0; multispec<CurrSizes->usize; multispec++)
     {
@@ -5340,6 +5356,11 @@ void BiasCorrection_mask2D(segPrecisionTYPE * BiasField,
     }
     segPrecisionTYPE invV[maxNumbClass];
     segPrecisionTYPE currM[maxNumbClass];
+    for(long i=0; i<maxNumbClass; i++)
+    {
+        invV[i]=0;
+        currM[i]=0;
+    }
 
     for(long multispec=0; multispec<CurrSizes->usize; multispec++)
     {

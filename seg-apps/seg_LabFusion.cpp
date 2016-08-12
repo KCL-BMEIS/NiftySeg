@@ -78,7 +78,6 @@ void Usage(char *exec)
     printf("\t\t\t\t\t| Size of the kernel (k), number of local classifiers to use (n),\n");
     printf("\t\t\t\t\t| Original image to segment (3D Image), registered templates (4D Image).\n");
     printf("\t\t\t\t\t| LNCC is only available for STAPLE and MV.\n\n");
-    printf("\t\t\t\t\t| LNCC is only available for STAPLE and MV.\n\n");
     //printf("\t-LM <n> <metric> \t| Any voxelwise local metric (higher metric value is more similar):\n");
     //printf("\t\t\t\t\t| number of local classifiers to use (n), similarity <metric> as a 4D Image.\n");
 
@@ -532,12 +531,13 @@ int main(int argc, char **argv)
             flush(cout);
         }
         cout<<(float)MaxLab<<" "<<LabFusType<<endl;
-        if(ProbOutput==1 && (MaxLab>9 || LabFusType==2))
+        if(ProbOutput==1 && (MaxLab>9))
         {
-            fprintf(stderr,"* Due to memory limitations, Probabilistic output only available for less than 10 labels and for STEPS/STAPLE\n");
+            fprintf(stderr,"* Due to memory limitations, Probabilistic output only available for less than 10 labels\n");
             flush(cout);
             return 1;
         }
+
         nifti_image * LNCC=NULL;
         nifti_image * BaseImage=NULL;
         if(LNCCflag || ML_LNCCflag)
@@ -720,7 +720,7 @@ int main(int argc, char **argv)
         {
             cout << endl<<"Creating Object";
         }
-        seg_LabFusion LabFusion(CLASSIFIER->nt,MaxLab,Numb_Neigh);
+        seg_LabFusion LabFusion(CLASSIFIER->nt,MaxLab,Numb_Neigh,max(LNCC->nu,1));
         if(verbose_level>1)
         {
             cout << " - Done"<<endl;
@@ -779,6 +779,7 @@ int main(int argc, char **argv)
                 }
                 LabFusion.SetLNCC(LNCC,BaseImage,LNCC_kernel,Numb_Neigh);
                 nifti_image_free(LNCC);
+
             }
         }
 

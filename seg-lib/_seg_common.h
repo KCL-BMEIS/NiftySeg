@@ -69,6 +69,7 @@
 #include <cmath>
 #include <string>
 #include <iostream>
+#include <sstream>
 #include <iomanip>
 #include "nifti1_io.h"
 #include <new>
@@ -133,6 +134,7 @@ typedef struct
     long usize;
     long tsize;
     long numclass;
+    long nummod;
     long numel;
     long numelmasked;
     long numelbias;

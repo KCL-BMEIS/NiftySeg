@@ -3,7 +3,7 @@
 
 
 
-seg_LabFusion::seg_LabFusion(int _numb_classif, int numbclasses, int _Numb_Neigh)
+seg_LabFusion::seg_LabFusion(int _numb_classif, int numbclasses, int _Numb_Neigh, int _numb_modalities)
 {
     TYPE_OF_FUSION=0;
     NumberOfLabels=numbclasses;
@@ -75,6 +75,7 @@ seg_LabFusion::seg_LabFusion(int _numb_classif, int numbclasses, int _Numb_Neigh
     this->Fixed_Prop_status=false;
     this->PropUpdate=false;
     this->numb_classif=_numb_classif;
+    this->numb_nummod=_numb_modalities;
     this->tracePQ=1;
     this->oldTracePQ=0;
     this->maxIteration=100;
@@ -286,7 +287,7 @@ int seg_LabFusion::SetLNCC(nifti_image * _LNCC,nifti_image * BaseImage,segPrecis
     {
         if(_LNCC->datatype==DT_FLOAT)
         {
-            this->LNCC=estimateLNCC4D(BaseImage,_LNCC,distance,Numb_Neigh,CurrSizes,this->verbose_level);
+            this->LNCC=estimateLNCC5D(BaseImage,_LNCC,distance,Numb_Neigh,this->CurrSizes,this->verbose_level);
             this->LNCC_status = true;
 
         }
@@ -582,6 +583,7 @@ int seg_LabFusion::Create_CurrSizes()
     CurrSizes->usize=1;
     CurrSizes->tsize=1;
     CurrSizes->numclass=this->numb_classif;
+    CurrSizes->nummod=this->numb_nummod;
     CurrSizes->numelmasked=0;
     CurrSizes->numelbias=0;
     return 0;
@@ -1933,6 +1935,16 @@ nifti_image * seg_LabFusion::GetResult_probability()
         }
 
     }
+    else if(TYPE_OF_FUSION==2)
+    {
+        if(this->NumberOfLabels>2)
+            fprintf(stderr,"* Warning: Probabilistic output for MV is only implemented for binary fusion (2 lab max)");
+        for(int i=0; i<(this->numel); i++)
+        {
+            Resultdata[i]=W[i];
+        }
+
+    }
     return Result;
 }
 
@@ -1995,7 +2007,7 @@ nifti_image * seg_LabFusion::GetResult_label()
     {
         for(int i=0; i<(this->numel); i++)
         {
-            Resultdata[i]= this->LableCorrespondences_small_to_big[(int)W[i]];
+            Resultdata[i]=this->LableCorrespondences_small_to_big[(int)round(W[i])];
         }
 
     }

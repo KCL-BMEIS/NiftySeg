@@ -48,6 +48,7 @@ protected:
     bool    Fixed_Prop_status;
     bool    PropUpdate;
     int     numb_classif;
+    int     numb_nummod;
     float   tracePQ;
     float   oldTracePQ;
     float   loglik;
@@ -86,7 +87,7 @@ protected:
     int Allocate_Stuff_STAPLE();
 
 public:
-    seg_LabFusion(int _numb_classif,int _numb_labels,int _numb_neigh);
+    seg_LabFusion(int _numb_classif,int _numb_labels,int _numb_neigh, int _numb_modalities);
     ~seg_LabFusion();
     int SetinputCLASSIFIER(nifti_image * LABELS, bool UNCERTAINflag);
     int SetMLLNCC(nifti_image * LNCC,nifti_image * BaseImage,float distance,int levels, int Numb_Neigh);

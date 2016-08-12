@@ -232,7 +232,7 @@ int main(int argc, char **argv)
                         else
                         {
                             cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
-                                 <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" ) New image = ( "
+                                 <<CurrSize->ysize<<","<<CurrSize->zsize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" ) New image = ( "
                                 <<NewImage->nx<<","<<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<" )"<<endl;
                             i=argc;
                         }
@@ -270,7 +270,7 @@ int main(int argc, char **argv)
                     else
                     {
                         cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
-                             <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" )  New image = ( "<<NewImage->nx<<","
+                             <<CurrSize->ysize<<","<<CurrSize->zsize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" )  New image = ( "<<NewImage->nx<<","
                             <<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<" )"<<endl;
                         i=argc;
                     }
@@ -307,7 +307,7 @@ int main(int argc, char **argv)
                     else
                     {
                         cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
-                             <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" )  New image = ( "<<NewImage->nx<<","
+                             <<CurrSize->ysize<<","<<CurrSize->zsize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" )  New image = ( "<<NewImage->nx<<","
                             <<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<" )"<<endl;
                         i=argc;
                     }
@@ -336,7 +336,7 @@ int main(int argc, char **argv)
                 else
                 {
                     cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
-                         <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" )  New image = ( "<<NewImage->nx<<","
+                         <<CurrSize->ysize<<","<<CurrSize->zsize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" )  New image = ( "<<NewImage->nx<<","
                         <<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<" )"<<endl;
                     i=argc;
                 }
@@ -645,7 +645,7 @@ int main(int argc, char **argv)
                     else
                     {
                         cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
-                             <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" )  New image = ( "<<NewImage->nx<<","
+                             <<CurrSize->ysize<<","<<CurrSize->zsize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" )  New image = ( "<<NewImage->nx<<","
                             <<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<" )"<<endl;
                         i=argc;
                     }
@@ -1003,7 +1003,7 @@ int main(int argc, char **argv)
                     else
                     {
                         cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
-                             <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" ) New image = ( "
+                             <<CurrSize->ysize<<","<<CurrSize->zsize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" ) New image = ( "
                             <<NewImage->nx<<","<<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<" )"<<endl;
                         i=argc;
                     }
@@ -1053,7 +1053,7 @@ int main(int argc, char **argv)
                     else
                     {
                         cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
-                             <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" ) New image = ( "
+                             <<CurrSize->ysize<<","<<CurrSize->zsize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" ) New image = ( "
                             <<NewImage->nx<<","<<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<" )"<<endl;
                         i=argc;
                     }
@@ -1685,37 +1685,46 @@ int main(int argc, char **argv)
                 string parsertp=argv[++i];
                 if(strtod(parser.c_str(),NULL) && (strtod(parser.c_str(),NULL)!=0 ))
                 {
-                    long numberofTP=(int)strtof(parser.c_str(),NULL);
+                    long numberof_new_images=(int)strtof(parser.c_str(),NULL);
                     long dim=(int)strtof(parsertp.c_str(),NULL);
-                    long oldnumbTP=0;
+
+                    long old_tsize=CurrSize->tsize;
+                    long old_usize=CurrSize->usize;
+
+                    long new_tsize=CurrSize->tsize;
+                    long new_usize=CurrSize->usize;
                     if(dim==4)
                     {
-                        oldnumbTP=CurrSize->tsize;
+                        new_tsize=CurrSize->tsize+(int)numberof_new_images;
                     }
                     else if(dim==5)
                     {
-                        oldnumbTP=CurrSize->usize;
+                        new_usize=CurrSize->usize+(int)numberof_new_images;
                     }
+                    else{
+                        cout<< "ERROR: dim has to be 4 or 5"<<endl;
+                        return 1;
+                    }
+
+
                     delete [] bufferImages[current_buffer?0:1];
-                    bufferImages[current_buffer?0:1]= new SegPrecisionTYPE [CurrSize->numel*(oldnumbTP+(int)numberofTP)];
-                    for(long index=0; index<(CurrSize->numel*oldnumbTP); index++)
+                    bufferImages[current_buffer?0:1]= new SegPrecisionTYPE [CurrSize->numel*(new_tsize*new_usize)];
+
+                    for(long index=0; index<(CurrSize->numel*(old_tsize*old_usize)); index++)
                         bufferImages[current_buffer?0:1][index]=bufferImages[current_buffer][index];
+
                     delete [] bufferImages[current_buffer];
-                    bufferImages[current_buffer]= new SegPrecisionTYPE [CurrSize->numel*(oldnumbTP+(int)numberofTP)];
-                    for(long index=0; index<(CurrSize->numel*oldnumbTP); index++)
+                    bufferImages[current_buffer]= new SegPrecisionTYPE [CurrSize->numel*(new_tsize*new_usize)];
+
+                    for(long index=0; index<(CurrSize->numel*(old_tsize*old_usize)); index++)
                         bufferImages[current_buffer][index]=bufferImages[current_buffer?0:1][index];
+
                     current_buffer=current_buffer?0:1;
-                    if(dim==4)
-                    {
-                        CurrSize->usize=1;
-                        CurrSize->tsize=oldnumbTP+numberofTP;
-                    }
-                    else if(dim==5)
-                    {
-                        CurrSize->tsize=1;
-                        CurrSize->usize=oldnumbTP+numberofTP;
-                    }
-                    for(long tp=0; tp<(long)numberofTP; tp++)
+
+                    CurrSize->usize=new_usize;
+                    CurrSize->tsize=new_tsize;
+
+                    for(long tp=0; tp<(long)numberof_new_images; tp++)
                     {
                         string parser_image_name=argv[++i];
                         if(parser_image_name.find(string(".nii"))>0 || parser_image_name.find(string(".img")) ||parser_image_name.find(string(".hdr"))>0)
@@ -1726,21 +1735,41 @@ int main(int argc, char **argv)
                                 cout<< "ERROR: When reading the image"<<parser_image_name<<endl;
                                 return 1;
                             }
-                            if(NewImage->nx==InputImage->nx&&NewImage->ny==InputImage->ny&&NewImage->nz==InputImage->nz)
-                            {
-                                if(NewImage->datatype!=DT_FLOAT32)
+                            if(dim==4){
+                                if(NewImage->nx==InputImage->nx&&NewImage->ny==InputImage->ny&&NewImage->nz==InputImage->nz && NewImage->nt<=1)
                                 {
-                                    seg_changeDatatype<SegPrecisionTYPE>(NewImage);
+                                    if(NewImage->datatype!=DT_FLOAT32)
+                                    {
+                                        seg_changeDatatype<SegPrecisionTYPE>(NewImage);
+                                    }
+                                    SegPrecisionTYPE * NewImagePtr = static_cast<SegPrecisionTYPE *>(NewImage->data);
+                                    for(long index=0; index<(long)CurrSize->numel; index++)
+                                        bufferImages[current_buffer?0:1][index+(old_tsize+tp)*CurrSize->numel]=NewImagePtr[index];
                                 }
-                                SegPrecisionTYPE * NewImagePtr = static_cast<SegPrecisionTYPE *>(NewImage->data);
-                                for(long index=0; index<(long)CurrSize->numel; index++)
-                                    bufferImages[current_buffer?0:1][index+(oldnumbTP+tp)*CurrSize->numel]=NewImagePtr[index];
+                                else
+                                {
+                                    cout<< "ERROR: Image "<<parser_image_name<<" [nx,ny,nz] do not match or nt>1"<<endl;
+                                    return 1;
+                                }
                             }
-                            else
-                            {
-                                cout<< "ERROR: Image "<<parser_image_name<<" is not single time point or [nx,ny,nz] do not match"<<endl;
-                                return 1;
+                            else if(dim==5){
+                                if(NewImage->nx==InputImage->nx&&NewImage->ny==InputImage->ny&&NewImage->nz==InputImage->nz&&NewImage->nt==InputImage->nt && NewImage->nu<=1)
+                                {
+                                    if(NewImage->datatype!=DT_FLOAT32)
+                                    {
+                                        seg_changeDatatype<SegPrecisionTYPE>(NewImage);
+                                    }
+                                    SegPrecisionTYPE * NewImagePtr = static_cast<SegPrecisionTYPE *>(NewImage->data);
+                                    for(long index=0; index<(long)CurrSize->numel*old_tsize; index++)
+                                        bufferImages[current_buffer?0:1][index+(old_tsize+old_tsize*tp)*CurrSize->numel]=NewImagePtr[index];
+                                }
+                                else
+                                {
+                                    cout<< "ERROR: Image "<<parser_image_name<<" [nx,ny,nz,nt] do not match or nu>1"<<endl;
+                                    return 1;
+                                }
                             }
+
                         }
                     }
                     current_buffer=current_buffer?0:1;
@@ -2027,7 +2056,7 @@ int main(int argc, char **argv)
                     else
                     {
                         cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
-                             <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" )  New image = ( "<<NewImage->nx<<","
+                             <<CurrSize->ysize<<","<<CurrSize->zsize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" )  New image = ( "<<NewImage->nx<<","
                             <<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<" )"<<endl;
                         i=argc;
                     }
@@ -2099,7 +2128,7 @@ int main(int argc, char **argv)
                     else
                     {
                         cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
-                             <<CurrSize->ysize<<","<<CurrSize->ysize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" )  New image = ( "<<NewImage->nx<<","
+                             <<CurrSize->ysize<<","<<CurrSize->zsize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" )  New image = ( "<<NewImage->nx<<","
                             <<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<" )"<<endl;
                         i=argc;
                     }
