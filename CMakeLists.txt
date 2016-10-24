@@ -3,22 +3,18 @@ cmake_minimum_required(VERSION 2.8)
 cmake_policy(VERSION 2.8)
 include(ExternalProject)
 
-#-----------------------------------------------------------------------------
-set(NiftySeg_VERSION_MAJOR 0)
-set(NiftySeg_VERSION_MINOR 9)
-set(NiftySeg_VERSION_PATCH 4)
 
 
 #-----------------------------------------------------------------------------
 # Preflight Checks - CMake Version, InSource Build Type
 #-----------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 2.8.0)
-if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" MATCHES "^2\\.8\\.0$")
+cmake_minimum_required(VERSION 3.2.2)
+if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" MATCHES "^3\\.2\\.2$")
  mark_as_advanced(FORCE CMAKE_BACKWARDS_COMPATIBILITY)
-else("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" MATCHES "^2\\.8\\.0$")
+else("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" MATCHES "^3\\.2\\.2$")
  mark_as_advanced(CLEAR CMAKE_BACKWARDS_COMPATIBILITY)
-endif("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" MATCHES "^2\\.8\\.0$")
+endif("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" MATCHES "^3\\.2\\.2$")
 
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
         message("In-source builds not allowed by niftyseg.")
@@ -26,6 +22,10 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
         message(FATAL_ERROR "You may need to remove CMakeCache.txt.")
 endif(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 
+#-----------------------------------------------------------------------------
+set(NiftySeg_VERSION_MAJOR 0)
+set(NiftySeg_VERSION_MINOR 9)
+set(NiftySeg_VERSION_PATCH 4)
 
 #-----------------------------------------------------------------------------
 # Overall Options
@@ -45,7 +45,7 @@ SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DFILE_OFFSETBITS=64 -DDIRENT=dirent64 -DREA
 IF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
    add_definitions(/W1)
 ELSE (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-   add_definitions(-Wall -pedantic)
+   add_definitions(-Wall)
 ENDIF()
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -89,6 +89,20 @@ if(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
   endif(OPENMP_FOUND)
 endif(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
 
+#-----------------------------------------------------------------------------
+# Z library
+# Try first to find the z library on the system and built is from the sources if it can not be found
+#-----------------------------------------------------------------------------
+
+find_package(ZLIB)
+if(ZLIB_FOUND)
+    include_directories(${ZLIB_INCLUDE_DIR})
+    message(STATUS "Found zlib - the z library will not be built")
+else(ZLIB_FOUND)
+    include_directories(${CMAKE_SOURCE_DIR}/zlib)
+    message(STATUS "zlib not found - the z library will be built")
+endif(ZLIB_FOUND)
+SET(ZLIB "z")
 
 #-----------------------------------------------------------------------------
 # Include Dirs and Module Paths
@@ -96,7 +110,6 @@ endif(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/seg-lib)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/nifti)
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/zlib)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/win32)
 
 set(CMAKE_MODULE_PATH
@@ -105,7 +118,6 @@ set(CMAKE_MODULE_PATH
   ${CMAKE_SOURCE_DIR}/CMake/CMakeExternals
   ${CMAKE_MODULE_PATH}
   )
-
 
 #-----------------------------------------------------------------------------
 # Optional installation of NiftyReg packages
@@ -133,7 +145,7 @@ ENDIF(INSTALL_NIFTYREG)
 #-----------------------------------------------------------------------------
 # Search for Eigen. Download and install if not found
 #-----------------------------------------------------------------------------
-option(USE_SYSTEM_EIGEN "Use an already installed version of the Eigen library" OFF)
+option(USE_SYSTEM_EIGEN "Use an already installed version of the Eigen library" ON)
 if(USE_SYSTEM_EIGEN)
   find_package(EIGEN REQUIRED)
 else()
@@ -149,19 +161,18 @@ else()
     URL_MD5 ${${PROJECT_NAME}_MD5_SUM_EIGEN}
     PREFIX ${PROJECT_BINARY_DIR}/Eigen
     DOWNLOAD_DIR ${PROJECT_BINARY_DIR}/Eigen/download
-    SOURCE_DIR ${PROJECT_BINARY_DIR}/Eigen/source
+    SOURCE_DIR ${PROJECT_BINARY_DIR}/Eigen/install
     STAMP_DIR ${PROJECT_BINARY_DIR}/Eigen/stamps
-    TMP_DIR ${PROJECT_BINARY_DIR}/Eigen/tmp
+    TMP_DIR ${PROJECT_BINARY_DIR}/Eigen/tmpec
     BINARY_DIR ${PROJECT_BINARY_DIR}/Eigen/build
-    CMAKE_ARGS 
-      ${CMAKE_PROPAGATED_VARIABLES} 
-      -DCMAKE_INSTALL_PREFIX:PATH=${PROJECT_BINARY_DIR}/Eigen/install 
-      -DBUILD_TESTING=1
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND ""
     )
-  set(Eigen_INCLUDE_DIR ${PROJECT_BINARY_DIR}/Eigen/install/include/eigen3)
-  install(DIRECTORY ${Eigen_INCLUDE_DIR}/Eigen DESTINATION include)
+  set(EIGEN_INCLUDE_DIR ${PROJECT_BINARY_DIR}/Eigen/install/)
+  install(DIRECTORY ${EIGEN_INCLUDE_DIR}/Eigen DESTINATION include)
 endif()
-include_directories(${Eigen_INCLUDE_DIR})
+include_directories(${EIGEN_INCLUDE_DIR})
 
 #-----------------------------------------------------------------------------
 # Get the GIT HASH if avaiable
@@ -186,23 +197,10 @@ else(GIT_FOUND)
        add_definitions(-D_GIT_HASH="${NiftySeg_VERSION_MAJOR}.${NiftySeg_VERSION_MINOR}.${NiftySeg_VERSION_PATCH}")
 endif(GIT_FOUND)
 
-
 #-----------------------------------------------------------------------------
-# Actually install NiftySeg
+# Set Doxigen iof available
 #-----------------------------------------------------------------------------
 
-
-include_directories(${Eigen_INCLUDE_DIR})
-SET(ZLIB "z")
-SUBDIRS(zlib)
-SUBDIRS(nifti)
-SUBDIRS(seg-lib)
-SUBDIRS(seg-apps)
-IF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-  SUBDIRS(win32)
-ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-
-# add a target to generate API documentation with Doxygen
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
             configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
@@ -214,7 +212,19 @@ if(DOXYGEN_FOUND)
             message(STATUS "Found doxygen")
 endif(DOXYGEN_FOUND)
 
-# Install scripts
+
+#-----------------------------------------------------------------------------
+# Actually install NiftySeg
+#-----------------------------------------------------------------------------
+
+SUBDIRS(nifti)
+SUBDIRS(seg-lib)
+SUBDIRS(seg-apps)
+IF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+  SUBDIRS(win32)
+ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+
+# Install scriqeeqpts
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/LoAd_brainonly.sh ${CMAKE_BINARY_DIR}/LoAd_brainonly.sh @ONLY )
 INSTALL(PROGRAMS ${CMAKE_BINARY_DIR}/LoAd_brainonly.sh DESTINATION ${CMAKE_INSTALL_PREFIX}/bin COMPONENT applications)
 

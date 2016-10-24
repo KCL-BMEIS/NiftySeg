@@ -31,27 +31,35 @@ endif(NOT Eigen_FIND_VERSION)
 
 
 # Construct consistent error messages for use below.
-set(EIGEN_DIR_DESCRIPTION "directory containing the file 'Eigen/Core', i.e. the root of the build tree, or the PREFIX/include/eigen3 for an installation.")
+set(EIGEN_DIR_DESCRIPTION "directory containing the file 'Eigen/Core', i.e. the root of the build tree, or the PREFIX/include/ for an installation.")
 set(EIGEN_DIR_MESSAGE "EIGEN not found.  Set the Eigen_INCLUDE_DIR cmake cache entry to the ${EIGEN_DIR_DESCRIPTION}")
 
+
 if(NOT EIGEN_FOUND)
+  LIST(APPEND EIGEN_CHECK_INCLUDE_DIRS
+    /usr/local/include
+    /usr/local/homebrew/include
+    /opt/local/var/macports/software 
+    /opt/local/include
+    /usr/include
+    ${CMAKE_INSTALL_PREFIX}/include/)
+  # Additional suffixes to try appending to each search path.
+  LIST(APPEND EIGEN_CHECK_PATH_SUFFIXES
+    eigen3 # Default root directory for Eigen.
+    Eigen/include/eigen3 ) 
 
-  # Look for signature_of_eigen3_matrix_library in build trees or under <prefix>/include/eigen3.
-  find_path(Eigen_INCLUDE_DIR
+  # Search supplied hint directories first if supplied.
+  FIND_PATH(EIGEN_INCLUDE_DIR
     NAMES Eigen/Core
-    PATH_SUFFIXES eigen3
-    HINTS ENV EIGEN_DIR
-    PATHS
+    PATHS ${EIGEN_INCLUDE_DIR_HINTS}
+    ${EIGEN_CHECK_INCLUDE_DIRS}
+    PATH_SUFFIXES ${EIGEN_CHECK_PATH_SUFFIXES})
 
-    # Help the user find it if we cannot.
-    DOC "The ${EIGEN_DIR_DESCRIPTION}"
-    )
-
-  if(Eigen_INCLUDE_DIR)
-    if(EXISTS ${Eigen_INCLUDE_DIR}/Eigen/Core)
+  if(EIGEN_INCLUDE_DIR)
+    if(EXISTS ${EIGEN_INCLUDE_DIR}/Eigen/Core)
       set(EIGEN_FOUND 1)
     else()
-      set(Eigen_INCLUDE_DIR "Eigen_INCLUDE_DIR-NOTFOUND" CACHE PATH "The ${EIGEN_DIR_DESCRIPTION}" FORCE)
+      set(EIGEN_INCLUDE_DIR "EIGEN_INCLUDE_DIR-NOTFOUND" CACHE PATH "The ${EIGEN_DIR_DESCRIPTION}" FORCE)
     endif()
   endif()
 

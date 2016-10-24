@@ -518,7 +518,7 @@ void seg_fill_lesions_other<T>::saveImagePtr(int * ImagePtr,nifti_image *Image,c
         tmp[i]=(float)ImagePtr[i];
     }
     saveImagePtr(tmp,Image,filename_out);
-    delete tmp;
+    delete [] tmp;
 }
 
 template<class T>

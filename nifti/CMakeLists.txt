@@ -22,5 +22,5 @@ install(TARGETS ${NAME}
         ARCHIVE DESTINATION lib
 )
 install(FILES nifti1_io.h znzlib.h nifti1.h DESTINATION include COMPONENT Development)
-add_dependencies(${NAME} Eigen)
+#add_dependencies(${NAME} Eigen)
 #-----------------------------------------------------------------------------

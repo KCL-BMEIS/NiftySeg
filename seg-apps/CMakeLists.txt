@@ -3,7 +3,7 @@
     ADD_EXECUTABLE(seg_LoAd seg_LoAd.cpp)
         TARGET_LINK_LIBRARIES(seg_LoAd _seg_LoAd _seg_tools _seg_FMM _seg_nifti ${ZLIB})
     INSTALL_TARGETS(/bin seg_LoAd)
-   add_dependencies(seg_LoAd Eigen)
+   #add_dependencies(seg_LoAd Eigen)
 
     ADD_EXECUTABLE(seg_stats seg_Stats.cpp)
         TARGET_LINK_LIBRARIES(seg_stats _seg_tools _seg_FMM _seg_nifti ${ZLIB})
@@ -20,7 +20,7 @@
     ADD_EXECUTABLE(seg_maths seg_maths.cpp)
         TARGET_LINK_LIBRARIES(seg_maths _seg_tools _seg_FMM _seg_nifti ${ZLIB})
     INSTALL_TARGETS(/bin seg_maths)
-   add_dependencies(seg_maths Eigen)
+   #add_dependencies(seg_maths Eigen)
 
     ADD_EXECUTABLE(seg_CalcTopNCC seg_CalcTopNCC.cpp)
         TARGET_LINK_LIBRARIES(seg_CalcTopNCC _seg_tools _seg_FMM _seg_nifti ${ZLIB})

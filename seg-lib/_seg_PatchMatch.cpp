@@ -1234,7 +1234,7 @@ void seg_PatchMatch<T>::saveImagePtr(int * ImagePtr,nifti_image *Image,char *fil
         tmp[i]=(float)ImagePtr[i];
     }
     saveImagePtr(tmp,Image,filename_out);
-    delete tmp;
+    delete []tmp;
 }
 
 template<class T>
