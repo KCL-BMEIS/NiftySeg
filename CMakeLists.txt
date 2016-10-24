@@ -145,7 +145,13 @@ ENDIF(INSTALL_NIFTYREG)
 #-----------------------------------------------------------------------------
 # Search for Eigen. Download and install if not found
 #-----------------------------------------------------------------------------
-option(USE_SYSTEM_EIGEN "Use an already installed version of the Eigen library" ON)
+find_package(EIGEN)
+if(EIGEN_FOUND)
+  option(USE_SYSTEM_EIGEN "Use an already installed version of the Eigen library" ON)
+else(EIGEN_FOUND)
+  ption(USE_SYSTEM_EIGEN "Use an already installed version of the Eigen library" OFF)
+endif(EIGEN_FOUND)
+
 if(USE_SYSTEM_EIGEN)
   find_package(EIGEN REQUIRED)
 else()
