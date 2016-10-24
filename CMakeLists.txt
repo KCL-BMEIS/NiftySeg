@@ -149,7 +149,7 @@ find_package(EIGEN)
 if(EIGEN_FOUND)
   option(USE_SYSTEM_EIGEN "Use an already installed version of the Eigen library" ON)
 else(EIGEN_FOUND)
-  ption(USE_SYSTEM_EIGEN "Use an already installed version of the Eigen library" OFF)
+  option(USE_SYSTEM_EIGEN "Use an already installed version of the Eigen library" OFF)
 endif(EIGEN_FOUND)
 
 if(USE_SYSTEM_EIGEN)
