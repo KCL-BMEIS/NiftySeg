@@ -51,6 +51,8 @@ void Usage(char *exec)
     printf("\t-smol\t<float>\t\tGaussian smoothing of a 3D label image.\n");
     printf("\t-dil\t<int>\t\tDilate the image <int> times (in voxels).\n");
     printf("\t-ero\t<int>\t\tErode the image <int> times (in voxels).\n");
+    printf("\t-pad\t<int>\t\tPad <int> voxels with 0 value around each 3D volume.\n");
+    printf("\t-crop\t<int>\t\tCrop <int> voxels with 0 value around each 3D volume.\n");    
     printf("\n\t* * Operations binary 3-D images * *\n");
     printf("\t-lconcomp\t\tTake the largest connected component\n");
     printf("\t-concomp6\t\tLabel the different connected components with a 6NN kernel\n");
@@ -352,6 +354,90 @@ int main(int argc, char **argv)
                     bufferImages[current_buffer?0:1][i]=isnan(bufferImages[current_buffer][i])==1?0:bufferImages[current_buffer][i];
                 current_buffer=current_buffer?0:1;
 
+            }
+	    // *********************  pad voxels  *************************
+            else if(strcmp(argv[i], "-pad") == 0)
+            {
+                string parser=argv[++i];
+
+                if(parser.find_first_not_of("1234567890-+")== string::npos)
+                {
+                    int padding=(int)strtod(parser.c_str(),NULL)*2;
+		    long new_size=((CurrSize->xsize+padding)*(CurrSize->ysize+padding)*(CurrSize->zsize+padding)*CurrSize->tsize*CurrSize->usize);
+		    bufferImages[current_buffer?0:1]=new SegPrecisionTYPE [new_size];
+		           
+		    for(long ii=0; ii<new_size; ii++)
+                        bufferImages[current_buffer?0:1][ii]=0;
+
+		    long old_volume=CurrSize->xsize*CurrSize->ysize*CurrSize->zsize;
+		    long new_volume=(CurrSize->xsize+padding)*(CurrSize->ysize+padding)*(CurrSize->zsize+padding);
+		    for (long t=0;t<CurrSize->tsize*CurrSize->usize;t++) {
+			    for(long z=0; z<CurrSize->zsize; z++) {
+				for(long y=0; y<CurrSize->ysize; y++) {
+					for(long x=0; x<CurrSize->xsize; x++) {
+						long big=t*new_volume+x+(padding/2)+(y+(padding/2))*(CurrSize->xsize+padding)+(z+(padding/2))*(CurrSize->xsize+padding)*(CurrSize->ysize+padding);
+						long small=t*old_volume+x+y*CurrSize->xsize+z*(CurrSize->xsize*CurrSize->ysize);
+        	                		bufferImages[current_buffer?0:1][big]=bufferImages[current_buffer][small];
+					}
+				}
+			    }
+		    }
+                    current_buffer=current_buffer?0:1;
+		    bufferImages[current_buffer?0:1]=new SegPrecisionTYPE [new_size];
+		    for(long ii=0; ii<new_size; ii++)
+                        bufferImages[current_buffer?0:1][ii]=0;
+		    CurrSize->xsize+=padding;
+		    CurrSize->ysize+=padding;
+		    CurrSize->zsize+=padding;
+    		    CurrSize->numel=CurrSize->xsize*CurrSize->ysize*CurrSize->zsize;
+                }
+		else
+                {
+                    cout << "ERROR: "<< parser << " is not a valid number"<<endl;
+                    i=argc;
+                }
+            }
+	    // *********************  crop voxels  *************************
+            else if(strcmp(argv[i], "-crop") == 0)
+            {
+                string parser=argv[++i];
+
+                if(parser.find_first_not_of("1234567890-+")== string::npos)
+                {
+                    int cropping=(int)strtod(parser.c_str(),NULL)*2;
+		    long new_size=((CurrSize->xsize-cropping)*(CurrSize->ysize-cropping)*(CurrSize->zsize-cropping)*CurrSize->tsize*CurrSize->usize);
+		    bufferImages[current_buffer?0:1]=new SegPrecisionTYPE [new_size];
+		           
+		    for(long ii=0; ii<new_size; ii++)
+                        bufferImages[current_buffer?0:1][ii]=0;
+		
+		    long old_volume=CurrSize->xsize*CurrSize->ysize*CurrSize->zsize;
+		    long new_volume=(CurrSize->xsize-cropping)*(CurrSize->ysize-cropping)*(CurrSize->zsize-cropping);
+		    for (long t=0;t<CurrSize->tsize*CurrSize->usize;t++) {
+                    	for(long x=cropping/2; x<CurrSize->xsize-cropping/2; x++) {
+				for(long y=cropping/2; y<CurrSize->ysize-cropping/2; y++) {
+					for(long z=cropping/2; z<CurrSize->zsize-cropping/2; z++) {
+						long small=t*new_volume+x-(cropping/2)+(y-(cropping/2))*(CurrSize->xsize-cropping)+(z-(cropping/2))*((CurrSize->xsize-cropping)*(CurrSize->ysize-cropping));
+						long big=t*old_volume+x+y*CurrSize->xsize+z*(CurrSize->xsize*CurrSize->ysize);
+                    		    		bufferImages[current_buffer?0:1][small]=bufferImages[current_buffer][big];
+					}
+				}
+		    	}
+		    }
+                    current_buffer=current_buffer?0:1;
+		    bufferImages[current_buffer?0:1]=new SegPrecisionTYPE [new_size];
+		    for(long ii=0; ii<new_size; ii++)
+                        bufferImages[current_buffer?0:1][ii]=0;
+		    CurrSize->xsize-=cropping;
+		    CurrSize->ysize-=cropping;
+		    CurrSize->zsize-=cropping;
+		    CurrSize->numel=CurrSize->xsize*CurrSize->ysize*CurrSize->zsize;
+                }
+		else
+                {
+                    cout << "ERROR: "<< parser << " is not a valid number"<<endl;
+                    i=argc;
+                }
             }
 	    //  *********************  mask edge  *************************
             else if(strcmp(argv[i], "-edge") == 0)
