@@ -51,8 +51,8 @@ void Usage(char *exec)
     printf("\t-smol\t<float>\t\tGaussian smoothing of a 3D label image.\n");
     printf("\t-dil\t<int>\t\tDilate the image <int> times (in voxels).\n");
     printf("\t-ero\t<int>\t\tErode the image <int> times (in voxels).\n");
-    printf("\t-pad\t<int>\t\tPad <int> voxels with 0 value around each 3D volume.\n");
-    printf("\t-crop\t<int>\t\tCrop <int> voxels with 0 value around each 3D volume.\n");    
+    printf("\t-pad\t<int>\t\tPad <int> voxels with NaN value around each 3D volume.\n");
+    printf("\t-crop\t<int>\t\tCrop <int> voxels around each 3D volume.\n");    
     printf("\n\t* * Operations binary 3-D images * *\n");
     printf("\t-lconcomp\t\tTake the largest connected component\n");
     printf("\t-concomp6\t\tLabel the different connected components with a 6NN kernel\n");
@@ -367,7 +367,7 @@ int main(int argc, char **argv)
 		    bufferImages[current_buffer?0:1]=new SegPrecisionTYPE [new_size];
 		           
 		    for(long ii=0; ii<new_size; ii++)
-                        bufferImages[current_buffer?0:1][ii]=0;
+                        bufferImages[current_buffer?0:1][ii]=std::numeric_limits<double>::quiet_NaN();
 
 		    long old_volume=CurrSize->xsize*CurrSize->ysize*CurrSize->zsize;
 		    long new_volume=(CurrSize->xsize+padding)*(CurrSize->ysize+padding)*(CurrSize->zsize+padding);
