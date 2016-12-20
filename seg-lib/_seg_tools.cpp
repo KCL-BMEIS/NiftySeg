@@ -1577,7 +1577,7 @@ float seg_getNMIValue(nifti_image *img1,
     float *warPtr = &img2Ptr[0];
     for(size_t voxel=0; voxel<voxelNumber; ++voxel)
     {
-        if(referenceMask[voxel]>-1)
+        if(referenceMask[voxel]>0)
         {
             float refValue=refPtr[voxel];
             float warValue=warPtr[voxel];

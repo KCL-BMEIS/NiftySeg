@@ -69,6 +69,7 @@ void Usage(char *exec)
     printf("\n\t* * Dimensionality increase operations: from 3-D to 4-D * *\n");
     printf("\t-merge\t<i> <d> <files>\tMerge <i> images and the working image in the <d> dimension \n");
     printf("\t-splitlab\t\tSplit the integer labels into multiple timepoints\n");
+    printf("\t-splitinter <x/y/z>\t\tSplit interleaved slices in direction <x/y/z> into separate time points\n");
     printf("\n\t* * Image similarity: Local metrics * *\n");
     printf("\t-lncc\t<file> <std>\tLocal CC between current img and <file> on a kernel with <std>\n");
     printf("\t-lssd\t<file> <std>\tLocal SSD between current img and <file> on a kernel with <std>\n");
@@ -1763,6 +1764,276 @@ int main(int argc, char **argv)
                     }
                     i=argc;
                 }
+            }
+            // *********************  Split Lables  *************************
+            else if(strcmp(argv[i], "-splitinter") == 0)
+            {
+                string direction=argv[++i];
+                if(CurrSize->tsize<=1&& CurrSize->usize<=1){
+                    CurrSize->tsize=2;
+                    CurrSize->usize=1;
+                    int oldxsize=CurrSize->xsize;
+                    int oldysize=CurrSize->ysize;
+                    int xincrement=1;
+                    int yincrement=1;
+                    int zincrement=1;
+
+                    if(direction==string("x")){
+                        CurrSize->xsize=round(CurrSize->xsize/2);
+                        xincrement=2;
+                        Scalling[0]= 0.5f;
+                    }
+                    else if(direction==string("y")){
+                        CurrSize->ysize=round(CurrSize->ysize/2);
+                        yincrement=2;
+                        Scalling[1]= 0.5f;
+                    }
+                    else if(direction==string("z")){
+                        CurrSize->zsize=round(CurrSize->zsize/2);
+                        zincrement=2;
+                        Scalling[2]= 0.5f;
+                    }
+                    else{
+                        cout << "ERROR: Direction "<< direction << " is not x, y or z"<<endl;
+                        exit(1);
+                    }
+
+                    CurrSize->numel=(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize);
+                    for(long indexZ=0, indexZold=0; indexZ<CurrSize->zsize; indexZ++, indexZold+=zincrement){
+                        for(long indexY=0, indexYold=0; indexY<CurrSize->ysize; indexY++, indexYold+=yincrement){
+                            for(long indexX=0, indexXold=0; indexX<CurrSize->xsize; indexX++, indexXold+=xincrement){
+                                bufferImages[current_buffer?0:1][indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize]=
+                                        bufferImages[current_buffer][indexXold+indexYold*oldxsize+indexZold*oldysize*oldxsize];
+                                bufferImages[current_buffer?0:1][indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize+CurrSize->numel]=
+                                        bufferImages[current_buffer][(indexXold+xincrement-1)+(indexYold+yincrement-1)*oldxsize+(indexZold+zincrement-1)*oldysize*oldxsize];
+                            }
+                        }
+                    }
+                    current_buffer=current_buffer?0:1;
+
+                }
+
+            }
+            // *********************  Split Lables  *************************
+            else if(strcmp(argv[i], "-splitnorm") == 0)
+            {
+                string direction=argv[++i];
+                if(CurrSize->tsize<=1&& CurrSize->usize<=1){
+                    CurrSize->tsize=1;
+                    CurrSize->usize=1;
+                    int xincrement=1;
+                    int yincrement=1;
+                    int zincrement=1;
+                    bool isdirectionsizeodd=0;
+                    if(direction==string("x") || direction==string("1")){
+                        xincrement=2;
+                        isdirectionsizeodd=(CurrSize->xsize%2)==0;
+                    }
+                    else if(direction==string("y") || direction==string("2")){
+                        yincrement=2;
+                        isdirectionsizeodd=(CurrSize->ysize%2)==0;
+                    }
+                    else if(direction==string("z") || direction==string("3")){
+                        zincrement=2;
+                        isdirectionsizeodd=(CurrSize->zsize%2)==0;
+                    }
+                    else{
+                        cout << "ERROR: Direction "<< direction << " is not x, y or z"<<endl;
+                        exit(1);
+                    }
+
+                    //double regul=5.0f;
+                    std::vector<float> sortedimg;
+                    for(long indexZ=0; indexZ<(CurrSize->zsize); indexZ+=zincrement){
+                        for(long indexY=0; indexY<(CurrSize->ysize); indexY+=yincrement){
+                            for(long indexX=0; indexX<(CurrSize->xsize); indexX+=xincrement){
+                                sortedimg.push_back(bufferImages[current_buffer][indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize]);
+                            }
+                        }
+                    }
+                    std::sort(sortedimg.begin(), sortedimg.end());
+                    float thresh=0.5f*sortedimg.at(round(sortedimg.size()*0.5f)); // Find a rough background threshold to ignore non-brain tissues
+                    sortedimg.clear();
+
+                    std::vector<float> sortedvec;
+                    CurrSize->numel=(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize);
+                    for(long indexZ=(zincrement-1); indexZ<(CurrSize->zsize-(zincrement-1)); indexZ++){
+                        for(long indexY=(yincrement-1); indexY<(CurrSize->ysize-(yincrement-1)); indexY++){
+                            for(long indexX=(xincrement-1); indexX<(CurrSize->xsize-(xincrement-1)); indexX++){
+
+                                double previous_next_mean_val=(bufferImages[current_buffer][(indexX+xincrement-1)+(indexY+yincrement-1)*CurrSize->xsize+(indexZ+zincrement-1)*CurrSize->ysize*CurrSize->xsize]+
+                                        bufferImages[current_buffer][(indexX-xincrement+1)+(indexY-yincrement+1)*CurrSize->xsize+(indexZ-zincrement+1)*CurrSize->ysize*CurrSize->xsize])/(2.0f);
+                                double current_val=bufferImages[current_buffer][indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize];
+
+                                bool oddeven=(xincrement>1?indexX%2==0:(yincrement>1?indexY%2==0:(zincrement>1?indexZ%2==0:0)));
+
+                                float curRat=(current_val*previous_next_mean_val)/(oddeven?(current_val*current_val):(previous_next_mean_val*previous_next_mean_val));
+                                if(!(curRat!=curRat) && current_val>thresh){
+                                    sortedvec.push_back(curRat);
+                                }
+                            }
+                        }
+                    }
+                    std::sort(sortedvec.begin(), sortedvec.end());
+                    double compensation_ratio=sortedvec.at(round(sortedvec.size()/2.0f)); // Get the median ratio
+                    cout<<compensation_ratio<<endl;
+
+                    sortedvec.clear();
+                    for(long indexZ=0; indexZ<(CurrSize->zsize); indexZ+=zincrement){
+                        for(long indexY=0; indexY<(CurrSize->ysize); indexY+=yincrement){
+                            for(long indexX=0; indexX<(CurrSize->xsize); indexX+=xincrement){
+                                bufferImages[current_buffer?0:1][indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize]=
+                                        compensation_ratio*bufferImages[current_buffer][indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize];
+                                if((indexX+xincrement-1)<CurrSize->xsize && (indexY+yincrement-1)<CurrSize->ysize && (indexZ+zincrement-1)<CurrSize->zsize)
+                                {
+                                    bufferImages[current_buffer?0:1][(indexX+xincrement-1)+(indexY+yincrement-1)*CurrSize->xsize+(indexZ+zincrement-1)*CurrSize->ysize*CurrSize->xsize]=
+                                            bufferImages[current_buffer][(indexX+xincrement-1)+(indexY+yincrement-1)*CurrSize->xsize+(indexZ+zincrement-1)*CurrSize->ysize*CurrSize->xsize];
+                                }
+                            }
+                        }
+                    }
+                    current_buffer=current_buffer?0:1;
+
+                }
+
+            }
+//            // *********************  Split Lables  *************************
+//            else if(strcmp(argv[i], "-splitnorm2") == 0)
+//            {
+//                string direction=argv[++i];
+//                if(CurrSize->tsize<=1&& CurrSize->usize<=1){
+//                    int cur_dims[8]={3,CurrSize->xsize,CurrSize->ysize,CurrSize->zsize,1,1,1,1};
+//                    nifti_image * NewImage1=nifti_copy_nim_info(InputImage);
+//                    NewImage1->data= (void *) calloc(InputImage->nvox, sizeof(float));
+
+//                    nifti_image * NewImage2=nifti_copy_nim_info(InputImage);
+//                    NewImage2->data=(void *) calloc(InputImage->nvox, sizeof(float));
+
+//                    float* NewImage1_ptr=static_cast<SegPrecisionTYPE *>(NewImage1->data);
+//                    float* NewImage2_ptr=static_cast<SegPrecisionTYPE *>(NewImage2->data);
+
+//                    int xincrement=1;
+//                    int yincrement=1;
+//                    int zincrement=1;
+
+//                    if(direction==string("x")){
+//                        xincrement=2;
+//                    }
+//                    else if(direction==string("y")){
+//                        yincrement=2;
+//                    }
+//                    else if(direction==string("z")){
+//                        zincrement=2;
+//                    }
+//                    else{
+//                        cout << "ERROR: Direction "<< direction << " is not x, y or z"<<endl;
+//                        exit(1);
+//                    }
+////                    double regul=1.0e-15f;
+
+//                    CurrSize->numel=(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize);
+//                    for(long indexZ=(zincrement-1); indexZ<(CurrSize->zsize-(zincrement-1)); indexZ++){
+//                        for(long indexY=(yincrement-1); indexY<(CurrSize->ysize-(yincrement-1)); indexY++){
+//                            for(long indexX=(xincrement-1); indexX<(CurrSize->xsize-(xincrement-1)); indexX++){
+
+//                                if(xincrement>1?indexX%2==0:(yincrement>1?indexY%2==0:(zincrement>1?indexZ%2==0:0))){
+//                                    NewImage1_ptr[indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize]=
+//                                            (bufferImages[current_buffer][(indexX+xincrement-1)+(indexY+yincrement-1)*CurrSize->xsize+(indexZ+zincrement-1)*CurrSize->ysize*CurrSize->xsize]+
+//                                            bufferImages[current_buffer][(indexX-xincrement+1)+(indexY-yincrement+1)*CurrSize->xsize+(indexZ-zincrement+1)*CurrSize->ysize*CurrSize->xsize])/(2.0f);
+//                                    NewImage2_ptr[indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize]=
+//                                            bufferImages[current_buffer][indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize];
+//                                }
+//                                else{
+//                                    NewImage2_ptr[indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize]=
+//                                            (bufferImages[current_buffer][(indexX+xincrement-1)+(indexY+yincrement-1)*CurrSize->xsize+(indexZ+zincrement-1)*CurrSize->ysize*CurrSize->xsize]+
+//                                            bufferImages[current_buffer][(indexX-xincrement+1)+(indexY-yincrement+1)*CurrSize->xsize+(indexZ-zincrement+1)*CurrSize->ysize*CurrSize->xsize])/(2.0f);
+//                                    NewImage1_ptr[indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize]=
+//                                            bufferImages[current_buffer][indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize];
+//                                }
+
+//                            }
+//                        }
+//                    }
+//                    nifti_set_filenames(NewImage1,"img1.nii.gz",0,0);
+//                    nifti_image_write(NewImage1);
+//                    nifti_set_filenames(NewImage2,"img2.nii.gz",0,0);
+//                    nifti_image_write(NewImage2);
+//                    // Y=a*X+b
+//                    float a=0;
+//                    float b=0;
+//                    LS_Vecs(NewImage1_ptr,NewImage2_ptr,NULL, (CurrSize->xsize*CurrSize->ysize*CurrSize->zsize),&a, &b);
+//                    cout<<a<<"  "<<b<<endl;
+
+//                    for(long indexZ=0; indexZ<(CurrSize->zsize); indexZ+=zincrement){
+//                        for(long indexY=0; indexY<(CurrSize->ysize); indexY+=yincrement){
+//                            for(long indexX=0; indexX<(CurrSize->xsize); indexX+=xincrement){
+//                                bufferImages[current_buffer?0:1][indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize]=
+//                                        a*bufferImages[current_buffer][indexX+indexY*CurrSize->xsize+indexZ*CurrSize->ysize*CurrSize->xsize];
+//                                if((indexX+xincrement-1)<CurrSize->xsize && (indexY+yincrement-1)<CurrSize->ysize && (indexZ+zincrement-1)<CurrSize->zsize)
+//                                {
+//                                    bufferImages[current_buffer?0:1][(indexX+xincrement-1)+(indexY+yincrement-1)*CurrSize->xsize+(indexZ+zincrement-1)*CurrSize->ysize*CurrSize->xsize]=
+//                                            bufferImages[current_buffer][(indexX+xincrement-1)+(indexY+yincrement-1)*CurrSize->xsize+(indexZ+zincrement-1)*CurrSize->ysize*CurrSize->xsize];
+//                                }
+//                            }
+//                        }
+//                    }
+//                    current_buffer=current_buffer?0:1;
+//                }
+//            }
+            // *********************  Split Lables  *************************
+            else if(strcmp(argv[i], "-joininter") == 0)
+            {
+                string direction=argv[++i];
+                if(CurrSize->tsize==2&& CurrSize->usize<=1){
+                    CurrSize->tsize=1;
+                    CurrSize->usize=1;
+                    int oldxsize=CurrSize->xsize;
+                    int oldysize=CurrSize->ysize;
+                    int oldzsize=CurrSize->zsize;
+                    int xincrement=1;
+                    int yincrement=1;
+                    int zincrement=1;
+
+                    if(direction==string("x")){
+                        CurrSize->xsize=round(CurrSize->xsize*2);
+                        xincrement=2;
+                        Scalling[0]= 2.0f;
+                    }
+                    else if(direction==string("y")){
+                        CurrSize->ysize=round(CurrSize->ysize*2);
+                        yincrement=2;
+                        Scalling[1]= 2.0f;
+                    }
+                    else if(direction==string("z")){
+                        CurrSize->zsize=round(CurrSize->zsize*2);
+                        zincrement=2;
+                        Scalling[2]= 2.0f;
+                    }
+                    else{
+                        cout << "ERROR: Direction "<< direction << " is not x, y or z"<<endl;
+                        exit(1);
+                    }
+
+                    CurrSize->numel=(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize);
+                    long oldnumel=(long)(oldxsize*oldysize*oldzsize);
+                    for(long indexZ=0, indexZold=0; indexZ<CurrSize->zsize; indexZ+=zincrement, indexZold++){
+                        for(long indexY=0, indexYold=0; indexY<CurrSize->ysize; indexY+=yincrement, indexYold++){
+                            for(long indexX=0, indexXold=0; indexX<CurrSize->xsize; indexX+=xincrement, indexXold++){
+                                bufferImages[current_buffer?0:1][(indexX)+(indexY)*CurrSize->xsize+(indexZ)*CurrSize->ysize*CurrSize->xsize]=
+                                        bufferImages[current_buffer][indexXold+indexYold*oldxsize+indexZold*oldysize*oldxsize];
+                                bufferImages[current_buffer?0:1][(indexX+xincrement-1)+(indexY+yincrement-1)*CurrSize->xsize+(indexZ+zincrement-1)*CurrSize->ysize*CurrSize->xsize]=
+                                        bufferImages[current_buffer][indexXold+indexYold*oldxsize+indexZold*oldysize*oldxsize+oldnumel];
+                            }
+                        }
+                    }
+                    current_buffer=current_buffer?0:1;
+
+                }
+                else{
+                    cout << "ERROR: Number of time points is not 2"<<endl;
+                    exit(1);
+                }
+
             }
             // *********************  merge time points  *************************
             else if(strcmp(argv[i], "-merge") == 0)

@@ -1377,10 +1377,10 @@ void  seg_EM::Run_EM()
         {
             if(iter>0)
             {
-                if ((this->loglik-this->oldloglik)/fabsf(this->oldloglik)>0 && (this->loglik-this->oldloglik)/fabsf(this->oldloglik)<100)
+                if ((this->loglik-this->oldloglik)/fabs(this->oldloglik)>0 && (this->loglik-this->oldloglik)/fabs(this->oldloglik)<100)
                 {
                     cout<< "Loglik = " << setprecision(7)<<this->loglik <<
-                           " : Ratio = " << (this->loglik-this->oldloglik)/fabsf(this->oldloglik) << endl;
+                           " : Ratio = " << (this->loglik-this->oldloglik)/fabs(this->oldloglik) << endl;
                 }
                 else
                 {

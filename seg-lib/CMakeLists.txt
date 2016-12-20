@@ -9,7 +9,7 @@
         ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
     INSTALL(FILES ${NAME}.h _seg_matrix.h DESTINATION include)
-    add_dependencies(_seg_tools Eigen)
+    ##add_dependencies(_seg_tools Eigen)
 
     SET(NAME _seg_FMM)
     ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} ${NAME}.h ${NAME}.cpp)
@@ -19,7 +19,7 @@
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
     INSTALL(FILES ${NAME}.h DESTINATION include)
-    add_dependencies(_seg_FMM Eigen)
+    #add_dependencies(_seg_FMM Eigen)
 
     SET(NAME _seg_LoAd)
     ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} ${NAME}.h ${NAME}.cpp)
@@ -30,7 +30,7 @@
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
     INSTALL(FILES ${NAME}.h DESTINATION include)
-    add_dependencies(_seg_LoAd Eigen)
+    #add_dependencies(_seg_LoAd Eigen)
 
     SET(NAME _seg_EM)
     ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} ${NAME}.h ${NAME}.cpp)
@@ -41,7 +41,6 @@
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
     INSTALL(FILES ${NAME}.h DESTINATION include)
-    add_dependencies(_seg_EM Eigen)
 
     SET(NAME _seg_LabFusion)
     ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} ${NAME}.h ${NAME}.cpp _seg_tools)
@@ -52,7 +51,6 @@
             ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
     )
     INSTALL(FILES ${NAME}.h DESTINATION include)
-    add_dependencies(_seg_LabFusion Eigen)
     
     set(NAME _seg_PatchMatch)
     ADD_LIBRARY(${NAME} ${LIBRARY_TYPE} ${NAME}.h ${NAME}.cpp _seg_matrix.h _seg_PatchMatchResult.h _seg_PatchMatchResult.cpp)

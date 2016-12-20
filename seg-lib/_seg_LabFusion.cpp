@@ -1285,18 +1285,8 @@ int seg_LabFusion::UpdateMRF()
         maxiy = (int)(CurrSizes->ysize);
         maxiz = (int)(CurrSizes->zsize);
         segPrecisionTYPE Clique[maxMultiLableClass]= {0};
-        if(Clique == NULL)
-        {
-            fprintf(stderr,"* The variable Clique was not allocated: OUT OF MEMORY!");
-            exit(1);
-        }
-
         segPrecisionTYPE Temp_MRF_Class_Expect[maxMultiLableClass]= {0};
-        if(Temp_MRF_Class_Expect == NULL)
-        {
-            fprintf(stderr,"* The variable Temp_MRF_Class_Expect was not allocated: OUT OF MEMORY!");
-            exit(1);
-        }
+
         register int currlabelnumb;
 
 
