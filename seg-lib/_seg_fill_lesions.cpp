@@ -24,6 +24,7 @@ seg_fill_lesions<T>::seg_fill_lesions() {
     this->patchSearchAreaSize=4;
     this->percentage=0.5;
     this->k=2.0;
+    this->patch2D=false;
 }
 
 template <class T>
@@ -49,6 +50,7 @@ seg_fill_lesions<T>::seg_fill_lesions(const seg_fill_lesions &copy) {
     this->percentage=copy->percentage;
     this->numTP=copy->numTP;
     this->k=copy->k;
+    this->patch2D=copy->patch2D;
 }
 
 template <class T>
@@ -74,15 +76,16 @@ int seg_fill_lesions<T>::operator=(const seg_fill_lesions &copy) {
     this->percentage=copy->percentage;
     this->numTP=copy->numTP;
     this->k=copy->k;
-
+    this->patch2D=copy->patch2D;
+    
     return *this;
 }
 
 
 template<class T>
 void seg_fill_lesions<T>::setInputImage(nifti_image *input) {
-   this->inputImage = input;
-   this->init();
+    this->inputImage = input;
+    this->init();
 }
 
 template<class T>
@@ -244,19 +247,37 @@ long seg_fill_lesions<T>::getZAxisSize() {
 }
 
 template<class T>
-float seg_fill_lesions<T>::calculateDistance(int location1, int location2,int pacthSize,int countlesionvoxel){
+void seg_fill_lesions<T>::setDimensionality(bool is2D) {
+    this->patch2D=is2D;
+}
+
+template<class T>
+bool seg_fill_lesions<T>::isIt2D() {
+    return this->patch2D;
+}
+
+template<class T>
+float seg_fill_lesions<T>::calculateDistance(int location1, int location2,int patchSize,int countlesionvoxel){
 
     const int numvox=this->getSingleVolumSize();
-    float totalpatchsize=(pacthSize*2+1)*(pacthSize*2+1)*(pacthSize*2+1)*this->getNumTP();
-
+    float totalpatchsize=0;
+    int patchSizeZ=0;
+    if(this->isIt2D()) {
+        totalpatchsize=(patchSize*2+1)*(patchSize*2+1)*this->getNumTP();
+	patchSizeZ=0;
+    }
+    else {
+        totalpatchsize=(patchSize*2+1)*(patchSize*2+1)*(patchSize*2+1)*this->getNumTP();
+	patchSizeZ=patchSize;
+    }
+        
     float distance=0;
     int count=0;
     int shiftx=0;
     int shifty=0;
     int shiftz=0;
 
-    int maxshift=pacthSize+this->getXAxisSize()*(pacthSize+(this->getYAxisSize()*pacthSize));
-
+    int maxshift=patchSize+this->getXAxisSize()*(patchSize+(this->getYAxisSize()*patchSizeZ));
 
     bool WillTouchBorder=1;
     if( (location1+maxshift)<numvox &&
@@ -266,9 +287,9 @@ float seg_fill_lesions<T>::calculateDistance(int location1, int location2,int pa
         WillTouchBorder=0;
     }
 
-    for(shiftx=-pacthSize; shiftx<=pacthSize; shiftx++){
-        for(shifty=-pacthSize; shifty<=pacthSize; shifty++){
-            for(shiftz=-pacthSize; shiftz<=pacthSize; shiftz++){
+    for(shiftx=-patchSize; shiftx<=patchSize; shiftx++){
+        for(shifty=-patchSize; shifty<=patchSize; shifty++){
+            for(shiftz=-patchSizeZ; shiftz<=patchSizeZ; shiftz++){
                 int shift=(shiftx)+this->getXAxisSize()*(shifty+(this->getYAxisSize()*shiftz));
                 int index1=location1+shift;
                 int index2=location2+shift;
@@ -282,7 +303,7 @@ float seg_fill_lesions<T>::calculateDistance(int location1, int location2,int pa
                                 index2>=0       &&  // Is within the index bounds (also checks z)
 
                                 this->tmpLesMask[index1+tp*numvox]==0 &&  // Isn't within the mask
-                                this->tmpLesMask[index2+tp*numvox]==0 )   // Isn't within the mask)
+                                this->tmpLesMask[index2+tp*numvox]==0 )   // Isn't within the mask
                         {
                             distance+=(this->normImgPtr[index1+tp*numvox]-this->normImgPtr[index2+tp*numvox])*(this->normImgPtr[index1+tp*numvox]-this->normImgPtr[index2+tp*numvox]);
                             count++;
@@ -290,7 +311,7 @@ float seg_fill_lesions<T>::calculateDistance(int location1, int location2,int pa
                     }
                     else{
                         if(this->tmpLesMask[index1+tp*numvox]==0     &&  // Isn't within the mask
-                                this->tmpLesMask[index2+tp*numvox]==0)   // Isn't within the mask)
+                                this->tmpLesMask[index2+tp*numvox]==0)   // Isn't within the mask
                         {
                             distance+=(this->normImgPtr[index1+tp*numvox]-this->normImgPtr[index2+tp*numvox])*(this->normImgPtr[index1+tp*numvox]-this->normImgPtr[index2+tp*numvox]);
                             count++;
@@ -475,7 +496,7 @@ void seg_fill_lesions<T>::runIt(){
         if(tpf>=0) countvox++;
     }
 
-    if(this->getVerbose()) cout << "Calculating Euclidean distance"<<endl;
+    if(this->getVerbose()) cout<<"Calculating Euclidean distance"<<endl;
     float *Distance = new float[this->getTotalVolumSize()];
     this->calculateEuclideanDistance(Distance);
     if(this->getDebug()) {
@@ -522,7 +543,7 @@ void seg_fill_lesions<T>::runIt(){
         }
         if(this->getVerbose()) cout<<"["<<tp<<"] MIN="<<mininten[tp]<<" MAX="<<maxinten[tp]<<endl;
     }
-    if(this->getVerbose()) cout << "Filling lesions"<<endl;
+    if(this->getVerbose()) cout<<"Filling lesions"<<endl;
     long count=1;
     int iteration=0;
     int lastpercent=0;
@@ -530,7 +551,7 @@ void seg_fill_lesions<T>::runIt(){
         iteration++;
         count=0;
         if(this->getVerbose()) {
-            cout<< "Iteration: "<<iteration<<"/"<<(int)(max+1)<<endl;
+            cout<<"Iteration: "<<iteration<<"/"<<(int)(max+1)<<endl;
             cout<<"Filled voxels: "<<(float)(curcountvox)<<"/"<<(float)(countvox)<<endl;
         }
         int inz=0;
@@ -565,8 +586,8 @@ void seg_fill_lesions<T>::runIt(){
                             (long)(index-1)>=0 &&
                             (long)(index+this->getXAxisSize())<this->getSingleVolumSize() &&
                             (long)(index-this->getXAxisSize())>=0 &&
-                            (long)(index+this->getSliceSize())<this->getSingleVolumSize() &&
-                            (long)(index-this->getSliceSize())>=0)
+                            ((long)(index+this->getSliceSize())<this->getSingleVolumSize() || this->isIt2D())  &&
+                            ((long)(index-this->getSliceSize())>=0 || this->isIt2D()))
 
                     {   // Boundary for the time point affected
                         if(level[index]<1) level[index]=1;
@@ -574,8 +595,8 @@ void seg_fill_lesions<T>::runIt(){
                             this->tmpLesMask[(index+tpf*this->getSingleVolumSize())-1]==0 ||
                             this->tmpLesMask[(index+tpf*this->getSingleVolumSize())+this->getXAxisSize()]==0 ||
                             this->tmpLesMask[(index+tpf*this->getSingleVolumSize())-this->getXAxisSize()]==0 ||
-                            this->tmpLesMask[(index+tpf*this->getSingleVolumSize())+this->getSliceSize()]==0 ||
-                            this->tmpLesMask[(index+tpf*this->getSingleVolumSize())-this->getSliceSize()]==0)
+                            (this->tmpLesMask[(index+tpf*this->getSingleVolumSize())+this->getSliceSize()]==0 || this->isIt2D()) ||
+                            (this->tmpLesMask[(index+tpf*this->getSingleVolumSize())-this->getSliceSize()]==0 || this->isIt2D()) )
                                 ){
                             if(level[index]<3) level[index]=3;
                             curcountvox++;
@@ -596,7 +617,6 @@ void seg_fill_lesions<T>::runIt(){
                                 for(shifty=-shiftrealsize; shifty<=shiftrealsize; shifty++) {
                                     for(shiftx=-shiftrealsize; shiftx<=shiftrealsize; shiftx++) {
                                         index2=(inx+shiftx)+this->getXAxisSize()*(iny+shifty)+this->getSliceSize()*(inz+shiftz);
-
                                         if(index2<this->getSingleVolumSize() && // Is within the index bounds (also checks z)
                                                 index2>=0 && // Is within the index bounds (also checks z)
                                                 this->isMaskInAnyTP(index2,this->originalLesMask)<0 &&//this->originalMask[index2+tpf*this->getSingleVolumSize()]==0 && // Is outside the mask
@@ -610,7 +630,7 @@ void seg_fill_lesions<T>::runIt(){
                                                 fabs(0.1f*(maxinten[tpf]-mininten[tpf]))>fabs(this->meanImgPtr[index+tpf*this->getSingleVolumSize()]-this->meanImgPtr[index2+tpf*this->getSingleVolumSize()]) // For the specific timepoint
                                                 )
                                         {
-                                            // Multidimensional patch (4D)
+                                            // Multidimensional patch (4D)					    
                                             curdist=this->calculateDistance(index,index2,maxPatchsize,totalLesionVoxels);
                                             if(mindistance > curdist && isnan(curdist)==0) {
                                                 mindistance=curdist;
@@ -696,12 +716,12 @@ void seg_fill_lesions<T>::runIt(){
                         density+=mult;
                     }
 
-                    if((i-this->getSliceSize())>=0 && this->tmpLesMask[(i+tp*this->getSingleVolumSize())-this->getSliceSize()]!=1 ){
+                    if(!this->isIt2D() && (i-this->getSliceSize())>=0 && this->tmpLesMask[(i+tp*this->getSingleVolumSize())-this->getSliceSize()]!=1 ){
                         intensity+=mult*this->tmpImg[(i+tp*this->getSingleVolumSize())-this->getSliceSize()];
                         normintensity+=mult*this->tmpNorm[(i+tp*this->getSingleVolumSize())-this->getSliceSize()];
                         density+=mult;
                     }
-                    if((i+this->getSliceSize())<this->getSingleVolumSize() && this->tmpLesMask[(i+tp*this->getSingleVolumSize())+this->getSliceSize()]!=1 ){
+                    if(!this->isIt2D() && (i+this->getSliceSize())<this->getSingleVolumSize() && this->tmpLesMask[(i+tp*this->getSingleVolumSize())+this->getSliceSize()]!=1 ){
                         intensity+=mult*this->tmpImg[(i+tp*this->getSingleVolumSize())+this->getSliceSize()];
                         normintensity+=mult*this->tmpNorm[(i+tp*this->getSingleVolumSize())+this->getSliceSize()];
                         density+=mult;

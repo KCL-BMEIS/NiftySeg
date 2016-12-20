@@ -39,6 +39,7 @@ void Usage(char *exec)
     printf("\t-match\t\t\tNumber of better matching (by default 10).\n");
     printf("\t-pm\t\t\tNumber of patchmatch executions (by default 10). It should be equal or bigger than the number of better matching.\n");
     printf("\t-it\t\t\tNumber of iterations for the patchmatch algorithm (by default 5).\n");
+    printf("\t-fill\t\t\tIt applies label fusion at all the voxels independtly if they are inside the input mask or not.\n");
     printf("\t-dist\t\t\tUsed distance (by default 0, SSD=0, LNCC=1).\n");
     printf("\t-debug\t\t\tSave all intermidium files (by default OFF).\n");
     printf("\t-odt <datatype> \tSet output <datatype> (char, short, int, uchar, ushort, uint, float, double).\n");
@@ -72,6 +73,7 @@ int main(int argc, char **argv)
         int pm_threads=10;
         int it=5;
         int distance=0;
+	bool filling=true;
         time_t start;
         time(&start);
         vector<string> imageFiles;
@@ -149,6 +151,10 @@ int main(int argc, char **argv)
             else if(strcmp(argv[i], "-debug") == 0)
             {
                 debug=1;
+            }
+            else if(strcmp(argv[i], "-fill") == 0)
+            {
+                filling=true;
             }
             else if(strcmp(argv[i], "-cs") == 0)
             {
@@ -338,9 +344,11 @@ int main(int argc, char **argv)
             cout<<"PARAM[better_match]="<<better_match<<endl;
             cout<<"PARAM[cs_size]="<<cs<<endl;
             cout<<"PARAM[patch_size]="<<size<<endl;
-            cout<<"PARAM[debug]="<<debug<<endl;
+            if (filling) cout<<"PARAM[filling]=True"<<endl;
+	    else cout<<"PARAM[filling]=False"<<endl;
+	    cout<<"PARAM[debug]="<<debug<<endl;
             cout<<"PARAM[odt/idt]="<<datatypeoutput<<"/"<<InputImage->datatype<<endl;
-            cout<<"PARAM[v]="<<verbose<<endl;         
+	    cout<<"PARAM[v]="<<verbose<<endl;         
         }
         float *OutputResult=NULL;
         // We are ready for lesion detection
@@ -410,6 +418,7 @@ int main(int argc, char **argv)
         patchmatch->setBetterMatch(better_match);
         patchmatch->setPatchSize(size);
         patchmatch->setDistance(distance);
+	patchmatch->setFilling(filling);
         patchmatch->runIt();
         OutputResult= patchmatch->getOutputResult();
 

@@ -45,6 +45,7 @@ protected:
     ImageSize *currSize;
     ImageSize *outputSize;
     int count;
+    bool filling;
 
     float *db_list_image;
     float *db_list_mask;
@@ -89,6 +90,7 @@ protected:
     void  initKNNVectors();
     void  saveDebugResults();
     void  labelFusion();
+    long  recomputeInputData(int);
 
 public:
     seg_PatchMatch();
@@ -111,6 +113,8 @@ public:
     int  getConstrainedSearchAreaSize();
     void setDistance(int);
     int  getDistance();
+    void  setFilling(bool);
+    bool  isFilling();
     float* getOutputResult();
     void setVerbose(int);
     void setDebug(int);
