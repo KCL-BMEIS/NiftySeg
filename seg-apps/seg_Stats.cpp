@@ -26,9 +26,10 @@ void Usage(char *exec)
 {
     printf("\nStat tools:\nUsage:\t%s <in> [constrains] [statistics]\n\n",exec);
 
-    printf("\t* * Constrains (optional) * *\n");
+    printf("\t* * Constrains and configuration options (optional) * *\n");
     printf("\t-m <mask> \t| Only estimate statistics within the masked area.\n");
     printf("\t-t <float> \t| Only estimate statistics if voxel is larger than <float>.\n");
+    printf("\t-p <int> \t| Set outpout precision (number of digits), by default is 6.\n");
     printf("\n\t  Note: All NaN or Inf are ignored for all stats. \n\t        The -m and -t options can be used in conjusction.\n\n");
 
     printf("\n\t* * Statistics (at least one option is mandatory) * *\n");
@@ -41,7 +42,7 @@ void Usage(char *exec)
     printf("\t-s  \t\t| Standard deviation of all voxels \n");
     printf("\t-v  \t\t| Volume of all voxels above 0 (<# voxels> * <volume per voxel>)\n");
     printf("\t-vl \t\t| Volume of each integer label (<# voxels per label> * <volume per voxel>)\n");
-    printf("\t-vp \t\t| Volume of all probabilsitic voxels (sum(<in>) * <volume per voxel>)\n");
+    printf("\t-vp \t\t| Volume of all probabilistic voxels (sum(<in>) * <volume per voxel>)\n");
     printf("\t-n  \t\t| Count of all voxels above 0 (<# voxels>)\n");
     printf("\t-np \t\t| Sum of all fuzzy voxels (sum(<in>))\n");
     printf("\t-e \t\t| Entropy of all voxels\n");
@@ -52,7 +53,7 @@ void Usage(char *exec)
     printf("\t-ss  <ax> \t| Standard deviation of all voxels \n");
 //    printf("\t-sv  <ax> \t\t| Volume of all voxels above 0 (<# voxels> * <volume per voxel>)\n");
 //    printf("\t-svl <ax>\t\t| Volume of each integer label (<# voxels per label> * <volume per voxel>)\n");
-    printf("\t-svp <ax>\t| Volume of all probabilsitic voxels (sum(<in>) * <volume per voxel>)\n");
+    printf("\t-svp <ax>\t| Volume of all probabilistic voxels (sum(<in>) * <volume per voxel>)\n");
 //    printf("\t-sn  <ax> \t\t| Count of all voxels above 0 (<# voxels>)\n");
 //    printf("\t-snp <ax>\t\t| Sum of all fuzzy voxels (sum(<in>))\n");
 
@@ -119,7 +120,7 @@ int main(int argc, char **argv)
         }
         float * Img1prt = static_cast<float *>(Images[0]->data);
 
-
+        cout.precision(6);
         nifti_image * Mask=nifti_copy_nim_info(Images[0]);
         Mask->dim[0]=3;
         Mask->nt=Mask->dim[4]=0;
@@ -157,6 +158,11 @@ int main(int argc, char **argv)
                 Usage(argv[0]);
                 return 0;
             }
+	    else if(strcmp(argv[i], "-p") == 0 && (i+1)<argc)
+            {
+	        int pres = atoi(argv[++i]);
+		cout.precision(pres);
+	    }
             // **************************            ---------          *****************************
             // **************************            Mask Stats         *****************************
             // **************************            ---------          *****************************
@@ -621,7 +627,7 @@ int main(int argc, char **argv)
                         calcvol += Img1prt[index]>0;
                     }
                 }
-                cout <<(double)(calcvol)*(double)(Images[0]->dx)*(double)(Images[0]->dy)*(double)(Images[0]->dz)<<endl;
+                cout <<(float)(calcvol)*(double)(Images[0]->dx)*(double)(Images[0]->dy)*(double)(Images[0]->dz)<<endl;
                 flush(cout);
             }
 
