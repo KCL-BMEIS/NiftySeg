@@ -20,6 +20,7 @@ void Usage(char *exec)
     printf("\t-size\t<int>\t\tSearch regions size respect biggest patch size (by default 4).\n");
     printf("\t-cwf\t<float>\t\tPatch cardinality weighting factor (by default 2).\n");
     printf("\t-mask\t\t\tGive a binary mask with the valid search areas.\n");
+    printf("\t-2D\t\t\tUses 2D patches in the Z axis, by default 3D.\n");
     printf("\t-other\t\t\tGuizard et al. (FIN 2015) method, it doesn't include the multiresolution/hierarchical inpainting part, this part needs to be done with some \n");
     printf("\t\t\t\texternal software such as reg_tools and reg_resample from NiftyReg. By default it uses the method presented in Prados et al. (Neuroimage 2016).\n");
     printf("\t-debug\t\t\tSave all intermidium files (by default OFF).\n");
@@ -31,6 +32,10 @@ void Usage(char *exec)
     #ifdef _GIT_HASH
     printf("\t--version\t\tPrint current source code git hash key and exit\n\t\t\t\t(%s)\n",_GIT_HASH);
     #endif
+    printf("\tProgram based on the following publication:\n");
+    printf("\tF. Prados, M. J. Cardoso, B. Kanber, O. Ciccarelli, R. Kapoor, C. A. M. Gandini Wheeler-Kingshott, S. Ourselin.\n");
+    printf("\tA multi-time-point modality-agnostic patch-based method for lesion filling in multiple sclerosis.\n");
+    printf("\tNeuroimage 139, 376-384 (2016).\n");
     printf("\n\n* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
     return;
 }
@@ -55,6 +60,7 @@ int main(int argc, char **argv)
         int size=4;
 	int method=0;
 	double k=2.0;
+	bool patch2D=false;
         time_t start;
         time(&start);
 
@@ -145,6 +151,10 @@ int main(int argc, char **argv)
             {
                 string parser=argv[++i];
                 expanding=strtod(parser.c_str(),NULL);
+            }
+	    else  if(strcmp(argv[i], "-2D") == 0)
+            {
+                patch2D=true;
             }
             else  if(strcmp(argv[i], "-other") == 0)
             {
@@ -286,8 +296,16 @@ int main(int argc, char **argv)
         if(verbose)
         {
             cout<<"Parameters values:"<<endl;
-	    if(method==0) cout<<"PARAM[method]=Prados et al. (Neuroimage 2016)"<<endl;
-	    else cout<<"PARAM[method]=Guizard et al. (FIN 2015)"<<endl;
+	    if(method==0) {
+		cout<<"PARAM[method]=Prados et al. (Neuroimage 2016)"<<endl;
+		if(patch2D) cout<<"PARAM[dimensionality]=2D"<<endl;
+		else cout<<"PARAM[dimensionality]=3D"<<endl;
+	    }
+	    else {
+		cout<<"PARAM[method]=Guizard et al. (FIN 2015)"<<endl;
+		if(patch2D) cout<<"PARAM[dimensionality]=2D option NOT available for this method"<<endl;
+		else cout<<"PARAM[dimensionality]=3D"<<endl;
+	    }
 	    cout<<"PARAM[input]="<<filename_in<<endl;
             cout<<"PARAM[les_mask]="<<filename_lesion_mask<<endl;
             if(filename_mask!=NULL) cout<<"PARAM[mask]="<<filename_mask<<endl;
@@ -329,10 +347,15 @@ int main(int argc, char **argv)
 		fillLesions->setPatchPercentage(match);
 		fillLesions->setExpandingPercentage(expanding);
 		fillLesions->setSmoothing(smo);
+		fillLesions->setDimensionality(patch2D);
 		fillLesions->setK(k);
 		fillLesions->runIt();
 	    }
 	    else {
+		if(patch2D) {
+		    cout<<"PARAM[dimensionality]=2D option NOT available for this method"<<endl;
+		    return -1;
+		}
 		seg_fill_lesions_other <SegPrecisionTYPE> *fillLesions=new seg_fill_lesions_other<SegPrecisionTYPE>();
 		fillLesions->setVerbose(verbose);
 		fillLesions->setDebug(debug);
@@ -348,6 +371,7 @@ int main(int argc, char **argv)
             cout << "ERROR: Lesion mask "<< filename_lesion_mask << " is the wrong size  -  original = ( "<<InputImage->nx<<","
                  <<InputImage->ny<<","<<InputImage->nz<<","<<InputImage->nt<<","<<InputImage->nu<<" )  New image = ( "<<InputLesionMask->nx<<","
                 <<InputLesionMask->ny<<","<<InputLesionMask->nz<<","<<InputLesionMask->nt<<","<<InputLesionMask->nu<<" )"<<endl;
+	    return -1;
         }
 
         if(filename_out.find(string(".nii"))>0 || filename_out.find(string(".img")) || filename_out.find(string(".hdr"))>0)

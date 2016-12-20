@@ -30,6 +30,7 @@ protected:
     float *tmpNorm;
     ImageSize * currSize;
     float k;
+    bool patch2D;
 
     int   getPatchSearchAreaSize();
     float calculateDistance(int,int,int,int);
@@ -52,6 +53,7 @@ protected:
     void  saveImagePtr(int *,nifti_image *,char *);
     void  saveImagePtr(float *,nifti_image *,char *);
     int   countLesionVoxels(int,int);
+    bool  isIt2D();
     int   getDebug();
     int   getVerbose();
 
@@ -71,6 +73,7 @@ public:
     void setVerbose(int);
     void setDebug(int);
     void setK(float);
+    void setDimensionality(bool);
     void init();
     void runIt();
     void saveImage(nifti_image *,char *);

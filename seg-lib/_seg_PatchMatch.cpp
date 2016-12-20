@@ -34,6 +34,7 @@ seg_PatchMatch<T>::seg_PatchMatch() {
     this->count=0;
     this->maskPtr=NULL;
     this->matchingCount=NULL;
+    this->filling=false;
 }
 
 template<class T>
@@ -204,6 +205,16 @@ long seg_PatchMatch<T>::getYAxisSize() {
 template<class T>
 long seg_PatchMatch<T>::getZAxisSize() {
     return this->currSize->zsize;
+}
+
+template<class T>
+void seg_PatchMatch<T>::setFilling(bool v) {
+    this->filling=v;
+}
+
+template<class T>
+bool seg_PatchMatch<T>::isFilling() {
+    return this->filling;
 }
 
 template<class T>
@@ -560,7 +571,7 @@ void seg_PatchMatch<T>::getNextRecordDatabase(int num,float *&imagePtr,float *&m
     }
     this->loadFile(nifti_image_file,filename_file,imagePtr,imageSize);
 
-    // Load brain mask File
+    // Load mask File
     string filename_mask=this->maskDatabaseFileList[num];
     ImageSize *maskSize=NULL;
     if(this->getVerbose()) cout << " and "<<filename_mask<<endl;
@@ -568,8 +579,8 @@ void seg_PatchMatch<T>::getNextRecordDatabase(int num,float *&imagePtr,float *&m
 
     if(!(maskSize->xsize==imageSize->xsize && maskSize->ysize==imageSize->ysize && maskSize->zsize==imageSize->zsize))
     {
-        cout << "ERROR: Database brain mask (2nd column from the input text file) "<< filename_mask << " is the wrong size  respect to database  image = ( "<<imageSize->xsize<<","
-             <<imageSize->ysize<<","<<imageSize->zsize<<" )  brain mask = ( "<<maskSize->xsize<<","
+        cout << "ERROR: Database mask (2nd column from the input text file) "<< filename_mask << " is the wrong size  respect to database  image = ( "<<imageSize->xsize<<","
+             <<imageSize->ysize<<","<<imageSize->zsize<<" )  mask = ( "<<maskSize->xsize<<","
             <<maskSize->ysize<<","<<maskSize->zsize<<" )"<<endl;
         exit(-1);
     }
@@ -590,7 +601,7 @@ void seg_PatchMatch<T>::getNextRecordDatabase(int num,float *&imagePtr,float *&m
     }
 
     if(this->getVerbose()) {
-        cout <<"[DB="<<num<<"] Applying brain mask to the Image"<<endl;
+        cout <<"[DB="<<num<<"] Applying mask to the Image"<<endl;
     }
     #ifdef _OPENMP
     #pragma omp parallel for default(none) schedule(auto)\
@@ -608,7 +619,7 @@ void seg_PatchMatch<T>::getNextRecordDatabase(int num,float *&imagePtr,float *&m
     if(this->getVerbose()) {
         cout <<"[DB="<<num<<"] Normalizing Database Image"<<endl;
     }
-    this->normalizeImageIntesitiesOutliers(0.0f,1024.0f,imagePtr);
+    //this->normalizeImageIntesitiesOutliers(0.0f,1024.0f,imagePtr);
     if(this->getDebug()) {
         sprintf(filename,"segPatchMatch_normalized_database_image_%d.nii.gz",num);
         this->saveImagePtr(imagePtr,nifti_image_file,filename);
@@ -709,6 +720,9 @@ void seg_PatchMatch<T>::loadOuputDatabase(){
         ImageSize *imageSize_DB=NULL;
         this->loadFile(nifti_image_file_DB,filename_file_DB,databaseImagePtr,imageSize_DB);
 
+	/*if(this->isFilling()) {
+	  this->normalizeImageIntesitiesOutliers(0.0f,1024.0f,databaseImagePtr);
+	}*/
         for(long ii=0; ii<NUMVOXTOTAL; ii++) {
             this->db_list_output[ii+num*NUMVOXTOTAL]=databaseImagePtr[ii];
         }
@@ -770,7 +784,7 @@ void seg_PatchMatch<T>::loadingInputData(){
         }
     }
     // Intensity image normalization
-    this->normalizeImageIntesitiesOutliers(0.0f,1024.0f,this->imgPtr);
+    //this->normalizeImageIntesitiesOutliers(0.0f,1024.0f,this->imgPtr);
     if(this->getDebug()) {
         sprintf(filename,"segPatchMatch_normalized_image.nii.gz");
         this->saveImagePtr(this->imgPtr,this->inputImage,filename);
@@ -873,7 +887,7 @@ void seg_PatchMatch<T>::fusePatch(long index,long location,int image,long NUMVOX
                        index+shift<this->getSingleVolumSize() &&
                        location+shift>=0 &&
                        location+shift<this->getSingleVolumSize() &&
-                       this->maskPtr[index+shift]>0 &&
+                       (this->maskPtr[index+shift]>0 || this->isFilling())&&
                        this->db_list_mask[location+shift+image*this->getSingleVolumSize()]>0) {
                             this->outputMaskPtr[pos]+=this->db_list_output[posDB];
                             this->matchingCount[pos]++;
@@ -930,6 +944,46 @@ void seg_PatchMatch<T>::saveDebugResults() {
     }
     sprintf(filename,"segPatchMatch_intermidium_Image-best.nii.gz");
     this->saveImagePtr(image,this->inputMask,filename);
+    
+    sprintf(filename,"segPatchMatch_intermidium_matching_counting.nii.gz");
+    this->saveImagePtr(this->matchingCount,this->inputMask,filename);
+}
+
+template<class T>
+long seg_PatchMatch<T>::recomputeInputData(int iteration){
+    char filename[100];
+    if(this->getVerbose()) {
+      cout<<"["<<iteration<<"] Filling"<<endl;
+      cout<<"["<<iteration<<"] Recomputing/filling input data"<<endl;
+    }
+    long tp;
+    long count=0;
+    long painted=0;
+    int average=(int)this->getPatchSize()*this->getPatchSize()*this->getPatchMatchExecutions()/2;
+    for(int i=0; i<this->getSingleVolumSize(); i++) {
+      if(this->maskPtr[i]<1) {
+	for(tp=0;tp<this->getNumTP();tp++) {
+	  if(this->matchingCount[i+tp*this->getSingleVolumSize()]>average) {
+	    this->maskPtr[i]=1;
+	    this->imgPtr[i+tp*this->getSingleVolumSize()]=this->outputMaskPtr[i+tp*this->getSingleVolumSize()]/this->matchingCount[i+tp*this->getSingleVolumSize()];
+	  }
+	  else {
+	    count++;
+	  }
+        }
+        painted++;
+      }
+    }
+    if(this->getVerbose()) {
+      cout<<"["<<iteration<<"] Number of voxels: "<<painted<<" "<<count<<endl;
+    }
+    if(this->getDebug()) {
+        sprintf(filename,"segPatchMatch_recomputed_image_%d.nii.gz",iteration);
+        this->saveImagePtr(this->imgPtr,this->inputImage,filename);
+	sprintf(filename,"segPatchMatch_recomputed_mask_%d.nii.gz",iteration);
+        this->saveImagePtr(this->maskPtr,this->inputMask,filename);
+    }
+    return count;
 }
 
 template<class T>
@@ -955,6 +1009,26 @@ void seg_PatchMatch<T>::runIt(){
 
     // Fusing results taking into account KNN best matches and the output data
     this->labelFusion();
+    
+    // If we are doing filling we iterate until we fill all the voxels
+    if(this->isFilling()) {
+      int iteration=0;
+      long voxels=this->recomputeInputData(iteration);
+      while(voxels>0) {
+	// Initializing results
+	this->initKNNVectors();
+	// We are going to compute PatchMatch
+        this->patchMatch();
+	// Sorting the results
+	this->sortKNNResults();
+	// Fusing results taking into account KNN best matches and the output data
+	this->labelFusion();
+	
+	// We check if we need to recompute again the filling
+	iteration++;
+	voxels=this->recomputeInputData(iteration);
+      }
+    }
 
     // Saving results
     this->saveResults();
