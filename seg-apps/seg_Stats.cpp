@@ -1424,6 +1424,228 @@ int main(int argc, char **argv)
                 }
             }
             // **************************            ---------          *****************************
+            // ************************** PerSlice Average, output image *****************************
+            // **************************            ---------          *****************************
+
+            else if(strcmp(argv[i], "-sai") == 0 && (i+2)<argc)
+            {
+                if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
+                {
+                    seg_changeDatatype<float>(Images[0]);
+                }
+                float * Img1prt = static_cast<float *>(Images[0]->data);
+
+                unsigned int direction = atoi(argv[++i]);
+                unsigned int dim1=0;
+                unsigned int dim2=0;
+                unsigned int dirmain=0;
+
+                nifti_image * OutImage=nifti_copy_nim_info(Images[0]);
+                OutImage->dim[0]=3;
+                OutImage->nt=Mask->dim[4]=0;
+                OutImage->datatype=NIFTI_TYPE_FLOAT32;
+                OutImage->cal_max=1;
+                OutImage->cal_min=0;
+                nifti_update_dims_from_array(OutImage);
+                nifti_datatype_sizes(OutImage->datatype,&OutImage->nbyper,&OutImage->swapsize);
+                OutImage->data = (void *) calloc(OutImage->nvox, sizeof(float));
+                float * OutImagePtr = static_cast<float *>(OutImage->data);
+                string OutFilename=argv[++i];
+
+                if(direction>0 && direction<=3){
+                    if(direction==1){
+                        dirmain=Images[0]->nx;
+                        dim1=Images[0]->ny;
+                        dim2=Images[0]->nz;
+                    }
+                    else if(direction==2){
+                        dim1=Images[0]->nx;
+                        dirmain=Images[0]->ny;
+                        dim2=Images[0]->nz;
+                      }
+                    else if(direction==3){
+                        dim1=Images[0]->nx;
+                        dim2=Images[0]->ny;
+                        dirmain=Images[0]->nz;
+                      }
+                }
+                else{
+                   cout<<"Error: Direction " <<direction<<" unknown"<<endl;
+                }
+
+                unsigned int index=0;
+                double calcvol=0;
+                double calcvolcount=0;
+
+                for(unsigned int dirmain_ind=0; dirmain_ind<dirmain; dirmain_ind++)
+                {
+                    calcvol=calcvolcount=0;
+                    for(unsigned int dim1_ind=0; dim1_ind<dim1; dim1_ind++){
+                        for(unsigned int dim2_ind=0; dim2_ind<dim2; dim2_ind++){
+                            if(direction==1){
+                                index=dirmain_ind+dim1_ind*Images[0]->nx+dim2_ind*Images[0]->nx*Images[0]->ny;
+                            }
+                            else if(direction==2){
+                                index=dim1_ind+dirmain_ind*Images[0]->nx+dim2_ind*Images[0]->nx*Images[0]->ny;
+                              }
+                            else if(direction==3){
+                                index=dim1_ind+dim2_ind*Images[0]->nx+dirmain_ind*Images[0]->nx*Images[0]->ny;
+                              }
+                            else{
+                                cout<<"Error: Direction is problematic"<<endl;
+                            }
+                            if(mask[index]){
+                                calcvol += (double)Img1prt[index];
+                                calcvolcount+=1;
+                            }
+                        }
+                    }
+                    calcvol= (double)(calcvol)/(double)(calcvolcount);
+                    for(unsigned int dim1_ind=0; dim1_ind<dim1; dim1_ind++){
+                        for(unsigned int dim2_ind=0; dim2_ind<dim2; dim2_ind++){
+                            if(direction==1){
+                                index=dirmain_ind+dim1_ind*Images[0]->nx+dim2_ind*Images[0]->nx*Images[0]->ny;
+                            }
+                            else if(direction==2){
+                                index=dim1_ind+dirmain_ind*Images[0]->nx+dim2_ind*Images[0]->nx*Images[0]->ny;
+                              }
+                            else if(direction==3){
+                                index=dim1_ind+dim2_ind*Images[0]->nx+dirmain_ind*Images[0]->nx*Images[0]->ny;
+                              }
+                            else{
+                                cout<<"Error: Direction is problematic"<<endl;
+                            }
+                            OutImagePtr[index]=calcvol;
+
+                        }
+                    }
+                }
+                nifti_set_filenames(OutImage, OutFilename.c_str(),0,0);
+                nifti_image_write(OutImage);
+                nifti_image_free(OutImage);
+            }
+            // **************************            ---------          *****************************
+            // **************************  PerSlice std, output image   *****************************
+            // **************************            ---------          *****************************
+
+            else if(strcmp(argv[i], "-ssi") == 0 && (i+2)<argc)
+            {
+                if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
+                {
+                    seg_changeDatatype<float>(Images[0]);
+                }
+                float * Img1prt = static_cast<float *>(Images[0]->data);
+
+                unsigned int direction = atoi(argv[++i]);
+                unsigned int dim1=0;
+                unsigned int dim2=0;
+                unsigned int dirmain=0;
+
+                nifti_image * OutImage=nifti_copy_nim_info(Images[0]);
+                OutImage->dim[0]=3;
+                OutImage->nt=Mask->dim[4]=0;
+                OutImage->datatype=NIFTI_TYPE_FLOAT32;
+                OutImage->cal_max=1;
+                OutImage->cal_min=0;
+                nifti_update_dims_from_array(OutImage);
+                nifti_datatype_sizes(OutImage->datatype,&OutImage->nbyper,&OutImage->swapsize);
+                OutImage->data = (void *) calloc(OutImage->nvox, sizeof(float));
+                float * OutImagePtr = static_cast<float *>(OutImage->data);
+                string OutFilename=argv[++i];
+
+                if(direction>0 && direction<=3){
+                    if(direction==1){
+                        dirmain=Images[0]->nx;
+                        dim1=Images[0]->ny;
+                        dim2=Images[0]->nz;
+                    }
+                    else if(direction==2){
+                        dim1=Images[0]->nx;
+                        dirmain=Images[0]->ny;
+                        dim2=Images[0]->nz;
+                      }
+                    else if(direction==3){
+                        dim1=Images[0]->nx;
+                        dim2=Images[0]->ny;
+                        dirmain=Images[0]->nz;
+                      }
+                }
+                else{
+                   cout<<"Error: Direction " <<direction<<" unknown"<<endl;
+                }
+
+                unsigned int index=0;
+                double calcval=0;
+                double calcvalcount=0;
+                for(unsigned int dirmain_ind=0; dirmain_ind<dirmain; dirmain_ind++)
+                {
+                    calcval=calcvalcount=0;
+                    for(unsigned int dim1_ind=0; dim1_ind<dim1; dim1_ind++){
+                        for(unsigned int dim2_ind=0; dim2_ind<dim2; dim2_ind++){
+                            if(direction==1){
+                                index=dirmain_ind+dim1_ind*Images[0]->nx+dim2_ind*Images[0]->nx*Images[0]->ny;
+                            }
+                            else if(direction==2){
+                                index=dim1_ind+dirmain_ind*Images[0]->nx+dim2_ind*Images[0]->nx*Images[0]->ny;
+                              }
+                            else if(direction==3){
+                                index=dim1_ind+dim2_ind*Images[0]->nx+dirmain_ind*Images[0]->nx*Images[0]->ny;
+                              }
+                            else{
+                                cout<<"Error: Direction is problematic"<<endl;
+                            }
+                            if(mask[index]){
+                                calcval += (double)Img1prt[index];
+                                calcvalcount+=1;
+                            }
+                        }
+                    }
+                    float mean=(double)(calcval)/(double)(calcvalcount);
+                    calcval=calcvalcount=0;
+                    for(unsigned int dim1_ind=0; dim1_ind<dim1; dim1_ind++){
+                        for(unsigned int dim2_ind=0; dim2_ind<dim2; dim2_ind++){
+                            if(direction==1){
+                                index=dirmain_ind+dim1_ind*Images[0]->nx+dim2_ind*Images[0]->nx*Images[0]->ny;
+                            }
+                            else if(direction==2){
+                                index=dim1_ind+dirmain_ind*Images[0]->nx+dim2_ind*Images[0]->nx*Images[0]->ny;
+                              }
+                            else if(direction==3){
+                                index=dim1_ind+dim2_ind*Images[0]->nx+dirmain_ind*Images[0]->nx*Images[0]->ny;
+                              }
+                            else{
+                                cout<<"Error: Direction is problematic"<<endl;
+                            }
+                            if(mask[index]){
+                                calcval += (double)powf(mean-Img1prt[index],2);
+                                calcvalcount+=1;
+                            }
+                        }
+                    }
+                    calcval= sqrt((double)(calcval)/(double)(calcvalcount));
+                    for(unsigned int dim1_ind=0; dim1_ind<dim1; dim1_ind++){
+                        for(unsigned int dim2_ind=0; dim2_ind<dim2; dim2_ind++){
+                            if(direction==1){
+                                index=dirmain_ind+dim1_ind*Images[0]->nx+dim2_ind*Images[0]->nx*Images[0]->ny;
+                            }
+                            else if(direction==2){
+                                index=dim1_ind+dirmain_ind*Images[0]->nx+dim2_ind*Images[0]->nx*Images[0]->ny;
+                              }
+                            else if(direction==3){
+                                index=dim1_ind+dim2_ind*Images[0]->nx+dirmain_ind*Images[0]->nx*Images[0]->ny;
+                              }
+                            else{
+                                cout<<"Error: Direction is problematic"<<endl;
+                            }
+                                OutImagePtr[index]=calcval;
+                        }
+                    }
+                }
+                nifti_set_filenames(OutImage, OutFilename.c_str(),0,0);
+                nifti_image_write(OutImage);
+                nifti_image_free(OutImage);
+            }
+            // **************************            ---------          *****************************
             // **************************             PerSlice volume          *****************************
             // **************************            ---------          *****************************
 
@@ -1487,6 +1709,103 @@ int main(int argc, char **argv)
                     cout << (double)(calcvol)*(double)(Images[0]->dx)*(double)(Images[0]->dy)*(double)(Images[0]->dz)<<endl;
                     flush(cout);
                 }
+            }
+
+            // **************************            ---------          *****************************
+            // **************************             PerSlice volume, output image          *****************************
+            // **************************            ---------          *****************************
+
+            else if(strcmp(argv[i], "-svpi") == 0 && (i+2)<argc)
+            {
+                nifti_image * OutImage=nifti_copy_nim_info(Images[0]);
+                OutImage->dim[0]=3;
+                OutImage->nt=Mask->dim[4]=0;
+                OutImage->datatype=NIFTI_TYPE_FLOAT32;
+                OutImage->cal_max=1;
+                OutImage->cal_min=0;
+                nifti_update_dims_from_array(OutImage);
+                nifti_datatype_sizes(OutImage->datatype,&OutImage->nbyper,&OutImage->swapsize);
+                OutImage->data = (void *) calloc(OutImage->nvox, sizeof(float));
+                float * OutImagePtr = static_cast<float *>(OutImage->data);
+
+                if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
+                {
+                    seg_changeDatatype<float>(Images[0]);
+                }
+                float * Img1prt = static_cast<float *>(Images[0]->data);
+
+                unsigned int direction = atoi(argv[++i]);
+                unsigned int dim1=0;
+                unsigned int dim2=0;
+                unsigned int dirmain=0;
+                string OutFilename=argv[++i];
+                if(direction>0 && direction<=3){
+                    if(direction==1){
+                        dirmain=Images[0]->nx;
+                        dim1=Images[0]->ny;
+                        dim2=Images[0]->nz;
+                    }
+                    else if(direction==2){
+                        dim1=Images[0]->nx;
+                        dirmain=Images[0]->ny;
+                        dim2=Images[0]->nz;
+                      }
+                    else if(direction==3){
+                        dim1=Images[0]->nx;
+                        dim2=Images[0]->ny;
+                        dirmain=Images[0]->nz;
+                      }
+                }
+                else{
+                   cout<<"Error: Direction " <<direction<<" unknown"<<endl;
+                }
+
+                unsigned int index=0;
+                double calcvol=0;
+                for(unsigned int dirmain_ind=0; dirmain_ind<dirmain; dirmain_ind++)
+                {
+                    calcvol=0;
+                    for(unsigned int dim1_ind=0; dim1_ind<dim1; dim1_ind++){
+                        for(unsigned int dim2_ind=0; dim2_ind<dim2; dim2_ind++){
+                            if(direction==1){
+                                index=dirmain_ind+dim1_ind*Images[0]->nx+dim2_ind*Images[0]->nx*Images[0]->ny;
+                            }
+                            else if(direction==2){
+                                index=dim1_ind+dirmain_ind*Images[0]->nx+dim2_ind*Images[0]->nx*Images[0]->ny;
+                              }
+                            else if(direction==3){
+                                index=dim1_ind+dim2_ind*Images[0]->nx+dirmain_ind*Images[0]->nx*Images[0]->ny;
+                              }
+                            else{
+                                cout<<"Error: Direction is problematic"<<endl;
+                            }
+                            if(mask[index]){
+                                calcvol += (double)Img1prt[index];
+                            }
+                        }
+                    }
+                    calcvol=(double)(calcvol)*(double)(Images[0]->dx)*(double)(Images[0]->dy)*(double)(Images[0]->dz);
+                    for(unsigned int dim1_ind=0; dim1_ind<dim1; dim1_ind++){
+                        for(unsigned int dim2_ind=0; dim2_ind<dim2; dim2_ind++){
+                            if(direction==1){
+                                index=dirmain_ind+dim1_ind*Images[0]->nx+dim2_ind*Images[0]->nx*Images[0]->ny;
+                            }
+                            else if(direction==2){
+                                index=dim1_ind+dirmain_ind*Images[0]->nx+dim2_ind*Images[0]->nx*Images[0]->ny;
+                            }
+                            else if(direction==3){
+                                index=dim1_ind+dim2_ind*Images[0]->nx+dirmain_ind*Images[0]->nx*Images[0]->ny;
+                            }
+                            else{
+                                cout<<"Error: Direction is problematic"<<endl;
+                            }
+                            OutImagePtr[index]=calcvol;
+                        }
+                    }
+                }
+                nifti_set_filenames(OutImage, OutFilename.c_str(),0,0);
+                nifti_image_write(OutImage);
+                nifti_image_free(OutImage);
             }
             // **************************            ---------          *****************************
             // **************************            Vox dim X/Y/Z          *****************************
