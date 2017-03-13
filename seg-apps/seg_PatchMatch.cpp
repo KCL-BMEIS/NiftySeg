@@ -73,7 +73,7 @@ int main(int argc, char **argv)
         int pm_threads=10;
         int it=5;
         int distance=0;
-	bool filling=true;
+	bool filling=false;
         time_t start;
         time(&start);
         vector<string> imageFiles;
