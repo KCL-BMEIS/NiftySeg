@@ -1302,6 +1302,93 @@ int main(int argc, char **argv)
                 nifti_image_free(MaskImage);
 
             }
+            else if(strcmp(argv[i], "-qlsnorm2_mask") == 0)
+            {
+
+                string order_str=argv[++i];
+                int order=(int)round(strtod(order_str.c_str(),NULL));
+
+                if(order>4){
+                    cout << "ERROR: Order is too high... using order 5"<<endl;
+                    order=4;
+                }
+                if(order<1){
+                    cout << "ERROR: Order is too low... using order 1"<<endl;
+                    order=1;
+                }
+
+                string parser=argv[++i];
+                nifti_image * NewImage=nifti_image_read(parser.c_str(),true);
+                NewImage->nu=(NewImage->nu>1)?NewImage->nu:1;
+                NewImage->nt=(NewImage->nt>1)?NewImage->nt:1;
+                if(NewImage->datatype!=DT_FLOAT32)
+                {
+                    seg_changeDatatype<float>(NewImage);
+                }
+                float * NewImagePtr = static_cast<float *>(NewImage->data);
+
+                parser=argv[++i];
+                nifti_image * MaskImage=nifti_image_read(parser.c_str(),true);
+                MaskImage->nu=(MaskImage->nu>1)?MaskImage->nu:1;
+                MaskImage->nt=(MaskImage->nt>1)?MaskImage->nt:1;
+                if(MaskImage->datatype!=DT_FLOAT32)
+                {
+                    seg_changeDatatype<float>(MaskImage);
+                }
+                float * MaskImagePtr = static_cast<float *>(MaskImage->data);
+
+                size_t nvoxmax=0;
+                for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize); i++){
+                    if(MaskImagePtr[i]>0 && isnan(bufferImages[current_buffer][i])==0 && isnan(NewImagePtr[i])==0)
+                    {
+                        nvoxmax++;
+                    }
+                }
+
+                Eigen::MatrixXf Img1(nvoxmax+1,order);
+                Eigen::VectorXf Img2(nvoxmax+1);
+
+                size_t nvox=0;
+                for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize); i++)
+                {
+                    if(MaskImagePtr[i]>0 && isnan(bufferImages[current_buffer][i])==0 && isnan(NewImagePtr[i])==0)
+                    {
+                        Img2(nvox)=bufferImages[current_buffer][i];
+                        nvox++;
+                    }
+                }
+
+                nvox=0;
+                for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize); i++){
+                    if(MaskImagePtr[i]>0 && isnan(bufferImages[current_buffer][i])==0 && isnan(NewImagePtr[i])==0)
+                    {
+                        for(int j=1; j<(order+1); j++){
+                            Img1(nvox,j-1)= pow(NewImagePtr[i],j) ;
+                        }
+                        nvox++;
+                    }
+                }
+
+
+                Eigen::MatrixXf Img1TransImg1=Img1.transpose()*Img1;
+                Eigen::VectorXf Img1TransImg2=Img1.transpose()*Img2;
+
+                Eigen::VectorXf x;
+                x=Img1TransImg1.lu().solve(Img1TransImg2); // using a LU factorization
+
+                cout<<x<<endl;
+
+                for(int j=1; j<(order+1); j++){
+                    for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize); i++){
+                        bufferImages[current_buffer?0:1][i]+=x(j-1)*pow(NewImagePtr[i],j);
+                    }
+                }
+
+                current_buffer=current_buffer?0:1;
+                nifti_image_free(NewImage);
+                nifti_image_free(MaskImage);
+
+            }
 
             // *********************  QuadraticLS Normlise  *************************
             else if(strcmp(argv[i], "-qlshnorm") == 0)
@@ -2447,24 +2534,28 @@ int main(int argc, char **argv)
                         float allstdInput=0;
                         for(long index=0; index<InputImage->nx*InputImage->ny*InputImage->nz; index++)
                         {
+                            if(!isnan(NewImagePtr[index]) && !isnan(bufferImages[current_buffer][index])){
                             allmeanNew+=NewImagePtr[index];
                             NewImageMean[index]=NewImagePtr[index];
                             NewImageStd[index]=NewImagePtr[index]*NewImagePtr[index];
                             allmeanInput+=bufferImages[current_buffer][index];
                             InputImageMean[index]=bufferImages[current_buffer][index];
                             InputImageStd[index]=bufferImages[current_buffer][index]*bufferImages[current_buffer][index];
+                            }
                         }
                         allmeanNew=allmeanNew/(InputImage->nx*InputImage->ny*InputImage->nz);
                         allmeanInput=allmeanInput/(InputImage->nx*InputImage->ny*InputImage->nz);
                         for(long index=0; index<InputImage->nx*InputImage->ny*InputImage->nz; index++)
                         {
+                            if(!isnan(NewImagePtr[index]) && !isnan(bufferImages[current_buffer][index])){
                             allstdNew+=(NewImagePtr[index]-allmeanNew)*(NewImagePtr[index]-allmeanNew);
                             allstdInput+=(bufferImages[current_buffer][index]-allmeanInput)*(bufferImages[current_buffer][index]-allmeanInput);
                             bufferImages[current_buffer][index]=NewImagePtr[index]*bufferImages[current_buffer][index];
+                            }
                         }
                         allstdNew=allstdNew/(InputImage->nx*InputImage->ny*InputImage->nz);
                         allstdInput=allstdInput/(InputImage->nx*InputImage->ny*InputImage->nz);
-                        //cout << allstdInput <<"  "<< allstdNew<<endl;
+                        cout << allstdInput <<"  "<< allstdNew<<endl;
                         GaussianFilter4D_cArray(bufferImages[current_buffer],strtod(parserstd.c_str(),NULL),CurrSize);
                         GaussianFilter4D_cArray(NewImageMean,strtod(parserstd.c_str(),NULL),CurrSize);
                         GaussianFilter4D_cArray(NewImageStd,strtod(parserstd.c_str(),NULL),CurrSize);
@@ -2472,9 +2563,14 @@ int main(int argc, char **argv)
                         GaussianFilter4D_cArray(InputImageStd,strtod(parserstd.c_str(),NULL),CurrSize);
                         for(long index=0; index<InputImage->nx*InputImage->ny*InputImage->nz; index++)
                         {
+                            if(!isnan(NewImagePtr[index]) && !isnan(bufferImages[current_buffer][index])){
                             NewImageStd[index]=NewImageStd[index]-NewImageMean[index]*NewImageMean[index];
                             InputImageStd[index]=InputImageStd[index]-InputImageMean[index]*InputImageMean[index];
                             bufferImages[current_buffer?0:1][index]=(bufferImages[current_buffer][index]-InputImageMean[index]*NewImageMean[index])/(sqrt(NewImageStd[index]*InputImageStd[index])+sqrt(0.01*(allstdNew+allstdInput)));
+                            }
+                            else{
+                                bufferImages[current_buffer?0:1][index]=std::numeric_limits<float>::quiet_NaN();
+                            }
                         }
                         current_buffer=current_buffer?0:1;
                         delete [] NewImageMean;
