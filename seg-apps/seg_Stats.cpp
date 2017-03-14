@@ -29,7 +29,11 @@ void Usage(char *exec)
     printf("\t* * Constrains and configuration options (optional) * *\n");
     printf("\t-m <mask> \t| Only estimate statistics within the masked area.\n");
     printf("\t-t <float> \t| Only estimate statistics if voxel is larger than <float>.\n");
+<<<<<<< 8f0a32cd1100f3b99d5f2073d6d145ce52133633
     printf("\t-p <int> \t| Set output precision (number of digits), by default is 6.\n");
+=======
+    printf("\t-pr <int> \t| Set outpout precision (number of digits), by default is 6.\n");
+>>>>>>> Fix lab fusion bug introduced during the multimodal extension
     printf("\n\t  Note: All NaN or Inf are ignored for all stats. \n\t        The -m and -t options can be used in conjusction.\n\n");
 
     printf("\n\t* * Statistics (at least one option is mandatory) * *\n");
@@ -158,7 +162,7 @@ int main(int argc, char **argv)
                 Usage(argv[0]);
                 return 0;
             }
-	    else if(strcmp(argv[i], "-p") == 0 && (i+1)<argc)
+        else if(strcmp(argv[i], "-pr") == 0 && (i+1)<argc)
             {
 	        int pres = atoi(argv[++i]);
 		cout.precision(pres);
