@@ -25,13 +25,11 @@ using namespace std;
 void Usage(char *exec)
 {
     printf("\nStat tools:\nUsage:\t%s <in> [constrains] [statistics]\n\n",exec);
-
     printf("\t* * Constrains and configuration options (optional) * *\n");
     printf("\t-m <mask> \t| Only estimate statistics within the masked area.\n");
     printf("\t-t <float> \t| Only estimate statistics if voxel is larger than <float>.\n");
     printf("\t-p <int> \t| Set output precision (number of digits), by default is 6.\n");
-    printf("\n\t  Note: All NaN or Inf are ignored for all stats. \n\t        The -m and -t options can be used in conjusction.\n\n");
-
+    printf("\n\t  Note: All NaN or Inf are ignored for all stats. \n\t The -m and -t options can be used in conjusction.\n\n");
     printf("\n\t* * Statistics (at least one option is mandatory) * *\n");
     printf("\tRange operations (datatype: all)\n");
     printf("\t-r \t\t| The range <min max> of all voxels.\n");

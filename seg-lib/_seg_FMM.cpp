@@ -4,7 +4,7 @@ float * DoubleEuclideanDistance_3D(bool *LablePtr, float * speedptr,
                                    ImageSize * CurrSizes)
 {
 
-    int i, NumElements, centre_index;
+    long i, NumElements, centre_index;
     NumElements=CurrSizes->xsize*CurrSizes->ysize*CurrSizes->zsize;
     int MaxGeoTime=100;
     i=0;
@@ -69,7 +69,7 @@ float * DoubleEuclideanDistance_3D(bool *LablePtr, float * speedptr,
 
 
     bool flagadd=false;
-    int index_neighbour;
+    long index_neighbour;
     for(centre_index=0; centre_index<NumElements; centre_index++)
     {
         if(!Border[centre_index] && Labels[centre_index]==2)

@@ -25,12 +25,12 @@ protected:
     float     dx;
     float     dy;
     float     dz;
-    int     numel;
+    long     numel;
     int     iter;
     ImageSize * CurrSizes;
 
     int TYPE_OF_FUSION; // 1 - STEPS/STAPLE ; 2 - MV ; 3 - SBA
-    int NumberOfLabels;
+    long NumberOfLabels;
     float Thresh_IMG_value;
     bool Thresh_IMG_DO;
     // SegParameters
@@ -40,8 +40,8 @@ protected:
     segPrecisionTYPE * W;
     segPrecisionTYPE * FinalSeg;
     segPrecisionTYPE * Prop;
-    int * maskAndUncertainIndeces;
-    int  sizeAfterMaskingAndUncertainty;
+    long * maskAndUncertainIndeces;
+    long  sizeAfterMaskingAndUncertainty;
     bool    uncertainflag;
     float uncertainthresh;
     int dilunc;
