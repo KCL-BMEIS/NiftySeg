@@ -118,7 +118,7 @@ void seg_fill_lesions<T>::setInputMask(nifti_image *mask) {
     cout <<"Mixing input mask and lesion mask" << endl;
     long tp;
     #ifdef _OPENMP
-    #pragma omp parallel for ordered schedule(auto)\
+    #pragma omp parallel for default(none)\
         shared(std::cout)\
         private(tp)
     #endif
@@ -330,7 +330,7 @@ template<class T>
 void seg_fill_lesions<T>::normalizeImageIntesities(float newMin,float newMax) {
     long tp;
     #ifdef _OPENMP
-    #pragma omp parallel for ordered schedule(auto)\
+    #pragma omp parallel for default(none)\
         shared(newMin,newMax,std::cout)\
         private(tp)
     #endif
@@ -359,7 +359,7 @@ void seg_fill_lesions<T>::calculateEuclideanDistance(float *Distance) {
     eucl_Size->usize=this->inputImage->nu;
     eucl_Size->tsize=1;
     #ifdef _OPENMP
-    #pragma omp parallel for ordered schedule(auto)\
+    #pragma omp parallel for \
         shared(Distance,std::cout)\
         private(tp)
     #endif
@@ -394,7 +394,7 @@ void seg_fill_lesions<T>::expandPatches(float *Distance) {
     long tp;
     long change=0,total=0;
     #ifdef _OPENMP
-    #pragma omp parallel for ordered schedule(auto)\
+    #pragma omp parallel for default(none)\
         shared(Distance,std::cout,change,total)\
         private(tp)
     #endif
@@ -556,7 +556,7 @@ void seg_fill_lesions<T>::runIt(){
         }
         int inz=0;
         #ifdef _OPENMP
-        #pragma omp parallel for default(none) schedule(auto)\
+        #pragma omp parallel for \
             shared(inz,curcountvox,std::cout,Distance,maxinten,mininten,level,iteration,lastpercent,countvox)\
             private(index)\
             reduction(+:count)
@@ -672,7 +672,7 @@ void seg_fill_lesions<T>::runIt(){
             }
         }
         #ifdef _OPENMP
-        #pragma omp parallel for default(none) schedule(auto)\
+        #pragma omp parallel for \
             private(tp,i)
         #endif
         for(tp=0;tp<this->getNumTP();tp++) {
@@ -683,7 +683,7 @@ void seg_fill_lesions<T>::runIt(){
             }
         }
         #ifdef _OPENMP
-        #pragma omp parallel for default(none) schedule(auto)\
+        #pragma omp parallel for \
             private(tp,i)
         #endif
         for(tp=0;tp<this->getNumTP();tp++) {

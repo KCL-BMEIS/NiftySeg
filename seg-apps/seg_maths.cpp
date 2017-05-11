@@ -493,7 +493,7 @@ int main(int argc, char **argv)
                     float * Img1prt = bufferImages[current_buffer];
                     long tp=0;
                     #ifdef _OPENMP
-                    #pragma omp parallel for ordered schedule(auto)\
+                    #pragma omp parallel for \
                         private(tp)\
                         shared(CurrSize,bufferImages,Img1prt,factor,InputImage)
                     #endif
@@ -543,7 +543,7 @@ int main(int argc, char **argv)
                                             {{-1, 0, 1},{-2, 0, 2},{-1, 0, 1}}
                                          };
                         #ifdef _OPENMP
-                        #pragma omp parallel for ordered schedule(auto)\
+                        #pragma omp parallel for \
                             private(inz)\
                             shared(CurrSize,bufferImages,Img1prt,xkernel,ykernel,zkernel)
                         #endif
@@ -599,7 +599,7 @@ int main(int argc, char **argv)
                     float * Img1prt = bufferImages[current_buffer];
                     long tp=0;
                     #ifdef _OPENMP
-                    #pragma omp parallel for ordered schedule(auto)\
+                    #pragma omp parallel for \
                         private(tp)\
                         shared(CurrSize,bufferImages,Img1prt,factor,InputImage)
                     #endif
@@ -655,7 +655,7 @@ int main(int argc, char **argv)
                                          };
                         int inz=0;
                         #ifdef _OPENMP
-                        #pragma omp parallel for ordered schedule(auto)\
+                        #pragma omp parallel for \
                             private(inz)\
                             shared(CurrSize,bufferImages,Img1prt,xkernel,ykernel,zkernel)
                         #endif
