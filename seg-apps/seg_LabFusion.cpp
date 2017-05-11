@@ -416,7 +416,7 @@ int main(int argc, char **argv)
 
         // READING Labels
         nifti_image * CLASSIFIER=nifti_image_read(filename_LABELS,1);
-        if(CLASSIFIER == NULL)
+        if(CLASSIFIER == NULL || CLASSIFIER->data==NULL)
         {
             fprintf(stderr,"* Error when reading the Label image: %s\n",filename_LABELS);
             flush(cout);
@@ -715,12 +715,12 @@ int main(int argc, char **argv)
 
         time_t start,end;
         time(&start);
-
         if(verbose_level>1)
         {
             cout << endl<<"Creating Object";
         }
-        seg_LabFusion LabFusion(CLASSIFIER->nt,MaxLab,Numb_Neigh,max(LNCC->nu,1));
+        seg_LabFusion LabFusion(CLASSIFIER->nt,MaxLab,Numb_Neigh,LNCC!=NULL?std::max(LNCC->nu,1):1);
+
         if(verbose_level>1)
         {
             cout << " - Done"<<endl;

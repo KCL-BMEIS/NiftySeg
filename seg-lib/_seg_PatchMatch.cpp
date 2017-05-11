@@ -491,7 +491,7 @@ template<class T>
 void seg_PatchMatch<T>::normalizeImageIntesitiesOutliers(float newMin,float newMax,T *image) {
     long tp;
     #ifdef _OPENMP
-    #pragma omp parallel for ordered schedule(auto)\
+    #pragma omp parallel for \
         shared(newMin,newMax,std::cout)\
         private(tp)
     #endif
@@ -516,7 +516,7 @@ template<class T>
 void seg_PatchMatch<T>::normalizeImageIntesities(float newMin,float newMax,T *image) {
     long tp;
     #ifdef _OPENMP
-    #pragma omp parallel for ordered schedule(auto)\
+    #pragma omp parallel for \
         shared(newMin,newMax,std::cout)\
         private(tp)
     #endif
@@ -604,7 +604,7 @@ void seg_PatchMatch<T>::getNextRecordDatabase(int num,float *&imagePtr,float *&m
         cout <<"[DB="<<num<<"] Applying mask to the Image"<<endl;
     }
     #ifdef _OPENMP
-    #pragma omp parallel for default(none) schedule(auto)\
+    #pragma omp parallel for \
         shared(imageSize,maskDBPtr,imagePtr,nvox)\
         private(tp)
     #endif
@@ -658,7 +658,7 @@ void seg_PatchMatch<T>::loadInputDatabase(){
     this->db_list_mask=new float[size*this->getSingleVolumSize()];
     int num=0;
     #ifdef _OPENMP
-    #pragma omp parallel for ordered schedule(auto)\
+    #pragma omp parallel for  shared(std::cout,size)\
         private(num)
     #endif
     for(num=0;num<size;num++) {
@@ -706,7 +706,7 @@ void seg_PatchMatch<T>::loadOuputDatabase(){
         this->db_list_output[ii+num*NUMVOXTOTAL]=imagePtr[ii];
     }
     #ifdef _OPENMP
-    #pragma omp parallel for ordered schedule(auto)\
+    #pragma omp parallel for \
         private(num)\
         shared(NUMVOXTOTAL,size,cout)
     #endif
@@ -733,7 +733,7 @@ template<class T>
 void seg_PatchMatch<T>::patchMatch(){
     int threads;
     #ifdef _OPENMP
-    #pragma omp parallel for ordered schedule(auto)\
+    #pragma omp parallel for \
         private(threads)
     #endif
     for(threads=0;threads<this->getPatchMatchExecutions();threads++) {
@@ -748,7 +748,7 @@ void seg_PatchMatch<T>::sortKNNResults(){
     }
     long index=0;
     #ifdef _OPENMP
-    #pragma omp parallel for ordered schedule(auto)\
+    #pragma omp parallel for \
         private(index)
     #endif
     for(index=0;index<this->getSingleVolumSize();index++) {
@@ -768,7 +768,7 @@ void seg_PatchMatch<T>::loadingInputData(){
     }
     long tp;
     #ifdef _OPENMP
-    #pragma omp parallel for ordered schedule(auto)\
+    #pragma omp parallel for \
         private(tp)
     #endif
     for(tp=0;tp<this->getNumTP();tp++) {
@@ -814,7 +814,7 @@ void seg_PatchMatch<T>::labelFusion() {
     long ii=0;
 
     #ifdef _OPENMP
-    #pragma omp parallel for ordered schedule(auto)\
+    #pragma omp parallel for \
         private(ii)\
         shared(NUMVOXTOTAL)
     #endif
@@ -825,7 +825,7 @@ void seg_PatchMatch<T>::labelFusion() {
 
     long matchings;
     #ifdef _OPENMP
-    #pragma omp parallel for ordered schedule(auto)\
+    #pragma omp parallel for \
         private(matchings)\
         shared(NUMVOXTOTAL)
     #endif
@@ -849,7 +849,7 @@ void seg_PatchMatch<T>::saveResults() {
     float *outMaskPtr=new float[NUMVOXTOTAL];
     long i;
     #ifdef _OPENMP
-    #pragma omp parallel for ordered schedule(auto)\
+    #pragma omp parallel for \
         private(i)\
         shared(outMaskPtr,NUMVOXTOTAL)
     #endif
@@ -904,7 +904,7 @@ void seg_PatchMatch<T>::saveDebugResults() {
     float *ANN=new float[this->getTotalVolumSize()];
     int tp=0;
     #ifdef _OPENMP
-    #pragma omp parallel for ordered schedule(auto)\
+    #pragma omp parallel for \
         private(tp)\
         shared(ANN)
     #endif
@@ -929,7 +929,7 @@ void seg_PatchMatch<T>::saveDebugResults() {
     int *image=new int[this->getSingleVolumSize()];
     long i=0;
     #ifdef _OPENMP
-    #pragma omp parallel for ordered schedule(auto)\
+    #pragma omp parallel for \
         private(i)\
         shared(image)
     #endif
@@ -1110,7 +1110,7 @@ void seg_PatchMatch<T>::computePatchMatch(int num){
 
     int inz=0;
     #ifdef _OPENMP
-    #pragma omp parallel for ordered schedule(auto)\
+    #pragma omp parallel for \
         private(inz)
     #endif
     // We init the PatchMatch Algorithm, first we need to init the random search

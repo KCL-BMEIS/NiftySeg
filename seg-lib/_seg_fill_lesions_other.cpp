@@ -238,7 +238,7 @@ void seg_fill_lesions_other<T>::calculateEuclideanDistance(float *Distance) {
     eucl_Size->usize=this->inputImage->nu;
     eucl_Size->tsize=1;
     #ifdef _OPENMP
-    #pragma omp parallel for ordered schedule(auto)\
+    #pragma omp parallel for \
         shared(Distance,std::cout)\
         private(tp)
     #endif
@@ -267,7 +267,7 @@ template<class T>
 void seg_fill_lesions_other<T>::normalizeImageIntesities(float newMin,float newMax) {
     long tp;
     #ifdef _OPENMP
-    #pragma omp parallel for ordered schedule(auto)\
+    #pragma omp parallel for \
         shared(newMin,newMax,std::cout)\
         private(tp)
     #endif
@@ -381,7 +381,7 @@ void seg_fill_lesions_other<T>::runIt(){
         }
         int inz=0;
         #ifdef _OPENMP
-        #pragma omp parallel for default(none) schedule(auto)\
+        #pragma omp parallel for \
             shared(inz,lastpercent,curcountvox,std::cout,level,iteration,countvox,i_smooth,smoothing_parameter)\
             private(index)\
             reduction(+:count)
@@ -479,7 +479,7 @@ void seg_fill_lesions_other<T>::runIt(){
             }
         }
         #ifdef _OPENMP
-        #pragma omp parallel for default(none) schedule(auto)\
+        #pragma omp parallel for \
             private(tp,i)
         #endif
         for(tp=0;tp<this->getNumTP();tp++) {

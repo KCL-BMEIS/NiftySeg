@@ -101,6 +101,7 @@ if(ZLIB_FOUND)
 else(ZLIB_FOUND)
     include_directories(${CMAKE_SOURCE_DIR}/zlib)
     message(STATUS "zlib not found - the z library will be built")
+	subdirs(zlib)
 endif(ZLIB_FOUND)
 SET(ZLIB "z")
 
@@ -155,7 +156,7 @@ endif(EIGEN_FOUND)
 if(USE_SYSTEM_EIGEN)
   find_package(EIGEN REQUIRED)
 else()
-  set(${PROJECT_NAME}_MD5_SUM_EIGEN 62bee4dd0b9fdb21ecc6131681d47106 CACHE STRING "MD5 check sum for EIGEN" FORCE)
+  set(${PROJECT_NAME}_MD5_SUM_EIGEN 4c46942dc67b48d69fd90f2fd10a4cf6 CACHE STRING "MD5 check sum for EIGEN" FORCE)
   set(${PROJECT_NAME}_LOCATION_EIGEN 
     "http://cmictig.cs.ucl.ac.uk/images/3.3-beta1.tar.gz"
     CACHE STRING "Location of Eigen" FORCE)

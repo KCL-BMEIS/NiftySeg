@@ -10,6 +10,7 @@
 #define SEP "/\0"
 #endif
 
+
 // Gaussian convolution functions
 NIFTYSEG_WINEXPORT void GaussianFilter4D_cArray(segPrecisionTYPE * ShortData, int * S2L, int * L2S, segPrecisionTYPE gauss_std, ImageSize * CurrSizes);
 NIFTYSEG_WINEXPORT void GaussianFilter4D_cArray(segPrecisionTYPE * LongData, segPrecisionTYPE gauss_std, ImageSize * CurrSizes);
