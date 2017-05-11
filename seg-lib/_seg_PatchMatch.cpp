@@ -1304,7 +1304,7 @@ void seg_PatchMatch<T>::propagationSTEP(int num,long location,long shift) {
 template<class T>
 void seg_PatchMatch<T>::saveImagePtr(int * ImagePtr,nifti_image *Image,char *filename_out) {
     float *tmp= new float [Image->nvox];
-    for(long i=0; i<Image->nvox; i++) {
+    for(size_t i=0; i<Image->nvox; i++) {
         tmp[i]=(float)ImagePtr[i];
     }
     saveImagePtr(tmp,Image,filename_out);

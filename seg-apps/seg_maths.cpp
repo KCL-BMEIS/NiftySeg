@@ -1911,18 +1911,18 @@ int main(int argc, char **argv)
                     int xincrement=1;
                     int yincrement=1;
                     int zincrement=1;
-                    bool isdirectionsizeodd=0;
+                    //bool isdirectionsizeodd=0;
                     if(direction==string("x") || direction==string("1")){
                         xincrement=2;
-                        isdirectionsizeodd=(CurrSize->xsize%2)==0;
+                        //isdirectionsizeodd=(CurrSize->xsize%2)==0;
                     }
                     else if(direction==string("y") || direction==string("2")){
                         yincrement=2;
-                        isdirectionsizeodd=(CurrSize->ysize%2)==0;
+                        //isdirectionsizeodd=(CurrSize->ysize%2)==0;
                     }
                     else if(direction==string("z") || direction==string("3")){
                         zincrement=2;
-                        isdirectionsizeodd=(CurrSize->zsize%2)==0;
+                        //isdirectionsizeodd=(CurrSize->zsize%2)==0;
                     }
                     else{
                         cout << "ERROR: Direction "<< direction << " is not x, y or z"<<endl;

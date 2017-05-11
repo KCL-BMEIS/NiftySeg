@@ -514,7 +514,7 @@ void seg_fill_lesions_other<T>::runIt(){
 template<class T>
 void seg_fill_lesions_other<T>::saveImagePtr(int * ImagePtr,nifti_image *Image,char *filename_out) {
     float *tmp= new float [Image->nvox*Image->nt];
-    for(long i=0; i<Image->nvox*Image->nt; i++) {
+    for(size_t i=0; i<Image->nvox*(size_t)Image->nt; i++) {
         tmp[i]=(float)ImagePtr[i];
     }
     saveImagePtr(tmp,Image,filename_out);
