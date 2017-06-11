@@ -226,7 +226,6 @@ int seg_LabFusion::SetinputCLASSIFIER(nifti_image *r,bool UNCERTAINflag)
         }
         else
         {
-
             LableCorrespondences_big_to_small[i]=-1;
         }
     }
@@ -1286,8 +1285,6 @@ int seg_LabFusion::UpdateMRF()
         segPrecisionTYPE Temp_MRF_Class_Expect[maxMultiLableClass]= {0};
 
         register int currlabelnumb;
-
-
         indexCentre=0;
         int index_within_mask=0;
         for (iz=0; iz<maxiz; iz++)
@@ -1307,12 +1304,12 @@ int seg_LabFusion::UpdateMRF()
                         indexTop=(indexCentre+plane_size)<this->numel?(indexCentre+plane_size):-1;
 
 
-                        indexWestSmall=this->maskAndUncertainIndeces[indexWest];
-                        indexEastSmall=this->maskAndUncertainIndeces[indexEast];
-                        indexNorthSmall=this->maskAndUncertainIndeces[indexNorth];
-                        indexSouthSmall=this->maskAndUncertainIndeces[indexSouth];
-                        indexBottomSmall=this->maskAndUncertainIndeces[indexBottom];
-                        indexTopSmall=this->maskAndUncertainIndeces[indexTop];
+                        indexWestSmall=indexWest>=0?this->maskAndUncertainIndeces[indexWest]:-1;
+                        indexEastSmall=indexEast>=0?this->maskAndUncertainIndeces[indexEast]:-1;
+                        indexNorthSmall=indexNorth>=0?this->maskAndUncertainIndeces[indexNorth]:-1;
+                        indexSouthSmall=indexSouth>=0?this->maskAndUncertainIndeces[indexSouth]:-1;
+                        indexBottomSmall=indexBottom>=0?this->maskAndUncertainIndeces[indexBottom]:-1;
+                        indexTopSmall=indexTop>=0?this->maskAndUncertainIndeces[indexTop]:-1;
 
 
                         for (currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
@@ -1320,12 +1317,12 @@ int seg_LabFusion::UpdateMRF()
 
                             Clique[currlabelnumb] = W[index_within_mask];
 
-                            Clique[currlabelnumb]+=((indexWestSmall>=0)?W[indexWestSmall]:(this->FinalSeg[indexWest]==currlabelnumb?1.0f:0.0f));
-                            Clique[currlabelnumb]+=((indexEastSmall>=0)?W[indexEastSmall]:(this->FinalSeg[indexEast]==currlabelnumb?1.0f:0.0f));
-                            Clique[currlabelnumb]+=((indexNorthSmall>=0)?W[indexNorthSmall]:(this->FinalSeg[indexNorth]==currlabelnumb?1.0f:0.0f));
-                            Clique[currlabelnumb]+=((indexSouthSmall>=0)?W[indexSouthSmall]:(this->FinalSeg[indexSouth]==currlabelnumb?1.0f:0.0f));
-                            Clique[currlabelnumb]+=((indexTopSmall>=0)?W[indexTopSmall]:(this->FinalSeg[indexTop]==currlabelnumb?1.0f:0.0f));
-                            Clique[currlabelnumb]+=((indexBottomSmall>=0)?W[indexBottomSmall]:(this->FinalSeg[indexBottom]==currlabelnumb?1.0f:0.0f));
+                            Clique[currlabelnumb]+=((indexWestSmall>=0)?W[indexWestSmall]:0.0f);
+                            Clique[currlabelnumb]+=((indexEastSmall>=0)?W[indexEastSmall]:0.0f);
+                            Clique[currlabelnumb]+=((indexNorthSmall>=0)?W[indexNorthSmall]:0.0f);
+                            Clique[currlabelnumb]+=((indexSouthSmall>=0)?W[indexSouthSmall]:0.0f);
+                            Clique[currlabelnumb]+=((indexTopSmall>=0)?W[indexTopSmall]:0.0f);
+                            Clique[currlabelnumb]+=((indexBottomSmall>=0)?W[indexBottomSmall]:0.0f);
 
                             if(currlabelnumb<this->NumberOfLabels)
                             {
@@ -1822,12 +1819,6 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
         cout<< " - Done"<<endl;
         flush(cout);
     }
-
-    int *dim_array=new int[10];
-    dim_array[0]=(int)inputCLASSIFIER->nx;
-    dim_array[1]=(int)inputCLASSIFIER->ny;
-    dim_array[2]=(int)inputCLASSIFIER->nz;
-
 
     if(this->verbose_level>1)
     {

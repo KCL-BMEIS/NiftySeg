@@ -508,7 +508,7 @@ int main(int argc, char **argv)
                         nifti_update_dims_from_array(TMPnii);
                         //copy pointer, run gaussian, and set to null
                         TMPnii->data=static_cast<void*>(&Img1prt[CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*tp]);
-                        if(factor>0) GaussianSmoothing4D_nifti(TMPnii,NULL,factor);
+                        if(factor>0) GaussianSmoothing5D_nifti(TMPnii,NULL,factor);
                         TMPnii->data=NULL;
                         //As TMPnii->data=NULL, the free will not cause any harm
                         nifti_image_free(TMPnii);
@@ -614,7 +614,7 @@ int main(int argc, char **argv)
                         nifti_update_dims_from_array(TMPnii);
                         //copy pointer, run gaussian, and set to null
                         TMPnii->data=static_cast<void*>(&Img1prt[CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*tp]);
-                        if(factor>0) GaussianSmoothing4D_nifti(TMPnii,NULL,factor);
+                        if(factor>0) GaussianSmoothing5D_nifti(TMPnii,NULL,factor);
                         TMPnii->data=NULL;
                         //As TMPnii->data=NULL, the free will not cause any harm
                         nifti_image_free(TMPnii);
@@ -1608,7 +1608,7 @@ int main(int argc, char **argv)
                         nifti_update_dims_from_array(TMPnii);
                         //copy pointer, run gaussian, and set to null
                         TMPnii->data=static_cast<void*>(&bufferImages[current_buffer][CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*tp]);
-                        GaussianSmoothing4D_nifti(TMPnii,NULL,factor);
+                        GaussianSmoothing5D_nifti(TMPnii,NULL,factor);
                         TMPnii->data=NULL;
                         //As TMPnii->data=NULL, the free will not cause any harm
                         nifti_image_free(TMPnii);
@@ -2245,7 +2245,7 @@ int main(int argc, char **argv)
                     nifti_update_dims_from_array(TMPnii);
                     //copy pointer, run gaussian, and set to null
                     TMPnii->data=static_cast<void*>(&bufferImages[current_buffer][CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*tp]);
-                    GaussianSmoothing4D_nifti(TMPnii,NULL,0.5);
+                    GaussianSmoothing5D_nifti(TMPnii,NULL,0.5);
                     TMPnii->data=NULL;
                     //As TMPnii->data=NULL, the free will not cause any harm
                     nifti_image_free(TMPnii);
