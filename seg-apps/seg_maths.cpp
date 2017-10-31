@@ -2683,7 +2683,7 @@ int main(int argc, char **argv)
                 }
             }
 
-            else if(strcmp(argv[i], "-flipNM") == 0) // Neuromorphometric Lab Flip
+            else if(strcmp(argv[i], "-flipNM") == 0) // Neuromorphometric Lab Flip for version 3
             {
                 for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize); i++)
                 {
@@ -2718,8 +2718,10 @@ int main(int argc, char **argv)
                     case 51: bufferImages[current_buffer?0:1][i]=50; break; // Left to Right Inf Lat Vent
                     case 52: bufferImages[current_buffer?0:1][i]=53; break; // Right to Left Lateral Ventricle
                     case 53: bufferImages[current_buffer?0:1][i]=52; break; // Left to Right Lateral Ventricle
+
                     case 54: bufferImages[current_buffer?0:1][i]=55; break; // Right to Left Lesion
                     case 55: bufferImages[current_buffer?0:1][i]=54; break; // Left to Right Lesion
+
                     case 56: bufferImages[current_buffer?0:1][i]=57; break; // Right to Left Pallidum
                     case 57: bufferImages[current_buffer?0:1][i]=56; break; // Left to Right Pallidum
                     case 58: bufferImages[current_buffer?0:1][i]=59; break; // Right to Left Putamen
@@ -2730,6 +2732,10 @@ int main(int argc, char **argv)
                     case 63: bufferImages[current_buffer?0:1][i]=62; break; // Left to Right Ventral DC
                     case 64: bufferImages[current_buffer?0:1][i]=65; break; // Right to Left vessel
                     case 65: bufferImages[current_buffer?0:1][i]=64; break; // Left to Right vessel
+
+                    case 66: bufferImages[current_buffer?0:1][i]=67; break; // Right to Left Ventricular Lining
+                    case 67: bufferImages[current_buffer?0:1][i]=66; break; // Left to Right Ventricular Lining
+
                     case 70: bufferImages[current_buffer?0:1][i]=70; break; // Optic Chiasm
                     case 72: bufferImages[current_buffer?0:1][i]=72; break; // Cerebellar Vermal Lobules I-V
                     case 73: bufferImages[current_buffer?0:1][i]=73; break; // Cerebellar Vermal Lobules VI-VII
@@ -2737,7 +2743,7 @@ int main(int argc, char **argv)
                     case 77: bufferImages[current_buffer?0:1][i]=76; break; // Right to Left Basal Forebrain
                     case 76: bufferImages[current_buffer?0:1][i]=77; break; // Left to Right Basal Forebrain
 
-                    case 81: bufferImages[current_buffer?0:1][i]=89; break;
+                    case 81: bufferImages[current_buffer?0:1][i]=89; break; // WM region flips
                     case 82: bufferImages[current_buffer?0:1][i]=90; break;
                     case 83: bufferImages[current_buffer?0:1][i]=91; break;
                     case 84: bufferImages[current_buffer?0:1][i]=92; break;
@@ -2752,6 +2758,9 @@ int main(int argc, char **argv)
                     case 92: bufferImages[current_buffer?0:1][i]=84; break;
                     case 93: bufferImages[current_buffer?0:1][i]=85; break;
                     case 94: bufferImages[current_buffer?0:1][i]=86; break;
+
+                    case 96: bufferImages[current_buffer?0:1][i]=97; break; // Right to Left claustrum
+                    case 97: bufferImages[current_buffer?0:1][i]=96; break; // Left to Right claustrum
 
                     case 101: bufferImages[current_buffer?0:1][i]=102; break; // Right to Left ACgG anterior cingulate gyrus
                     case 102: bufferImages[current_buffer?0:1][i]=101; break; // Left to Right ACgG anterior cingulate gyrus
