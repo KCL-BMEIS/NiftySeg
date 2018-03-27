@@ -36,14 +36,16 @@
     #endif
 #endif
 
-    inline int fabs(int _x)
-    {
-        return (int)fabs((float)(_x));
-    }
+#if (_MSC_VER < 1900)
+inline int fabs(int _x)
+{
+  return (int)fabs((float)(_x));
+}
 
-    #ifndef strtof(_s, _t)
-        #define strtof(_s, _t) (float) strtod(_s, _t)
-	#endif
+#ifndef strtof
+#define strtof(_s, _t) (float) strtod(_s, _t)
+#endif
+#endif
 
 #else  //IF NOT ON WINDOWS
     #include <dirent.h>
