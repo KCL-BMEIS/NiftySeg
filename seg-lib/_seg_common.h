@@ -14,12 +14,12 @@
     #include <time.h>
     #include <malloc.h>
 
+#if !(defined _MSC_VER && _MSC_VER >= 1800)
     #ifndef M_PI
         /// @brief M_PI as to be defined in windows
         #define M_PI (3.14159265358979323846)
     #endif
 
-#if !(defined _MSC_VER && _MSC_VER >= 1800)
     template<typename T> inline bool isinf(T value)
     {
         return std::numeric_limits<T>::has_infinity && value == std::numeric_limits<T>::infinity();

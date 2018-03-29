@@ -1,8 +1,10 @@
 #pragma once
 
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #include "NiftySegWinExportHeader.h"
 #include <iostream>
-#include <cmath>
 #include "_seg_common.h"
 #include "_seg_tools.h"
 #include "_seg_matrix.h"
