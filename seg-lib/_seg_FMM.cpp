@@ -87,8 +87,8 @@ float * DoubleEuclideanDistance_3D(bool *LablePtr, float * speedptr,
             {
                 Labels[centre_index]=1;
                 if(speedptr!=NULL)speed=speedptr[centre_index];
-                MapLength.insert(PairType(speed*0.5, centre_index));
-                GeoTime[centre_index]=speed*0.5;
+                MapLength.insert(PairType(speed*0.5F, centre_index));
+                GeoTime[centre_index]=speed*0.5F;
             }
         }
     }
@@ -180,8 +180,8 @@ float * DoubleEuclideanDistance_3D(bool *LablePtr, float * speedptr,
                 Labels[centre_index]=1;
                 if(speedptr!=NULL)speed=speedptr[centre_index];
 
-                MapLength.insert(PairType(speed*0.5, centre_index));
-                GeoTime2[centre_index]=speed*0.5;
+                MapLength.insert(PairType(speed*0.5F, centre_index));
+                GeoTime2[centre_index]=speed*0.5F;
             }
         }
     }
@@ -345,8 +345,8 @@ void FMM(bool *Seeds,
             if(flagadd)
             {
                 Labels[centre_short_index]=1;
-                MapLength.insert(PairType((1+SpeedI[centre_short_index])*0.5, centre_short_index));
-                GeoTime[centre_short_index]=0.5*(1+SpeedI[centre_short_index]);
+                MapLength.insert(PairType((1.0F+SpeedI[centre_short_index])*0.5F, centre_short_index));
+                GeoTime[centre_short_index]=0.5F*(1.0F+SpeedI[centre_short_index]);
             }
         }
     }

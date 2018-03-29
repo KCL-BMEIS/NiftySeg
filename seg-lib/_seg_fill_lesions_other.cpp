@@ -357,7 +357,7 @@ void seg_fill_lesions_other<T>::runIt(){
 
     if(this->getVerbose()) cout << "Filling lesions"<<endl;
     
-    float smoothing_parameter[5]={0.9,0.7,0.5,0.3,0.1};
+    float smoothing_parameter[5]={0.9F,0.7F,0.5F,0.3F,0.1F};
     for(int i_smooth=0;i_smooth<5;i_smooth++) {
       if(this->getVerbose()) {
             cout<< "Smoothing factor: "<<smoothing_parameter[i_smooth]<<endl;
