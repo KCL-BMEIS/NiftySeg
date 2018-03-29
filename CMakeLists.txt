@@ -35,6 +35,9 @@ OPTION(BUILD_ALL "To build the LoAd segmentation tool" ON)
 OPTION(BUILD_SHARED_LIBS "Build the libraries as shared." OFF)
 OPTION(INSTALL_PRIORS "Install prior images. Turn this off if you are really short on disk space" ON)
 
+option(USE_THROW_EXEP "To throw exeception rather than exit" OFF)
+mark_as_advanced(USE_THROW_EXEP)
+
 #-----------------------------------------------------------------------------
 # Set build details - C flags, Build Type, Library_type, OpenMP
 #-----------------------------------------------------------------------------
@@ -223,6 +226,10 @@ endif(DOXYGEN_FOUND)
 #-----------------------------------------------------------------------------
 # Actually install NiftySeg
 #-----------------------------------------------------------------------------
+
+if(USE_THROW_EXEP)
+	add_definitions(-DNS_THROW_EXCEP)
+endif(USE_THROW_EXEP)
 
 SUBDIRS(nifti)
 SUBDIRS(seg-lib)

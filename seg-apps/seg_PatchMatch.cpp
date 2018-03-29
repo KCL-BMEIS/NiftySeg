@@ -320,14 +320,14 @@ int main(int argc, char **argv)
 	
         if(pm_threads<better_match) {
             cerr<< "ERROR: the number of patchmatch executions can't be less than the expected matching better results."<<endl;
-            exit(-1);
+            seg_exit();
         }
         if(!(InputMask->nx==InputImage->nx && InputMask->ny==InputImage->ny && InputMask->nz==InputImage->nz))
         {
             cerr << "ERROR: input mask "<< filename_mask << " has a different size  respect to input  image = ( "<<InputImage->nx<<","
                  <<InputImage->ny<<","<<InputImage->nz<<","<<" )  input mask = ( "<<InputMask->nx<<","
                 <<InputMask->ny<<","<<InputMask->nz<<" )"<<endl;
-            exit(-1);
+            seg_exit();
         }
 
         // We show the parameters

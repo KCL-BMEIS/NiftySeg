@@ -647,7 +647,7 @@ int main(int argc, char **argv)
                     if((round(Img1prt[index]))>1024  || (round(Img1prt[index]))<0)
                     {
                         cout<<"Too many labels... the code only handles up to 1024 labels"<<endl;
-                        exit(0);
+                        seg_exit();
                     }
                     else
                     {
@@ -684,7 +684,7 @@ int main(int argc, char **argv)
                     if((round(Img1prt[index]))>1024  || (round(Img1prt[index]))<0)
                     {
                         cout<<"Too many labels... the code only handles up to 1024 labels"<<endl;
-                        exit(0);
+                        seg_exit();
                     }
                     else
                     {
@@ -731,7 +731,7 @@ int main(int argc, char **argv)
                     if((round(Img1prt[index]))>1024  || (round(Img1prt[index]))<0)
                     {
                         cout<<"Too many labels... the code only handles up to 1024 labels"<<endl;
-                        exit(0);
+                        seg_exit();
                     }
                     else
                     {
@@ -1208,7 +1208,7 @@ int main(int argc, char **argv)
                     if((round(Img1prt[index]))>1024  || (round(Img1prt[index]))<0)
                     {
                         cout<<"Too many labels... the code only handles up to 1024 labels"<<endl;
-                        exit(0);
+                        seg_exit();
                     }
                     else
                     {

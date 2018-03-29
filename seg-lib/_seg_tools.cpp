@@ -1265,7 +1265,7 @@ unsigned char * estimateMLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,floa
             if(LNCC_ordered_save == NULL)
             {
                 fprintf(stderr,"* Error when alocating LNCC_ordered_save in function seg_norm4MLLNCC");
-                exit(-1);
+                seg_exit();
             }
 
             for(long cl=0; cl<numbordered_level_old; cl++)
@@ -1286,13 +1286,13 @@ unsigned char * estimateMLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,floa
         if(BaseMean == NULL)
         {
             fprintf(stderr,"* Error when alocating BaseMean in function seg_norm4LNCC");
-            exit(-1);
+            seg_exit();
         }
         segPrecisionTYPE * BaseSTD=new segPrecisionTYPE [BaseImage->nx*BaseImage->ny*BaseImage->nz];
         if(BaseSTD == NULL)
         {
             fprintf(stderr,"* Error when alocating BaseSTD in function seg_norm4LNCC");
-            exit(-1);
+            seg_exit();
         }
 
         // CALC MEAN AND STD OF THE BASE
@@ -1336,19 +1336,19 @@ unsigned char * estimateMLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,floa
             if(bufferMean == NULL)
             {
                 fprintf(stderr,"* Error when alocating bufferMean in function seg_norm4LNCC");
-                exit(-1);
+                seg_exit();
             }
             segPrecisionTYPE * bufferSTD=new segPrecisionTYPE [ BaseImage->nx * BaseImage->ny * BaseImage->nz ];
             if(bufferSTD == NULL)
             {
                 fprintf(stderr,"* Error when alocating bufferSTD in function seg_norm4LNCC");
-                exit(-1);
+                seg_exit();
             }
             segPrecisionTYPE * bufferDATA=new segPrecisionTYPE [BaseImage->nx*BaseImage->ny*BaseImage->nz];
             if(bufferDATA == NULL)
             {
                 fprintf(stderr,"* Error when alocating bufferDATA in function seg_norm4LNCC");
-                exit(-1);
+                seg_exit();
             }
 
             if (verbose>0)
@@ -1387,7 +1387,7 @@ unsigned char * estimateMLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,floa
         if(LNCC_ordered == NULL)
         {
             fprintf(stderr,"* Error when alocating LNCC_ordered in function seg_norm4LNCC");
-            exit(-1);
+            seg_exit();
         }
 
 
@@ -1447,7 +1447,7 @@ unsigned char * estimateMLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,floa
             if(LNCC_ordered_save == NULL)
             {
                 fprintf(stderr,"* Error when alocating LNCC_ordered_save in function seg_norm4MLLNCC");
-                exit(-1);
+                seg_exit();
             }
             for(long cl=0; cl<numbordered_level_old*LNCC->nx*LNCC->ny*LNCC->nz; cl++)
             {
@@ -1679,13 +1679,13 @@ unsigned char * estimateLNCC5D(nifti_image * BaseImage, nifti_image * LNCC,float
     if(BaseMean == NULL)
     {
         fprintf(stderr,"* Error when alocating BaseMean in function seg_norm4LNCC");
-        exit(-1);
+        seg_exit();
     }
     segPrecisionTYPE * BaseSTD=new segPrecisionTYPE [BaseImageXYZsize*BaseImage->nt];
     if(BaseSTD == NULL)
     {
         fprintf(stderr,"* Error when alocating BaseSTD in function seg_norm4LNCC");
-        exit(-1);
+        seg_exit();
     }
 
     // CALC MEAN AND STD OF THE BASE
@@ -1738,19 +1738,19 @@ unsigned char * estimateLNCC5D(nifti_image * BaseImage, nifti_image * LNCC,float
             if(bufferMean == NULL)
             {
                 fprintf(stderr,"* Error when alocating bufferMean in function seg_norm4LNCC");
-                exit(-1);
+                seg_exit();
             }
             segPrecisionTYPE * bufferSTD=new segPrecisionTYPE [BaseImageXYZsize];
             if(bufferSTD == NULL)
             {
                 fprintf(stderr,"* Error when alocating bufferSTD in function seg_norm4LNCC");
-                exit(-1);
+                seg_exit();
             }
             segPrecisionTYPE * bufferDATA=new segPrecisionTYPE [BaseImageXYZsize];
             if(bufferDATA == NULL)
             {
                 fprintf(stderr,"* Error when alocating bufferDATA in function seg_norm4LNCC");
-                exit(-1);
+                seg_exit();
             }
             //for(long currlable=0;currlable<3; currlable++){
             if (verbose>0)
@@ -1801,7 +1801,7 @@ unsigned char * estimateLNCC5D(nifti_image * BaseImage, nifti_image * LNCC,float
     if(LNCC_ordered == NULL)
     {
         fprintf(stderr,"* Error when alocating LNCC_ordered in function seg_norm4LNCC");
-        exit(-1);
+        seg_exit();
     }
 
 
@@ -1853,13 +1853,13 @@ unsigned char * estimateLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,float
     if(BaseMean == NULL)
     {
         fprintf(stderr,"* Error when alocating BaseMean in function seg_norm4LNCC");
-        exit(-1);
+        seg_exit();
     }
     segPrecisionTYPE * BaseSTD=new segPrecisionTYPE [BaseImage->nx*BaseImage->ny*BaseImage->nz];
     if(BaseSTD == NULL)
     {
         fprintf(stderr,"* Error when alocating BaseSTD in function seg_norm4LNCC");
-        exit(-1);
+        seg_exit();
     }
 
     // CALC MEAN AND STD OF THE BASE
@@ -1902,19 +1902,19 @@ unsigned char * estimateLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,float
         if(bufferMean == NULL)
         {
             fprintf(stderr,"* Error when alocating bufferMean in function seg_norm4LNCC");
-            exit(-1);
+            seg_exit();
         }
         segPrecisionTYPE * bufferSTD=new segPrecisionTYPE [ BaseImage->nx * BaseImage->ny * BaseImage->nz ];
         if(bufferSTD == NULL)
         {
             fprintf(stderr,"* Error when alocating bufferSTD in function seg_norm4LNCC");
-            exit(-1);
+            seg_exit();
         }
         segPrecisionTYPE * bufferDATA=new segPrecisionTYPE [BaseImage->nx*BaseImage->ny*BaseImage->nz];
         if(bufferDATA == NULL)
         {
             fprintf(stderr,"* Error when alocating bufferDATA in function seg_norm4LNCC");
-            exit(-1);
+            seg_exit();
         }
         //for(long currlable=0;currlable<3; currlable++){
         if (verbose>0)
@@ -1962,7 +1962,7 @@ unsigned char * estimateLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,float
     if(LNCC_ordered == NULL)
     {
         fprintf(stderr,"* Error when alocating LNCC_ordered in function seg_norm4LNCC");
-        exit(-1);
+        seg_exit();
     }
 
 
@@ -2084,7 +2084,7 @@ void seg_changeDatatype1(nifti_image *image)
     else
     {
         fprintf(stderr,"[NiftyReg ERROR] reg_tools_changeDatatype\tOnly change to unsigned char, float or double are supported\n");
-        exit(1);
+        seg_exit();
     }
     free(image->data);
     image->nbyper = sizeof(NewTYPE);
@@ -2131,7 +2131,7 @@ int seg_changeDatatype(nifti_image *image)
         break;
     default:
         fprintf(stderr,"[NiftyReg ERROR] seg_changeDatatype\tThe initial image data type (%d) is not supported\n",image->datatype);
-        exit(1);
+        seg_exit();
     }
     return 1;
 }
@@ -3667,7 +3667,7 @@ void Dillate(float * Image,
     if(Buffer == NULL)
     {
         fprintf(stderr,"* Error when alocating Buffer in void Dillate(): Not enough memory\n");
-        exit(1);
+        seg_exit();
     }
 
     float tmpvalue=0;
@@ -3726,7 +3726,7 @@ void Erosion(float * Image,
     if(Buffer == NULL)
     {
         fprintf(stderr,"* Error when alocating Buffer in void Dillate(): Not enough memory\n");
-        exit(1);
+        seg_exit();
     }
 
     float tmpvalue=0;
@@ -3983,7 +3983,7 @@ bool isSimplePoint(bool * SimplePointTestBlock){
 //    if(Buffer == NULL)
 //    {
 //        fprintf(stderr,"* Error when alocating Buffer in void Dillate(): Not enough memory\n");
-//        exit(1);
+//        seg_exit();
 //    }
 
 //    for(int tp=0; tp<Currentsize->tsize; tp++){

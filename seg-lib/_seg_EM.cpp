@@ -2276,7 +2276,7 @@ void seg_EM::RunBiasField3D()
         catch (std::bad_alloc& ba)
         {
             std::cerr << "ERROR:Low memory, could not allocate Q (" <<samplecount<<" float elements): "<< ba.what() <<std::endl;
-            exit(1);
+            seg_exit();
         }
 
         segPrecisionTYPE W_tmp=0;
@@ -2332,7 +2332,7 @@ void seg_EM::RunBiasField3D()
         catch (std::bad_alloc& ba)
         {
             std::cerr << "ERROR:Low memory, could not allocate Basis (" <<UsedBasisFunctions<<" float elements): "<< ba.what() <<std::endl;
-            exit(1);
+            seg_exit();
         }
 
         segPrecisionTYPE xpos=0.0f;

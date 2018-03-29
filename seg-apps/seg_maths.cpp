@@ -1023,7 +1023,7 @@ int main(int argc, char **argv)
                     if(   (strtod(parser.c_str(),NULL)!=0 && (parser.find(".nii")==string::npos ||parser.find(".img")==string::npos ||parser.find(".hdr")==string::npos )) ||(parser.length()==1 && parser.find("0")!=string::npos))
                     {
                         cerr<<"ERROR: "<<argv[i]<<"  has to be an image"<<endl;
-                        exit(1);
+                        seg_exit();
                     }
 
                     bool * Lable= new bool [CurrSize->numel];
@@ -1061,7 +1061,7 @@ int main(int argc, char **argv)
                       ||(parser.length()==1 && parser.find("0")!=string::npos))
                 {
                     cerr<<"ERROR: "<<argv[i]<<"  has to be an image"<<endl;
-                    exit(1);
+                    seg_exit();
                 }
                 else
                 {
@@ -1110,7 +1110,7 @@ int main(int argc, char **argv)
                       ||(parser.length()==1 && parser.find("0")!=string::npos))
                 {
                     cerr<<"ERROR: "<<argv[i]<<"  has to be an image"<<endl;
-                    exit(1);
+                    seg_exit();
                 }
                 else
                 {
@@ -1882,7 +1882,7 @@ int main(int argc, char **argv)
                     }
                     else{
                         cout << "ERROR: Direction "<< direction << " is not x, y or z"<<endl;
-                        exit(1);
+                        seg_exit();
                     }
 
                     CurrSize->numel=(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize);
@@ -1926,7 +1926,7 @@ int main(int argc, char **argv)
                     }
                     else{
                         cout << "ERROR: Direction "<< direction << " is not x, y or z"<<endl;
-                        exit(1);
+                        seg_exit();
                     }
 
                     //double regul=5.0f;
@@ -2014,7 +2014,7 @@ int main(int argc, char **argv)
 //                    }
 //                    else{
 //                        cout << "ERROR: Direction "<< direction << " is not x, y or z"<<endl;
-//                        exit(1);
+//                        seg_exit();
 //                    }
 ////                    double regul=1.0e-15f;
 
@@ -2098,7 +2098,7 @@ int main(int argc, char **argv)
                     }
                     else{
                         cout << "ERROR: Direction "<< direction << " is not x, y or z"<<endl;
-                        exit(1);
+                        seg_exit();
                     }
 
                     CurrSize->numel=(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize);
@@ -2118,7 +2118,7 @@ int main(int argc, char **argv)
                 }
                 else{
                     cout << "ERROR: Number of time points is not 2"<<endl;
-                    exit(1);
+                    seg_exit();
                 }
 
             }
@@ -2412,7 +2412,7 @@ int main(int argc, char **argv)
                     cout << "ERROR: Image "<< parser << " is the wrong size  -  original = ( "<<CurrSize->xsize<<","
                          <<CurrSize->ysize<<","<<CurrSize->zsize<<","<<CurrSize->tsize<<","<<CurrSize->usize<<" )  New image = ( "<<NewImage->nx<<","
                         <<NewImage->ny<<","<<NewImage->nz<<","<<NewImage->nt<<","<<NewImage->nu<<" )"<<endl;
-                    exit(1);
+                    seg_exit();
                     i=argc;
                 }
                 nifti_image_free(NewImage);

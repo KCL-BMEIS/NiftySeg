@@ -52,6 +52,18 @@ inline int fabs(int _x)
     #include <alloca.h>
 #endif
 
+
+#ifndef NS_THROW_EXCEP
+#define seg_exit(){ \
+    fprintf(stderr,"[NiftySeg] Exit here. File: %s:%i\n",__FILE__, __LINE__); \
+    exit(1); \
+}
+#else // NS_THROW_EXCEP
+#define seg_exit(){ \
+    throw std::exception("[NiftySeg] Exception"); \
+}
+#endif // NS_THROW_EXCEP
+
 #if (defined(_WIN32) || defined(_WINDOWS)) && !defined(__CYGWIN__)
     /// @brief Defines the system wide path separator for filenames
     #define SEP "\\"

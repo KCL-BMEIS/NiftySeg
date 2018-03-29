@@ -43,7 +43,7 @@ seg_LabFusion::seg_LabFusion(int _numb_classif, int numbclasses, int _Numb_Neigh
     if(ConfusionMatrix == NULL)
     {
         fprintf(stderr,"* Error when alocating ConfusionMatrix: Not enough memory\n");
-        exit(1);
+        seg_exit();
     }
 
     for (int i=0; i<(_numb_classif); i++)
@@ -93,7 +93,7 @@ seg_LabFusion::seg_LabFusion(int _numb_classif, int numbclasses, int _Numb_Neigh
     if(MRF_matrix == NULL)
     {
         fprintf(stderr,"* Error when alocating MRF_matrix: Not enough memory\n");
-        exit(1);
+        seg_exit();
     }
 
     for (int j=0; j<(numbclasses); j++)
@@ -203,7 +203,7 @@ int seg_LabFusion::SetinputCLASSIFIER(nifti_image *r,bool UNCERTAINflag)
     if(NumberOfDifferentClassesHistogram == NULL)
     {
         fprintf(stderr,"* Error when alocating NumberOfDifferentClassesHistogram: Not enough memory\n");
-        exit(1);
+        seg_exit();
     }
 
     for(long i=0; i<5000; i++)
@@ -241,7 +241,7 @@ int seg_LabFusion::SetinputCLASSIFIER(nifti_image *r,bool UNCERTAINflag)
     if(maskAndUncertainIndeces == NULL)
     {
         fprintf(stderr,"* Error when alocating mask_and_uncertain_indexes: Not enough memory\n");
-        exit(1);
+        seg_exit();
     }
 
     this->sizeAfterMaskingAndUncertainty=this->numel;
@@ -274,12 +274,12 @@ int seg_LabFusion::SetLNCC(nifti_image * _LNCC,nifti_image * BaseImage,segPrecis
     if(this->nx!=_LNCC->nx || this->ny!=_LNCC->ny || this->nz!=_LNCC->nz)
     {
         fprintf(stderr,"* The image size of the images do not match");
-        exit(1);
+        seg_exit();
     }
     if(this->nx!=BaseImage->nx || this->ny!=BaseImage->ny || this->nz!=BaseImage->nz)
     {
         fprintf(stderr,"* The image size of the images do not match");
-        exit(1);
+        seg_exit();
     }
 
     if(_LNCC->nt==this->numb_classif)
@@ -313,7 +313,7 @@ int seg_LabFusion::SetLNCC(nifti_image * _LNCC,nifti_image * BaseImage,segPrecis
 
   if(this->nx!=_InMetric->nx || this->ny!=_InMetric->ny || this->nz!=_InMetric->nz){
       fprintf(stderr,"* The image size of the images do not match");
-      exit(1);
+      seg_exit();
     }
 
 
@@ -322,7 +322,7 @@ int seg_LabFusion::SetLNCC(nifti_image * _LNCC,nifti_image * BaseImage,segPrecis
           this->LNCC=new char [Numb_Neigh*this->nx*this->ny*this->nz];
           if(this->LNCC == NULL){
               fprintf(stderr,"* Error when alocating this->LNCC in function SetLMETRIC");
-              exit(-1);
+              seg_exit();
             }
 
           LabFusion_datatype * InputMetricPtr = static_cast<LabFusion_datatype *>(_InMetric->data);
@@ -370,12 +370,12 @@ int seg_LabFusion::SetMLLNCC(nifti_image * _LNCC,nifti_image * BaseImage,segPrec
     if(this->nx!=_LNCC->nx || this->ny!=_LNCC->ny || this->nz!=_LNCC->nz)
     {
         fprintf(stderr,"* The image size of the images do not match");
-        exit(1);
+        seg_exit();
     }
     if(this->nx!=BaseImage->nx || this->ny!=BaseImage->ny || this->nz!=BaseImage->nz)
     {
         fprintf(stderr,"* The image size of the images do not match");
-        exit(1);
+        seg_exit();
     }
 
     if(_LNCC->nt==this->numb_classif)
@@ -410,12 +410,12 @@ int seg_LabFusion::SetGNCC(nifti_image * _GNCC,nifti_image * BaseImage,int Numb_
     if(this->nx!=_GNCC->nx || this->ny!=_GNCC->ny || this->nz!=_GNCC->nz)
     {
         fprintf(stderr,"* The image size of the images do not match");
-        exit(1);
+        seg_exit();
     }
     if(this->nx!=BaseImage->nx || this->ny!=BaseImage->ny || this->nz!=BaseImage->nz)
     {
         fprintf(stderr,"* The image size of the images do not match");
-        exit(1);
+        seg_exit();
     }
 
     if(_GNCC->nt==this->numb_classif)
@@ -449,12 +449,12 @@ int seg_LabFusion::SetROINCC(nifti_image * _ROINCC,nifti_image * BaseImage,int N
     if(this->nx!=_ROINCC->nx || this->ny!=_ROINCC->ny || this->nz!=_ROINCC->nz)
     {
         fprintf(stderr,"* The image size of the images do not match");
-        exit(1);
+        seg_exit();
     }
     if(this->nx!=BaseImage->nx || this->ny!=BaseImage->ny || this->nz!=BaseImage->nz)
     {
         fprintf(stderr,"* The image size of the images do not match");
-        exit(1);
+        seg_exit();
     }
 
     if(_ROINCC->nt==this->numb_classif)
@@ -573,7 +573,7 @@ int seg_LabFusion::Create_CurrSizes()
     if(CurrSizes == NULL)
     {
         fprintf(stderr,"* Error when alocating CurrSizes: Not enough memory\n");
-        exit(1);
+        seg_exit();
     }
     CurrSizes->numel=(int)(this->nx*this->ny*this->nz);
     CurrSizes->xsize=this->nx;
@@ -599,7 +599,7 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
     if(tmpW == NULL)
     {
         fprintf(stderr,"* Error when alocating tmpW: Not enough memory\n");
-        exit(1);
+        seg_exit();
     }
 
     categoricalLabelType * inputHumanRater = static_cast<categoricalLabelType *>(this->inputCLASSIFIER->data);
@@ -608,7 +608,7 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
     if(nccexists_once == NULL)
     {
         fprintf(stderr,"* Error when alocating nccexists_once: Not enough memory\n");
-        exit(1);
+        seg_exit();
     }
 
     for(long humanRater=0; humanRater<this->CurrSizes->numclass; humanRater++)nccexists_once[humanRater]=false;
@@ -617,7 +617,7 @@ int seg_LabFusion::STAPLE_STEPS_Multiclass_Expectation_Maximization()
     if(ConfusionMatrix2 == NULL)
     {
         fprintf(stderr,"* Error when alocating ConfusionMatrix2: Not enough memory\n");
-        exit(1);
+        seg_exit();
     }
 
     for(long i=0; i<(this->CurrSizes->numclass*this->NumberOfLabels*this->NumberOfLabels); i++)
@@ -1026,7 +1026,7 @@ int seg_LabFusion::SBA_Estimate()
     if(CurrLableImage == NULL)
     {
         fprintf(stderr,"* Error when alocating CurrLableImage: Not enough memory\n");
-        exit(1);
+        seg_exit();
     }
     if(this->verbose_level>0)
     {
@@ -1141,7 +1141,7 @@ int seg_LabFusion::MV_Estimate()
     if(tmpW == NULL)
     {
         fprintf(stderr,"* Error when alocating tmpW: Not enough memory\n");
-        exit(1);
+        seg_exit();
     }
 
     categoricalLabelType * inputCLASSIFIERptr = static_cast<categoricalLabelType *>(this->inputCLASSIFIER->data);
@@ -1580,7 +1580,7 @@ int seg_LabFusion::Allocate_Stuff_MV()
     if(W == NULL)
     {
         fprintf(stderr,"* Error when alocating W: Not enough memory\n");
-        exit(1);
+        seg_exit();
     }
 
     for(long i=0; i<(this->numel); i++)
@@ -1601,7 +1601,7 @@ int seg_LabFusion::Allocate_Stuff_SBA()
     if(W == NULL)
     {
         fprintf(stderr,"* Error when alocating W: Not enough memory\n");
-        exit(1);
+        seg_exit();
     }
 
     for(long i=0; i<(this->numel*this->NumberOfLabels); i++)
@@ -1631,7 +1631,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
     if(this->FinalSeg == NULL)
     {
         fprintf(stderr,"\n* Error when alocating FinalSeg: Not enough memory\n");
-        exit(1);
+        seg_exit();
     }
 
     categoricalLabelType * inputCLASSIFIERptr = static_cast<categoricalLabelType *>(this->inputCLASSIFIER->data);
@@ -1642,7 +1642,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
         if(num_true == NULL)
         {
             fprintf(stderr,"\n* Error when alocating num_true: Not enough memory\n");
-            exit(1);
+            seg_exit();
         }
         long current_size_after_masking_and_uncertainty=0;
         for(long i=0; i<(this->numel); i++)
@@ -1709,7 +1709,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
     if(this->W == NULL)
     {
         fprintf(stderr,"\n* Error when alocating this->W: Not enough memory\n");
-        exit(1);
+        seg_exit();
     }
     if(this->verbose_level>1)
     {
@@ -1742,7 +1742,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
     if(num_true == NULL)
     {
         fprintf(stderr,"\n* Error when alocating num_true: Not enough memory\n");
-        exit(1);
+        seg_exit();
     }
     for(long i=0; i<(this->numel); i++)
     {
@@ -1831,7 +1831,7 @@ int seg_LabFusion::Allocate_Stuff_STAPLE()
         if(MRF == NULL)
         {
             fprintf(stderr,"* The variable MRF was not allocated: OUT OF MEMORY!");
-            exit(1);
+            seg_exit();
         }
         for(long i=0; i<(this->sizeAfterMaskingAndUncertainty*this->NumberOfLabels); i++)
             this->MRF[i]=1.0f/this->NumberOfLabels;

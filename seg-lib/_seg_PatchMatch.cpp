@@ -540,7 +540,7 @@ void seg_PatchMatch<T>::loadFile(nifti_image *&InputImage,string filename,float 
     if(InputImage == NULL)
     {
         fprintf(stderr,"* Error when reading the input database file: %s\n",filename.c_str());
-        exit(-1);
+        seg_exit();
     }
     if(InputImage->datatype!=NIFTI_TYPE_FLOAT32)
     {
@@ -582,14 +582,14 @@ void seg_PatchMatch<T>::getNextRecordDatabase(int num,float *&imagePtr,float *&m
         cout << "ERROR: Database mask (2nd column from the input text file) "<< filename_mask << " is the wrong size  respect to database  image = ( "<<imageSize->xsize<<","
              <<imageSize->ysize<<","<<imageSize->zsize<<" )  mask = ( "<<maskSize->xsize<<","
             <<maskSize->ysize<<","<<maskSize->zsize<<" )"<<endl;
-        exit(-1);
+        seg_exit();
     }
     if(!(this->getXAxisSize()==imageSize->xsize && this->getYAxisSize()==imageSize->ysize && this->getZAxisSize()==imageSize->zsize && this->getNumTP()==imageSize->tsize))
     {
         cout << "ERROR: Database images (1st column from the input text file) have different size respect to input image = ( "<<this->getXAxisSize()<<","
              <<this->getYAxisSize()<<","<<this->getZAxisSize()<<","<<this->getNumTP()<<")  database image = ( "<<imageSize->xsize<<","
             <<imageSize->ysize<<","<<imageSize->zsize<<","<<imageSize->tsize<<" )"<<endl;
-        exit(-1);
+        seg_exit();
     }
 
     // Removing voxels outside the mask
@@ -645,7 +645,7 @@ float seg_PatchMatch<T>::calculateDistance(long index,long patchM,int nImage,flo
                                                      current_distances);
                 break;
         default: cout<<"ERROR: Distance not implemented!!!!"<<endl;
-                 exit(-1);
+                 seg_exit();
     }
     return curdist;
 }
@@ -697,7 +697,7 @@ void seg_PatchMatch<T>::loadOuputDatabase(){
         cout << "ERROR: Output database images (3rd column from the input text file) have different size respect to input image = ( "<<this->getXAxisSize()<<","
              <<this->getYAxisSize()<<","<<this->getZAxisSize()<<" )  output database image = ( "<<this->outputSize->xsize<<","
             <<this->outputSize->ysize<<","<<this->outputSize->zsize<<" )"<<endl;
-        exit(-1);
+        seg_exit();
     }
 
     long NUMVOXTOTAL=this->getSingleVolumSize()*this->outputSize->tsize;
