@@ -60,7 +60,7 @@ inline int fabs(int _x)
 }
 #else // NS_THROW_EXCEP
 #define seg_exit(){ \
-    throw std::exception("[NiftySeg] Exception"); \
+    throw std::runtime_error("[NiftySeg] Exception"); \
 }
 #endif // NS_THROW_EXCEP
 
