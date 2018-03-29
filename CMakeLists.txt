@@ -33,6 +33,7 @@ set(NiftySeg_VERSION_PATCH 4)
 
 OPTION(BUILD_ALL "To build the LoAd segmentation tool" ON)
 OPTION(BUILD_SHARED_LIBS "Build the libraries as shared." OFF)
+OPTION(BUILD_Z "To build the z library tool" ON)
 OPTION(INSTALL_PRIORS "Install prior images. Turn this off if you are really short on disk space" ON)
 
 option(USE_THROW_EXEP "To throw exeception rather than exit" OFF)
@@ -97,6 +98,11 @@ endif(NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
 # Try first to find the z library on the system and built is from the sources if it can not be found
 #-----------------------------------------------------------------------------
 
+IF(BUILD_Z)
+    include_directories(${CMAKE_SOURCE_DIR}/zlib)
+    message(STATUS "zlib not found - the z library will be built")
+    subdirs(zlib)
+ELSE(BUILD_Z)
 find_package(ZLIB)
 if(ZLIB_FOUND)
     include_directories(${ZLIB_INCLUDE_DIR})
@@ -104,8 +110,10 @@ if(ZLIB_FOUND)
 else(ZLIB_FOUND)
     include_directories(${CMAKE_SOURCE_DIR}/zlib)
     message(STATUS "zlib not found - the z library will be built")
-	subdirs(zlib)
+        subdirs(zlib)
 endif(ZLIB_FOUND)
+
+ENDIF(BUILD_Z)
 SET(ZLIB "z")
 
 #-----------------------------------------------------------------------------
