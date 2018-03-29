@@ -949,7 +949,7 @@ float estimateNCC3D(nifti_image * BaseImage,nifti_image * Template,nifti_image *
             if(Templateptr[i]!=Templateptr[i] || BaseImageptr[i]!=BaseImageptr[i]){
                 Maskptr[i]=0;
             }
-            Maskcount+=(float)(Maskptr[i]>0);
+            Maskcount+=(float)(Maskptr[i]);
         }
     }
 
@@ -2428,7 +2428,7 @@ void LTS_Vecs(float * Y, float * X,int * mask, float percentOutliers,int maxNumb
 
         for(unsigned int i=0; i<size; i++)
         {
-            if(mask==NULL || (mask!=NULL && mask[i]==true))
+            if(mask==NULL || (mask!=NULL && mask[i]!=0))
             {
                 if( distance_threshold > fabs(Y[i]-Aval*X[i]+Bval) )
                 {
@@ -2451,7 +2451,7 @@ void LTS_Vecs(float * Y, float * X,int * mask, float percentOutliers,int maxNumb
         int indexmask=0;
         for(unsigned int i=0; i<size; i++)
         {
-            if(mask==NULL || (mask!=NULL && mask[i]==true))
+            if(mask==NULL || (mask!=NULL && mask[i]!=0))
             {
                 distance[indexmask]=fabs(Y[i]-Aval*X[i]+Bval);
                 maxdistance=(maxdistance<distance[indexmask])?distance[indexmask]:maxdistance;
@@ -2531,7 +2531,7 @@ void LS_Vecs(float * Y, float * X,int * mask, unsigned int size, float *a, float
     float sizefloat=0;
     for(unsigned int i=0; i<size; i++)
     {
-        if(mask==NULL || (mask!=NULL && mask[i]==true))
+        if(mask==NULL || (mask!=NULL && mask[i]!=0))
         {
             sumX+=X[i];
             sumY+=Y[i];
@@ -3776,7 +3776,7 @@ bool isSimplePoint(bool * SimplePointTestBlock){
     {
       for(int x=0; x<3; x++)
       {
-        if(SimplePointTestBlock[index]>0){
+        if(SimplePointTestBlock[index]){
           CounterBlock[index]=CCcounter;
           CCcounter++;
           index++;
@@ -3813,14 +3813,14 @@ bool isSimplePoint(bool * SimplePointTestBlock){
       {
         for(int x=1; x<3; x++)
         {
-          if(SimplePointTestBlock[index]>0 && CClist[CounterBlock[index]]>0)
+          if(SimplePointTestBlock[index] && CClist[CounterBlock[index]])
           {
             tempmin=CClist[CounterBlock[index]];
 
             for(int deltaZ=-1; deltaZ<=1; deltaZ+=2)
             {
               currindex=index+deltaZ*9;
-              if(SimplePointTestBlock[currindex]>0 && tempmin>CClist[CounterBlock[currindex]])
+              if(SimplePointTestBlock[currindex] && tempmin>CClist[CounterBlock[currindex]])
               {
                 tempmin=CClist[CounterBlock[currindex]];
               }
@@ -3828,7 +3828,7 @@ bool isSimplePoint(bool * SimplePointTestBlock){
             for(int deltaY=-1; deltaY<=1; deltaY+=2)
             {
               currindex=index+deltaY*3;
-              if(SimplePointTestBlock[currindex]>0 && tempmin>CClist[CounterBlock[currindex]])
+              if(SimplePointTestBlock[currindex] && tempmin>CClist[CounterBlock[currindex]])
               {
                 tempmin=CClist[CounterBlock[currindex]];
               }
@@ -3836,7 +3836,7 @@ bool isSimplePoint(bool * SimplePointTestBlock){
             for(int deltaX=-1; deltaX<=1; deltaX+=2)
             {
               currindex=index+deltaX;
-              if(SimplePointTestBlock[currindex]>0 && tempmin>CClist[CounterBlock[currindex]])
+              if(SimplePointTestBlock[currindex] && tempmin>CClist[CounterBlock[currindex]])
               {
                 tempmin=CClist[CounterBlock[currindex]];
               }
@@ -3874,7 +3874,7 @@ bool isSimplePoint(bool * SimplePointTestBlock){
       {
         SimplePointTestBlockMod[index]=(z==1 && y==1 && x==1)?0:SimplePointTestBlock[index];
 
-        if(SimplePointTestBlockMod[index]>0){
+        if(SimplePointTestBlockMod[index]){
           CounterBlock[index]=CCcounter;
           CCcounter++;
           index++;
@@ -3909,14 +3909,14 @@ bool isSimplePoint(bool * SimplePointTestBlock){
       {
         for(int x=1; x<3; x++)
         {
-          if(SimplePointTestBlockMod[index]>0 && CClist[CounterBlock[index]]>0)
+          if(SimplePointTestBlockMod[index] && CClist[CounterBlock[index]])
           {
             tempmin=CClist[CounterBlock[index]];
 
             for(int deltaZ=-1; deltaZ<=1; deltaZ+=2)
             {
               currindex=index+deltaZ*9;
-              if(SimplePointTestBlockMod[currindex]>0 && tempmin>CClist[CounterBlock[currindex]])
+              if(SimplePointTestBlockMod[currindex] && tempmin>CClist[CounterBlock[currindex]])
               {
                 tempmin=CClist[CounterBlock[currindex]];
               }
@@ -3924,7 +3924,7 @@ bool isSimplePoint(bool * SimplePointTestBlock){
             for(int deltaY=-1; deltaY<=1; deltaY+=2)
             {
               currindex=index+deltaY*3;
-              if(SimplePointTestBlockMod[currindex]>0 && tempmin>CClist[CounterBlock[currindex]])
+              if(SimplePointTestBlockMod[currindex] && tempmin>CClist[CounterBlock[currindex]])
               {
                 tempmin=CClist[CounterBlock[currindex]];
               }
@@ -3932,7 +3932,7 @@ bool isSimplePoint(bool * SimplePointTestBlock){
             for(int deltaX=-1; deltaX<=1; deltaX+=2)
             {
               currindex=index+deltaX;
-              if(SimplePointTestBlockMod[currindex]>0 && tempmin>CClist[CounterBlock[currindex]])
+              if(SimplePointTestBlockMod[currindex] && tempmin>CClist[CounterBlock[currindex]])
               {
                 tempmin=CClist[CounterBlock[currindex]];
               }
@@ -4108,7 +4108,7 @@ int direction)
         {
             for(xyzpos[0]=0; xyzpos[0]<dimensions[0]; xyzpos[0]++)
             {
-                if(Image[index]>0)
+                if(Image[index])
                 {
                     tmpvalue=true;
                     if(direction>0)

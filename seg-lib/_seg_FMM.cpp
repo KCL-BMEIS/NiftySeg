@@ -36,7 +36,7 @@ float * DoubleEuclideanDistance_3D(bool *LablePtr, float * speedptr,
             if(speedptr[centre_index]<=0.000001)
                 speedptr[centre_index]=speedptr[centre_index]+0.000001;
         }
-        if(LablePtr[centre_index]>0.5)
+        if(LablePtr[centre_index])
         {
             Labels[centre_index]=0;
             GeoTime[centre_index]=0;
@@ -148,7 +148,7 @@ float * DoubleEuclideanDistance_3D(bool *LablePtr, float * speedptr,
     float *GeoTime2= (float *) calloc(NumElements, sizeof(float));
     for(centre_index=0; centre_index<NumElements; centre_index++)
     {
-        if(LablePtr[centre_index]<0.5)
+        if(!LablePtr[centre_index])
         {
             Labels[centre_index]=0;
             GeoTime2[centre_index]=0;
@@ -223,7 +223,7 @@ float * DoubleEuclideanDistance_3D(bool *LablePtr, float * speedptr,
 
     for(centre_index=0; centre_index<NumElements; centre_index++)
     {
-        GeoTime[centre_index]=LablePtr[centre_index]<0.5?(-1*GeoTime[centre_index]):(GeoTime2[centre_index]);
+        GeoTime[centre_index]=LablePtr[centre_index]?(-1*GeoTime[centre_index]):(GeoTime2[centre_index]);
     }
 
     centre_index=0;

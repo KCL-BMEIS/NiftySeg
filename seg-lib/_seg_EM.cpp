@@ -272,7 +272,7 @@ void seg_EM::SetMaskImage(nifti_image *_r)
     this->numElementsMasked=0;
     for(int i=0; i<this->numElements; i++,MaskDataPtr++)
     {
-        if((*MaskDataPtr)>0)
+        if((*MaskDataPtr))
         {
             this->numElementsMasked++;
         }
@@ -796,7 +796,7 @@ void seg_EM::InitializeMeansUsingIntensity()
 
         for(int i=0; i<this->numElements; i++)
         {
-            if(this->maskImageStatus==0 || MaskDataPtr[i]>0)
+            if(this->maskImageStatus==0 || MaskDataPtr[i])
             {
                 mycounter++;
                 meanval+=(Intensity_PTR[i+ms*this->numElements]);
@@ -806,7 +806,7 @@ void seg_EM::InitializeMeansUsingIntensity()
 
         for(int i=0; i<this->numElements; i++)
         {
-            if(this->maskImageStatus==0 || MaskDataPtr[i]>0 )
+            if(this->maskImageStatus==0 || MaskDataPtr[i] )
             {
                 variance+=pow((meanval-Intensity_PTR[i+ms*this->numElements]),2);
             }
@@ -824,7 +824,7 @@ void seg_EM::InitializeMeansUsingIntensity()
 
         for(int i=0; i<this->numElements; i++)
         {
-            if(this->maskImageStatus==0 || MaskDataPtr[i]>0)
+            if(this->maskImageStatus==0 || MaskDataPtr[i])
             {
                 if(tmpmax<(int)(Intensity_PTR[i+ms*this->numElements]))
                 {
@@ -839,7 +839,7 @@ void seg_EM::InitializeMeansUsingIntensity()
 
         for(int i=0; i<this->numElements; i++)
         {
-            if(this->maskImageStatus==0 || MaskDataPtr[i]>0)
+            if(this->maskImageStatus==0 || MaskDataPtr[i])
             {
 
                 int index4hist=(int)(1000.0f*(segPrecisionTYPE)(Intensity_PTR[i+ms*this->numElements]-tmpmin)/(segPrecisionTYPE)(tmpmax-tmpmin));
@@ -976,7 +976,7 @@ void seg_EM::CreateShort2LongMatrix()
         bool * Maskptrtmp = Maskptr;
         for (int i=0; i<numel; i++, Maskptrtmp++)
         {
-            (*Maskptrtmp)>0?numel_masked++:0;
+            (*Maskptrtmp)?numel_masked++:0;
         }
         this->numElementsMasked=numel_masked;
 
@@ -987,7 +987,7 @@ void seg_EM::CreateShort2LongMatrix()
         int tempindex=0;
         for (int i=0; i<numel; i++)
         {
-            if ((*Maskptrtmp)>0)
+            if (*Maskptrtmp)
             {
                 Short_2_Long_Indices_PTR[tempindex]=i;
                 tempindex++;
@@ -1026,7 +1026,7 @@ void seg_EM::CreateLong2ShortMatrix()
         int tempindex=0;
         for (int i=0; i<numel; i++,Maskptrtmp++,Long_2_Short_Indices_PTR++)
         {
-            if ((*Maskptrtmp)>0)
+            if (*Maskptrtmp)
             {
                 (*Long_2_Short_Indices_PTR)=tempindex;
                 tempindex++;

@@ -470,7 +470,7 @@ int Normalize_NaN_Priors(nifti_image * Priors,
     register int numel = Priors->nx*Priors->ny*Priors->nz;
     register int ups=0;
     register int good=0;
-    if(verbose>0)
+    if(verbose)
     {
         cout<< "Normalizing Priors" << endl;
     }
@@ -516,7 +516,7 @@ int Normalize_NaN_Priors(nifti_image * Priors,
 
     }
 
-    if(verbose>0)
+    if(verbose)
     {
         cout<<"Priors: "<< good<<" good voxels and "<<ups<<" bad voxels" << endl;
         flush(cout);
@@ -556,7 +556,7 @@ int Normalize_NaN_Priors_mask(nifti_image * Priors,
     register int numel = Mask->nx*Mask->ny*Mask->nz;
     register int ups=0;
     register int good=0;
-    if(verbose>0)
+    if(verbose)
     {
         cout<< "Normalizing Priors" << endl;
     }
@@ -625,7 +625,7 @@ int Normalize_NaN_Priors_mask(nifti_image * Priors,
 
     }
 
-    if(verbose>0)
+    if(verbose)
     {
         cout<<"Priors: "<< good<<" good voxels and "<<ups<<" bad voxels" << endl;
         flush(cout);
@@ -644,7 +644,7 @@ int Normalize_Image_mask(nifti_image * input,
     {
         seg_changeDatatype<float>(input);
     }
-    if(verbose>0)
+    if(verbose)
     {
         cout<< "Normalizing Input Image" << endl;
     }
@@ -682,7 +682,7 @@ int Normalize_Image_mask(nifti_image * input,
         }
         CurrSizes->rescale_max[udir]=tempmax;
         CurrSizes->rescale_min[udir]=tempmin;
-        if(verbose>0)
+        if(verbose)
         {
             cout << "Normalization["<<udir<<"] = ["<<tempmin<<","<<tempmax<<"]"<<endl;
         }
@@ -718,7 +718,7 @@ int Normalize_Image(nifti_image * input,
     {
         seg_changeDatatype<float>(input);
     }
-    if(verbose>0)
+    if(verbose)
     {
         cout<< "Normalizing Input Image" << endl;
     }
@@ -834,7 +834,7 @@ int * Create_Short_2_Long_Matrix_from_NII(nifti_image * Mask,
         bool * Maskptrtmp = Maskptr;
         for (int i=0; i<numel; i++, Maskptrtmp++)
         {
-            (*Maskptrtmp)>0?numel_masked++:0;
+            (*Maskptrtmp)?numel_masked++:0;
         }
         shortsize[0]=numel_masked;
 
@@ -845,7 +845,7 @@ int * Create_Short_2_Long_Matrix_from_NII(nifti_image * Mask,
         int tempindex=0;
         for (int i=0; i<numel; i++)
         {
-            if ((*Maskptrtmp)>0)
+            if (*Maskptrtmp)
             {
                 Short_2_Long_Indices_PTR[tempindex]=i;
                 tempindex++;
@@ -876,7 +876,7 @@ int *  Create_Long_2_Short_Matrix_from_NII(nifti_image * Mask)
         int tempindex=0;
         for (int i=0; i<numel; i++,Maskptrtmp++,Long_2_Short_Indices_PTR++)
         {
-            if ((*Maskptrtmp)>0)
+            if (*Maskptrtmp)
             {
                 (*Long_2_Short_Indices_PTR)=tempindex;
                 tempindex++;
@@ -914,7 +914,7 @@ int * Create_Short_2_Long_Matrix_from_Carray(bool * Mask,
     int tempindex=0;
     for (int i=0; i<numel; i++)
     {
-        if ((Mask[i])>0)
+        if (Mask[i])
         {
             Short_2_Long_Indices_PTR[tempindex]=i;
             tempindex++;
@@ -933,7 +933,7 @@ int *  Create_Long_2_Short_Matrix_from_Carray(bool * Mask,
     int tempindex=0;
     for (int i=0; i<nvox; i++,Long_2_Short_Indices_PTR++)
     {
-        if ((Mask[i])>0)
+        if (Mask[i])
         {
             (*Long_2_Short_Indices_PTR)=tempindex;
             tempindex++;

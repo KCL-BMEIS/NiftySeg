@@ -506,7 +506,7 @@ int main(int argc, char **argv)
                 bool * inputMaskPtr=static_cast<bool *>(Mask->data);
                 for(int i=0; i<tempImgSize; i++)
                 {
-                    maskcount+=(inputMaskPtr[i]>0)?1:0;
+                    maskcount+=(inputMaskPtr[i])?1:0;
                 }
             }
 
@@ -833,7 +833,7 @@ int main(int argc, char **argv)
             {
                 LabFusion.Turn_MRF_ON(MRF_strength);
             }
-            if(PropUpdate>0.0f)
+            if(PropUpdate)
             {
                 LabFusion.Turn_Prop_Update_ON();
             }

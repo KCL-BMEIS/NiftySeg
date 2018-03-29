@@ -163,7 +163,7 @@ int seg_LabFusion::SetMask(nifti_image *Mask)
     this->sizeAfterMaskingAndUncertainty=0;
     for(long i=0; i<(this->numel); i++)
     {
-        if(inputMaskPtr[i]>0)
+        if(inputMaskPtr[i])
         {
             this->maskAndUncertainIndeces[i]=this->sizeAfterMaskingAndUncertainty;
             this->sizeAfterMaskingAndUncertainty++;
