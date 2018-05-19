@@ -1,4 +1,4 @@
-Copyright (c) 2009, University College London, United-Kingdom
+Copyright (c) 2018, Jorge Cardoso
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
