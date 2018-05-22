@@ -1,8 +1,4 @@
-#####################
 # NIFTY_SEG PACKAGE #
-#####################
-
-##############################################################################
 
 --------------------------------
 1 WHAT DOES THE PACKAGE CONTAIN?
@@ -13,13 +9,11 @@ git clone git@github.com:KCL-BMEIS/NiftySeg.git niftyseg
 
 A packaged stable release is also available in the files menu above. This release in only updated once in a while, thus, it does not have the latest developments. See below for installation instructions. 
 
-##############################################################################
-
 -----------------------
 2 HOW TO BUILD THE CODE
 -----------------------
 
-** Download **
+**Download**
 The code can be easily build using cmake (http://www.cmake.org/). The latest 
 version can be downloaded from http://www.cmake.org/cmake/resources/software.html
 
@@ -32,7 +26,9 @@ git clone git@github.com:KCL-BMEIS/NiftySeg.git niftyseg
 A packaged stable release is also available at this website. 
 
 **Linux & OSX**
-**Build**
+
+* **Build**
+
 Assuming that the code source are in the source path folder, you will have to ﬁrst create a new folder, i.e. build path (step 1) and then to change directory to move into that folder (step 2).
 
 ~~~
@@ -61,7 +57,8 @@ The main option in the ccmake gui are deﬁned bellow:
 Once all the ﬂags are properly ﬁlled in, just press the ”c” to conﬁgure the Make- 
 ﬁle and then the ”g” key to generate them.
 
-**Install **
+* **Install**
+
 In the prompt, you just have to make (step 4) ﬁrst and then make install (step 5).
 
 ~~~
@@ -70,7 +67,9 @@ make install
 ~~~
 
 **Windows**
-**Build**
+
+* **Build**
+
 The building process is the following:
 1. Get the source
 2. Create a new directory for the build: "niftyseg-build"
@@ -81,15 +80,12 @@ The building process is the following:
 7. Note, that if you want to install NiftySeg under Program Files, you'll need to create the folder yourself and explicitly apply full write permissions. 
 8. Once the flags are set, hit configure and generate. This will generate the Visual Studio project files.
 
-**Install**
+* **Install**
 
 1. Go to "niftyseg-build", and launch NiftySeg.sln. This will start Visual Studio.
 2. In Visual Studio select build type, for generic use select Release and build the project (hit F7). 
 3. Once the build finished Select and run the Install task (Right Click on Install > Project Only > Build only Install). This will install NiftySeg to the folder you selected earlier.
 4. Probably you'll want to add the install folder to your system path.
-
-
-##############################################################################
 
 ---------
 3 LICENSE
@@ -122,8 +118,6 @@ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
 CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 THE POSSIBILITY OF SUCH DAMAGE.
-
-##############################################################################
 
 ---------
 5 CONTACT
