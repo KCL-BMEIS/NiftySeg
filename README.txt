@@ -9,7 +9,7 @@
 --------------------------------
 The code contains programs to perform EM based image segmentation, both on it's standard form [2] and as described in [1].
 
-This code also contains a local copy of the nifty-reg 1.3 package available at http://sourceforge.net/projects/niftyreg/. Both projects will (hopefully) merge at some point in the future. 
+This code also contains a local copy of the nifty-reg 1.3 package available at https://github.com/KCL-BMEIS/niftyreg. Both projects will (hopefully) merge at some point in the future. 
 
 
 ##############################################################################
@@ -42,7 +42,7 @@ make (#4) and then make install (#5).
 ---------
 3 LICENSE
 ---------
-Copyright (c) 2009, University College London, United-Kingdom
+Copyright (c) 2018, NiftySeg Development Team, United-Kingdom
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -76,7 +76,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 ---------
 5 CONTACT
 ---------
-For any comment, please, feel free to contact M. Jorge Cardoso (manuel.cardoso@ucl.ac.uk).
+For any comment, please, feel free to contact M. Jorge Cardoso (manuel.cardoso@kcl.ac.uk).
 
 ##############################################################################
 
@@ -85,8 +85,7 @@ For any comment, please, feel free to contact M. Jorge Cardoso (manuel.cardoso@u
 ------------
 [1] M. Jorge Cardoso, Matthew J. Clarkson, Gerard R. Ridgway, Marc Modat, Nick C. Fox, Sebastien Ourselin, Alzheimer's Disease
 Neuroimaging Initiative, LoAd: A locally adaptive cortical segmentation algorithm, Neuroimage
-[2] K. Van Leemput, F. Maes, D. Vandermeulen, P. Suetens, Automated Model-Based Tissue Classification of MR Images of the Brain, 
-IEEE Transactions on Medical Imaging, vol. 18, no. 10, pp. 897-908, October 1999
+[2] K. Van Leemput, F. Maes, D. Vandermeulen, P. Suetens, Automated Model-Based Tissue Classification of MR Images of the Brain, IEEE Transactions on Medical Imaging, vol. 18, no. 10, pp. 897-908, October 1999
 
 
 ##############################################################################
