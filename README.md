@@ -1,7 +1,7 @@
-# NIFTY_SEG PACKAGE #
+# NIFTYSEG PACKAGE #
 
 --------------------------------
-1 WHAT DOES THE PACKAGE CONTAIN?
+1 - WHAT DOES THE PACKAGE CONTAIN?
 --------------------------------
 This project, lead by Jorge Cardoso at King's College London, contains programs to perform EM based segmentation of images in nifti or analyse format. NiftySeg is an open-source toolkit licensed under the BSD license. It also contains a package of label fusion algorithms (MV, STAPLE, SBA) with different types of ranking strategies. Features: LoAd: Locally Adaptive Brain Segmentation General Purpose EM segmentation Single and Multi-label Fusion package To download the latest version, please check out the code by copying the following line to the termini;:
 
@@ -10,7 +10,7 @@ git clone git@github.com:KCL-BMEIS/NiftySeg.git niftyseg
 A packaged stable release is also available in the files menu above. This release in only updated once in a while, thus, it does not have the latest developments. See below for installation instructions. 
 
 -----------------------
-2 HOW TO BUILD THE CODE
+2 - HOW TO BUILD THE CODE
 -----------------------
 
 **Download**
@@ -88,7 +88,7 @@ The building process is the following:
 4. Probably you'll want to add the install folder to your system path.
 
 ---------
-3 LICENSE
+3 - LICENSE
 ---------
 Copyright (c) 2018, NiftySeg Development Team, United-Kingdom
 All rights reserved.
@@ -120,7 +120,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 THE POSSIBILITY OF SUCH DAMAGE.
 
 ---------
-5 CONTACT
+4 - CONTACT
 ---------
 For any comments, please, feel free to contact M. Jorge Cardoso (manuel.cardoso@kcl.ac.uk).
 
