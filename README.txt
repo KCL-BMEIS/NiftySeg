@@ -7,32 +7,87 @@
 --------------------------------
 1 WHAT DOES THE PACKAGE CONTAIN?
 --------------------------------
-This project, lead by Jorge Cardoso at King's College London, contains programs to perform EM based segmentation of images in nifti or analyse format. NiftySeg is an open-source toolkit licensed under the BSD license. It also contains a package of label fusion algorithms (MV, STAPLE, SBA) with different types of ranking strategies. Features: LoAd: Locally Adaptive Brain Segmentation General Purpose EM segmentation Single and Multi-label Fusion package.
+This project, lead by Jorge Cardoso at King's College London, contains programs to perform EM based segmentation of images in nifti or analyse format. NiftySeg is an open-source toolkit licensed under the BSD license. It also contains a package of label fusion algorithms (MV, STAPLE, SBA) with different types of ranking strategies. Features: LoAd: Locally Adaptive Brain Segmentation General Purpose EM segmentation Single and Multi-label Fusion package To download the latest version, please check out the code by copying the following line to the termini;:
+
+git clone git@github.com:KCL-BMEIS/NiftySeg.git niftyseg
+
+A packaged stable release is also available in the files menu above. This release in only updated once in a while, thus, it does not have the latest developments. See below for installation instructions. 
 
 ##############################################################################
 
 -----------------------
 2 HOW TO BUILD THE CODE
 -----------------------
+
+** Download **
 The code can be easily build using cmake (http://www.cmake.org/). The latest 
 version can be downloaded from http://www.cmake.org/cmake/resources/software.html
-Assuming that the code source are in the source path folder, you will have 
-to first create a new folder, i.e. build path (#1) and then to change 
-directory to move into that folder (#2).
-#1 >> mkdir build_path 
-#2 >> cd build_path 
 
-There you will need to call ccmake (#3a) in order to edit in the 
-build options. If you don't want to specify options, we could just use cmake 
-(#3b) and the default build values will be used.
-#3a >> ccmake source_path
-#3b >> cmake source_path
+To download the latest version, please check out the code by copying the following line to the terminal:
 
-Once all the options are properly chosen, just press "c" to configure the Make- 
-File and then the "G" key to generate it. In the prompt, you just have to 
-make (#4) and then make install (#5).
-#4 >> make 
-#5 >> make install 
+~~~
+git clone git@github.com:KCL-BMEIS/NiftySeg.git niftyseg
+~~~
+
+A packaged stable release is also available at this website. 
+
+**Linux & OSX**
+**Build**
+Assuming that the code source are in the source path folder, you will have to ﬁrst create a new folder, i.e. build path (step 1) and then to change directory to move into that folder (step 2).
+
+~~~
+mkdir build_path
+
+cd build_path 
+~~~
+
+There you will need to call ccmake (step 3a) in order to ﬁll in the 
+build options. If you don’t want to specify options, we could just use cmake 
+(step 3b) and the default build values will be used.
+
+~~~
+ccmake source_path
+cmake source_path
+~~~
+
+The main option in the ccmake gui are deﬁned bellow:
+~~~
+> CMAKE BUILD INSTALL options are Release, RelWithDebInfo or Debug 
+> INSTALL_PRIORS Will install the population atlas for the segmentation pipeline
+> INSTALL_PRIORS_DIRECTORY Directory where the population atlas is going to be installed
+> INSTALL_NIFTYREG Will fetch and automatically configure and install the niftireg package. 
+~~~
+
+Once all the ﬂags are properly ﬁlled in, just press the ”c” to conﬁgure the Make- 
+ﬁle and then the ”g” key to generate them.
+
+**Install **
+In the prompt, you just have to make (step 4) ﬁrst and then make install (step 5).
+
+~~~
+make 
+make install
+~~~
+
+**Windows**
+**Build**
+The building process is the following:
+1. Get the source
+2. Create a new directory for the build: "niftyseg-build"
+3. Launch CMake-Gui, set the source path to "niftyseg" and the build path to "niftyseg-build" then hit configure
+4. Cmake will prompt you to select the generator, which means you'll need to select the Visual Studio version you have installed earlier
+5. Make sure the Use OpenMP option is enabled.
+6. Set the CMAKE_INSTALL_PREFIX to the folder where you want to install NiftySeg.
+7. Note, that if you want to install NiftySeg under Program Files, you'll need to create the folder yourself and explicitly apply full write permissions. 
+8. Once the flags are set, hit configure and generate. This will generate the Visual Studio project files.
+
+**Install**
+
+1. Go to "niftyseg-build", and launch NiftySeg.sln. This will start Visual Studio.
+2. In Visual Studio select build type, for generic use select Release and build the project (hit F7). 
+3. Once the build finished Select and run the Install task (Right Click on Install > Project Only > Build only Install). This will install NiftySeg to the folder you selected earlier.
+4. Probably you'll want to add the install folder to your system path.
+
 
 ##############################################################################
 
@@ -73,17 +128,5 @@ THE POSSIBILITY OF SUCH DAMAGE.
 ---------
 5 CONTACT
 ---------
-For any comment, please, feel free to contact M. Jorge Cardoso (manuel.cardoso@kcl.ac.uk).
+For any comments, please, feel free to contact M. Jorge Cardoso (manuel.cardoso@kcl.ac.uk).
 
-##############################################################################
-
-------------
-6 REFERENCES
-------------
-[1] M. Jorge Cardoso, Matthew J. Clarkson, Gerard R. Ridgway, Marc Modat, Nick C. Fox, Sebastien Ourselin, Alzheimer's Disease
-Neuroimaging Initiative, LoAd: A locally adaptive cortical segmentation algorithm, Neuroimage
-[2] K. Van Leemput, F. Maes, D. Vandermeulen, P. Suetens, Automated Model-Based Tissue Classification of MR Images of the Brain, IEEE Transactions on Medical Imaging, vol. 18, no. 10, pp. 897-908, October 1999
-
-
-##############################################################################
-##############################################################################
