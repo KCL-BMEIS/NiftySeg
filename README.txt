@@ -7,10 +7,7 @@
 --------------------------------
 1 WHAT DOES THE PACKAGE CONTAIN?
 --------------------------------
-The code contains programs to perform EM based image segmentation, both on it's standard form [2] and as described in [1].
-
-This code also contains a local copy of the nifty-reg 1.3 package available at https://github.com/KCL-BMEIS/niftyreg. Both projects will (hopefully) merge at some point in the future. 
-
+This project, lead by Jorge Cardoso at King's College London, contains programs to perform EM based segmentation of images in nifti or analyse format. NiftySeg is an open-source toolkit licensed under the BSD license. It also contains a package of label fusion algorithms (MV, STAPLE, SBA) with different types of ranking strategies. Features: LoAd: Locally Adaptive Brain Segmentation General Purpose EM segmentation Single and Multi-label Fusion package.
 
 ##############################################################################
 
