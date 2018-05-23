@@ -1892,7 +1892,11 @@ nifti_image * seg_LabFusion::GetResult_probability()
             else
             {
                 long labelnumb = (int)this->FinalSeg[i];
-                Resultdata[i+labelnumb*Result->nx*Result->ny*Result->nz]=(int)this->FinalSeg[i]>1?1:(int)this->FinalSeg[i];
+                for(long currlabelnumb=0; currlabelnumb<this->NumberOfLabels; currlabelnumb++)
+                {
+                    Resultdata[i+currlabelnumb*Result->nx*Result->ny*Result->nz]= 0;
+                }
+                Resultdata[i+labelnumb*Result->nx*Result->ny*Result->nz]= 1;
             }
         }
 
