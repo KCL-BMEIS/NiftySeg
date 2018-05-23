@@ -1891,7 +1891,8 @@ nifti_image * seg_LabFusion::GetResult_probability()
             }
             else
             {
-                Resultdata[i]=(int)this->FinalSeg[i]>1?1:(int)this->FinalSeg[i];
+                long labelnumb = (int)this->FinalSeg[i];
+                Resultdata[i+labelnumb*Result->nx*Result->ny*Result->nz]=(int)this->FinalSeg[i]>1?1:(int)this->FinalSeg[i];
             }
         }
 
