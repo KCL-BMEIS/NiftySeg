@@ -976,7 +976,7 @@ int main(int argc, char **argv)
                 float * Speed= new float [CurrSize->numel];
                 for(long i=0; i<(long)(CurrSize->xsize*CurrSize->ysize*CurrSize->zsize*CurrSize->tsize*CurrSize->usize); i++)
                 {
-                    Lable[i]=bufferImages[current_buffer][i];
+                    Lable[i]=bufferImages[current_buffer][i]>0;
                     Speed[i]=1.0f;
                 }
                 float * Distance = DoubleEuclideanDistance_3D(Lable,Speed,CurrSize);
