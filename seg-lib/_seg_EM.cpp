@@ -2960,7 +2960,11 @@ void seg_EM::RunPriorRelaxation()
         this->CurrSizes->tsize=oldTSize;
 
         // Estimate the new priors, i.e. (1-alpha)(Gaussian(Expec)) + (alpha)(Prior)
-        segPrecisionTYPE * PriorsPtr = static_cast<segPrecisionTYPE *>(this->Priors->data);
+        segPrecisionTYPE * PriorsPtr = NULL;
+        if (this->Priors != NULL)
+        {
+            PriorsPtr = static_cast<segPrecisionTYPE *>(this->Priors->data);
+        }
         long currindex=0;
         for(long k=0; k<this->numberOfClasses; k++)
         {
@@ -2970,7 +2974,15 @@ void seg_EM::RunPriorRelaxation()
                 // gets (1-alpha)(Gaussian(Expec))
                 this->ShortPrior[currindex]*=(1-this->relaxFactor);
                 // gets  (alpha)(Prior)
-                this->ShortPrior[currindex]+=(this->relaxFactor)*PriorsPtr[S2L[i]+k*this->numElements];
+                if (PriorsPtr != NULL)
+                {
+                    this->ShortPrior[currindex]+=(this->relaxFactor)*PriorsPtr[S2L[i]+k*this->numElements];
+                }
+                else
+                {
+                    this->ShortPrior[currindex]+=(this->relaxFactor)*1/this->numberOfClasses;
+                }
+
 
             }
         }
