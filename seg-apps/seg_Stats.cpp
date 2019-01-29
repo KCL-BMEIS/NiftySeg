@@ -120,8 +120,6 @@ int main(int argc, char **argv)
 
         cout.precision(6);
         nifti_image * Mask=nifti_copy_nim_info(Images[0]);
-        Mask->dim[0]=3;
-        Mask->nt=Mask->dim[4]=0;
         Mask->datatype=NIFTI_TYPE_UINT8;
         Mask->cal_max=1;
         Mask->cal_min=0;
@@ -764,6 +762,9 @@ int main(int argc, char **argv)
             // **************************            ---------          *****************************
             else if(strcmp(argv[i], "-B")==0 && (i)<argc)
             {
+                if(Images[0]->dim[0]>3){
+                    cout << "Note that only the first volume is considered to compute the bounding box" << endl;
+                }
                 if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
                 {
                     seg_changeDatatype<float>(Images[0]);
@@ -814,6 +815,9 @@ int main(int argc, char **argv)
 
             else if(strcmp(argv[i], "-c")==0 && (i)<argc)
             {
+                if(Images[0]->dim[0]>3){
+                    cout << "Note that only the first volume is considered to compute the centre of gravity" << endl;
+                }
                 if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
                 {
                     seg_changeDatatype<float>(Images[0]);
@@ -865,22 +869,26 @@ int main(int argc, char **argv)
                 }
                 float * Img1prt = static_cast<float *>(Images[0]->data);
                 float maxval=-1e32;
-                float locVox[3]={0,0,0};
+                float locVox[4]={0,0,0,0};
                 int index=0;
-                for(int Zindex=0; Zindex<Images[0]->nz; Zindex++)
+                for(int Tindex=0; Tindex<Images[0]->nt; Tindex++)
                 {
-                    for(int Yindex=0; Yindex<Images[0]->ny; Yindex++)
+                    for(int Zindex=0; Zindex<Images[0]->nz; Zindex++)
                     {
-                        for(int Xindex=0; Xindex<Images[0]->nx; Xindex++)
+                        for(int Yindex=0; Yindex<Images[0]->ny; Yindex++)
                         {
-                            if(mask[index] && Img1prt[index]>maxval)
+                            for(int Xindex=0; Xindex<Images[0]->nx; Xindex++)
                             {
-                                maxval=Img1prt[index];
-                                locVox[0]=Xindex;
-                                locVox[1]=Yindex;
-                                locVox[2]=Zindex;
+                                if(mask[index] && Img1prt[index]>maxval)
+                                {
+                                    maxval=Img1prt[index];
+                                    locVox[0]=Xindex;
+                                    locVox[1]=Yindex;
+                                    locVox[2]=Zindex;
+                                    locVox[3]=Tindex;
+                                }
+                                index++;
                             }
-                            index++;
                         }
                     }
                 }
@@ -891,7 +899,14 @@ int main(int argc, char **argv)
                 else
                    seg_mat44_mul(&Images[0]->qto_xyz,locVox,locMil);
                 // Display the coordinates
-                cout <<locVox[0]<<" "<<locVox[1]<<" "<<locVox[2]<<" "<<locMil[0]<<" "<<locMil[1]<<" "<<locMil[2]<<endl;
+                if(Images[0]->nt>0)
+                {
+                    cout << locVox[3] << endl;
+                    cout <<locVox[0]<<" "<<locVox[1]<<" "<<locVox[2]<<" "<<locMil[0]<<" "<<locMil[1]<<" "<<locMil[2]<<endl;
+                }
+                else{
+                    cout <<locVox[0]<<" "<<locVox[1]<<" "<<locVox[2]<<" "<<locMil[0]<<" "<<locMil[1]<<" "<<locMil[2]<<endl;
+                }
                 flush(cout);
             }
 
@@ -906,22 +921,26 @@ int main(int argc, char **argv)
                 }
                 float * Img1prt = static_cast<float *>(Images[0]->data);
                 float minval=1e32;
-                float locVox[3]={0,0,0};
+                float locVox[4]={0,0,0,0};
                 int index=0;
-                for(int Zindex=0; Zindex<Images[0]->nz; Zindex++)
+                for(int Tindex=0; Tindex<Images[0]->nt; Tindex++)
                 {
-                    for(int Yindex=0; Yindex<Images[0]->ny; Yindex++)
+                    for(int Zindex=0; Zindex<Images[0]->nz; Zindex++)
                     {
-                        for(int Xindex=0; Xindex<Images[0]->nx; Xindex++)
+                        for(int Yindex=0; Yindex<Images[0]->ny; Yindex++)
                         {
-                            if(mask[index] && Img1prt[index]<minval)
+                            for(int Xindex=0; Xindex<Images[0]->nx; Xindex++)
                             {
-                                minval=Img1prt[index];
-                                locVox[0]=Xindex;
-                                locVox[1]=Yindex;
-                                locVox[2]=Zindex;
+                                if(mask[index] && Img1prt[index]<minval)
+                                {
+                                    minval=Img1prt[index];
+                                    locVox[0]=Xindex;
+                                    locVox[1]=Yindex;
+                                    locVox[2]=Zindex;
+                                    locVox[3]=Tindex;
+                                }
+                                index++;
                             }
-                            index++;
                         }
                     }
                 }
@@ -932,7 +951,15 @@ int main(int argc, char **argv)
                 else
                    seg_mat44_mul(&Images[0]->qto_xyz,locVox,locMil);
                 // Display the coordinates
-                cout <<locVox[0]<<" "<<locVox[1]<<" "<<locVox[2]<<" "<<locMil[0]<<" "<<locMil[1]<<" "<<locMil[2]<<endl;
+                if(Images[0]->nt>0)
+                {
+                    cout << locVox[3] << endl;
+                    cout <<locVox[0]<<" "<<locVox[1]<<" "<<locVox[2]<<" "<<locMil[0]<<" "<<locMil[1]<<" "<<locMil[2]<<endl;
+                }
+                else
+                {
+                    cout <<locVox[0]<<" "<<locVox[1]<<" "<<locVox[2]<<" "<<locMil[0]<<" "<<locMil[1]<<" "<<locMil[2]<<endl;
+                }
                 flush(cout);
             }
 
@@ -1271,6 +1298,9 @@ int main(int argc, char **argv)
 
             else if(strcmp(argv[i], "-sa") == 0 && (i+1)<argc)
             {
+                if(Images[0]->dim[0]>3){
+                    cout << "Note that only the first volume is considered to compute per slice average" << endl;
+                }
                 if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
                 {
                     seg_changeDatatype<float>(Images[0]);
@@ -1427,6 +1457,9 @@ int main(int argc, char **argv)
 
             else if(strcmp(argv[i], "-sai") == 0 && (i+2)<argc)
             {
+                if(Images[0]->dim[0]>3){
+                    cout << "Note that only the first volume is considered to compute the per slice average image" << endl;
+                }
                 if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
                 {
                     seg_changeDatatype<float>(Images[0]);
@@ -1528,6 +1561,9 @@ int main(int argc, char **argv)
 
             else if(strcmp(argv[i], "-ssi") == 0 && (i+2)<argc)
             {
+                if(Images[0]->dim[0]>3){
+                    cout << "Note that only the first volume is considered to compute the per slice std output image" << endl;
+                }
                 if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
                 {
                     seg_changeDatatype<float>(Images[0]);
@@ -1649,6 +1685,9 @@ int main(int argc, char **argv)
 
             else if(strcmp(argv[i], "-svp") == 0 && (i+1)<argc)
             {
+                if(Images[0]->dim[0]>3){
+                    cout << "Note that only the first volume is considered to compute theper slice volume" << endl;
+                }
                 if(Images[0]->datatype!=NIFTI_TYPE_FLOAT32)
                 {
                     seg_changeDatatype<float>(Images[0]);
@@ -1715,6 +1754,9 @@ int main(int argc, char **argv)
 
             else if(strcmp(argv[i], "-svpi") == 0 && (i+2)<argc)
             {
+                if(Images[0]->dim[0]>3){
+                    cout << "Note that only the first volume is considered to compute the per slice volume image" << endl;
+                }
                 nifti_image * OutImage=nifti_copy_nim_info(Images[0]);
                 OutImage->dim[0]=3;
                 OutImage->nt=Mask->dim[4]=0;
