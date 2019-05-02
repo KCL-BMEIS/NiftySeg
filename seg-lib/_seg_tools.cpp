@@ -3324,21 +3324,21 @@ void ConnectComp26NN(void * Old_void, void * New_void, ImageSize * Currentsize)
         numbchanges=0;
         int currindex=0;
         if((int)dimensions[2]>1){
-            for(int z=1; z<((int)dimensions[2]-1); z++)
+            for(int z=0; z<((int)dimensions[2]); z++)
             {
-                for(int y=1; y<((int)dimensions[1]-1); y++)
+                for(int y=0; y<((int)dimensions[1]); y++)
                 {
-                    for(int x=1; x<((int)dimensions[0]-1); x++)
+                    for(int x=0; x<((int)dimensions[0]); x++)
                     {
                         index =z*dimensions[1]*dimensions[0]+y*dimensions[0]+x;
                         if(Old[index]>0 && CClist[tempimg[index]]>0)
                         {
                             tempmin=CClist[tempimg[index]];
-                            for(int deltaZ=-1; deltaZ<2; deltaZ++)
+                            for(int deltaZ=(z==0?0:-1); deltaZ<(z==(dimensions[2]-1)?1:2); deltaZ++)
                             {
-                                for(int deltaY=-1; deltaY<2; deltaY++)
+                                for(int deltaY=(y==0?0:-1); deltaY<(y==(dimensions[1]-1)?1:2); deltaY++)
                                 {
-                                    for(int deltaX=-1; deltaX<2; deltaX++)
+                                    for(int deltaX=(x==0?0:-1); deltaX<(x==(dimensions[0]-1)?1:2); deltaX++)
                                     {
                                         currindex=index+ (deltaZ*dimensions[0]*dimensions[1]) + (deltaY*dimensions[0]) +(deltaX);
                                         if(currindex!=index)
@@ -3364,15 +3364,15 @@ void ConnectComp26NN(void * Old_void, void * New_void, ImageSize * Currentsize)
         }
         else{
             int z=0;
-            for(int y=1; y<((int)dimensions[1]-1); y++)
+            for(int y=0; y<((int)dimensions[1]); y++)
             {
-                for(int x=1; x<((int)dimensions[0]-1); x++)
+                for(int x=0; x<((int)dimensions[0]); x++)
                 {
                     index = z*dimensions[1]*dimensions[0]+y*dimensions[0]+x;
                     if(Old[index]>0 && CClist[tempimg[index]]>0)
                     {
                         tempmin=CClist[tempimg[index]];
-                        for(int deltaY=-1; deltaY<=1; deltaY+=2)
+                        for(int deltaY=(y==0?0:-1); deltaY<=(y==(dimensions[1]-1)?1:2); deltaY+=2)
                         {
                             currindex=index+deltaY*dimensions[0];
                             if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]])
@@ -3380,7 +3380,7 @@ void ConnectComp26NN(void * Old_void, void * New_void, ImageSize * Currentsize)
                                 tempmin=CClist[tempimg[currindex]];
                             }
                         }
-                        for(int deltaX=-1; deltaX<=1; deltaX+=2)
+                        for(int deltaX=(x==0?0:-1); deltaX<(x==(dimensions[0]-1)?1:2); deltaX+=2)
                         {
                             currindex=index+deltaX;
                             if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]])
@@ -3434,6 +3434,31 @@ void ConnectComp26NN(void * Old_void, void * New_void, ImageSize * Currentsize)
             New[index]=0;
         }
     }
+
+    for(index=0; index<CCcounter; index++)
+    {
+        Pixelcounter[index]=0;
+    }
+    for(index=0; index<NumElements; index++)
+    {
+        if(New[index]>0 && Old[index]>0)
+        {
+            Pixelcounter[(int)New[index]]++;
+        }
+    }
+    PixelcounterOrder=quickSort_order(Pixelcounter,CCcounter);
+    //Rassign to oposit class
+    for(index=0; index<NumElements; index++)
+    {
+        if(tempimg[index]>0 && Old[index]>0)
+        {
+            New[index]=CCcounter-PixelcounterOrder[(int)New[index]];
+        }
+        else{
+            New[index]=0;
+        }
+    }
+
     delete [] tempimg;
 
     return;
@@ -3519,18 +3544,18 @@ void ConnectComp6NN(void * Old_void, void * New_void, ImageSize * Currentsize)
         numbchanges=0;
         int currindex=0;
         if((int)dimensions[2]>1){
-            for(int z=1; z<((int)dimensions[2]-1); z++)
+            for(int z=0; z<((int)dimensions[2]); z++)
             {
-                for(int y=1; y<((int)dimensions[1]-1); y++)
+                for(int y=0; y<((int)dimensions[1]); y++)
                 {
-                    for(int x=1; x<((int)dimensions[0]-1); x++)
+                    for(int x=0; x<((int)dimensions[0]); x++)
                     {
                         index = z*dimensions[1]*dimensions[0]+y*dimensions[0]+x;
                         if(Old[index]>0 && CClist[tempimg[index]]>0)
                         {
                             tempmin=CClist[tempimg[index]];
 
-                            for(int deltaZ=-1; deltaZ<=1; deltaZ+=2)
+                            for(int deltaZ=(z==0?0:-1); deltaZ<(z==(dimensions[2]-1)?1:2); deltaZ+=2)
                             {
                                 currindex=index+deltaZ*dimensions[0]*dimensions[1];
                                 if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]])
@@ -3538,7 +3563,7 @@ void ConnectComp6NN(void * Old_void, void * New_void, ImageSize * Currentsize)
                                     tempmin=CClist[tempimg[currindex]];
                                 }
                             }
-                            for(int deltaY=-1; deltaY<=1; deltaY+=2)
+                            for(int deltaY=(y==0?0:-1); deltaY<(y==(dimensions[1]-1)?1:2); deltaY+=2)
                             {
                                 currindex=index+deltaY*dimensions[0];
                                 if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]])
@@ -3546,7 +3571,7 @@ void ConnectComp6NN(void * Old_void, void * New_void, ImageSize * Currentsize)
                                     tempmin=CClist[tempimg[currindex]];
                                 }
                             }
-                            for(int deltaX=-1; deltaX<=1; deltaX+=2)
+                            for(int deltaX=(x==0?0:-1); deltaX<(x==(dimensions[0]-1)?1:2); deltaX+=2)
                             {
                                 currindex=index+deltaX;
                                 if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]])
@@ -3566,15 +3591,15 @@ void ConnectComp6NN(void * Old_void, void * New_void, ImageSize * Currentsize)
         }
         else{
             int z=0;
-            for(int y=1; y<((int)dimensions[1]-1); y++)
+            for(int y=0; y<((int)dimensions[1]-1); y++)
             {
-                for(int x=1; x<((int)dimensions[0]-1); x++)
+                for(int x=0; x<((int)dimensions[0]-1); x++)
                 {
                     index = z*dimensions[1]*dimensions[0]+y*dimensions[0]+x;
                     if(Old[index]>0 && CClist[tempimg[index]]>0)
                     {
                         tempmin=CClist[tempimg[index]];
-                        for(int deltaY=-1; deltaY<=1; deltaY+=2)
+                        for(int deltaY=(y==0?0:-1); deltaY<(y==(dimensions[1]-1)?1:2); deltaY+=2)
                         {
                             currindex=index+deltaY*dimensions[0];
                             if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]])
@@ -3582,7 +3607,7 @@ void ConnectComp6NN(void * Old_void, void * New_void, ImageSize * Currentsize)
                                 tempmin=CClist[tempimg[currindex]];
                             }
                         }
-                        for(int deltaX=-1; deltaX<=1; deltaX+=2)
+                        for(int deltaX=(x==0?0:-1); deltaX<(x==(dimensions[0]-1)?1:2); deltaX+=2)
                         {
                             currindex=index+deltaX;
                             if(Old[currindex]>0 && tempmin>CClist[tempimg[currindex]])
