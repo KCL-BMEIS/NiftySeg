@@ -6,7 +6,7 @@ float * DoubleEuclideanDistance_3D(bool *LablePtr, float * speedptr,
 
     long i, NumElements, centre_index;
     NumElements=CurrSizes->xsize*CurrSizes->ysize*CurrSizes->zsize;
-    int MaxGeoTime=100;
+    int MaxGeoTime=200;
     i=0;
     int neighbour6[6]= {0};
     neighbour6[0]=-1;
@@ -17,8 +17,8 @@ float * DoubleEuclideanDistance_3D(bool *LablePtr, float * speedptr,
     neighbour6[5]=CurrSizes->xsize*CurrSizes->ysize;
     float speed=1;
 
-    typedef std::multimap <segPrecisionTYPE, int> MapLengthType;
-    typedef std::pair <segPrecisionTYPE, int> PairType;
+    typedef std::multimap <segPrecisionTYPE, long> MapLengthType;
+    typedef std::pair <segPrecisionTYPE, long> PairType;
 
 
     MapLengthType MapLength;
@@ -223,7 +223,8 @@ float * DoubleEuclideanDistance_3D(bool *LablePtr, float * speedptr,
 
     for(centre_index=0; centre_index<NumElements; centre_index++)
     {
-        GeoTime[centre_index]=LablePtr[centre_index]?(-1*GeoTime[centre_index]):(GeoTime2[centre_index]);
+
+        GeoTime[centre_index]=!LablePtr[centre_index]?(-1.0f*GeoTime[centre_index]):(GeoTime2[centre_index]);
     }
 
     centre_index=0;
@@ -276,7 +277,7 @@ void FMM(bool *Seeds,
 
 
     typedef std::multimap <segPrecisionTYPE, int> MapLengthType;
-    typedef std::pair <segPrecisionTYPE, int> PairType;
+    typedef std::pair <segPrecisionTYPE, long> PairType;
 
 
     MapLengthType MapLength;
@@ -473,7 +474,7 @@ segPrecisionTYPE CalcGeoTime(int index,
 
 
 
-segPrecisionTYPE CalcGeoTime_long(int index,
+segPrecisionTYPE CalcGeoTime_long(long index,
                                   segPrecisionTYPE *GeoTime,
                                   segPrecisionTYPE SpeedI,
                                   int * neighbour,
@@ -485,7 +486,7 @@ segPrecisionTYPE CalcGeoTime_long(int index,
     segPrecisionTYPE counter=0.0f;
     segPrecisionTYPE a=0.0f, c=0.0f;
 
-    int neighbour_index[2]= {0};
+    long neighbour_index[2]= {0};
     for(long i=0; i<6; i+=2)
     {
         neighbour_index[0]=index+neighbour[i];

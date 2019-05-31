@@ -987,6 +987,10 @@ int main(int argc, char **argv)
                 delete [] Distance;
                 delete [] Lable;
                 delete [] Speed;
+                InputImage->scl_inter=0;
+                InputImage->scl_slope=1;
+                InputImage->cal_max=200;
+                InputImage->cal_min=-200;
 
             }
             // *********************  Geodesic Distance Transform   *************************

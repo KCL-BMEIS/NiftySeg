@@ -3640,7 +3640,7 @@ void ConnectComp6NN(void * Old_void, void * New_void, ImageSize * Currentsize)
 
 
     //Find lable counts
-    float *Pixelcounter = (float *) calloc((int)CCcounter, sizeof(float));
+    float *Pixelcounter = (float *) calloc(int(CCcounter), sizeof(float));
     int *PixelcounterOrder;
 
     for(index=0; index<NumElements; index++)
@@ -3659,7 +3659,7 @@ void ConnectComp6NN(void * Old_void, void * New_void, ImageSize * Currentsize)
     {
         if(tempimg[index]>0 && Old[index]>0)
         {
-            New[index]=CCcounter-PixelcounterOrder[(int)tempimg[index]];
+            New[index]=CCcounter-PixelcounterOrder[int(tempimg[index])];
         }
         else{
             New[index]=0;

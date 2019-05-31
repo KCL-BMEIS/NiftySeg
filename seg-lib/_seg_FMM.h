@@ -22,7 +22,7 @@ NIFTYSEG_WINEXPORT segPrecisionTYPE CalcGeoTime(int index,
                              int * Short_2_Long_Indices,
                              segPrecisionTYPE Max);
 
-NIFTYSEG_WINEXPORT segPrecisionTYPE CalcGeoTime_long(int index,
+NIFTYSEG_WINEXPORT segPrecisionTYPE CalcGeoTime_long(long index,
                                   segPrecisionTYPE *GeoTime,
                                   segPrecisionTYPE SpeedI,
                                   int * neighbour,
