@@ -630,157 +630,62 @@ void SmoothLab(float * DataPTR,float factor, ImageSize * Currentsize){
 }
 
 
+
+
+int compareInt(const void *p1, const void *p2)
+{
+   if (*(int*)p1 <  *(int*)p2) return -1;
+   if (*(int*)p1 == *(int*)p2) return 0;
+   if (*(int*)p1 >  *(int*)p2) return 1;
+}
+
 int quickSort(int *arr, int elements)
 {
-
-    int  piv, beg[300], end[300], i=0, L, R, swap ;
-
-    beg[0]=0;
-    end[0]=elements;
-    while (i>=0)
-    {
-        L=beg[i];
-        R=end[i]-1;
-        if (L<R)
-        {
-            piv=arr[L];
-            while (L<R)
-            {
-                while (arr[R]>=piv && L<R) R--;
-                if (L<R) arr[L++]=arr[R];
-                while (arr[L]<=piv && L<R) L++;
-                if (L<R) arr[R--]=arr[L];
-            }
-            arr[L]=piv;
-            beg[i+1]=L+1;
-            end[i+1]=end[i];
-            end[i++]=L;
-            if (end[i]-beg[i]>end[i-1]-beg[i-1])
-            {
-                swap=beg[i];
-                beg[i]=beg[i-1];
-                beg[i-1]=swap;
-                swap=end[i];
-                end[i]=end[i-1];
-                end[i-1]=swap;
-            }
-        }
-        else
-        {
-            i--;
-        }
-    }
+    std::qsort(arr, elements, sizeof(int),compareInt);
+    return 1;
     return 1;
 }
 
 
+int compareFloat(const void *p1, const void *p2)
+{
+    if (*(float*)p1 <  *(float*)p2) return -1;
+    if (*(float*)p1 == *(float*)p2) return 0;
+    if (*(float*)p1 >  *(float*)p2) return 1;
+
+}
 int quickSort(float *arr, int elements)
 {
-
-    float  piv;
-    int beg[300], end[300], i=0, L, R, swap ;
-
-    beg[0]=0;
-    end[0]=elements;
-
-    while (i>=0)
-    {
-        L=beg[i];
-        R=end[i]-1;
-        if (L<R)
-        {
-            piv=arr[L];
-            while (L<R)
-            {
-                while (arr[R]>=piv && L<R) R--;
-                if (L<R) arr[L++]=arr[R];
-                while (arr[L]<=piv && L<R) L++;
-                if (L<R) arr[R--]=arr[L];
-            }
-            arr[L]=piv;
-            beg[i+1]=L+1;
-            end[i+1]=end[i];
-            end[i++]=L;
-            if (end[i]-beg[i]>end[i-1]-beg[i-1])
-            {
-                swap=beg[i];
-                beg[i]=beg[i-1];
-                beg[i-1]=swap;
-                swap=end[i];
-                end[i]=end[i-1];
-                end[i-1]=swap;
-            }
-        }
-        else
-        {
-            i--;
-        }
-    }
+    std::qsort(arr, elements, sizeof(float),compareFloat);
     return 1;
 }
 
 
+
+struct orderedFloatType {
+    int ind;
+    float val;
+};
+
+int compareOrderedFloatType(const void *p1, const void *p2)
+{
+  if (((orderedFloatType*)p1)->val <  ((orderedFloatType*)p2)->val) return -1;
+  if (((orderedFloatType*)p1)->val == ((orderedFloatType*)p2)->val) return 0;
+  if (((orderedFloatType*)p1)->val >  ((orderedFloatType*)p2)->val) return 1;
+}
 
 int * quickSort_order(float *arr, int elements)
 {
-
-    float  piv;
-    int piv_index, beg[300], end[300], i=0, L, R, swap ;
     int * order = new int [elements];
-    for(long index=0; index<elements; index++)
+    orderedFloatType orderedArr[elements];
+    for (int ind=0; ind<elements; ind++)
     {
-        order[index]=index;
+        orderedArr[ind].val=arr[ind];
+        orderedArr[ind].ind=ind;
     }
-    beg[0]=0;
-    end[0]=elements;
-    while (i>=0)
-    {
-        L=beg[i];
-        R=end[i]-1;
-        if (L<R)
-        {
-            piv=arr[L];
-            piv_index=order[L];
-            while (L<R)
-            {
-                while (arr[R]>=piv && L<R)
-                {
-                    R--;
-                }
-                if (L<R)
-                {
-                    arr[L]=arr[R];
-                    order[L++]=order[R];
-                }
-                while (arr[L]<=piv && L<R)
-                {
-                    L++;
-                }
-                if (L<R)
-                {
-                    arr[R]=arr[L];
-                    order[R--]=order[L];
-                }
-            }
-            arr[L]=piv;
-            order[L]=piv_index;
-            beg[i+1]=L+1;
-            end[i+1]=end[i];
-            end[i++]=L;
-            if (end[i]-beg[i]>end[i-1]-beg[i-1])
-            {
-                swap=beg[i];
-                beg[i]=beg[i-1];
-                beg[i-1]=swap;
-                swap=end[i];
-                end[i]=end[i-1];
-                end[i-1]=swap;
-            }
-        }
-        else
-        {
-            i--;
-        }
+    std::qsort(orderedArr, elements, sizeof(orderedFloatType),compareOrderedFloatType);
+    for (int ii=0; ii<elements; ii++){
+        order[ii]=orderedArr[ii].ind;
     }
     return order;
 }
