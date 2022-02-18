@@ -57,9 +57,9 @@ protected:
     float   Conv;
 
     // LNCC
-    unsigned char * LNCC;
+    libraryIndexType * LNCC;
     bool LNCC_status;
-    unsigned char * NCC;
+    libraryIndexType * NCC;
     bool NCC_status;
     int Numb_Neigh;
 
