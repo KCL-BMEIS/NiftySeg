@@ -632,62 +632,6 @@ void SmoothLab(float * DataPTR,float factor, ImageSize * Currentsize){
 
 
 
-int compareInt(const void *p1, const void *p2)
-{
-   if (*(int*)p1 <  *(int*)p2) return -1;
-   if (*(int*)p1 >  *(int*)p2) return 1;
-   return 0;
-}
-
-int quickSort(int *arr, int elements)
-{
-    std::qsort(arr, elements, sizeof(int),compareInt);
-    return 1;
-    return 1;
-}
-
-
-int compareFloat(const void *p1, const void *p2)
-{
-    if (*(float*)p1 <  *(float*)p2) return -1;
-    if (*(float*)p1 >  *(float*)p2) return 1;
-    return 0;
-}
-int quickSort(float *arr, int elements)
-{
-    std::qsort(arr, elements, sizeof(float),compareFloat);
-    return 1;
-}
-
-
-
-struct orderedFloatType {
-    int ind;
-    float val;
-};
-
-int compareOrderedFloatType(const void *p1, const void *p2)
-{
-  if (((orderedFloatType*)p1)->val <  ((orderedFloatType*)p2)->val) return -1;
-  if (((orderedFloatType*)p1)->val >  ((orderedFloatType*)p2)->val) return 1;
-  return 0;
-}
-
-int * quickSort_order(float *arr, int elements)
-{
-    int * order = new int [elements];
-    orderedFloatType orderedArr[elements];
-    for (int ind=0; ind<elements; ind++)
-    {
-        orderedArr[ind].val=arr[ind];
-        orderedArr[ind].ind=ind;
-    }
-    std::qsort(orderedArr, elements, sizeof(orderedFloatType),compareOrderedFloatType);
-    for (int ii=0; ii<elements; ii++){
-        order[ii]=orderedArr[ii].ind;
-    }
-    return order;
-}
 
 
 

@@ -33,10 +33,8 @@ template <class NewTYPE> NIFTYSEG_WINEXPORT
 //template NIFTYSEG_WINEXPORT int seg_changeDatatype<double>(nifti_image *);
 
 // Sorting algrithms (with and without providing the order), for different data types
-NIFTYSEG_WINEXPORT int quickSort(int *arr, int elements);
-NIFTYSEG_WINEXPORT int quickSort(float *arr, int elements);
-NIFTYSEG_WINEXPORT int * quickSort_order(int *arr, int elements);
-NIFTYSEG_WINEXPORT int * quickSort_order(float *arr, int elements);
+NIFTYSEG_WINEXPORT template<class compType> int quickSort(compType *arr, int elements);
+NIFTYSEG_WINEXPORT template<class compType> int * quickSort_order(compType *arr, int elements);
 NIFTYSEG_WINEXPORT void HeapSort(float * a,int n);
 
 // Estimate the order of multiple types of NCC similarity (local, global, regional, multilevel) given the input target image and a 4D set of resampled images. To be used for label fusion.
@@ -83,3 +81,52 @@ NIFTYSEG_WINEXPORT void otsu(float * Image, int * mask, ImageSize *Currentsize )
 
 template <class DTYPE> NIFTYSEG_WINEXPORT void seg_mat44_mul(mat44 const* mat, DTYPE const* in,DTYPE *out);
 
+template <class compType>
+int quickSortComp(const void *p1, const void *p2)
+{
+   if (*(compType*)p1 <  *(compType*)p2) return -1;
+   if (*(compType*)p1 >  *(compType*)p2) return 1;
+   return 0;
+}
+
+template <class compType>
+int quickSort(compType *arr, int elements)
+{
+    std::qsort(arr, elements, sizeof(compType),quickSortComp<compType>);
+    return 1;
+}
+
+
+template <class compType>
+struct orderedType {
+    // Probably we should make it a class and just overload <,>
+    int ind;
+    compType val;
+};
+
+template <class compType>
+int compareOrderedType(const void *p1, const void *p2)
+{
+    if (((compType*)p1)->val <  ((compType*)p2)->val) return -1;
+    if (((compType*)p1)->val >  ((compType*)p2)->val) return 1;
+    return 0;
+}
+
+template <class compType>
+int * quickSort_order(compType *arr, int elements)
+{
+    typedef orderedType<compType> ourType;
+    int * order = new int [elements];
+    ourType orderedArr[elements];
+    for (int ind=0; ind<elements; ind++)
+    {
+        orderedArr[ind].val=arr[ind];
+        orderedArr[ind].ind=ind;
+    }
+    std::qsort(orderedArr, elements, sizeof(ourType),
+	       compareOrderedType<ourType>);
+    for (int ii=0; ii<elements; ii++){
+        order[ii]=orderedArr[ii].ind;
+    }
+    return order;
+}
