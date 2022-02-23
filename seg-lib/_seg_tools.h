@@ -99,18 +99,22 @@ int quickSort(compType *arr, int elements)
 
 template <class compType>
 struct orderedType {
-    // Probably we should make it a class and just overload <,>
     int ind;
     compType val;
+    typedef orderedType<compType> thisType;
+    friend bool operator<(const thisType& l, const thisType& r)
+    {
+        return l.val < r.val;
+    }
+    friend bool operator>(const thisType& l, const thisType& r)
+    {
+        return l.val > r.val;
+    }
+    friend bool operator==(const thisType& l, const thisType& r)
+    {
+        return l.val == r.val;
+    }
 };
-
-template <class compType>
-int compareOrderedType(const void *p1, const void *p2)
-{
-    if (((compType*)p1)->val <  ((compType*)p2)->val) return -1;
-    if (((compType*)p1)->val >  ((compType*)p2)->val) return 1;
-    return 0;
-}
 
 template <class compType>
 int * quickSort_order(compType *arr, int elements)
@@ -124,7 +128,7 @@ int * quickSort_order(compType *arr, int elements)
         orderedArr[ind].ind=ind;
     }
     std::qsort(orderedArr, elements, sizeof(ourType),
-	       compareOrderedType<ourType>);
+	       quickSortComp<ourType>);
     for (int ii=0; ii<elements; ii++){
         order[ii]=orderedArr[ii].ind;
     }
