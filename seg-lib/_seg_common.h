@@ -89,6 +89,7 @@ inline int fabs(int _x)
 #include <new>
 #include <exception>
 #include <algorithm>
+#include <limits>
 #ifdef _OPENMP
 #include "omp.h"
 #endif

@@ -465,6 +465,13 @@ int main(int argc, char **argv)
             Thresh_IMG_value=0.999;
         }
 
+	if(CLASSIFIER->nt > std::numeric_limits<libraryIndexType>::max())
+	{
+	  fprintf(stderr,"* Error: %s contains %d, more than the maximum supported\n",filename_LABELS, CLASSIFIER->nt);
+	    flush(cout);
+	    return 1;
+        }
+
         // *****************************
         //   CALCULATING REQUIRED SIZE
         // *****************************
