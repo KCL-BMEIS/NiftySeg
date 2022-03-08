@@ -2583,6 +2583,9 @@ void otsu(float * Image,
 
     for(long i=0; i<Currentsize->numel; i++)
     {
+        if (isnan(Image[i])){
+            continue;
+        }
         float location=(histsize-2)*(Image[i]-tempmin)/(tempmax-tempmin)+1;
         float weight=location-floorf(location);
         histo[(int)floor(location)]+=(1-weight);
