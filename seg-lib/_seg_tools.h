@@ -40,11 +40,11 @@ NIFTYSEG_WINEXPORT int * quickSort_order(float *arr, int elements);
 NIFTYSEG_WINEXPORT void HeapSort(float * a,int n);
 
 // Estimate the order of multiple types of NCC similarity (local, global, regional, multilevel) given the input target image and a 4D set of resampled images. To be used for label fusion.
-NIFTYSEG_WINEXPORT unsigned char * estimateNCC4D(nifti_image * BaseImage,nifti_image * NCC,int numberordered,ImageSize * CurrSizes,int verbose);
-NIFTYSEG_WINEXPORT unsigned char * estimateROINCC4D(nifti_image * LableImage,nifti_image * BaseImage,nifti_image * LNCC,int numberordered,ImageSize * CurrSizes,int DilSize, int verbose);
-NIFTYSEG_WINEXPORT unsigned char * estimateLNCC5D(nifti_image * BaseImage,nifti_image * LNCC,float distance,int numberordered,ImageSize * CurrSizes,int verbose);
-NIFTYSEG_WINEXPORT unsigned char * estimateLNCC4D(nifti_image * BaseImage,nifti_image * LNCC,float distance,int numberordered,ImageSize * CurrSizes,int verbose);
-NIFTYSEG_WINEXPORT unsigned char * estimateMLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,float distance,int labels, int numberordered,ImageSize * CurrSizes,int verbose);
+NIFTYSEG_WINEXPORT libraryIndexType * estimateNCC4D(nifti_image * BaseImage,nifti_image * NCC,int numberordered,ImageSize * CurrSizes,int verbose);
+NIFTYSEG_WINEXPORT libraryIndexType * estimateROINCC4D(nifti_image * LableImage,nifti_image * BaseImage,nifti_image * LNCC,int numberordered,ImageSize * CurrSizes,int DilSize, int verbose);
+NIFTYSEG_WINEXPORT libraryIndexType * estimateLNCC5D(nifti_image * BaseImage,nifti_image * LNCC,float distance,int numberordered,ImageSize * CurrSizes,int verbose);
+NIFTYSEG_WINEXPORT libraryIndexType * estimateLNCC4D(nifti_image * BaseImage,nifti_image * LNCC,float distance,int numberordered,ImageSize * CurrSizes,int verbose);
+NIFTYSEG_WINEXPORT libraryIndexType * estimateMLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,float distance,int labels, int numberordered,ImageSize * CurrSizes,int verbose);
 NIFTYSEG_WINEXPORT float estimateNCC3D(nifti_image * BaseImage,nifti_image * Template,nifti_image * Mask,int verbose);
 NIFTYSEG_WINEXPORT float seg_getNMIValue(nifti_image *referenceImage, nifti_image *warpedImage, unsigned char *referenceMask);
 

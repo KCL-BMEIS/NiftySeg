@@ -89,6 +89,7 @@ inline int fabs(int _x)
 #include <new>
 #include <exception>
 #include <algorithm>
+#include <limits>
 #ifdef _OPENMP
 #include "omp.h"
 #endif
@@ -98,6 +99,7 @@ inline int fabs(int _x)
 #define segPrecisionTYPE float
 /// @brief Defines the data type for categorical labels in seg_LabFusion.
 #define categoricalLabelType unsigned char
+#define libraryIndexType int
 
 /// @brief Defines the number of non-PV classes used in seg_LoAd. As seg_LoAd will be deprecated, this will also disapear.
 #define nonPVNumClass 5

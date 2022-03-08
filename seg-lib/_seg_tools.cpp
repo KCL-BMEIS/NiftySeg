@@ -630,157 +630,61 @@ void SmoothLab(float * DataPTR,float factor, ImageSize * Currentsize){
 }
 
 
+
+
+int compareInt(const void *p1, const void *p2)
+{
+   if (*(int*)p1 <  *(int*)p2) return -1;
+   if (*(int*)p1 >  *(int*)p2) return 1;
+   return 0;
+}
+
 int quickSort(int *arr, int elements)
 {
-
-    int  piv, beg[300], end[300], i=0, L, R, swap ;
-
-    beg[0]=0;
-    end[0]=elements;
-    while (i>=0)
-    {
-        L=beg[i];
-        R=end[i]-1;
-        if (L<R)
-        {
-            piv=arr[L];
-            while (L<R)
-            {
-                while (arr[R]>=piv && L<R) R--;
-                if (L<R) arr[L++]=arr[R];
-                while (arr[L]<=piv && L<R) L++;
-                if (L<R) arr[R--]=arr[L];
-            }
-            arr[L]=piv;
-            beg[i+1]=L+1;
-            end[i+1]=end[i];
-            end[i++]=L;
-            if (end[i]-beg[i]>end[i-1]-beg[i-1])
-            {
-                swap=beg[i];
-                beg[i]=beg[i-1];
-                beg[i-1]=swap;
-                swap=end[i];
-                end[i]=end[i-1];
-                end[i-1]=swap;
-            }
-        }
-        else
-        {
-            i--;
-        }
-    }
+    std::qsort(arr, elements, sizeof(int),compareInt);
+    return 1;
     return 1;
 }
 
 
+int compareFloat(const void *p1, const void *p2)
+{
+    if (*(float*)p1 <  *(float*)p2) return -1;
+    if (*(float*)p1 >  *(float*)p2) return 1;
+    return 0;
+}
 int quickSort(float *arr, int elements)
 {
-
-    float  piv;
-    int beg[300], end[300], i=0, L, R, swap ;
-
-    beg[0]=0;
-    end[0]=elements;
-
-    while (i>=0)
-    {
-        L=beg[i];
-        R=end[i]-1;
-        if (L<R)
-        {
-            piv=arr[L];
-            while (L<R)
-            {
-                while (arr[R]>=piv && L<R) R--;
-                if (L<R) arr[L++]=arr[R];
-                while (arr[L]<=piv && L<R) L++;
-                if (L<R) arr[R--]=arr[L];
-            }
-            arr[L]=piv;
-            beg[i+1]=L+1;
-            end[i+1]=end[i];
-            end[i++]=L;
-            if (end[i]-beg[i]>end[i-1]-beg[i-1])
-            {
-                swap=beg[i];
-                beg[i]=beg[i-1];
-                beg[i-1]=swap;
-                swap=end[i];
-                end[i]=end[i-1];
-                end[i-1]=swap;
-            }
-        }
-        else
-        {
-            i--;
-        }
-    }
+    std::qsort(arr, elements, sizeof(float),compareFloat);
     return 1;
 }
 
 
+
+struct orderedFloatType {
+    int ind;
+    float val;
+};
+
+int compareOrderedFloatType(const void *p1, const void *p2)
+{
+  if (((orderedFloatType*)p1)->val <  ((orderedFloatType*)p2)->val) return -1;
+  if (((orderedFloatType*)p1)->val >  ((orderedFloatType*)p2)->val) return 1;
+  return 0;
+}
 
 int * quickSort_order(float *arr, int elements)
 {
-
-    float  piv;
-    int piv_index, beg[300], end[300], i=0, L, R, swap ;
     int * order = new int [elements];
-    for(long index=0; index<elements; index++)
+    orderedFloatType orderedArr[elements];
+    for (int ind=0; ind<elements; ind++)
     {
-        order[index]=index;
+        orderedArr[ind].val=arr[ind];
+        orderedArr[ind].ind=ind;
     }
-    beg[0]=0;
-    end[0]=elements;
-    while (i>=0)
-    {
-        L=beg[i];
-        R=end[i]-1;
-        if (L<R)
-        {
-            piv=arr[L];
-            piv_index=order[L];
-            while (L<R)
-            {
-                while (arr[R]>=piv && L<R)
-                {
-                    R--;
-                }
-                if (L<R)
-                {
-                    arr[L]=arr[R];
-                    order[L++]=order[R];
-                }
-                while (arr[L]<=piv && L<R)
-                {
-                    L++;
-                }
-                if (L<R)
-                {
-                    arr[R]=arr[L];
-                    order[R--]=order[L];
-                }
-            }
-            arr[L]=piv;
-            order[L]=piv_index;
-            beg[i+1]=L+1;
-            end[i+1]=end[i];
-            end[i++]=L;
-            if (end[i]-beg[i]>end[i-1]-beg[i-1])
-            {
-                swap=beg[i];
-                beg[i]=beg[i-1];
-                beg[i-1]=swap;
-                swap=end[i];
-                end[i]=end[i-1];
-                end[i-1]=swap;
-            }
-        }
-        else
-        {
-            i--;
-        }
+    std::qsort(orderedArr, elements, sizeof(orderedFloatType),compareOrderedFloatType);
+    for (int ii=0; ii<elements; ii++){
+        order[ii]=orderedArr[ii].ind;
     }
     return order;
 }
@@ -831,7 +735,7 @@ void HeapSort(float * a,int n)
 
 
 
-unsigned char * estimateNCC4D(nifti_image * BaseImage,nifti_image * NCC,int numberordered,ImageSize * CurrSizes,int verbose)
+libraryIndexType * estimateNCC4D(nifti_image * BaseImage,nifti_image * NCC,int numberordered,ImageSize * CurrSizes,int verbose)
 {
 
     segPrecisionTYPE * NCCptr = static_cast<segPrecisionTYPE *>(NCC->data);
@@ -908,20 +812,20 @@ unsigned char * estimateNCC4D(nifti_image * BaseImage,nifti_image * NCC,int numb
     CurrSizes->numclass=realt;
 
 
-    unsigned char * NCC_ordered=new unsigned char [numberordered];
+    libraryIndexType * NCC_ordered=new libraryIndexType [numberordered];
 
     if (verbose>0)
     {
         cout << "Used Labels after sorting the GNCC"<<endl;
     }
 
-    int * ordertmp=quickSort_order(&NCCval[0],NCC->nt);
+    libraryIndexType * ordertmp=quickSort_order(&NCCval[0],NCC->nt);
     for(long lable_order=0; lable_order<numberordered; lable_order++)
     {
-        NCC_ordered[lable_order]=(char)ordertmp[NCC->nt-lable_order-1];
+        NCC_ordered[lable_order]=ordertmp[NCC->nt-lable_order-1];
         if (verbose>0)
         {
-            cout << (int)NCC_ordered[lable_order]+1 << "/" << numberordered<<endl;
+            cout << NCC_ordered[lable_order]+1 << "/" << numberordered<<endl;
         }
     }
 
@@ -1100,7 +1004,7 @@ float estimateNCC3D(nifti_image * BaseImage,nifti_image * Template,nifti_image *
 
 
 
-unsigned char * estimateROINCC4D(nifti_image * LableImage,nifti_image * BaseImage,nifti_image * NCC,int numberordered,ImageSize * CurrSizes,int DilSize, int verbose)
+libraryIndexType * estimateROINCC4D(nifti_image * LableImage,nifti_image * BaseImage,nifti_image * NCC,int numberordered,ImageSize * CurrSizes,int DilSize, int verbose)
 {
 
     segPrecisionTYPE * NCCptr = static_cast<segPrecisionTYPE *>(NCC->data);
@@ -1223,17 +1127,17 @@ unsigned char * estimateROINCC4D(nifti_image * LableImage,nifti_image * BaseImag
     CurrSizes->numclass=realt;
 
 
-    unsigned char * NCC_ordered=new unsigned char [numberordered];
+    libraryIndexType * NCC_ordered=new libraryIndexType [numberordered];
 
     if (verbose>0)
     {
         cout << "Used Labels after sorting the ROINCC"<<endl;
     }
 
-    int * ordertmp=quickSort_order(&NCCval[0],NCC->nt);
+    libraryIndexType * ordertmp=quickSort_order(&NCCval[0],NCC->nt);
     for(long lable_order=0; lable_order<numberordered; lable_order++)
     {
-        NCC_ordered[lable_order]=(char)ordertmp[NCC->nt-lable_order-1];
+        NCC_ordered[lable_order]=ordertmp[NCC->nt-lable_order-1];
         if (verbose>0)
         {
             cout << (int)NCC_ordered[lable_order]+1 << "/" << numberordered<<endl;
@@ -1245,13 +1149,13 @@ unsigned char * estimateROINCC4D(nifti_image * LableImage,nifti_image * BaseImag
 }
 
 
-unsigned char * estimateMLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,float distance,int levels, int numberordered,ImageSize * CurrSizes,int verbose)
+libraryIndexType * estimateMLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,float distance,int levels, int numberordered,ImageSize * CurrSizes,int verbose)
 {
 
     segPrecisionTYPE * LNCCptr = static_cast<segPrecisionTYPE *>(LNCC->data);
     segPrecisionTYPE * BaseImageptr = static_cast<segPrecisionTYPE *>(BaseImage->data);
-    unsigned char * LNCC_ordered=NULL;
-    unsigned char * LNCC_ordered_save=NULL;
+    libraryIndexType * LNCC_ordered=NULL;
+    libraryIndexType * LNCC_ordered_save=NULL;
 
 
     int numbordered_level_old=LNCC->nt;
@@ -1261,7 +1165,7 @@ unsigned char * estimateMLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,floa
 
         if(curlevel==levels)
         {
-            LNCC_ordered_save=new unsigned char [numbordered_level_old*BaseImage->nx*BaseImage->ny*BaseImage->nz];
+            LNCC_ordered_save=new libraryIndexType [numbordered_level_old*BaseImage->nx*BaseImage->ny*BaseImage->nz];
             if(LNCC_ordered_save == NULL)
             {
                 fprintf(stderr,"* Error when alocating LNCC_ordered_save in function seg_norm4MLLNCC");
@@ -1383,7 +1287,7 @@ unsigned char * estimateMLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,floa
         delete [] BaseMean;
 
         CurrSizes->tsize=realt;
-        LNCC_ordered=new unsigned char [numbordered_level*BaseImage->nx*BaseImage->ny*BaseImage->nz];
+        LNCC_ordered=new libraryIndexType [numbordered_level*BaseImage->nx*BaseImage->ny*BaseImage->nz];
         if(LNCC_ordered == NULL)
         {
             fprintf(stderr,"* Error when alocating LNCC_ordered in function seg_norm4LNCC");
@@ -1402,8 +1306,9 @@ unsigned char * estimateMLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,floa
 #endif
         for(long i=0; i<LNCC->nx*LNCC->ny*LNCC->nz; i++)
         {
+	    // TODO: strip magic number 1000 here
             segPrecisionTYPE LNCCvalue_tmp[1000];
-            char old_sort[1000];;
+            libraryIndexType old_sort[1000];;
             for(long currlable=0; currlable<LNCC->nt; currlable++)
             {
                 LNCCvalue_tmp[currlable]=LNCCptr[i+currlable*LNCC->nx*LNCC->ny*LNCC->nz];
@@ -1414,12 +1319,12 @@ unsigned char * estimateMLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,floa
                 old_sort[currlable]=LNCC_ordered_save[i+currlable*LNCC->nx*LNCC->ny*LNCC->nz];
             }
 
-            int * ordertmp=quickSort_order(&LNCCvalue_tmp[0],LNCC->nt);
+            libraryIndexType * ordertmp=quickSort_order(&LNCCvalue_tmp[0],LNCC->nt);
 
             int label_order_index=0;
             for(long lable_order=0; lable_order<LNCC->nt; lable_order++)
             {
-                char cur_LNCC_ordered_label=(char)ordertmp[LNCC->nt-lable_order-1];
+                libraryIndexType cur_LNCC_ordered_label=ordertmp[LNCC->nt-lable_order-1];
                 for(long currlable=0; currlable<numbordered_level_old; currlable++)
                 {
                     if(cur_LNCC_ordered_label==old_sort[currlable])
@@ -1443,7 +1348,7 @@ unsigned char * estimateMLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,floa
         {
             numbordered_level_old=numbordered_level;
             delete [] LNCC_ordered_save;
-            LNCC_ordered_save=new unsigned char [numbordered_level_old*LNCC->nx*LNCC->ny*LNCC->nz];
+            LNCC_ordered_save=new libraryIndexType [numbordered_level_old*LNCC->nx*LNCC->ny*LNCC->nz];
             if(LNCC_ordered_save == NULL)
             {
                 fprintf(stderr,"* Error when alocating LNCC_ordered_save in function seg_norm4MLLNCC");
@@ -1668,12 +1573,12 @@ float seg_getNMIValue(nifti_image *img1,
 
 /* *************************************************************** */
 
-unsigned char * estimateLNCC5D(nifti_image * BaseImage, nifti_image * LNCC,float distance,int numberordered,ImageSize * CurrSizes,int verbose)
+libraryIndexType * estimateLNCC5D(nifti_image * BaseImage, nifti_image * LNCC,float distance,int numberordered,ImageSize * CurrSizes,int verbose)
 {
 
     segPrecisionTYPE * LNCCptr = static_cast<segPrecisionTYPE *>(LNCC->data);
     segPrecisionTYPE * BaseImageptr = static_cast<segPrecisionTYPE *>(BaseImage->data);
-    unsigned char * LNCC_ordered=NULL;
+    libraryIndexType * LNCC_ordered=NULL;
     long BaseImageXYZsize=BaseImage->nx*BaseImage->ny*BaseImage->nz;
     segPrecisionTYPE * BaseMean=new segPrecisionTYPE [BaseImageXYZsize*BaseImage->nt];
     if(BaseMean == NULL)
@@ -1797,7 +1702,7 @@ unsigned char * estimateLNCC5D(nifti_image * BaseImage, nifti_image * LNCC,float
     // cout << "Filtering LNCC"<< endl;
     //  Gaussian_Filter_4D(LNCCptr,(float)(distance),CurrSizes);
 
-    LNCC_ordered=new unsigned char [numberordered*BaseImage->nx*BaseImage->ny*BaseImage->nz];
+    LNCC_ordered=new libraryIndexType [numberordered*BaseImage->nx*BaseImage->ny*BaseImage->nz];
     if(LNCC_ordered == NULL)
     {
         fprintf(stderr,"* Error when alocating LNCC_ordered in function seg_norm4LNCC");
@@ -1823,11 +1728,11 @@ unsigned char * estimateLNCC5D(nifti_image * BaseImage, nifti_image * LNCC,float
             LNCCvalue_tmp[currlable]=LNCCptr[i+currlable*BaseImage->nx*BaseImage->ny*BaseImage->nz];
         }
 
-        int * ordertmp=quickSort_order(&LNCCvalue_tmp[0],LNCC->nt);
+        libraryIndexType * ordertmp=quickSort_order(&LNCCvalue_tmp[0],LNCC->nt);
 
         for(long lable_order=0; lable_order<numberordered; lable_order++)
         {
-            LNCC_ordered[i+lable_order*BaseImage->nx*BaseImage->ny*BaseImage->nz]=(unsigned char)ordertmp[LNCC->nt-lable_order-1];
+            LNCC_ordered[i+lable_order*BaseImage->nx*BaseImage->ny*BaseImage->nz]=ordertmp[LNCC->nt-lable_order-1];
         }
 
         delete [] ordertmp;
@@ -1843,12 +1748,12 @@ unsigned char * estimateLNCC5D(nifti_image * BaseImage, nifti_image * LNCC,float
 }
 /* *************************************************************** */
 
-unsigned char * estimateLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,float distance,int numberordered,ImageSize * CurrSizes,int verbose)
+libraryIndexType * estimateLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,float distance,int numberordered,ImageSize * CurrSizes,int verbose)
 {
 
     segPrecisionTYPE * LNCCptr = static_cast<segPrecisionTYPE *>(LNCC->data);
     segPrecisionTYPE * BaseImageptr = static_cast<segPrecisionTYPE *>(BaseImage->data);
-    unsigned char * LNCC_ordered=NULL;
+    libraryIndexType * LNCC_ordered=NULL;
     segPrecisionTYPE * BaseMean=new segPrecisionTYPE [BaseImage->nx*BaseImage->ny*BaseImage->nz];
     if(BaseMean == NULL)
     {
@@ -1958,7 +1863,7 @@ unsigned char * estimateLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,float
     CurrSizes->tsize=realt;
     //  Gaussian_Filter_4D(LNCCptr,(float)(distance),CurrSizes);
 
-    LNCC_ordered=new unsigned char [numberordered*BaseImage->nx*BaseImage->ny*BaseImage->nz];
+    LNCC_ordered=new libraryIndexType [numberordered*BaseImage->nx*BaseImage->ny*BaseImage->nz];
     if(LNCC_ordered == NULL)
     {
         fprintf(stderr,"* Error when alocating LNCC_ordered in function seg_norm4LNCC");
@@ -1984,11 +1889,11 @@ unsigned char * estimateLNCC4D(nifti_image * BaseImage, nifti_image * LNCC,float
             LNCCvalue_tmp[currlable]=LNCCptr[i+currlable*BaseImage->nx*BaseImage->ny*BaseImage->nz];
         }
 
-        int * ordertmp=quickSort_order(&LNCCvalue_tmp[0],LNCC->nt);
+        libraryIndexType * ordertmp=quickSort_order(&LNCCvalue_tmp[0],LNCC->nt);
 
         for(long lable_order=0; lable_order<numberordered; lable_order++)
         {
-            LNCC_ordered[i+lable_order*BaseImage->nx*BaseImage->ny*BaseImage->nz]=(unsigned char)ordertmp[LNCC->nt-lable_order-1];
+            LNCC_ordered[i+lable_order*BaseImage->nx*BaseImage->ny*BaseImage->nz]=ordertmp[LNCC->nt-lable_order-1];
         }
 
         delete [] ordertmp;
