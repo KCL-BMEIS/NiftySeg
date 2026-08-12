@@ -25,7 +25,6 @@ float * DoubleEuclideanDistance_3D(bool *LablePtr, float * speedptr,
     MapLengthType::iterator first_element=MapLength.begin();
 
     char * Labels = (char *) calloc(NumElements, sizeof(char));
-    int mycounter=0;
     bool *Border= (bool *) calloc(NumElements, sizeof(bool));
     float *GeoTime= (float *) calloc(NumElements, sizeof(float));
 
@@ -43,7 +42,6 @@ float * DoubleEuclideanDistance_3D(bool *LablePtr, float * speedptr,
         }
         else
         {
-            mycounter++;
             Labels[centre_index]=2;
             GeoTime[centre_index]=MaxGeoTime;
         }
@@ -155,7 +153,6 @@ float * DoubleEuclideanDistance_3D(bool *LablePtr, float * speedptr,
         }
         else
         {
-            mycounter++;
             Labels[centre_index]=2;
             GeoTime2[centre_index]=MaxGeoTime;
         }
@@ -284,7 +281,6 @@ void FMM(bool *Seeds,
     MapLengthType::iterator first_element=MapLength.begin();
 
     char * Labels = (char *) calloc(NumElements, sizeof(char));
-    long mycounter=0;
     bool *Border= (bool *) calloc(NumElements, sizeof(bool));
 
     for(centre_short_index=0; centre_short_index<NumElements; centre_short_index++)
@@ -296,7 +292,6 @@ void FMM(bool *Seeds,
         }
         else
         {
-            mycounter++;
             Labels[centre_short_index]=2;
             GeoTime[centre_short_index]=MaxGeoTime;
         }

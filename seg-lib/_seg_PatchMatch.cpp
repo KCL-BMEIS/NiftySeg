@@ -630,7 +630,7 @@ void seg_PatchMatch<T>::getNextRecordDatabase(int num,float *&imagePtr,float *&m
     }
     //this->normalizeImageIntesitiesOutliers(0.0f,1024.0f,imagePtr);
     if(this->getDebug()) {
-        sprintf(filename,"segPatchMatch_normalized_database_image_%d.nii.gz",num);
+        snprintf(filename,sizeof(filename),"segPatchMatch_normalized_database_image_%d.nii.gz",num);
         this->saveImagePtr(imagePtr,nifti_image_file,filename);
     }
 
@@ -795,7 +795,7 @@ void seg_PatchMatch<T>::loadingInputData(){
     // Intensity image normalization
     //this->normalizeImageIntesitiesOutliers(0.0f,1024.0f,this->imgPtr);
     if(this->getDebug()) {
-        sprintf(filename,"segPatchMatch_normalized_image.nii.gz");
+        snprintf(filename,sizeof(filename),"segPatchMatch_normalized_image.nii.gz");
         this->saveImagePtr(this->imgPtr,this->inputImage,filename);
     }
 }
@@ -873,7 +873,7 @@ void seg_PatchMatch<T>::saveResults() {
         }
     }
     if(this->getDebug()) {
-        sprintf(filename,"segPatchMatch_intermidium_fused-patch.nii.gz");
+        snprintf(filename,sizeof(filename),"segPatchMatch_intermidium_fused-patch.nii.gz");
         this->saveImagePtr(outMaskPtr,this->ouputImageSample,filename);
     }
 }
@@ -932,7 +932,7 @@ void seg_PatchMatch<T>::saveDebugResults() {
     }
     this->normalizeImageIntesities(0.0f,1024.0f,ANN);
 
-    sprintf(filename,"segPatchMatch_intermidium_ANN-best.nii.gz");
+    snprintf(filename,sizeof(filename),"segPatchMatch_intermidium_ANN-best.nii.gz");
     this->saveImagePtr(ANN,this->inputImage,filename);
 
     int *image=new int[this->getSingleVolumSize()];
@@ -951,10 +951,10 @@ void seg_PatchMatch<T>::saveDebugResults() {
              image[i]=0;
          }
     }
-    sprintf(filename,"segPatchMatch_intermidium_Image-best.nii.gz");
+    snprintf(filename,sizeof(filename),"segPatchMatch_intermidium_Image-best.nii.gz");
     this->saveImagePtr(image,this->inputMask,filename);
     
-    sprintf(filename,"segPatchMatch_intermidium_matching_counting.nii.gz");
+    snprintf(filename,sizeof(filename),"segPatchMatch_intermidium_matching_counting.nii.gz");
     this->saveImagePtr(this->matchingCount,this->inputMask,filename);
 }
 
@@ -987,9 +987,9 @@ long seg_PatchMatch<T>::recomputeInputData(int iteration){
       cout<<"["<<iteration<<"] Number of voxels: "<<painted<<" "<<count<<endl;
     }
     if(this->getDebug()) {
-        sprintf(filename,"segPatchMatch_recomputed_image_%d.nii.gz",iteration);
+        snprintf(filename,sizeof(filename),"segPatchMatch_recomputed_image_%d.nii.gz",iteration);
         this->saveImagePtr(this->imgPtr,this->inputImage,filename);
-	sprintf(filename,"segPatchMatch_recomputed_mask_%d.nii.gz",iteration);
+	snprintf(filename,sizeof(filename),"segPatchMatch_recomputed_mask_%d.nii.gz",iteration);
         this->saveImagePtr(this->maskPtr,this->inputMask,filename);
     }
     return count;

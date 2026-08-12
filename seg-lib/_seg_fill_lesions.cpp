@@ -145,7 +145,7 @@ void seg_fill_lesions<T>::setInputMask(nifti_image *mask) {
     }
     char filename[100];
     if(this->getDebug()) {
-        sprintf(filename,"segFillLesions_mixed_mask.nii.gz");
+        snprintf(filename,sizeof(filename),"segFillLesions_mixed_mask.nii.gz");
         this->saveImagePtr(this->maskPtr,this->inputImage,filename);
     }
 }
@@ -489,7 +489,7 @@ void seg_fill_lesions<T>::runIt(){
     this->normalizeImageIntesities(0.0f,1024.0f);
 
     if(this->getDebug()) {
-        sprintf(filename,"segFillLesions_normalized_image.nii.gz");
+        snprintf(filename,sizeof(filename),"segFillLesions_normalized_image.nii.gz");
         this->saveImage(this->normImage,filename);
     }
 
@@ -515,7 +515,7 @@ void seg_fill_lesions<T>::runIt(){
     float *Distance = new float[this->getTotalVolumSize()];
     this->calculateEuclideanDistance(Distance);
     if(this->getDebug()) {
-        sprintf(filename,"segFillLesions_euclidean_distance.nii.gz");
+        snprintf(filename,sizeof(filename),"segFillLesions_euclidean_distance.nii.gz");
         this->saveImagePtr(Distance,this->inputImage,filename);
     }
     float max=0;
@@ -533,7 +533,7 @@ void seg_fill_lesions<T>::runIt(){
     }
     BlockSmoothing(this->meanImage,NULL,max*2+1);
     if(this->getDebug()) {
-        sprintf(filename,"segFillLesions_mean_image-%d.nii.gz",0);
+        snprintf(filename,sizeof(filename),"segFillLesions_mean_image-%d.nii.gz",0);
         this->saveImage(this->meanImage,filename);
     }
 
@@ -541,7 +541,7 @@ void seg_fill_lesions<T>::runIt(){
         if(this->getVerbose()) cout<<"Expanding euclidean maps to improve patches"<<endl;
         this->expandPatches(Distance);
         if(this->getDebug()) {
-            sprintf(filename,"segFillLesions_expanded_distance.nii.gz");
+            snprintf(filename,sizeof(filename),"segFillLesions_expanded_distance.nii.gz");
             this->saveImagePtr(Distance,this->inputImage,filename);
         }
     }
@@ -678,7 +678,7 @@ void seg_fill_lesions<T>::runIt(){
             }
         }
         if(this->getDebug()) {
-            sprintf(filename,"segFillLesions_filemask-med-%d.nii.gz",iteration);
+            snprintf(filename,sizeof(filename),"segFillLesions_filemask-med-%d.nii.gz",iteration);
             this->saveImagePtr(level,this->inputLesionMask,filename);
         }
         for(tp=0;tp<this->getNumTP();tp++) {
@@ -749,9 +749,9 @@ void seg_fill_lesions<T>::runIt(){
             }
         }
         if(this->getDebug()) {
-            sprintf(filename,"segFillLesions_file-%d.nii.gz",iteration);
+            snprintf(filename,sizeof(filename),"segFillLesions_file-%d.nii.gz",iteration);
             this->saveImage(this->inputImage,filename);
-            sprintf(filename,"segFillLesions_filemask-%d.nii.gz",iteration);
+            snprintf(filename,sizeof(filename),"segFillLesions_filemask-%d.nii.gz",iteration);
             this->saveImage(this->inputLesionMask,filename);
         }
         for(i=0;i<this->getTotalVolumSize();i++) {
@@ -760,7 +760,7 @@ void seg_fill_lesions<T>::runIt(){
         }
         BlockSmoothing(this->meanImage,NULL,max*2+1);
         if(this->getDebug()) {
-            sprintf(filename,"segFillLesions_mean_image-%d.nii.gz",iteration);
+            snprintf(filename,sizeof(filename),"segFillLesions_mean_image-%d.nii.gz",iteration);
             this->saveImage(this->meanImage,filename);
         }
     }

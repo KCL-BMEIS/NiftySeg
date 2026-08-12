@@ -191,7 +191,6 @@ float seg_fill_lesions_other<T>::calculateDistance(int location1, int location2)
 
     const int numvox=this->getSingleVolumSize();
     float distance=0;
-    int count=0;
     int shiftx=0;
     int shifty=0;
     int shiftz=0;
@@ -221,12 +220,10 @@ float seg_fill_lesions_other<T>::calculateDistance(int location1, int location2)
                                 index2>=0) 
                         {
                             distance+=(this->tmpNorm[index1+tp*numvox]-this->tmpNorm[index2+tp*numvox])*(this->tmpNorm[index1+tp*numvox]-this->tmpNorm[index2+tp*numvox]);
-                            count++;
                         }
                     }
                     else{
                         distance+=(this->tmpNorm[index1+tp*numvox]-this->tmpNorm[index2+tp*numvox])*(this->tmpNorm[index1+tp*numvox]-this->tmpNorm[index2+tp*numvox]);
-                        count++;
                     }
 
                 }
@@ -324,7 +321,7 @@ void seg_fill_lesions_other<T>::runIt(){
     this->normalizeImageIntesities(0.0f,1.0f);
 
     if(this->getDebug()) {
-        sprintf(filename,"segFillLesions_normalized_image.nii.gz");
+        snprintf(filename,sizeof(filename),"segFillLesions_normalized_image.nii.gz");
         this->saveImage(this->normImage,filename);
     }
 
@@ -351,7 +348,7 @@ void seg_fill_lesions_other<T>::runIt(){
     float *Distance = new float[this->getTotalVolumSize()];
     this->calculateEuclideanDistance(Distance);
     if(this->getDebug()) {
-        sprintf(filename,"segFillLesions_euclidean_distance.nii.gz");
+        snprintf(filename,sizeof(filename),"segFillLesions_euclidean_distance.nii.gz");
         this->saveImagePtr(Distance,this->inputImage,filename);
     }
     float max=0;
@@ -479,7 +476,7 @@ void seg_fill_lesions_other<T>::runIt(){
             }
         }
         if(this->getDebug()) {
-            sprintf(filename,"segFillLesions_filemask-med-%d.nii.gz",iteration);
+            snprintf(filename,sizeof(filename),"segFillLesions_filemask-med-%d.nii.gz",iteration);
             this->saveImagePtr(level,this->inputLesionMask,filename);
         }
         for(tp=0;tp<this->getNumTP();tp++) {
@@ -499,9 +496,9 @@ void seg_fill_lesions_other<T>::runIt(){
             }
         }
         if(this->getDebug()) {
-            sprintf(filename,"segFillLesions_file-%d.nii.gz",iteration);
+            snprintf(filename,sizeof(filename),"segFillLesions_file-%d.nii.gz",iteration);
             this->saveImagePtr(this->tmpImg,this->inputImage,filename);
-            sprintf(filename,"segFillLesions_filemask-%d.nii.gz",iteration);
+            snprintf(filename,sizeof(filename),"segFillLesions_filemask-%d.nii.gz",iteration);
             this->saveImagePtr(this->tmpLesMask,this->inputLesionMask,filename);
         }
       }

@@ -2522,13 +2522,10 @@ void ConnectComp(int * Old,
         CClist[i]=i;
     }
 
-    int iter=0;
     while(numbchanges!=0)
     {
-        //while(iter<3){
 
         flush(cout);
-        iter++;
         numbchanges=0;
         int currindex=0;
         for(int z=1; z<((int)dimensions[2]-1); z++)
@@ -2741,13 +2738,10 @@ void Close_Forground_ConnectComp(void * Old_void, void * New_void, ImageSize * C
         CClist[i]=i;
     }
 
-    int iter=0;
     while(numbchanges!=0)
     {
-        //while(iter<3){
 
         flush(cout);
-        iter++;
         numbchanges=0;
         int currindex=0;
         for(int z=1; z<((int)dimensions[2]-1); z++)
@@ -2943,13 +2937,10 @@ void Largest_ConnectComp(void * Old_void, void * New_void, ImageSize * Currentsi
         CClist[i]=i;
     }
 
-    int iter=0;
     while(numbchanges!=0)
     {
-        //while(iter<3){
 
         flush(cout);
-        iter++;
         numbchanges=0;
         int currindex=0;
         if((int)dimensions[2]>1){
@@ -3164,12 +3155,9 @@ void ConnectComp26NN(void * Old_void, void * New_void, ImageSize * Currentsize)
         CClist[i]=i;
     }
 
-    int iter=0;
     while(numbchanges!=0)
     {
-        //while(iter<3){
         flush(cout);
-        iter++;
         numbchanges=0;
         int currindex=0;
         if((int)dimensions[2]>1){
@@ -3387,13 +3375,10 @@ void ConnectComp6NN(void * Old_void, void * New_void, ImageSize * Currentsize)
         CClist[i]=i;
     }
 
-    int iter=0;
     while(numbchanges!=0)
     {
-        //while(iter<3){
 
         flush(cout);
-        iter++;
         numbchanges=0;
         int currindex=0;
         if((int)dimensions[2]>1){
@@ -3674,15 +3659,12 @@ bool isSimplePoint(bool * SimplePointTestBlock){
     CClist[i]=CounterBlock[i]?i:-1;
   }
 
-  int iter=0;
   int numbchanges=1;
   int totalnumbchanges=0;
   while(numbchanges!=0)
   {
-    //while(iter<3){
 
     flush(cout);
-    iter++;
     numbchanges=0;
     int currindex=0;
 
@@ -3770,14 +3752,12 @@ bool isSimplePoint(bool * SimplePointTestBlock){
     CClist[i]=CounterBlock[i]?i:-1;
   }
 
-  iter=0;
   numbchanges=1;
   int totalnumbchanges2=0;
   while(numbchanges!=0)
   {
 
     flush(cout);
-    iter++;
     numbchanges=0;
     int currindex=0;
 
