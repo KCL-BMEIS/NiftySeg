@@ -47,10 +47,10 @@ NIFTYSEG_WINEXPORT float estimateNCC3D(nifti_image * BaseImage,nifti_image * Tem
 NIFTYSEG_WINEXPORT float seg_getNMIValue(nifti_image *referenceImage, nifti_image *warpedImage, unsigned char *referenceMask);
 
 // Data scraping tools, used to get files/folders inside directories (with or without string match)
-NIFTYSEG_WINEXPORT int get_all_files_and_folders_in_dir(string dir, vector<string> &files , vector<string> &folders);
-NIFTYSEG_WINEXPORT int get_all_files_that_match_string(string dir, vector<string> &files , string string_to_match);
-NIFTYSEG_WINEXPORT int get_all_files_that_match_2_strings(string dir, vector<string> &files , string string_to_match, string string_to_match2);
-NIFTYSEG_WINEXPORT int get_all_files_in_dir_without_extension(string dir, vector<string> &files);
+NIFTYSEG_WINEXPORT int get_all_files_and_folders_in_dir(const string &dir, vector<string> &files , vector<string> &folders);
+NIFTYSEG_WINEXPORT int get_all_files_that_match_string(const string &dir, vector<string> &files , const string &string_to_match);
+NIFTYSEG_WINEXPORT int get_all_files_that_match_2_strings(const string &dir, vector<string> &files , const string &string_to_match, const string &string_to_match2);
+NIFTYSEG_WINEXPORT int get_all_files_in_dir_without_extension(const string &dir, vector<string> &files);
 
 // Estimate the LTS or the LS vetween two images (<X>,<Y>), inside a <mask>
 NIFTYSEG_WINEXPORT void LTS_Vecs(float * Y, float * X,int * mask, float percentOutliers,int maxNumbIter, float convergenceRatio, unsigned int size, float *a, float *b);
@@ -121,7 +121,7 @@ int * quickSort_order(compType *arr, int elements)
 {
     typedef orderedType<compType> ourType;
     int * order = new int [elements];
-    ourType orderedArr[elements];
+    ourType * orderedArr = new ourType [elements];
     for (int ind=0; ind<elements; ind++)
     {
         orderedArr[ind].val=arr[ind];
@@ -132,5 +132,6 @@ int * quickSort_order(compType *arr, int elements)
     for (int ii=0; ii<elements; ii++){
         order[ii]=orderedArr[ii].ind;
     }
+    delete [] orderedArr;
     return order;
 }

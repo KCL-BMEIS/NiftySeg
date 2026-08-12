@@ -20,48 +20,57 @@ seg_fill_lesions_other<T>::seg_fill_lesions_other() {
     this->mult=0.1;
     this->patchSearchAreaSize=10;
     this->patchSize=4;
+    this->outputImage=NULL;
+    this->inputLesionMask=NULL;
+    this->numTP=0;
+    this->tmpLesMask=NULL;
+    this->originalLesMask=NULL;
+    this->tmpImg=NULL;
+    this->tmpNorm=NULL;
 }
 
 template <class T>
 seg_fill_lesions_other<T>::seg_fill_lesions_other(const seg_fill_lesions_other &copy) {
-    this->inputImage=copy->inputImage;
-    this->normImage=copy->normImage;
-    this->outputImage=copy->outputImage;
-    this->imgPtr=copy->imgPtr;
-    this->lesMaskPtr=copy->lesMaskPtr;
-    this->normImgPtr=copy->normImgPtr;
-    this->tmpLesMask=copy->tmpLesMask;
-    this->tmpImg=copy->tmpImg;
-    this->originalLesMask=copy->originalLesMask;
-    this->tmpNorm=copy->tmpNorm;
-    this->currSize=copy->currSize;
-    this->verbose=copy->verbose;
-    this->debug=copy->debug;
-    this->mult=copy->mult;
-    this->patchSearchAreaSize=copy->patchSearchAreaSize;
-    this->patchSize=copy->patchSize;
-    this->numTP=copy->numTP;
+    this->inputImage=copy.inputImage;
+    this->normImage=copy.normImage;
+    this->outputImage=copy.outputImage;
+    this->imgPtr=copy.imgPtr;
+    this->lesMaskPtr=copy.lesMaskPtr;
+    this->normImgPtr=copy.normImgPtr;
+    this->tmpLesMask=copy.tmpLesMask;
+    this->tmpImg=copy.tmpImg;
+    this->originalLesMask=copy.originalLesMask;
+    this->tmpNorm=copy.tmpNorm;
+    this->currSize=copy.currSize;
+    this->verbose=copy.verbose;
+    this->debug=copy.debug;
+    this->mult=copy.mult;
+    this->patchSearchAreaSize=copy.patchSearchAreaSize;
+    this->patchSize=copy.patchSize;
+    this->numTP=copy.numTP;
+    this->inputLesionMask=copy.inputLesionMask;
 }
 
 template <class T>
-int seg_fill_lesions_other<T>::operator=(const seg_fill_lesions_other &copy) {
-    this->inputImage=copy->inputImage;
-    this->normImage=copy->normImage;
-    this->outputImage=copy->outputImage;
-    this->imgPtr=copy->imgPtr;
-    this->lesMaskPtr=copy->lesMaskPtr;
-    this->normImgPtr=copy->normImgPtr;
-    this->tmpLesMask=copy->tmpLesMask;
-    this->tmpImg=copy->tmpImg;
-    this->originalLesMask=copy->originalLesMask;
-    this->tmpNorm=copy->tmpNorm;
-    this->currSize=copy->currSize;
-    this->verbose=copy->verbose;
-    this->debug=copy->debug;
-    this->mult=copy->mult;
-    this->patchSearchAreaSize=copy->patchSearchAreaSize;
-    this->patchSize=copy->patchSize;
-    this->numTP=copy->numTP;
+seg_fill_lesions_other<T> & seg_fill_lesions_other<T>::operator=(const seg_fill_lesions_other &copy) {
+    this->inputImage=copy.inputImage;
+    this->normImage=copy.normImage;
+    this->outputImage=copy.outputImage;
+    this->imgPtr=copy.imgPtr;
+    this->lesMaskPtr=copy.lesMaskPtr;
+    this->normImgPtr=copy.normImgPtr;
+    this->tmpLesMask=copy.tmpLesMask;
+    this->tmpImg=copy.tmpImg;
+    this->originalLesMask=copy.originalLesMask;
+    this->tmpNorm=copy.tmpNorm;
+    this->currSize=copy.currSize;
+    this->verbose=copy.verbose;
+    this->debug=copy.debug;
+    this->mult=copy.mult;
+    this->patchSearchAreaSize=copy.patchSearchAreaSize;
+    this->patchSize=copy.patchSize;
+    this->numTP=copy.numTP;
+    this->inputLesionMask=copy.inputLesionMask;
 
     return *this;
 }

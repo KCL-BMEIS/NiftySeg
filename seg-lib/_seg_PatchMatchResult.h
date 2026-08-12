@@ -27,8 +27,8 @@ class PatchMatchResult
     public:
         PatchMatchResult();
         ~PatchMatchResult();
-        PatchMatchResult(PatchMatchResult &);
-        PatchMatchResult& operator = (PatchMatchResult &);
+        PatchMatchResult(const PatchMatchResult &);
+        PatchMatchResult& operator = (const PatchMatchResult &);
         bool operator < (PatchMatchResult &);
         bool operator > (PatchMatchResult &);
         bool operator >= (PatchMatchResult &);

@@ -185,6 +185,8 @@ protected:
 public:
     seg_EM (int _numb_classes,int _nu,int _nt);
     ~seg_EM ();
+    seg_EM (const seg_EM &) = delete;
+    seg_EM & operator= (const seg_EM &) = delete;
 
     void     Run_EM();
 

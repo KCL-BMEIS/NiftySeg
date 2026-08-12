@@ -467,9 +467,9 @@ int Create_GH_7class(segPrecisionTYPE * G,
 int Normalize_NaN_Priors(nifti_image * Priors,
                          bool verbose)
 {
-    register int numel = Priors->nx*Priors->ny*Priors->nz;
-    register int ups=0;
-    register int good=0;
+    int numel = Priors->nx*Priors->ny*Priors->nz;
+    int ups=0;
+    int good=0;
     if(verbose)
     {
         cout<< "Normalizing Priors" << endl;
@@ -525,7 +525,7 @@ int Normalize_NaN_Priors(nifti_image * Priors,
     return 1;
 }
 
-int PriorWeight_mask(float * ShortPrior,nifti_image * Priors, float * Expec,float GaussKernelSize,float RelaxFactor, int * S2L, int * L2S,ImageSize * CurrSizes,int verbose_level)
+int PriorWeight_mask(float * ShortPrior,nifti_image * Priors, float * Expec,float GaussKernelSize,float RelaxFactor, int * S2L, int * L2S,ImageSize * CurrSizes,int /*verbose_level*/)
 {
 
     for(long i=0; i<(CurrSizes->numclass*CurrSizes->numelmasked); i++)ShortPrior[i]=Expec[i];
@@ -553,9 +553,9 @@ int Normalize_NaN_Priors_mask(nifti_image * Priors,
                               nifti_image * Mask,
                               bool verbose)
 {
-    register int numel = Mask->nx*Mask->ny*Mask->nz;
-    register int ups=0;
-    register int good=0;
+    int numel = Mask->nx*Mask->ny*Mask->nz;
+    int ups=0;
+    int good=0;
     if(verbose)
     {
         cout<< "Normalizing Priors" << endl;
@@ -952,8 +952,8 @@ segPrecisionTYPE * Create_cArray_from_Prior_mask(nifti_image * Mask,
                                                  long numclass,
                                                  bool PV_ON)
 {
-    register long numel=(int)(Mask->nx*Mask->ny*Mask->nz);
-    register long numel_masked=0;
+    long numel=(int)(Mask->nx*Mask->ny*Mask->nz);
+    long numel_masked=0;
 
     bool * Maskptrtmp = static_cast<bool *> (Mask->data);;
     for (long i=0; i<numel; i++, Maskptrtmp++)
@@ -985,7 +985,7 @@ segPrecisionTYPE * Create_cArray_from_Prior(nifti_image * Priors,
                                             long numclass,
                                             bool PV_ON)
 {
-    register long numel=(int)(Priors->nx*Priors->ny*Priors->nz);
+    long numel=(int)(Priors->nx*Priors->ny*Priors->nz);
     long pluspv=(int)(PV_ON)*2;
     segPrecisionTYPE * Expec = new segPrecisionTYPE [numel*(numclass+pluspv)] ();
     segPrecisionTYPE * Expec_PTR= Expec;
@@ -1003,8 +1003,8 @@ segPrecisionTYPE * Create_cArray_from_Prior(nifti_image * Priors,
 segPrecisionTYPE * Create_cArray_from_3D_image(nifti_image * Mask,
                                                nifti_image * SourceImage)
 {
-    register int numel=(int)(Mask->nx*Mask->ny*Mask->nz);
-    register int numel_masked=0;
+    int numel=(int)(Mask->nx*Mask->ny*Mask->nz);
+    int numel_masked=0;
 
     bool * Maskptrtmp = static_cast<bool *> (Mask->data);;
     for (int i=0; i<numel; i++, Maskptrtmp++)
@@ -1451,7 +1451,7 @@ int calcE_mask_aprox(nifti_image * T1,
     loglik[0]=0;
     SumExpec=0.0f;
     //int * Expec_offset_PTR= (int *) Expec_offset;
-    register SegPrecisionTYPE tempvar=0.0f;
+    SegPrecisionTYPE tempvar=0.0f;
     float mahal=0.0f;
     float logliktmp=0.0f;
     for (int i=0; i<numel_masked;i++, Expec_PTR++, IterPrior_PTR++) {
@@ -1582,7 +1582,7 @@ int calcE_aprox(nifti_image * T1,
     loglik[0]=0;
     SumExpec=0.0f;
     //int * Expec_offset_PTR= (int *) Expec_offset;
-    register SegPrecisionTYPE tempvar=0.0f;
+    SegPrecisionTYPE tempvar=0.0f;
     float mahal=0.0f;
     float logliktmp=0.0f;
     IterPrior_PTR= (SegPrecisionTYPE *) IterPrior;
@@ -2229,7 +2229,7 @@ int Relax_Priors(segPrecisionTYPE * Priors,
                  int * L2S,
                  float RelaxFactor,
                  segPrecisionTYPE * G,
-                 segPrecisionTYPE ba,
+                 segPrecisionTYPE /*ba*/,
                  segPrecisionTYPE be,
                  ImageSize *  CurrSizes,
                  seg_EM_Params * segment_param)
@@ -2552,7 +2552,7 @@ int Convert_WM_and_GM_to_PV(nifti_image * T1,
 nifti_image * Copy_ShortExpec_to_Result(nifti_image * T1,
                                         segPrecisionTYPE * Expec,
                                         segPrecisionTYPE * BiasField,
-                                        segPrecisionTYPE * BiasFieldCoefs,
+                                        segPrecisionTYPE * /*BiasFieldCoefs*/,
                                         int * S2L,
                                         nifti_image * Priors,
                                         seg_EM_Params * segment_param,
@@ -3005,7 +3005,7 @@ nifti_image * Copy_Expec_to_Result_Neonate_mask(segPrecisionTYPE * Expec,
                                     biggestclass_prob=Expec[neigh_index+(neigh_class)*CurrSizes->numelmasked];
                                     biggestclass=neigh_class;
                                 }
-                                if(Expec[neigh_index+(neigh_class)*CurrSizes->numelmasked]>biggestclass2_prob && Expec[neigh_index+(neigh_class)*CurrSizes->numelmasked]<biggestclass2_prob)
+                                if(Expec[neigh_index+(neigh_class)*CurrSizes->numelmasked]>biggestclass2_prob && Expec[neigh_index+(neigh_class)*CurrSizes->numelmasked]<biggestclass_prob)
                                 {
                                     if(biggestclass!=neigh_class)
                                     {
@@ -3371,7 +3371,7 @@ void MRFregularization_mask(const segPrecisionTYPE * Expec,
                             segPrecisionTYPE * MRFprior,
                             segPrecisionTYPE * AtlasPrior,
                             int * Long_2_Short_Indices,
-                            int * Short_2_Long_Indices,
+                            int * /*Short_2_Long_Indices*/,
                             ImageSize * CurrSizes,
                             bool MRFflag,
                             int verbose_level)
@@ -3412,7 +3412,7 @@ void MRFregularization_mask(const segPrecisionTYPE * Expec,
         for (int iz=1; iz<maxiz-1; iz++)
         {
             segPrecisionTYPE Sum_Temp_MRF_Class_Expect;
-            register int currclass;
+            int currclass;
             segPrecisionTYPE Temp_MRF_Class_Expect[maxNumbClass];
             segPrecisionTYPE Gplane[maxNumbClass];
             segPrecisionTYPE Hplane[maxNumbClass];
@@ -3496,7 +3496,7 @@ void MRFregularization_mask(const segPrecisionTYPE * Expec,
 void MRFregularization(const segPrecisionTYPE * Expec,
                        const segPrecisionTYPE * G,
                        const segPrecisionTYPE * H,
-                       segPrecisionTYPE * MRFbeta,
+                       segPrecisionTYPE * /*MRFbeta*/,
                        segPrecisionTYPE * MRFprior,
                        segPrecisionTYPE * AtlasPrior,
                        ImageSize * CurrSizes,
@@ -3527,7 +3527,7 @@ void MRFregularization(const segPrecisionTYPE * Expec,
             cout << "Optimising MRF"<<endl;
             flush(cout);
         }
-        register int currclass;
+        int currclass;
 
         unsigned int numel_currclass_shift[maxNumbClass];
         //unsigned int image_size_currclass_shift[max_numbclass];
@@ -3607,12 +3607,12 @@ void MRFregularization(const segPrecisionTYPE * Expec,
 
 void MRFregularization_mask2D(const segPrecisionTYPE * Expec,
                               const segPrecisionTYPE * G,
-                              const segPrecisionTYPE * H,
+                              const segPrecisionTYPE * /*H*/,
                               segPrecisionTYPE * MRFbeta,
                               segPrecisionTYPE * MRFprior,
                               segPrecisionTYPE * AtlasPrior,
                               int * Long_2_Short_Indices,
-                              int * Short_2_Long_Indices,
+                              int * /*Short_2_Long_Indices*/,
                               ImageSize * CurrSizes,
                               bool MRFflag,
                               int verbose_level)
@@ -3637,7 +3637,7 @@ void MRFregularization_mask2D(const segPrecisionTYPE * Expec,
             cout << "Optimising MRF"<<endl;
             flush(cout);
         }
-        register int currclass;
+        int currclass;
 
         unsigned int numelmasked_currclass_shift[maxNumbClass];
         for(int i=0; i<numclass; i++)
@@ -3717,8 +3717,8 @@ void MRFregularization_mask2D(const segPrecisionTYPE * Expec,
 
 void MRFregularization2D(const segPrecisionTYPE * Expec,
                          const segPrecisionTYPE * G,
-                         const segPrecisionTYPE * H,
-                         segPrecisionTYPE * MRFbeta,
+                         const segPrecisionTYPE * /*H*/,
+                         segPrecisionTYPE * /*MRFbeta*/,
                          segPrecisionTYPE * MRFprior,
                          segPrecisionTYPE * AtlasPrior,
                          ImageSize * CurrSizes,
@@ -3744,7 +3744,7 @@ void MRFregularization2D(const segPrecisionTYPE * Expec,
             cout << "Optimising MRF"<<endl;
             flush(cout);
         }
-        register int currclass;
+        int currclass;
 
         unsigned int numel_currclass_shift[maxNumbClass];
         for(int i=0; i<numclass; i++)
@@ -3813,12 +3813,12 @@ void BiasCorrection(segPrecisionTYPE * BiasField,
                     segPrecisionTYPE * BiasFieldCoefs,
                     nifti_image * T1,
                     segPrecisionTYPE * Expec,
-                    segPrecisionTYPE * Outlierness,
+                    segPrecisionTYPE * /*Outlierness*/,
                     segPrecisionTYPE * M,
                     segPrecisionTYPE * V,
                     int biasOrder,
                     ImageSize * CurrSizes,
-                    bool flag_Bias,
+                    bool /*flag_Bias*/,
                     int verbose_level)
 {
 
@@ -4559,7 +4559,7 @@ void BiasCorrection_mask(segPrecisionTYPE * BiasField,
                          segPrecisionTYPE * V,
                          int biasOrder,
                          ImageSize * CurrSizes,
-                         bool flag_Bias,
+                         bool /*flag_Bias*/,
                          int verbose_level)
 {
 
@@ -4971,12 +4971,12 @@ void BiasCorrection2D(segPrecisionTYPE * BiasField,
                       segPrecisionTYPE * BiasFieldCoefs,
                       nifti_image * T1,
                       segPrecisionTYPE * Expec,
-                      segPrecisionTYPE * Outlierness,
+                      segPrecisionTYPE * /*Outlierness*/,
                       segPrecisionTYPE * M,
                       segPrecisionTYPE * V,
                       int biasOrder,
                       ImageSize * CurrSizes,
-                      bool flag_Bias,
+                      bool /*flag_Bias*/,
                       int verbose_level)
 {
 
@@ -5315,12 +5315,12 @@ void BiasCorrection_mask2D(segPrecisionTYPE * BiasField,
                            nifti_image * T1,
                            int * Long_2_Short_Indices,
                            segPrecisionTYPE * Expec,
-                           segPrecisionTYPE * Outlierness,
+                           segPrecisionTYPE * /*Outlierness*/,
                            segPrecisionTYPE * M,
                            segPrecisionTYPE * V,
                            int biasOrder,
                            ImageSize * CurrSizes,
-                           bool flag_Bias,
+                           bool /*flag_Bias*/,
                            int verbose_level)
 {
     if(verbose_level>0)

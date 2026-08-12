@@ -94,7 +94,7 @@ int main(int argc, char **argv)
 
 
     nifti_image * Image_Target=nifti_image_read(filename_target,true);
-    if(filename_target==NULL)
+    if(Image_Target==NULL)
     {
         fprintf(stderr, "This image can not be read: %s\n", filename_target);
         return 0;
@@ -106,15 +106,15 @@ int main(int argc, char **argv)
     if(filename_mask!=NULL)
     {
         Mask = nifti_image_read(filename_mask,true);
-        if(Mask->datatype!=DT_BINARY)
-        {
-            seg_convert2binary(Mask,0.5f);
-        }
-
         if(Mask == NULL)
         {
             fprintf(stderr,"* Error when reading the mask image: %s\n",filename_mask);
             return 1;
+        }
+
+        if(Mask->datatype!=DT_BINARY)
+        {
+            seg_convert2binary(Mask,0.5f);
         }
     }
 

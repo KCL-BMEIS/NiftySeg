@@ -525,7 +525,7 @@ segPrecisionTYPE CalcGeoTime_long(long index,
 }
 
 void TransformGeoTime(segPrecisionTYPE *GeoTime,
-                      segPrecisionTYPE MaxGeoTime,
+                      segPrecisionTYPE /*MaxGeoTime*/,
                       int * L2S,
                       int * S2L,
                       ImageSize * CurrSizes)

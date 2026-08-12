@@ -25,59 +25,74 @@ seg_fill_lesions<T>::seg_fill_lesions() {
     this->percentage=0.5;
     this->k=2.0;
     this->patch2D=false;
+    this->outputImage=NULL;
+    this->inputLesionMask=NULL;
+    this->inputMask=NULL;
+    this->expanding=0;
+    this->numTP=0;
+    this->tmpLesMask=NULL;
+    this->originalLesMask=NULL;
+    this->tmpImg=NULL;
+    this->tmpNorm=NULL;
 }
 
 template <class T>
 seg_fill_lesions<T>::seg_fill_lesions(const seg_fill_lesions &copy) {
-    this->inputImage=copy->inputImage;
-    this->meanImage=copy->meanImage;
-    this->normImage=copy->normImage;
-    this->outputImage=copy->outputImage;
-    this->imgPtr=copy->imgPtr;
-    this->lesMaskPtr=copy->lesMaskPtr;
-    this->maskPtr=copy->maskPtr;
-    this->normImgPtr=copy->normImgPtr;
-    this->meanImgPtr=copy->meanImgPtr;
-    this->tmpLesMask=copy->tmpLesMask;
-    this->tmpImg=copy->tmpImg;
-    this->originalLesMask=copy->originalLesMask;
-    this->tmpNorm=copy->tmpNorm;
-    this->currSize=copy->currSize;
-    this->verbose=copy->verbose;
-    this->debug=copy->debug;
-    this->mult=copy->mult;
-    this->patchSearchAreaSize=copy->patchSearchAreaSize;
-    this->percentage=copy->percentage;
-    this->numTP=copy->numTP;
-    this->k=copy->k;
-    this->patch2D=copy->patch2D;
+    this->inputImage=copy.inputImage;
+    this->meanImage=copy.meanImage;
+    this->normImage=copy.normImage;
+    this->outputImage=copy.outputImage;
+    this->imgPtr=copy.imgPtr;
+    this->lesMaskPtr=copy.lesMaskPtr;
+    this->maskPtr=copy.maskPtr;
+    this->normImgPtr=copy.normImgPtr;
+    this->meanImgPtr=copy.meanImgPtr;
+    this->tmpLesMask=copy.tmpLesMask;
+    this->tmpImg=copy.tmpImg;
+    this->originalLesMask=copy.originalLesMask;
+    this->tmpNorm=copy.tmpNorm;
+    this->currSize=copy.currSize;
+    this->verbose=copy.verbose;
+    this->debug=copy.debug;
+    this->mult=copy.mult;
+    this->patchSearchAreaSize=copy.patchSearchAreaSize;
+    this->percentage=copy.percentage;
+    this->numTP=copy.numTP;
+    this->k=copy.k;
+    this->patch2D=copy.patch2D;
+    this->inputLesionMask=copy.inputLesionMask;
+    this->inputMask=copy.inputMask;
+    this->expanding=copy.expanding;
 }
 
 template <class T>
-int seg_fill_lesions<T>::operator=(const seg_fill_lesions &copy) {
-    this->inputImage=copy->inputImage;
-    this->meanImage=copy->meanImage;
-    this->normImage=copy->normImage;
-    this->outputImage=copy->outputImage;
-    this->imgPtr=copy->imgPtr;
-    this->lesMaskPtr=copy->lesMaskPtr;
-    this->maskPtr=copy->maskPtr;
-    this->normImgPtr=copy->normImgPtr;
-    this->meanImgPtr=copy->meanImgPtr;
-    this->tmpLesMask=copy->tmpLesMask;
-    this->tmpImg=copy->tmpImg;
-    this->originalLesMask=copy->originalLesMask;
-    this->tmpNorm=copy->tmpNorm;
-    this->currSize=copy->currSize;
-    this->verbose=copy->verbose;
-    this->debug=copy->debug;
-    this->mult=copy->mult;
-    this->patchSearchAreaSize=copy->patchSearchAreaSize;
-    this->percentage=copy->percentage;
-    this->numTP=copy->numTP;
-    this->k=copy->k;
-    this->patch2D=copy->patch2D;
-    
+seg_fill_lesions<T> & seg_fill_lesions<T>::operator=(const seg_fill_lesions &copy) {
+    this->inputImage=copy.inputImage;
+    this->meanImage=copy.meanImage;
+    this->normImage=copy.normImage;
+    this->outputImage=copy.outputImage;
+    this->imgPtr=copy.imgPtr;
+    this->lesMaskPtr=copy.lesMaskPtr;
+    this->maskPtr=copy.maskPtr;
+    this->normImgPtr=copy.normImgPtr;
+    this->meanImgPtr=copy.meanImgPtr;
+    this->tmpLesMask=copy.tmpLesMask;
+    this->tmpImg=copy.tmpImg;
+    this->originalLesMask=copy.originalLesMask;
+    this->tmpNorm=copy.tmpNorm;
+    this->currSize=copy.currSize;
+    this->verbose=copy.verbose;
+    this->debug=copy.debug;
+    this->mult=copy.mult;
+    this->patchSearchAreaSize=copy.patchSearchAreaSize;
+    this->percentage=copy.percentage;
+    this->numTP=copy.numTP;
+    this->k=copy.k;
+    this->patch2D=copy.patch2D;
+    this->inputLesionMask=copy.inputLesionMask;
+    this->inputMask=copy.inputMask;
+    this->expanding=copy.expanding;
+
     return *this;
 }
 
