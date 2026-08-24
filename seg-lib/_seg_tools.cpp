@@ -2,10 +2,12 @@
 #include <cfloat>
 
 
-
+// Note for Jorge: L2S was not used anywhere, so remove it there to avoid warning.
+// declaration could be changed but would require to change all calls.
+// Leaving it as it is for now for simplicity. Done that in quite a few places.
 void GaussianFilter4D_cArray(segPrecisionTYPE * ShortData,
                              int * S2L,
-                             int * L2S,
+                             int * /*L2S*/,
                              segPrecisionTYPE gauss_std,
                              ImageSize * CurrSizes)
 {
@@ -598,7 +600,7 @@ void SmoothLab(float * DataPTR,float factor, ImageSize * Currentsize){
                         }
                     }
                     std::map<unsigned int,float>::iterator currIterator = tmp_lab.begin();
-                    int maxindex=std::numeric_limits<float>::quiet_NaN();
+                    int maxindex=0;
                     float maxval=-FLT_MAX;
                     if(currIterator!=tmp_lab.end()){
                         while(currIterator != tmp_lab.end())
@@ -608,7 +610,7 @@ void SmoothLab(float * DataPTR,float factor, ImageSize * Currentsize){
                                 maxindex=currIterator->first;
                                 maxval=currIterator->second;
                             }
-                            currIterator++;
+                            ++currIterator;
                         }
                         ImageBuffer[index]=maxindex;
                     }
@@ -2133,7 +2135,7 @@ void TrilinearResampleSourceImage_for_GIF(  nifti_image *sourceImage,
 }
 
 
-int get_all_files_and_folders_in_dir (string dir, vector<string> &files , vector<string> &folders)
+int get_all_files_and_folders_in_dir (const string &dir, vector<string> &files , vector<string> &folders)
 {
     DIR *dp;
     struct dirent64 *dirp;
@@ -2149,30 +2151,24 @@ int get_all_files_and_folders_in_dir (string dir, vector<string> &files , vector
         {
             if(dirp->d_type==8 ||dirp->d_type==10 ||dirp->d_type==0 )
             {
-                if((&files)!=NULL)
-                {
-                    string curstring=dir;
-                    curstring.append(SEP);
-                    curstring.append(dirp->d_name);
-                    files.push_back(curstring);
-                }
+                string curstring=dir;
+                curstring.append(SEP);
+                curstring.append(dirp->d_name);
+                files.push_back(curstring);
             }
             else
             {
-                if((&folders)!=NULL)
-                {
-                    string curstring=dir;
-                    curstring.append(SEP);
-                    curstring.append(dirp->d_name);
-                    folders.push_back(curstring);
-                }
+                string curstring=dir;
+                curstring.append(SEP);
+                curstring.append(dirp->d_name);
+                folders.push_back(curstring);
             }
         }
     }
     closedir(dp);
     return 0;
 }
-int get_all_files_that_match_string (string dir, vector<string> &files , string string_to_match)
+int get_all_files_that_match_string (const string &dir, vector<string> &files , const string &string_to_match)
 {
     DIR *dp;
     struct dirent64 *dirp;
@@ -2199,7 +2195,7 @@ int get_all_files_that_match_string (string dir, vector<string> &files , string 
     closedir(dp);
     return 0;
 }
-int get_all_files_that_match_2_strings(string dir, vector<string> &files , string string_to_match, string string_to_match2)
+int get_all_files_that_match_2_strings(const string &dir, vector<string> &files , const string &string_to_match, const string &string_to_match2)
 {
     DIR *dp;
     struct dirent64 *dirp;
@@ -2228,7 +2224,7 @@ int get_all_files_that_match_2_strings(string dir, vector<string> &files , strin
     closedir(dp);
     return 0;
 }
-int get_all_files_in_dir_without_extension(string dir, vector<string> &files)
+int get_all_files_in_dir_without_extension(const string &dir, vector<string> &files)
 {
     DIR *dp;
     struct dirent64 *dirp;
@@ -2526,13 +2522,10 @@ void ConnectComp(int * Old,
         CClist[i]=i;
     }
 
-    int iter=0;
     while(numbchanges!=0)
     {
-        //while(iter<3){
 
         flush(cout);
-        iter++;
         numbchanges=0;
         int currindex=0;
         for(int z=1; z<((int)dimensions[2]-1); z++)
@@ -2670,7 +2663,8 @@ void ConnectComp(int * Old,
             New[index]=0;
         }
     }
-    delete [] Pixelcounter;
+    free(Pixelcounter);
+    free(CClist);
 
 
     return;
@@ -2744,13 +2738,10 @@ void Close_Forground_ConnectComp(void * Old_void, void * New_void, ImageSize * C
         CClist[i]=i;
     }
 
-    int iter=0;
     while(numbchanges!=0)
     {
-        //while(iter<3){
 
         flush(cout);
-        iter++;
         numbchanges=0;
         int currindex=0;
         for(int z=1; z<((int)dimensions[2]-1); z++)
@@ -2816,7 +2807,7 @@ void Close_Forground_ConnectComp(void * Old_void, void * New_void, ImageSize * C
 
 
     //Find lable counts
-    int *Pixelcounter = new int[CCcounter];
+    int *Pixelcounter = new int[CCcounter]();
 
     for(index=0; index<NumElements; index++)
     {
@@ -2946,13 +2937,10 @@ void Largest_ConnectComp(void * Old_void, void * New_void, ImageSize * Currentsi
         CClist[i]=i;
     }
 
-    int iter=0;
     while(numbchanges!=0)
     {
-        //while(iter<3){
 
         flush(cout);
-        iter++;
         numbchanges=0;
         int currindex=0;
         if((int)dimensions[2]>1){
@@ -3096,8 +3084,8 @@ void Largest_ConnectComp(void * Old_void, void * New_void, ImageSize * Currentsi
             New[index]=0;
         }
     }
-    delete [] tempimg;
-    delete [] Pixelcounter;
+    free(tempimg);
+    free(Pixelcounter);
 
 
     return;
@@ -3167,12 +3155,9 @@ void ConnectComp26NN(void * Old_void, void * New_void, ImageSize * Currentsize)
         CClist[i]=i;
     }
 
-    int iter=0;
     while(numbchanges!=0)
     {
-        //while(iter<3){
         flush(cout);
-        iter++;
         numbchanges=0;
         int currindex=0;
         if((int)dimensions[2]>1){
@@ -3298,6 +3283,7 @@ void ConnectComp26NN(void * Old_void, void * New_void, ImageSize * Currentsize)
             Pixelcounter[(int)New[index]]++;
         }
     }
+    delete [] PixelcounterOrder;
     PixelcounterOrder=quickSort_order(Pixelcounter,CCcounter);
     //Rassign to oposit class
     for(index=0; index<NumElements; index++)
@@ -3311,7 +3297,10 @@ void ConnectComp26NN(void * Old_void, void * New_void, ImageSize * Currentsize)
         }
     }
 
-    delete [] tempimg;
+    free(tempimg);
+    free(CClist);
+    free(Pixelcounter);
+    delete [] PixelcounterOrder;
 
     return;
 }
@@ -3386,13 +3375,10 @@ void ConnectComp6NN(void * Old_void, void * New_void, ImageSize * Currentsize)
         CClist[i]=i;
     }
 
-    int iter=0;
     while(numbchanges!=0)
     {
-        //while(iter<3){
 
         flush(cout);
-        iter++;
         numbchanges=0;
         int currindex=0;
         if((int)dimensions[2]>1){
@@ -3517,7 +3503,10 @@ void ConnectComp6NN(void * Old_void, void * New_void, ImageSize * Currentsize)
             New[index]=0;
         }
     }
-    delete [] tempimg;
+    free(tempimg);
+    free(CClist);
+    free(Pixelcounter);
+    delete [] PixelcounterOrder;
 
     return;
 }
@@ -3644,7 +3633,7 @@ void Erosion(float * Image,
 
 bool isSimplePoint(bool * SimplePointTestBlock){
 
-  bool CounterBlock[27]={0};
+  int CounterBlock[27]={0};
   char CCcounter=0;
   int index=0;
   for(int z=0; z<3; z++)
@@ -3656,11 +3645,11 @@ bool isSimplePoint(bool * SimplePointTestBlock){
         if(SimplePointTestBlock[index]){
           CounterBlock[index]=CCcounter;
           CCcounter++;
-          index++;
         }
         else{
           CounterBlock[index]=0;
         }
+        index++;
       }
     }
   }
@@ -3670,26 +3659,23 @@ bool isSimplePoint(bool * SimplePointTestBlock){
     CClist[i]=CounterBlock[i]?i:-1;
   }
 
-  int iter=0;
   int numbchanges=1;
   int totalnumbchanges=0;
   while(numbchanges!=0)
   {
-    //while(iter<3){
 
     flush(cout);
-    iter++;
     numbchanges=0;
     int currindex=0;
 
-    index=0;
     int tempmin;
-    for(int z=1; z<3; z++)
+    for(int z=1; z<2; z++)
     {
-      for(int y=1; y<3; y++)
+      for(int y=1; y<2; y++)
       {
-        for(int x=1; x<3; x++)
+        for(int x=1; x<2; x++)
         {
+          index=z*9+y*3+x;
           if(SimplePointTestBlock[index] && CClist[CounterBlock[index]])
           {
             tempmin=CClist[CounterBlock[index]];
@@ -3724,7 +3710,6 @@ bool isSimplePoint(bool * SimplePointTestBlock){
               numbchanges++;
             }
           }
-          index++;
         }
       }
     }
@@ -3754,11 +3739,11 @@ bool isSimplePoint(bool * SimplePointTestBlock){
         if(SimplePointTestBlockMod[index]){
           CounterBlock[index]=CCcounter;
           CCcounter++;
-          index++;
         }
         else{
           CounterBlock[index]=0;
         }
+        index++;
       }
     }
   }
@@ -3767,25 +3752,23 @@ bool isSimplePoint(bool * SimplePointTestBlock){
     CClist[i]=CounterBlock[i]?i:-1;
   }
 
-  iter=0;
   numbchanges=1;
   int totalnumbchanges2=0;
   while(numbchanges!=0)
   {
 
     flush(cout);
-    iter++;
     numbchanges=0;
     int currindex=0;
 
-    index=0;
     int tempmin;
-    for(int z=1; z<3; z++)
+    for(int z=1; z<2; z++)
     {
-      for(int y=1; y<3; y++)
+      for(int y=1; y<2; y++)
       {
-        for(int x=1; x<3; x++)
+        for(int x=1; x<2; x++)
         {
+          index=z*9+y*3+x;
           if(SimplePointTestBlockMod[index] && CClist[CounterBlock[index]])
           {
             tempmin=CClist[CounterBlock[index]];
@@ -3820,7 +3803,6 @@ bool isSimplePoint(bool * SimplePointTestBlock){
               numbchanges++;
             }
           }
-          index++;
         }
       }
     }

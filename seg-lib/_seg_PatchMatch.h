@@ -73,7 +73,7 @@ protected:
     float calculateSSDistance1(long,long,int,float);
     float calculateDistance(long,long,int,float);
     void  getNextRecordDatabase(int num,float *&,float *&);
-    void  loadFile(nifti_image *&,string,float *&,ImageSize *&);
+    void  loadFile(nifti_image *&,const string &,float *&,ImageSize *&);
     void  fusePatch(long,long,int,long);
     void  saveResults();
     void  computePatchMatch(int);
@@ -98,9 +98,9 @@ public:
 
     void setInputImage(nifti_image *);
     void setInputMask(nifti_image *);
-    void setInputImageDatabase(vector<string>);
-    void setInputMaskDatabase(vector<string>);
-    void setOutputFilesDatabase(vector<string>);
+    void setInputImageDatabase(const vector<string> &);
+    void setInputMaskDatabase(const vector<string> &);
+    void setOutputFilesDatabase(const vector<string> &);
     void setPatchSize(int);
     int  getPatchSize();
     void setBetterMatch(int);

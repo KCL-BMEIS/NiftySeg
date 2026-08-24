@@ -1284,7 +1284,7 @@ int seg_LabFusion::UpdateMRF()
         segPrecisionTYPE Clique[maxMultiLableClass]= {0};
         segPrecisionTYPE Temp_MRF_Class_Expect[maxMultiLableClass]= {0};
 
-        register int currlabelnumb;
+        int currlabelnumb;
         indexCentre=0;
         int index_within_mask=0;
         for (iz=0; iz<maxiz; iz++)
@@ -1445,7 +1445,7 @@ int seg_LabFusion::EstimateInitialDensity()
 
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 
-int seg_LabFusion::SetPQ(segPrecisionTYPE tmpP,segPrecisionTYPE tmpQ)
+int seg_LabFusion::SetPQ(segPrecisionTYPE tmpP,segPrecisionTYPE /*tmpQ*/)
 {
     for(long i=0; i<this->numb_classif; i++)
     {

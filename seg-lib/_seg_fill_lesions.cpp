@@ -25,59 +25,74 @@ seg_fill_lesions<T>::seg_fill_lesions() {
     this->percentage=0.5;
     this->k=2.0;
     this->patch2D=false;
+    this->outputImage=NULL;
+    this->inputLesionMask=NULL;
+    this->inputMask=NULL;
+    this->expanding=0;
+    this->numTP=0;
+    this->tmpLesMask=NULL;
+    this->originalLesMask=NULL;
+    this->tmpImg=NULL;
+    this->tmpNorm=NULL;
 }
 
 template <class T>
 seg_fill_lesions<T>::seg_fill_lesions(const seg_fill_lesions &copy) {
-    this->inputImage=copy->inputImage;
-    this->meanImage=copy->meanImage;
-    this->normImage=copy->normImage;
-    this->outputImage=copy->outputImage;
-    this->imgPtr=copy->imgPtr;
-    this->lesMaskPtr=copy->lesMaskPtr;
-    this->maskPtr=copy->maskPtr;
-    this->normImgPtr=copy->normImgPtr;
-    this->meanImgPtr=copy->meanImgPtr;
-    this->tmpLesMask=copy->tmpLesMask;
-    this->tmpImg=copy->tmpImg;
-    this->originalLesMask=copy->originalLesMask;
-    this->tmpNorm=copy->tmpNorm;
-    this->currSize=copy->currSize;
-    this->verbose=copy->verbose;
-    this->debug=copy->debug;
-    this->mult=copy->mult;
-    this->patchSearchAreaSize=copy->patchSearchAreaSize;
-    this->percentage=copy->percentage;
-    this->numTP=copy->numTP;
-    this->k=copy->k;
-    this->patch2D=copy->patch2D;
+    this->inputImage=copy.inputImage;
+    this->meanImage=copy.meanImage;
+    this->normImage=copy.normImage;
+    this->outputImage=copy.outputImage;
+    this->imgPtr=copy.imgPtr;
+    this->lesMaskPtr=copy.lesMaskPtr;
+    this->maskPtr=copy.maskPtr;
+    this->normImgPtr=copy.normImgPtr;
+    this->meanImgPtr=copy.meanImgPtr;
+    this->tmpLesMask=copy.tmpLesMask;
+    this->tmpImg=copy.tmpImg;
+    this->originalLesMask=copy.originalLesMask;
+    this->tmpNorm=copy.tmpNorm;
+    this->currSize=copy.currSize;
+    this->verbose=copy.verbose;
+    this->debug=copy.debug;
+    this->mult=copy.mult;
+    this->patchSearchAreaSize=copy.patchSearchAreaSize;
+    this->percentage=copy.percentage;
+    this->numTP=copy.numTP;
+    this->k=copy.k;
+    this->patch2D=copy.patch2D;
+    this->inputLesionMask=copy.inputLesionMask;
+    this->inputMask=copy.inputMask;
+    this->expanding=copy.expanding;
 }
 
 template <class T>
-int seg_fill_lesions<T>::operator=(const seg_fill_lesions &copy) {
-    this->inputImage=copy->inputImage;
-    this->meanImage=copy->meanImage;
-    this->normImage=copy->normImage;
-    this->outputImage=copy->outputImage;
-    this->imgPtr=copy->imgPtr;
-    this->lesMaskPtr=copy->lesMaskPtr;
-    this->maskPtr=copy->maskPtr;
-    this->normImgPtr=copy->normImgPtr;
-    this->meanImgPtr=copy->meanImgPtr;
-    this->tmpLesMask=copy->tmpLesMask;
-    this->tmpImg=copy->tmpImg;
-    this->originalLesMask=copy->originalLesMask;
-    this->tmpNorm=copy->tmpNorm;
-    this->currSize=copy->currSize;
-    this->verbose=copy->verbose;
-    this->debug=copy->debug;
-    this->mult=copy->mult;
-    this->patchSearchAreaSize=copy->patchSearchAreaSize;
-    this->percentage=copy->percentage;
-    this->numTP=copy->numTP;
-    this->k=copy->k;
-    this->patch2D=copy->patch2D;
-    
+seg_fill_lesions<T> & seg_fill_lesions<T>::operator=(const seg_fill_lesions &copy) {
+    this->inputImage=copy.inputImage;
+    this->meanImage=copy.meanImage;
+    this->normImage=copy.normImage;
+    this->outputImage=copy.outputImage;
+    this->imgPtr=copy.imgPtr;
+    this->lesMaskPtr=copy.lesMaskPtr;
+    this->maskPtr=copy.maskPtr;
+    this->normImgPtr=copy.normImgPtr;
+    this->meanImgPtr=copy.meanImgPtr;
+    this->tmpLesMask=copy.tmpLesMask;
+    this->tmpImg=copy.tmpImg;
+    this->originalLesMask=copy.originalLesMask;
+    this->tmpNorm=copy.tmpNorm;
+    this->currSize=copy.currSize;
+    this->verbose=copy.verbose;
+    this->debug=copy.debug;
+    this->mult=copy.mult;
+    this->patchSearchAreaSize=copy.patchSearchAreaSize;
+    this->percentage=copy.percentage;
+    this->numTP=copy.numTP;
+    this->k=copy.k;
+    this->patch2D=copy.patch2D;
+    this->inputLesionMask=copy.inputLesionMask;
+    this->inputMask=copy.inputMask;
+    this->expanding=copy.expanding;
+
     return *this;
 }
 
@@ -130,7 +145,7 @@ void seg_fill_lesions<T>::setInputMask(nifti_image *mask) {
     }
     char filename[100];
     if(this->getDebug()) {
-        sprintf(filename,"segFillLesions_mixed_mask.nii.gz");
+        snprintf(filename,sizeof(filename),"segFillLesions_mixed_mask.nii.gz");
         this->saveImagePtr(this->maskPtr,this->inputImage,filename);
     }
 }
@@ -474,7 +489,7 @@ void seg_fill_lesions<T>::runIt(){
     this->normalizeImageIntesities(0.0f,1024.0f);
 
     if(this->getDebug()) {
-        sprintf(filename,"segFillLesions_normalized_image.nii.gz");
+        snprintf(filename,sizeof(filename),"segFillLesions_normalized_image.nii.gz");
         this->saveImage(this->normImage,filename);
     }
 
@@ -500,7 +515,7 @@ void seg_fill_lesions<T>::runIt(){
     float *Distance = new float[this->getTotalVolumSize()];
     this->calculateEuclideanDistance(Distance);
     if(this->getDebug()) {
-        sprintf(filename,"segFillLesions_euclidean_distance.nii.gz");
+        snprintf(filename,sizeof(filename),"segFillLesions_euclidean_distance.nii.gz");
         this->saveImagePtr(Distance,this->inputImage,filename);
     }
     float max=0;
@@ -518,7 +533,7 @@ void seg_fill_lesions<T>::runIt(){
     }
     BlockSmoothing(this->meanImage,NULL,max*2+1);
     if(this->getDebug()) {
-        sprintf(filename,"segFillLesions_mean_image-%d.nii.gz",0);
+        snprintf(filename,sizeof(filename),"segFillLesions_mean_image-%d.nii.gz",0);
         this->saveImage(this->meanImage,filename);
     }
 
@@ -526,7 +541,7 @@ void seg_fill_lesions<T>::runIt(){
         if(this->getVerbose()) cout<<"Expanding euclidean maps to improve patches"<<endl;
         this->expandPatches(Distance);
         if(this->getDebug()) {
-            sprintf(filename,"segFillLesions_expanded_distance.nii.gz");
+            snprintf(filename,sizeof(filename),"segFillLesions_expanded_distance.nii.gz");
             this->saveImagePtr(Distance,this->inputImage,filename);
         }
     }
@@ -663,7 +678,7 @@ void seg_fill_lesions<T>::runIt(){
             }
         }
         if(this->getDebug()) {
-            sprintf(filename,"segFillLesions_filemask-med-%d.nii.gz",iteration);
+            snprintf(filename,sizeof(filename),"segFillLesions_filemask-med-%d.nii.gz",iteration);
             this->saveImagePtr(level,this->inputLesionMask,filename);
         }
         for(tp=0;tp<this->getNumTP();tp++) {
@@ -734,9 +749,9 @@ void seg_fill_lesions<T>::runIt(){
             }
         }
         if(this->getDebug()) {
-            sprintf(filename,"segFillLesions_file-%d.nii.gz",iteration);
+            snprintf(filename,sizeof(filename),"segFillLesions_file-%d.nii.gz",iteration);
             this->saveImage(this->inputImage,filename);
-            sprintf(filename,"segFillLesions_filemask-%d.nii.gz",iteration);
+            snprintf(filename,sizeof(filename),"segFillLesions_filemask-%d.nii.gz",iteration);
             this->saveImage(this->inputLesionMask,filename);
         }
         for(i=0;i<this->getTotalVolumSize();i++) {
@@ -745,7 +760,7 @@ void seg_fill_lesions<T>::runIt(){
         }
         BlockSmoothing(this->meanImage,NULL,max*2+1);
         if(this->getDebug()) {
-            sprintf(filename,"segFillLesions_mean_image-%d.nii.gz",iteration);
+            snprintf(filename,sizeof(filename),"segFillLesions_mean_image-%d.nii.gz",iteration);
             this->saveImage(this->meanImage,filename);
         }
     }

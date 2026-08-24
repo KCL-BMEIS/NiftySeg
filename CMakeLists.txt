@@ -1,6 +1,10 @@
+cmake_minimum_required(VERSION 3.10)
+# Use the extraction time for the timestamps of files pulled in by
+# ExternalProject_Add, so a change of download URL triggers a rebuild.
+if(POLICY CMP0135)
+  cmake_policy(SET CMP0135 NEW)
+endif()
 PROJECT(NiftySeg)
-cmake_minimum_required(VERSION 2.8)
-cmake_policy(VERSION 2.8)
 include(ExternalProject)
 
 
@@ -9,7 +13,6 @@ include(ExternalProject)
 # Preflight Checks - CMake Version, InSource Build Type
 #-----------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.0.2)
 if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" MATCHES "^3\\.2\\.2$")
  mark_as_advanced(FORCE CMAKE_BACKWARDS_COMPATIBILITY)
 else("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" MATCHES "^3\\.2\\.2$")

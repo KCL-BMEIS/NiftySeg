@@ -89,6 +89,8 @@ protected:
 public:
     seg_LabFusion(int _numb_classif,int _numb_labels,int _numb_neigh, int _numb_modalities);
     ~seg_LabFusion();
+    seg_LabFusion(const seg_LabFusion &) = delete;
+    seg_LabFusion & operator=(const seg_LabFusion &) = delete;
     int SetinputCLASSIFIER(nifti_image * LABELS, bool UNCERTAINflag);
     int SetMLLNCC(nifti_image * LNCC,nifti_image * BaseImage,float distance,int levels, int Numb_Neigh);
     int SetLNCC(nifti_image * LNCC,nifti_image * BaseImage,float distance,int Numb_Neigh);

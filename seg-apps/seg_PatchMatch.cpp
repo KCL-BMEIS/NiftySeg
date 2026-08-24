@@ -422,141 +422,140 @@ int main(int argc, char **argv)
         patchmatch->runIt();
         OutputResult= patchmatch->getOutputResult();
 
-        if(filename_out.find(string(".nii"))>0 || filename_out.find(string(".img")) || filename_out.find(string(".hdr"))>0)
+
+        // saving output
+        if(verbose) cout<< "Saving results at: "<<filename_out<<" "<<outputFiles[0].c_str()<<endl;
+        nifti_image * OutputImage = nifti_image_read(outputFiles[0].c_str(),true);
+        OutputImage->datatype=datatypeoutput;
+        nifti_set_filenames(OutputImage,filename_out.c_str(),0,0);
+        float max=std::numeric_limits<float>::min();
+        float min=std::numeric_limits<float>::max();
+        if(verbose)
         {
-            // saving output
-            if(verbose) cout<< "Saving results at: "<<filename_out<<" "<<outputFiles[0].c_str()<<endl;
-            nifti_image * OutputImage = nifti_image_read(outputFiles[0].c_str(),true);
-            OutputImage->datatype=datatypeoutput;
-            nifti_set_filenames(OutputImage,filename_out.c_str(),0,0);
-            float max=std::numeric_limits<float>::min();
-            float min=std::numeric_limits<float>::max();
-            if(verbose)
+            cout << "Output Dim = [ ";
+            for(long i=0; i<8; i++)
             {
-                cout << "Output Dim = [ ";
-                for(long i=0; i<8; i++)
+                cout<<(float)OutputImage->dim[i];
+                if(i<7)
                 {
-                    cout<<(float)OutputImage->dim[i];
-                    if(i<7)
-                    {
-                        cout<<" , ";
-                    }
-                }
-                cout<<" ] "<<endl;
-                flush(cout);
-            }
-            long numElem=1;
-            for(long i=1; i<8; i++)
-            {
-                if(OutputImage->dim[i]>0) {
-                        numElem*=OutputImage->dim[i];
+                    cout<<" , ";
                 }
             }
-            nifti_update_dims_from_array(OutputImage);
-            nifti_datatype_sizes(OutputImage->datatype,&OutputImage->nbyper,&OutputImage->swapsize);
-            if(verbose)
-            {
-                cout <<"Converting data "<<numElem<<endl;
-            }
-            if(datatypeoutput==NIFTI_TYPE_UINT8)
-            {
-                OutputImage->data = (void *) calloc(numElem, sizeof(unsigned char));
-                unsigned char * OutputImagePtr = static_cast<unsigned char *>(OutputImage->data);
-                for(long i=0; i<numElem; i++)
-                {
-                    max=max>OutputResult[i]?max:OutputResult[i];
-                    min=min<OutputResult[i]?min:OutputResult[i];
-                    OutputImagePtr[i]=(unsigned char)round(OutputResult[i]);
-                }
-            }
-            else if(datatypeoutput==NIFTI_TYPE_UINT16)
-            {
-                OutputImage->data = (void *) calloc(numElem, sizeof(unsigned short));
-                unsigned short * OutputImagePtr = static_cast<unsigned short *>(OutputImage->data);
-                for(long i=0; i<numElem; i++)
-                {
-                    max=max>OutputResult[i]?max:OutputResult[i];
-                    min=min<OutputResult[i]?min:OutputResult[i];
-                    OutputImagePtr[i]=(unsigned short)round(OutputResult[i]);
-                }
-            }
-            else if(datatypeoutput==NIFTI_TYPE_UINT32)
-            {
-                OutputImage->data = (void *) calloc(numElem, sizeof(unsigned int));
-                unsigned int * OutputImagePtr = static_cast<unsigned int *>(OutputImage->data);
-                for(long i=0; i<numElem; i++)
-                {
-                    max=max>OutputResult[i]?max:OutputResult[i];
-                    min=min<OutputResult[i]?min:OutputResult[i];
-                    OutputImagePtr[i]=(unsigned int)round(OutputResult[i]);
-                }
-            }
-            else if(datatypeoutput==NIFTI_TYPE_INT8)
-            {
-                OutputImage->data = (void *) calloc(numElem, sizeof(char));
-                char * OutputImagePtr = static_cast<char *>(OutputImage->data);
-                for(long i=0; i<numElem; i++)
-                {
-                    max=max>OutputResult[i]?max:OutputResult[i];
-                    min=min<OutputResult[i]?min:OutputResult[i];
-                    OutputImagePtr[i]=(char)round(OutputResult[i]);
-                }
-            }
-            else if(datatypeoutput==NIFTI_TYPE_INT16)
-            {
-                OutputImage->data = (void *) calloc(numElem, sizeof(short));
-                short * OutputImagePtr = static_cast<short *>(OutputImage->data);
-                for(long i=0; i<numElem; i++)
-                {
-                    max=max>OutputResult[i]?max:OutputResult[i];
-                    min=min<OutputResult[i]?min:OutputResult[i];
-                    OutputImagePtr[i]=(short)round(OutputResult[i]);
-                }
-            }
-            else if(datatypeoutput==NIFTI_TYPE_INT32)
-            {
-                OutputImage->data = (void *) calloc(numElem, sizeof(int));
-                int * OutputImagePtr = static_cast<int *>(OutputImage->data);
-                for(long i=0; i<numElem; i++)
-                {
-                    max=max>OutputResult[i]?max:OutputResult[i];
-                    min=min<OutputResult[i]?min:OutputResult[i];
-                    OutputImagePtr[i]=(int)round(OutputResult[i]);
-                }
-            }
-            else if(datatypeoutput==NIFTI_TYPE_FLOAT32)
-            {
-                OutputImage->data = (void *) calloc(numElem, sizeof(float));
-                float * OutputImagePtr = static_cast<float *>(OutputImage->data);
-                for(long i=0; i<numElem; i++)
-                {
-                    max=max>OutputResult[i]?max:OutputResult[i];
-                    min=min<OutputResult[i]?min:OutputResult[i];
-                    OutputImagePtr[i]=(float)OutputResult[i];
-                }
-            }
-            else if(datatypeoutput==NIFTI_TYPE_FLOAT64)
-            {
-                OutputImage->data = (void *) calloc(numElem, sizeof(double));
-                double * OutputImagePtr = static_cast<double *>(OutputImage->data);
-                for(long i=0; i<numElem; i++)
-                {
-                    max=max>OutputResult[i]?max:OutputResult[i];
-                    min=min<OutputResult[i]?min:OutputResult[i];
-                    OutputImagePtr[i]=(double)round(OutputResult[i]);
-                }
-            }
-            OutputImage->cal_max=max;
-            OutputImage->cal_min=min;
-            OutputImage->scl_inter=0;
-            OutputImage->scl_slope=1;
-            if(verbose)
-            {
-                cout <<"Writing image"<<endl;
-            }
-            nifti_image_write(OutputImage);
-            nifti_image_free(OutputImage);
+            cout<<" ] "<<endl;
+            flush(cout);
         }
+        long numElem=1;
+        for(long i=1; i<8; i++)
+        {
+            if(OutputImage->dim[i]>0) {
+                    numElem*=OutputImage->dim[i];
+            }
+        }
+        nifti_update_dims_from_array(OutputImage);
+        nifti_datatype_sizes(OutputImage->datatype,&OutputImage->nbyper,&OutputImage->swapsize);
+        if(verbose)
+        {
+            cout <<"Converting data "<<numElem<<endl;
+        }
+        if(datatypeoutput==NIFTI_TYPE_UINT8)
+        {
+            OutputImage->data = (void *) calloc(numElem, sizeof(unsigned char));
+            unsigned char * OutputImagePtr = static_cast<unsigned char *>(OutputImage->data);
+            for(long i=0; i<numElem; i++)
+            {
+                max=max>OutputResult[i]?max:OutputResult[i];
+                min=min<OutputResult[i]?min:OutputResult[i];
+                OutputImagePtr[i]=(unsigned char)round(OutputResult[i]);
+            }
+        }
+        else if(datatypeoutput==NIFTI_TYPE_UINT16)
+        {
+            OutputImage->data = (void *) calloc(numElem, sizeof(unsigned short));
+            unsigned short * OutputImagePtr = static_cast<unsigned short *>(OutputImage->data);
+            for(long i=0; i<numElem; i++)
+            {
+                max=max>OutputResult[i]?max:OutputResult[i];
+                min=min<OutputResult[i]?min:OutputResult[i];
+                OutputImagePtr[i]=(unsigned short)round(OutputResult[i]);
+            }
+        }
+        else if(datatypeoutput==NIFTI_TYPE_UINT32)
+        {
+            OutputImage->data = (void *) calloc(numElem, sizeof(unsigned int));
+            unsigned int * OutputImagePtr = static_cast<unsigned int *>(OutputImage->data);
+            for(long i=0; i<numElem; i++)
+            {
+                max=max>OutputResult[i]?max:OutputResult[i];
+                min=min<OutputResult[i]?min:OutputResult[i];
+                OutputImagePtr[i]=(unsigned int)round(OutputResult[i]);
+            }
+        }
+        else if(datatypeoutput==NIFTI_TYPE_INT8)
+        {
+            OutputImage->data = (void *) calloc(numElem, sizeof(char));
+            char * OutputImagePtr = static_cast<char *>(OutputImage->data);
+            for(long i=0; i<numElem; i++)
+            {
+                max=max>OutputResult[i]?max:OutputResult[i];
+                min=min<OutputResult[i]?min:OutputResult[i];
+                OutputImagePtr[i]=(char)round(OutputResult[i]);
+            }
+        }
+        else if(datatypeoutput==NIFTI_TYPE_INT16)
+        {
+            OutputImage->data = (void *) calloc(numElem, sizeof(short));
+            short * OutputImagePtr = static_cast<short *>(OutputImage->data);
+            for(long i=0; i<numElem; i++)
+            {
+                max=max>OutputResult[i]?max:OutputResult[i];
+                min=min<OutputResult[i]?min:OutputResult[i];
+                OutputImagePtr[i]=(short)round(OutputResult[i]);
+            }
+        }
+        else if(datatypeoutput==NIFTI_TYPE_INT32)
+        {
+            OutputImage->data = (void *) calloc(numElem, sizeof(int));
+            int * OutputImagePtr = static_cast<int *>(OutputImage->data);
+            for(long i=0; i<numElem; i++)
+            {
+                max=max>OutputResult[i]?max:OutputResult[i];
+                min=min<OutputResult[i]?min:OutputResult[i];
+                OutputImagePtr[i]=(int)round(OutputResult[i]);
+            }
+        }
+        else if(datatypeoutput==NIFTI_TYPE_FLOAT32)
+        {
+            OutputImage->data = (void *) calloc(numElem, sizeof(float));
+            float * OutputImagePtr = static_cast<float *>(OutputImage->data);
+            for(long i=0; i<numElem; i++)
+            {
+                max=max>OutputResult[i]?max:OutputResult[i];
+                min=min<OutputResult[i]?min:OutputResult[i];
+                OutputImagePtr[i]=(float)OutputResult[i];
+            }
+        }
+        else if(datatypeoutput==NIFTI_TYPE_FLOAT64)
+        {
+            OutputImage->data = (void *) calloc(numElem, sizeof(double));
+            double * OutputImagePtr = static_cast<double *>(OutputImage->data);
+            for(long i=0; i<numElem; i++)
+            {
+                max=max>OutputResult[i]?max:OutputResult[i];
+                min=min<OutputResult[i]?min:OutputResult[i];
+                OutputImagePtr[i]=(double)round(OutputResult[i]);
+            }
+        }
+        OutputImage->cal_max=max;
+        OutputImage->cal_min=min;
+        OutputImage->scl_inter=0;
+        OutputImage->scl_slope=1;
+        if(verbose)
+        {
+            cout <<"Writing image"<<endl;
+        }
+        nifti_image_write(OutputImage);
+        nifti_image_free(OutputImage);
+
         if(verbose)
         {
             cout <<"Free"<<endl;

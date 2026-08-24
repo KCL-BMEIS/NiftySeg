@@ -13,6 +13,7 @@ seg_EM::seg_EM(int _numb_classes, int _nu,int _nt)
 {
 
     this->InputImage=NULL;  // pointer to external
+    this->inputImage_status=false;
 
     this->filenameOut="Segmentation.nii.gz";
 
@@ -97,6 +98,12 @@ seg_EM::seg_EM(int _numb_classes, int _nu,int _nt)
     this->mapStatus=0;
     this->MAP_M=NULL;
     this->MAP_V=NULL;
+
+    for(int i=0; i<maxMultispectalSize; i++)
+    {
+        this->rescale_max[i]=0;
+        this->rescale_min[i]=0;
+    }
 }
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
 /* \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/ */
@@ -481,8 +488,8 @@ void seg_EM::InitializeAndAllocate()
 
     if(this->priorsStatus)
     {
-        register long numel=(int)(this->Mask->nx*this->Mask->ny*this->Mask->nz);
-        register long numel_masked=0;
+        long numel=(int)(this->Mask->nx*this->Mask->ny*this->Mask->nz);
+        long numel_masked=0;
 
         bool * Maskptrtmp = static_cast<bool *> (this->Mask->data);
         for (long i=0; i<numel; i++, Maskptrtmp++)
@@ -692,9 +699,9 @@ void seg_EM::InitializeAndNormalizeImage()
 void seg_EM::InitializeAndNormalizeNaNPriors()
 {
     if(this->priorsStatus){
-        register int numel = Mask->nx*Mask->ny*Mask->nz;
-        register int ups=0;
-        register int good=0;
+        int numel = Mask->nx*Mask->ny*Mask->nz;
+        int ups=0;
+        int good=0;
         if(this->verbose_level>0)
         {
             cout<< "Normalizing Priors" << endl;
@@ -1373,7 +1380,7 @@ void  seg_EM::Run_EM()
         this->RunPriorRelaxation();
 
         // Print LogLik depending on the verbose level
-        if(this->verbose_level>0 && this->iter>0)
+        if(this->verbose_level>0)
         {
             if(iter>0)
             {
@@ -1899,7 +1906,7 @@ void seg_EM::RunMRF2D()
         segPrecisionTYPE Sum_Temp_MRF_Class_Expect;
         segPrecisionTYPE Gplane[maxNumbClass];
         segPrecisionTYPE Temp_MRF_Class_Expect[maxNumbClass];
-        register int currclass;
+        int currclass;
         unsigned int numelmasked_currclass_shift[maxNumbClass];
         col_size = (int)(this->nx);
         maxix = (int)(this->nx);
@@ -2042,7 +2049,7 @@ void seg_EM::RunMRF3D()
         {
             // Define all the pointers and varibles
             segPrecisionTYPE Sum_Temp_MRF_Class_Expect;
-            register int currclass;
+            int currclass;
             segPrecisionTYPE Temp_MRF_Class_Expect[maxNumbClass];
             segPrecisionTYPE Gplane[maxNumbClass];
             segPrecisionTYPE Hplane[maxNumbClass];

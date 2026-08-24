@@ -35,6 +35,16 @@ seg_PatchMatch<T>::seg_PatchMatch() {
     this->maskPtr=NULL;
     this->matchingCount=NULL;
     this->filling=false;
+    this->ouputImageSample=NULL;
+    this->better_match=0;
+    this->pmatch_executions=0;
+    this->pm_iter=0;
+    this->csa_size=0;
+    this->numTP=0;
+    this->outputSize=NULL;
+    this->db_list_image=NULL;
+    this->db_list_mask=NULL;
+    this->db_list_output=NULL;
 }
 
 template<class T>
@@ -45,17 +55,17 @@ void seg_PatchMatch<T>::setInputImage(nifti_image *input) {
 
 
 template<class T>
-void seg_PatchMatch<T>::setInputImageDatabase(vector<string> input) {
+void seg_PatchMatch<T>::setInputImageDatabase(const vector<string> &input) {
     this->imageDatabaseFileList = input;
 }
 
 template<class T>
-void seg_PatchMatch<T>::setInputMaskDatabase(vector<string> input) {
+void seg_PatchMatch<T>::setInputMaskDatabase(const vector<string> &input) {
     this->maskDatabaseFileList = input;
 }
 
 template<class T>
-void seg_PatchMatch<T>::setOutputFilesDatabase(vector<string> input) {
+void seg_PatchMatch<T>::setOutputFilesDatabase(const vector<string> &input) {
     this->outputDatabaseFileList = input;
 }
 
@@ -535,7 +545,7 @@ void seg_PatchMatch<T>::normalizeImageIntesities(float newMin,float newMax,T *im
 }
 
 template<class T>
-void seg_PatchMatch<T>::loadFile(nifti_image *&InputImage,string filename,float *&filePtr,ImageSize *&fileSize) {
+void seg_PatchMatch<T>::loadFile(nifti_image *&InputImage,const string &filename,float *&filePtr,ImageSize *&fileSize) {
     InputImage=nifti_image_read(filename.c_str(),true);
     if(InputImage == NULL)
     {
@@ -610,8 +620,7 @@ void seg_PatchMatch<T>::getNextRecordDatabase(int num,float *&imagePtr,float *&m
     #endif
     for(tp=0;tp<imageSize->tsize;tp++) {
         for(int i=0; i<nvox; i++) {
-            if(maskDBPtr[i]>0) imagePtr[i+tp*nvox]=imagePtr[i+tp*nvox];
-            else imagePtr[i+tp*nvox]=0;
+            if(!(maskDBPtr[i]>0)) imagePtr[i+tp*nvox]=0;
         }
     }
 
@@ -621,7 +630,7 @@ void seg_PatchMatch<T>::getNextRecordDatabase(int num,float *&imagePtr,float *&m
     }
     //this->normalizeImageIntesitiesOutliers(0.0f,1024.0f,imagePtr);
     if(this->getDebug()) {
-        sprintf(filename,"segPatchMatch_normalized_database_image_%d.nii.gz",num);
+        snprintf(filename,sizeof(filename),"segPatchMatch_normalized_database_image_%d.nii.gz",num);
         this->saveImagePtr(imagePtr,nifti_image_file,filename);
     }
 
@@ -786,7 +795,7 @@ void seg_PatchMatch<T>::loadingInputData(){
     // Intensity image normalization
     //this->normalizeImageIntesitiesOutliers(0.0f,1024.0f,this->imgPtr);
     if(this->getDebug()) {
-        sprintf(filename,"segPatchMatch_normalized_image.nii.gz");
+        snprintf(filename,sizeof(filename),"segPatchMatch_normalized_image.nii.gz");
         this->saveImagePtr(this->imgPtr,this->inputImage,filename);
     }
 }
@@ -864,7 +873,7 @@ void seg_PatchMatch<T>::saveResults() {
         }
     }
     if(this->getDebug()) {
-        sprintf(filename,"segPatchMatch_intermidium_fused-patch.nii.gz");
+        snprintf(filename,sizeof(filename),"segPatchMatch_intermidium_fused-patch.nii.gz");
         this->saveImagePtr(outMaskPtr,this->ouputImageSample,filename);
     }
 }
@@ -923,7 +932,7 @@ void seg_PatchMatch<T>::saveDebugResults() {
     }
     this->normalizeImageIntesities(0.0f,1024.0f,ANN);
 
-    sprintf(filename,"segPatchMatch_intermidium_ANN-best.nii.gz");
+    snprintf(filename,sizeof(filename),"segPatchMatch_intermidium_ANN-best.nii.gz");
     this->saveImagePtr(ANN,this->inputImage,filename);
 
     int *image=new int[this->getSingleVolumSize()];
@@ -942,10 +951,10 @@ void seg_PatchMatch<T>::saveDebugResults() {
              image[i]=0;
          }
     }
-    sprintf(filename,"segPatchMatch_intermidium_Image-best.nii.gz");
+    snprintf(filename,sizeof(filename),"segPatchMatch_intermidium_Image-best.nii.gz");
     this->saveImagePtr(image,this->inputMask,filename);
     
-    sprintf(filename,"segPatchMatch_intermidium_matching_counting.nii.gz");
+    snprintf(filename,sizeof(filename),"segPatchMatch_intermidium_matching_counting.nii.gz");
     this->saveImagePtr(this->matchingCount,this->inputMask,filename);
 }
 
@@ -978,9 +987,9 @@ long seg_PatchMatch<T>::recomputeInputData(int iteration){
       cout<<"["<<iteration<<"] Number of voxels: "<<painted<<" "<<count<<endl;
     }
     if(this->getDebug()) {
-        sprintf(filename,"segPatchMatch_recomputed_image_%d.nii.gz",iteration);
+        snprintf(filename,sizeof(filename),"segPatchMatch_recomputed_image_%d.nii.gz",iteration);
         this->saveImagePtr(this->imgPtr,this->inputImage,filename);
-	sprintf(filename,"segPatchMatch_recomputed_mask_%d.nii.gz",iteration);
+	snprintf(filename,sizeof(filename),"segPatchMatch_recomputed_mask_%d.nii.gz",iteration);
         this->saveImagePtr(this->maskPtr,this->inputMask,filename);
     }
     return count;
@@ -1052,8 +1061,8 @@ void seg_PatchMatch<T>::sortResults(long index){
     std::vector<long> end;
     long i=0, L, R, swap ;
 
-    beg.reserve(this->getPatchMatchExecutions());
-    end.reserve(this->getPatchMatchExecutions());
+    beg.resize(this->getPatchMatchExecutions()+1);
+    end.resize(this->getPatchMatchExecutions()+1);
     beg[0]=0;
     end[0]=this->getPatchMatchExecutions();
     while (i>=0) {
@@ -1062,14 +1071,14 @@ void seg_PatchMatch<T>::sortResults(long index){
         if (L<R) {
             piv=this->KNN[index+L*this->getTotalVolumSize()];
             while (L<R) {
-                while (this->KNN[index+R*this->getTotalVolumSize()]>=piv && L<R) {
+                while (*this->KNN[index+R*this->getTotalVolumSize()]>=*piv && L<R) {
                     R--;
                 }
                 if (L<R) {
                     this->KNN[index+L*this->getTotalVolumSize()]=this->KNN[index+R*this->getTotalVolumSize()];
                     L++;
                 }
-                while (this->KNN[index+L*this->getTotalVolumSize()]<=piv && L<R) {
+                while (*this->KNN[index+L*this->getTotalVolumSize()]<=*piv && L<R) {
                     L++;
                 }
                 if (L<R) {

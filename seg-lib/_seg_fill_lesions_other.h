@@ -49,7 +49,7 @@ protected:
 public:
     seg_fill_lesions_other();
     seg_fill_lesions_other(const seg_fill_lesions_other &o);
-    int operator=(const seg_fill_lesions_other &o);
+    seg_fill_lesions_other & operator=(const seg_fill_lesions_other &o);
     ~seg_fill_lesions_other();
 
     void setInputImage(nifti_image *);

@@ -23,18 +23,22 @@ PatchMatchResult::PatchMatchResult() {
 PatchMatchResult::~PatchMatchResult(){
 }
 
-PatchMatchResult::PatchMatchResult(PatchMatchResult &copy) {
-    setANN(copy.getANN());
-    setPatchMatch(copy.getPatchMatch());
-    setImage(copy.getImage());
-    buffer();
+PatchMatchResult::PatchMatchResult(const PatchMatchResult &copy) {
+    ANN_0=copy.ANN_0;
+    ANN_1=copy.ANN_1;
+    patchmatch_0=copy.patchmatch_0;
+    patchmatch_1=copy.patchmatch_1;
+    image_0=copy.image_0;
+    image_1=copy.image_1;
 }
 
-PatchMatchResult& PatchMatchResult::operator = (PatchMatchResult &copy) {
-    setANN(copy.getANN());
-    setPatchMatch(copy.getPatchMatch());
-    setImage(copy.getImage());
-    buffer();
+PatchMatchResult& PatchMatchResult::operator = (const PatchMatchResult &copy) {
+    ANN_0=copy.ANN_0;
+    ANN_1=copy.ANN_1;
+    patchmatch_0=copy.patchmatch_0;
+    patchmatch_1=copy.patchmatch_1;
+    image_0=copy.image_0;
+    image_1=copy.image_1;
 
     return *this;
 }

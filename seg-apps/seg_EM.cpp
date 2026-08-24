@@ -514,7 +514,7 @@ int main(int argc, char **argv)
             nifti_update_dims_from_array(Mask);
         }
 
-        nifti_image ** Priors_temp=new nifti_image * [segment_param->numb_classes];
+        nifti_image ** Priors_temp=new nifti_image * [segment_param->numb_classes]();
         nifti_image * Priors=NULL;
 
         if(segment_param->flag_manual_priors)

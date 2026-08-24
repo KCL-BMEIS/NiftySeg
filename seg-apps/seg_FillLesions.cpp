@@ -374,124 +374,123 @@ int main(int argc, char **argv)
 	    return -1;
         }
 
-        if(filename_out.find(string(".nii"))>0 || filename_out.find(string(".img")) || filename_out.find(string(".hdr"))>0)
-        {
-            // saving output
-            if(verbose) cout<< "Saving results at: "<<filename_out<<endl;
-            nifti_image * OutputImage = nifti_copy_nim_info(InputImage);
-            OutputImage->datatype=datatypeoutput;
-            nifti_set_filenames(OutputImage,filename_out.c_str(),0,0);
-            OutputImage->dim[1]=InputImage->nx;
-            OutputImage->dim[2]=InputImage->ny;
-            OutputImage->dim[3]=InputImage->nz;
-            OutputImage->dim[4]=OutputImage->nt=InputImage->nt;
-            OutputImage->dim[5]=OutputImage->nu=InputImage->nu;
-            OutputImage->dim[6]=OutputImage->nv=1;
-            OutputImage->dim[7]=OutputImage->nw=1;
-            OutputImage->dim[0]=3;
-            OutputImage->dim[0]=(OutputImage->dim[4]>1?4:OutputImage->dim[0]);
-            OutputImage->dim[0]=(OutputImage->dim[5]>1?5:OutputImage->dim[0]);
-            OutputImage->dim[0]=(OutputImage->dim[6]>1?6:OutputImage->dim[0]);
-            OutputImage->dim[0]=(OutputImage->dim[7]>1?7:OutputImage->dim[0]);
 
-            if(verbose)
+        // saving output
+        if(verbose) cout<< "Saving results at: "<<filename_out<<endl;
+        nifti_image * OutputImage = nifti_copy_nim_info(InputImage);
+        OutputImage->datatype=datatypeoutput;
+        nifti_set_filenames(OutputImage,filename_out.c_str(),0,0);
+        OutputImage->dim[1]=InputImage->nx;
+        OutputImage->dim[2]=InputImage->ny;
+        OutputImage->dim[3]=InputImage->nz;
+        OutputImage->dim[4]=OutputImage->nt=InputImage->nt;
+        OutputImage->dim[5]=OutputImage->nu=InputImage->nu;
+        OutputImage->dim[6]=OutputImage->nv=1;
+        OutputImage->dim[7]=OutputImage->nw=1;
+        OutputImage->dim[0]=3;
+        OutputImage->dim[0]=(OutputImage->dim[4]>1?4:OutputImage->dim[0]);
+        OutputImage->dim[0]=(OutputImage->dim[5]>1?5:OutputImage->dim[0]);
+        OutputImage->dim[0]=(OutputImage->dim[6]>1?6:OutputImage->dim[0]);
+        OutputImage->dim[0]=(OutputImage->dim[7]>1?7:OutputImage->dim[0]);
+
+        if(verbose)
+        {
+            cout << "Output Dim = [ ";
+            for(long i=0; i<8; i++)
             {
-                cout << "Output Dim = [ ";
-                for(long i=0; i<8; i++)
+                cout<<(float)OutputImage->dim[i];
+                if(i<7)
                 {
-                    cout<<(float)OutputImage->dim[i];
-                    if(i<7)
-                    {
-                        cout<<" , ";
-                    }
-                }
-                cout<<" ] "<<endl;
-                flush(cout);
-            }
-            long numElem=1;
-            for(long i=1; i<8; i++)
-            {
-                if(OutputImage->dim[i]>0) {
-                        numElem*=OutputImage->dim[i];
+                    cout<<" , ";
                 }
             }
-            nifti_update_dims_from_array(OutputImage);
-            nifti_datatype_sizes(OutputImage->datatype,&OutputImage->nbyper,&OutputImage->swapsize);
-            if(datatypeoutput==NIFTI_TYPE_UINT8)
-            {
-                OutputImage->data = (void *) calloc(numElem, sizeof(unsigned char));
-                unsigned char * OutputImagePtr = static_cast<unsigned char *>(OutputImage->data);
-                for(long i=0; i<(long)(numElem); i++)
-                {
-                    OutputImagePtr[i]=(unsigned char)round(InputImagePtr[i]);
-                }
-            }
-            else if(datatypeoutput==NIFTI_TYPE_UINT16)
-            {
-                OutputImage->data = (void *) calloc(OutputImage->nvox, sizeof(unsigned short));
-                unsigned short * OutputImagePtr = static_cast<unsigned short *>(OutputImage->data);
-                for(long i=0; i<(long)(numElem); i++)
-                {
-                    OutputImagePtr[i]=(unsigned short)round(InputImagePtr[i]);
-                }
-            }
-            else if(datatypeoutput==NIFTI_TYPE_UINT32)
-            {
-                OutputImage->data = (void *) calloc(numElem, sizeof(unsigned int));
-                unsigned int * OutputImagePtr = static_cast<unsigned int *>(OutputImage->data);
-                for(long i=0; i<(long)(numElem); i++)
-                {
-                    OutputImagePtr[i]=(unsigned int)round(InputImagePtr[i]);
-                }
-            }
-            else if(datatypeoutput==NIFTI_TYPE_INT8)
-            {
-                OutputImage->data = (void *) calloc(numElem, sizeof(char));
-                char * OutputImagePtr = static_cast<char *>(OutputImage->data);
-                for(long i=0; i<(long)(numElem); i++)
-                {
-                    OutputImagePtr[i]=(char)round(InputImagePtr[i]);
-                }
-            }
-            else if(datatypeoutput==NIFTI_TYPE_INT16)
-            {
-                OutputImage->data = (void *) calloc(numElem, sizeof(short));
-                short * OutputImagePtr = static_cast<short *>(OutputImage->data);
-                for(long i=0; i<(long)(numElem); i++)
-                {
-                    OutputImagePtr[i]=(short)round(InputImagePtr[i]);
-                }
-            }
-            else if(datatypeoutput==NIFTI_TYPE_INT32)
-            {
-                OutputImage->data = (void *) calloc(numElem, sizeof(int));
-                int * OutputImagePtr = static_cast<int *>(OutputImage->data);
-                for(long i=0; i<(long)(numElem); i++)
-                {
-                    OutputImagePtr[i]=(int)round(InputImagePtr[i]);
-                }
-            }
-            else if(datatypeoutput==NIFTI_TYPE_FLOAT32)
-            {
-                OutputImage->data = (void *) calloc(numElem, sizeof(float));
-                float * OutputImagePtr = static_cast<float *>(OutputImage->data);
-                for(long i=0; i<(long)(numElem); i++)
-                {
-                    OutputImagePtr[i]=(float)InputImagePtr[i];
-                }
-            }
-            else if(datatypeoutput==NIFTI_TYPE_FLOAT64)
-            {
-                OutputImage->data = (void *) calloc(numElem, sizeof(double));
-                double * OutputImagePtr = static_cast<double *>(OutputImage->data);
-                for(long i=0; i<(long)(numElem); i++)
-                {
-                    OutputImagePtr[i]=(double)round(InputImagePtr[i]);
-                }
-            }
-            nifti_image_write(OutputImage);
-            nifti_image_free(OutputImage);
+            cout<<" ] "<<endl;
+            flush(cout);
         }
+        long numElem=1;
+        for(long i=1; i<8; i++)
+        {
+            if(OutputImage->dim[i]>0) {
+                    numElem*=OutputImage->dim[i];
+            }
+        }
+        nifti_update_dims_from_array(OutputImage);
+        nifti_datatype_sizes(OutputImage->datatype,&OutputImage->nbyper,&OutputImage->swapsize);
+        if(datatypeoutput==NIFTI_TYPE_UINT8)
+        {
+            OutputImage->data = (void *) calloc(numElem, sizeof(unsigned char));
+            unsigned char * OutputImagePtr = static_cast<unsigned char *>(OutputImage->data);
+            for(long i=0; i<(long)(numElem); i++)
+            {
+                OutputImagePtr[i]=(unsigned char)round(InputImagePtr[i]);
+            }
+        }
+        else if(datatypeoutput==NIFTI_TYPE_UINT16)
+        {
+            OutputImage->data = (void *) calloc(OutputImage->nvox, sizeof(unsigned short));
+            unsigned short * OutputImagePtr = static_cast<unsigned short *>(OutputImage->data);
+            for(long i=0; i<(long)(numElem); i++)
+            {
+                OutputImagePtr[i]=(unsigned short)round(InputImagePtr[i]);
+            }
+        }
+        else if(datatypeoutput==NIFTI_TYPE_UINT32)
+        {
+            OutputImage->data = (void *) calloc(numElem, sizeof(unsigned int));
+            unsigned int * OutputImagePtr = static_cast<unsigned int *>(OutputImage->data);
+            for(long i=0; i<(long)(numElem); i++)
+            {
+                OutputImagePtr[i]=(unsigned int)round(InputImagePtr[i]);
+            }
+        }
+        else if(datatypeoutput==NIFTI_TYPE_INT8)
+        {
+            OutputImage->data = (void *) calloc(numElem, sizeof(char));
+            char * OutputImagePtr = static_cast<char *>(OutputImage->data);
+            for(long i=0; i<(long)(numElem); i++)
+            {
+                OutputImagePtr[i]=(char)round(InputImagePtr[i]);
+            }
+        }
+        else if(datatypeoutput==NIFTI_TYPE_INT16)
+        {
+            OutputImage->data = (void *) calloc(numElem, sizeof(short));
+            short * OutputImagePtr = static_cast<short *>(OutputImage->data);
+            for(long i=0; i<(long)(numElem); i++)
+            {
+                OutputImagePtr[i]=(short)round(InputImagePtr[i]);
+            }
+        }
+        else if(datatypeoutput==NIFTI_TYPE_INT32)
+        {
+            OutputImage->data = (void *) calloc(numElem, sizeof(int));
+            int * OutputImagePtr = static_cast<int *>(OutputImage->data);
+            for(long i=0; i<(long)(numElem); i++)
+            {
+                OutputImagePtr[i]=(int)round(InputImagePtr[i]);
+            }
+        }
+        else if(datatypeoutput==NIFTI_TYPE_FLOAT32)
+        {
+            OutputImage->data = (void *) calloc(numElem, sizeof(float));
+            float * OutputImagePtr = static_cast<float *>(OutputImage->data);
+            for(long i=0; i<(long)(numElem); i++)
+            {
+                OutputImagePtr[i]=(float)InputImagePtr[i];
+            }
+        }
+        else if(datatypeoutput==NIFTI_TYPE_FLOAT64)
+        {
+            OutputImage->data = (void *) calloc(numElem, sizeof(double));
+            double * OutputImagePtr = static_cast<double *>(OutputImage->data);
+            for(long i=0; i<(long)(numElem); i++)
+            {
+                OutputImagePtr[i]=(double)round(InputImagePtr[i]);
+            }
+        }
+        nifti_image_write(OutputImage);
+        nifti_image_free(OutputImage);
+
         nifti_image_free(InputLesionMask);
         nifti_image_free(InputImage);
         time_t end;
